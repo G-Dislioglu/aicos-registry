@@ -1,0 +1,38 @@
+{
+  "id": "sol-maya-004",
+  "type": "solution_proof",
+  "token": "freshness_sentinel",
+  "title": "Freshness Sentinel",
+  "essence": "Temporal validation system ensuring AI reasoning uses current and relevant information",
+  "domain": ["ai_governance","meta_cognition","cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:temporal_awareness","theme:verification"],
+  "impact": { "value": 80, "risk": 20, "confidence": 85 },
+  "status": "active",
+  "applies_to": [],
+  "steps": [
+    "Implement timestamp validation for all data sources",
+    "Create relevance scoring for information freshness",
+    "Add staleness detection and warning systems",
+    "Establish automatic data refresh mechanisms",
+    "Enable temporal context awareness in reasoning"
+  ],
+  "tradeoffs": [
+    "Performance overhead from freshness checks",
+    "Potential false positives in staleness detection",
+    "Dependency on external time synchronization"
+  ],
+  "rollback": [
+    "Disable freshness validation",
+    "Remove timestamp checking mechanisms",
+    "Return to static information usage"
+  ],
+  "copy_ready": true,
+  "evidence": { 
+    "signals": ["Current data validation", "Staleness warnings", "Automatic refresh triggers"],
+    "code_refs": [],
+    "notes": "Prevents AI from using outdated information and making temporally invalid decisions"
+  },
+  "links": { "fixes": [], "causes": [], "related": ["sol-maya-002","sol-maya-003"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

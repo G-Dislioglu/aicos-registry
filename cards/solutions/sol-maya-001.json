@@ -1,0 +1,38 @@
+{
+  "id": "sol-maya-001",
+  "type": "solution_proof",
+  "token": "mirror_overlay",
+  "title": "Mirror Overlay",
+  "essence": "Real-time self-monitoring layer that exposes AI reasoning process and confidence states",
+  "domain": ["ai_governance","meta_cognition","cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:calibration","theme:anti_hallucination"],
+  "impact": { "value": 90, "risk": 10, "confidence": 85 },
+  "status": "active",
+  "applies_to": [],
+  "steps": [
+    "Implement dual-layer processing: primary task + meta-monitoring",
+    "Create confidence scoring system for each reasoning step",
+    "Expose internal state through overlay interface",
+    "Add real-time calibration feedback loops",
+    "Implement anomaly detection in reasoning patterns"
+  ],
+  "tradeoffs": [
+    "Increased computational overhead for meta-monitoring",
+    "Potential analysis paralysis from over-reflection",
+    "Additional complexity in system architecture"
+  ],
+  "rollback": [
+    "Disable mirror overlay layer",
+    "Remove meta-monitoring from processing pipeline",
+    "Return to opaque single-layer processing"
+  ],
+  "copy_ready": true,
+  "evidence": { 
+    "signals": ["Transparent reasoning steps", "Confidence score visibility", "Self-correction events"],
+    "code_refs": [],
+    "notes": "Core Maya governance pattern for AI transparency and self-awareness"
+  },
+  "links": { "fixes": [], "causes": [], "related": ["sol-maya-002","sol-maya-005"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}
