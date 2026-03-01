@@ -1,0 +1,21 @@
+{
+  "id": "err-arch-001",
+  "type": "error_pattern",
+  "token": "infrastructure_for_infrastructure",
+  "title": "Infrastructure-for-Infrastructure Falle: SpecBridge Anti-Pattern",
+  "essence": "Statt die eigentliche App zu bauen wird Meta-Infrastruktur gebaut (Tool für Tools, Plattform für Plattformen). Ergebnis: Monate vergehen, kein shibbares Produkt. Klassisches Over-Engineering bei Solo-Developern.",
+  "domain": ["ai_governance", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:over_engineering", "risk:no_product", "theme:focus"],
+  "impact": { "value": 88, "risk": 75, "confidence": 92 },
+  "status": "active",
+  "symptoms": ["Baut System das anderen hilft Systeme zu bauen", "Keine shippbare Demo nach Monaten", "Immer neue Abstraktionsebenen"],
+  "repro_steps": ["App hat Probleme", "Statt App-Problem lösen: neues Meta-Tool entwickeln", "Meta-Tool hat eigene Probleme → neues Meta-Meta-Tool..."],
+  "root_cause": "Abstraktion fühlt sich wie Fortschritt an. Eigentliches Problem (App fertigstellen) wird vermieden.",
+  "do_not_do": ["SpecBridge / Meta-Plattform bauen bevor Core-App fertig ist"],
+  "guardrails": ["Frage: Würde User X heute dafür zahlen? Wenn nein: nicht bauen", "Ship first, systematize later", "Eine Woche Fokus auf Core-App vor jeder Meta-Idee"],
+  "prevent_tests": ["Hat App einen zahlenden User? Wenn nein: keine Meta-Infrastruktur"],
+  "evidence": { "signals": ["SpecBridge identified as over-engineered in Soulmatch session", "Multiple parallel projects without completion"], "code_refs": [], "notes": "Wiederholtes Muster: Nexus Garden, SpecBridge, Maya Core alle gleichzeitig ohne Abschluss." },
+  "links": { "fixes": [], "causes": [], "related": [], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "sol-trading-001",
+  "type": "solution_proof",
+  "token": "multi_provider_rsi_strategy",
+  "title": "RSI-Strategie: 250-Period Trend + 10-Period Pullback",
+  "essence": "250-Period RSI identifiziert den übergeordneten Trend (>50 = bullish), 10-Period RSI erkennt Pullback-Einstiegspunkte bei <30 im Aufwärtstrend. Nur in Märkten mit langfristigem Aufwärtsbias anwenden.",
+  "domain": ["trading"],
+  "scope": ["trading_systems"],
+  "tags": ["tech:pine_script", "theme:trend_following", "theme:entry_timing"],
+  "impact": { "value": 78, "risk": 40, "confidence": 72 },
+  "status": "active",
+  "applies_to": ["S&P500, NASDAQ, Indizes", "Blue Chip Aktien", "Gold, langfristig steigende Assets"],
+  "steps": [
+    "250-Period RSI auf Chart: >50 = Uptrend-Bestätigung",
+    "10-Period RSI auf gleichem Chart: <30 = Pullback-Signal",
+    "Einstieg: Pending Buy Stop über Vortages-Hoch ODER bullisches Umkehr-Candle",
+    "Stop-Loss: Unter letztem Swing-Low",
+    "NIEMALS anwenden in Forex ohne Uptrend-Bias-Check"
+  ],
+  "tradeoffs": ["Funktioniert schlecht in Ranging Märkten", "RSI kann in Trends lange überkauft bleiben"],
+  "copy_ready": true,
+  "evidence": { "signals": ["Validiert in RSI-Analyse Session"], "code_refs": [], "notes": "Einfach aber wirksam — Komplexität ist Trading-Feind." },
+  "links": { "fixes": [], "causes": [], "related": ["sol-trading-002"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

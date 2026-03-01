@@ -1,0 +1,21 @@
+{
+  "id": "err-dev-002",
+  "type": "error_pattern",
+  "token": "overlay_ui_blocks_everything",
+  "title": "Desktop-Overlay blockiert alle anderen UI-Elemente",
+  "essence": "Ein zu aggressiv implementiertes Fullscreen-Overlay blockiert Klicks und Interaktion mit darunter liegenden Elementen. Tritt auf wenn z-index oder pointer-events nicht korrekt gesetzt.",
+  "domain": ["frontend", "devserver"],
+  "scope": ["cross_app"],
+  "tags": ["tech:desktop_app", "tech:overlay", "risk:ux_blocker"],
+  "impact": { "value": 82, "risk": 70, "confidence": 88 },
+  "status": "active",
+  "symptoms": ["App-Fenster kann nicht geklickt werden", "Overlay deckt alles ab", "Kein Escape möglich"],
+  "repro_steps": ["Fullscreen Overlay implementieren", "pointer-events: all gesetzt", "Alle darunter liegenden Elemente blockiert"],
+  "root_cause": "pointer-events nicht auf 'none' gesetzt für transparente Overlay-Bereiche.",
+  "do_not_do": ["Overlay ohne pointer-events: none für transparente Bereiche deployen"],
+  "guardrails": ["Overlay sofort mit Kill-Switch testen (Escape-Taste)", "pointer-events: none für alle nicht-interaktiven Bereiche", "Immer Desktop-Overlay von Anfang an testen statt Browser-Umweg"],
+  "prevent_tests": ["Klick auf darunter liegendes Fenster muss funktionieren", "Escape-Taste deaktiviert Overlay"],
+  "evidence": { "signals": ["GhostOS Overlay blocked everything on first implementation"], "code_refs": [], "notes": "War einer der Hauptgründe warum GhostOS Projekt stagnierte." },
+  "links": { "fixes": [], "causes": [], "related": ["sol-dev-005"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

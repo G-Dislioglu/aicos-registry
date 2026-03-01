@@ -1,0 +1,24 @@
+{
+  "id": "sol-arch-004",
+  "type": "solution_proof",
+  "token": "cashflow_first_then_complexity",
+  "title": "Cash-Flow First: Monetarisierbares MVP vor Meta-Infrastruktur",
+  "essence": "Als Solo-Developer mit begrenztem Budget: erst eine App bis zur Monetarisierung fertigstellen, dann die nächste. Nie 3+ parallele Projekte gleichzeitig. Revenue ermöglicht das nächste Projekt.",
+  "domain": ["cross_app", "ai_governance"],
+  "scope": ["cross_app"],
+  "tags": ["theme:solo_dev", "theme:prioritization", "theme:monetization"],
+  "impact": { "value": 90, "risk": 10, "confidence": 92 },
+  "status": "active",
+  "applies_to": ["Solo-Developer mit Familie und begrenztem Budget", "Vor jeder neuen Projekt-Idee"],
+  "steps": [
+    "Welches Projekt wäre in 2 Wochen fertig und monetarisierbar? → Nur das bauen",
+    "Alle anderen Ideen in 'maybe-later' Ordner (nicht löschen, nur parken)",
+    "Revenue-Ziel definieren bevor Phase 2 startet",
+    "Parallel-Projekte erst wenn Haupt-App monatlichen Revenue generiert"
+  ],
+  "tradeoffs": ["Interessante Ideen müssen warten", "Kann sich einengend anfühlen"],
+  "copy_ready": true,
+  "evidence": { "signals": ["Familie + begrenztes Budget + 3 parallele Projekte = keines fertig", "Soulmatch als First-to-Market Kandidat identifiziert"], "code_refs": [], "notes": "Härteste aber wichtigste Regel für Solo-Developer." },
+  "links": { "fixes": ["err-arch-001"], "causes": [], "related": [], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

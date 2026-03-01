@@ -1,0 +1,21 @@
+{
+  "id": "err-dev-003",
+  "type": "error_pattern",
+  "token": "prompt_too_long_slows_agent",
+  "title": "Zu komplexer Prompt verlangsamt Coding-Agent signifikant",
+  "essence": "Ein hochstrukturierter Prompt (PROOF CORE Full Mode) mit vielen Regeln und Gates verlangsamt den Agent besonders bei schnellen Modell-Varianten. Paradoxerweise: mehr Struktur = schlechtere Performance bei einfachen Tasks.",
+  "domain": ["devserver", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:prompt_engineering", "risk:slow_execution", "tech:windsurf"],
+  "impact": { "value": 78, "risk": 45, "confidence": 88 },
+  "status": "active",
+  "symptoms": ["Agent sehr langsam bei einfachen Fixes", "Excessive verification steps für triviale Änderungen", "Budget-Verbrauch unproportional zu Ergebnis"],
+  "repro_steps": ["PROOF CORE Full Mode aktivieren", "Einfachen UI-Tweak ausführen lassen", "Agent durchläuft alle Gates unnötigerweise"],
+  "root_cause": "Structured prompts nehmen viel Context-Budget — bei einfachen Tasks ist das reine Overhead.",
+  "do_not_do": ["PROOF CORE Full Mode für Routine-Fixes und UI-Tweaks verwenden"],
+  "guardrails": ["Lite-Version für einfache Tasks", "Full Mode nur für komplexe Logik/kritische Features", "Faustformel: >3 Dateien betroffen → Full Mode"],
+  "prevent_tests": ["Task-Kategorie vor Prompt-Wahl einschätzen"],
+  "evidence": { "signals": ["Comprehensive prompt significantly slowed coding agent performance"], "code_refs": [], "notes": "Wichtige Lektion: Prompt-Sophistication und Execution-Speed sind trade-offs." },
+  "links": { "fixes": ["sol-dev-006"], "causes": [], "related": [], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

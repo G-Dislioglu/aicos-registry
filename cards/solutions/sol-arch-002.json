@@ -1,0 +1,25 @@
+{
+  "id": "sol-arch-002",
+  "type": "solution_proof",
+  "token": "agent_audit_before_marketplace",
+  "title": "Pflicht-Audit vor Marketplace-Zugang verhindert Fake-Agent-Problem",
+  "essence": "Kein Agent kommt ohne bestandenen Audit in den Marketplace. Reasoning-KI bewertet Kompetenz, Konsistenz, Ethik, Kommunikation. Score-Stufen Bronze/Silver/Gold/Platinum. Gebühr zahlt Ersteller, nicht Käufer.",
+  "domain": ["ai_governance", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:quality_control", "theme:trust", "theme:audit"],
+  "impact": { "value": 88, "risk": 25, "confidence": 82 },
+  "status": "active",
+  "applies_to": ["Agent-Marketplace Plattformen", "Jede Plattform mit User-Generated AI Agents"],
+  "steps": [
+    "Audit-Dimensionen: Kompetenz 30%, Ethik 25%, Konsistenz 20%, Kommunikation 15%, Spezialisierung 10%",
+    "Test gegen standardisierte Aufgaben-Suite (nicht nur subjektiv)",
+    "Score-Stufen: Bronze 60-74%, Silver 75-84%, Gold 85-94%, Platinum 95-100%",
+    "Ersteller zahlt Audit-Gebühr einmalig",
+    "Re-Audit nach Optimierung möglich"
+  ],
+  "tradeoffs": ["Barrier to entry für Ersteller", "Audit-KI muss selbst qualitätskontrolliert sein"],
+  "copy_ready": true,
+  "evidence": { "signals": ["Moltbook/OpenClaw: inflated agent numbers, fake agents", "Tsinghua University: most 'autonomous' activity is human-controlled"], "code_refs": [], "notes": "Differenzierungsmerkmal #1 gegenüber existierenden Plattformen." },
+  "links": { "fixes": [], "causes": [], "related": ["sol-arch-001"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

@@ -1,0 +1,21 @@
+{
+  "id": "err-api-004",
+  "type": "error_pattern",
+  "token": "env_block_vs_code_failure",
+  "title": "ENV-Block: Agent verwechselt Umgebungsfehler mit Code-Fehler",
+  "essence": "Agent steckt in Endlosschleife weil Build-Gate nicht antwortet — nicht weil Code kaputt ist, sondern weil PowerShell Sandbox den Befehl nicht korrekt ausführt. Agent kann nicht unterscheiden ob Code oder Environment das Problem ist.",
+  "domain": ["devserver", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["tech:windsurf", "tech:powershell", "risk:infinite_loop", "theme:env_diagnosis"],
+  "impact": { "value": 86, "risk": 65, "confidence": 90 },
+  "status": "active",
+  "symptoms": ["Agent wiederholt gleichen Build-Befehl endlos", "Kein neuer Diff-Output seit >15 Minuten", "Probe-Tests grün aber Gate antwortet nicht"],
+  "repro_steps": ["pnpm build in PowerShell Sandbox ausführen", "Kein Output zurück", "Agent wartet und wiederholt"],
+  "root_cause": "PowerShell Sandbox gibt keinen Output zurück für bestimmte Befehle — Code ist in Ordnung.",
+  "do_not_do": ["Mehr als 3 Wiederholungen desselben Befehls ohne Diagnose"],
+  "guardrails": ["ENV-BLOCK Verdict: Code-Arbeit komplett, Gate-Verifikation wegen Umgebung nicht möglich", "Alternative: npx tsc --noEmit für Type-Check, Output in Datei schreiben", "Zeit-Budget: >15 Min ohne Fortschritt → Eskalation"],
+  "prevent_tests": ["Kann Build-Erfolg anders verifiziert werden? (exit code in Datei schreiben)"],
+  "evidence": { "signals": ["PR-09 Windsurf session stuck for hours on build gate", "PROOF CORE Lite v2 Escape Edition created as fix"], "code_refs": [], "notes": "Direkte Ursache für PROOF CORE Lite v2 Escape Edition Entstehung." },
+  "links": { "fixes": ["sol-dev-006"], "causes": [], "related": ["sol-maya-003"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

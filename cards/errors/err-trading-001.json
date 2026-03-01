@@ -1,0 +1,21 @@
+{
+  "id": "err-trading-001",
+  "type": "error_pattern",
+  "token": "indicator_complexity_trap",
+  "title": "Indikator-Komplexitätsfalle: Mehr Bestätigung = Schlechter",
+  "essence": "Trader fügen immer mehr Indikatoren hinzu um Sicherheit zu erhöhen. Ergebnis: Analyse-Paralyse, verspätete Signale, widersprüchliche Aussagen. Das eigentliche Problem ist Execution und Psychologie, nicht der Indikator.",
+  "domain": ["trading"],
+  "scope": ["trading_systems"],
+  "tags": ["theme:psychology", "theme:over_engineering", "risk:analysis_paralysis"],
+  "impact": { "value": 85, "risk": 60, "confidence": 90 },
+  "status": "active",
+  "symptoms": ["Immer mehr Indikatoren auf Chart", "Warten auf 'perfekten' Einstieg", "Inkonsistente Strategy-Wechsel"],
+  "repro_steps": ["Strategie funktioniert nicht in 10 Trades", "Neue Indikatoren hinzufügen", "Zyklus wiederholt sich"],
+  "root_cause": "Survivorship Bias + Glaube dass Komplexität = Präzision. In Wirklichkeit: Edge ist winzig, Execution entscheidet.",
+  "do_not_do": ["Neue Indikator-Kombination nach Verlust-Serie hinzufügen"],
+  "guardrails": ["Max 2-3 Indikatoren pro System", "6 Monate Strategie stur durchziehen bevor Urteil", "Simple Strategie + perfekte Execution > Komplexes System + schlechte Execution"],
+  "prevent_tests": ["Kann Strategie in 1 Satz erklärt werden? Wenn nein: zu komplex"],
+  "evidence": { "signals": ["Years of strategy searching without consistent results", "Adversarial trading agent session"], "code_refs": [], "notes": "Problem ist meist Psychologie/Execution, nicht die Strategie." },
+  "links": { "fixes": ["sol-trading-001"], "causes": [], "related": [], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

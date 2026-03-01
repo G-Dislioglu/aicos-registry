@@ -1,0 +1,26 @@
+{
+  "id": "sol-dev-006",
+  "type": "solution_proof",
+  "token": "proof_core_split_role_technique",
+  "title": "PROOF CORE Split-Role: Executor + Auditor in einem Agent",
+  "essence": "Agent arbeitet simultan als Executor (baut) und Auditor (prüft adversarisch). Verhindert Confirmation Bias bei Selbst-Review. Soft-Fail bewahrt Teilfortschritt, Hard-Fail stoppt komplett.",
+  "domain": ["ai_governance", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:agent_workflow", "theme:quality_control", "tech:windsurf", "tech:proof_core"],
+  "impact": { "value": 86, "risk": 18, "confidence": 84 },
+  "status": "active",
+  "applies_to": ["Komplexe Logik und kritische Features", "Nicht für Routine-Fixes und UI-Tweaks (zu langsam)"],
+  "steps": [
+    "EXECUTOR-Phase: Code schreiben nach PO-Spezifikation",
+    "AUDITOR-Phase: Adversarisch prüfen — 'Was könnte falsch sein?'",
+    "Soft-Fail: Teilergebnis liefern + Problem markieren (kein Total-Loss)",
+    "Hard-Fail: Nur bei kritischen Fehlern die alles brechen",
+    "REGISTRY_CHECK vor jedem Task: relevante Error Cards laden",
+    "Code-Tasks: Immer minimale Tests, auch in Compression-Mode"
+  ],
+  "tradeoffs": ["Verlangsamt Agent bei einfachen Tasks", "Sollte situativ eingesetzt werden, nicht als Permanent-Modus"],
+  "copy_ready": true,
+  "evidence": { "signals": ["Split-role technique overcomes confirmation bias", "PROOF CORE v4.2 rated improvement from 74/100"], "code_refs": [], "notes": "PROOF CORE v3 mit Registry-Gate ist aktuelle Version für Soulmatch." },
+  "links": { "fixes": [], "causes": [], "related": ["sol-maya-008"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

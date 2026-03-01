@@ -1,0 +1,25 @@
+{
+  "id": "sol-multiagent-001",
+  "type": "solution_proof",
+  "token": "silent_director_pattern",
+  "title": "Silent Director: Maya als stille Dirigentin statt freiem LLM-Gespräch",
+  "essence": "Statt freie LLM-zu-LLM Diskussion (chaotisch, teuer, wiederholend): Maya stellt intern gezielten Fragen an verschiedene Modelle, bekommt spezialisierte Antworten, synthetisiert für User. User sieht klares Ergebnis statt LLM-Geplapper.",
+  "domain": ["ai_governance", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:multi_agent", "theme:orchestration", "theme:cost_efficiency"],
+  "impact": { "value": 85, "risk": 22, "confidence": 80 },
+  "status": "active",
+  "applies_to": ["Multi-LLM Persona-Systeme", "Studio Mode / Council Features", "Wenn 2+ LLMs kollaborieren sollen"],
+  "steps": [
+    "Maya als Dirigentin: sendet intern gezielte Spezial-Fragen an verschiedene Modelle",
+    "Claude bekommt: 'Was sind historisch belegten Eigenarten?'",
+    "Gemini bekommt: 'Wie klingt diese Persona im System-Prompt?'",
+    "Maya synthetisiert beide Antworten → klares Bild für User",
+    "User sieht keine LLM-Diskussion, nur Mayas Synthese mit Drilldown-Option"
+  ],
+  "tradeoffs": ["Weniger 'Live-Gefühl' als echte Diskussion", "Maya-Qualität entscheidend"],
+  "copy_ready": true,
+  "evidence": { "signals": ["Talk-Show Modell bewertet 65%, Silent Director 85%", "Free LLM discussion produces repetition, off-topic, agreement"], "code_refs": [], "notes": "80% des Effekts für 30% der Komplexität im Vergleich zur Talkshow-Alternative." },
+  "links": { "fixes": [], "causes": [], "related": ["sol-arch-001"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "sol-dev-005",
+  "type": "solution_proof",
+  "token": "stepstack_fail_fast_gates",
+  "title": "StepStack: Fail-Fast Gates vor teuren Phasen",
+  "essence": "Vor jeder teuren Implementierungsphase wird Viability geprüft: Latenz-Check, Kosten-Projektion, Privacy-Gate. Kill-Conditions mit harten Zahlen verhindern teure Sackgassen.",
+  "domain": ["devserver", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:fail_fast", "theme:cost_control", "tech:stepstack"],
+  "impact": { "value": 88, "risk": 12, "confidence": 85 },
+  "status": "active",
+  "applies_to": ["Desktop-Automation Projekte", "API-intensive Features", "Cloud-Vision basierte Systeme"],
+  "steps": [
+    "M01a: Vision Reality Check — Screenshot + API-Call, Latenz messen (Kill: >4s p95)",
+    "M01b: Flow-Kosten-Projektion — Kosten pro Step berechnen (Kill: >€0.02/Step)",
+    "M01c: Privacy-Gate — Sensitive Screen Detector vor Produktivbetrieb",
+    "Erst nach grünen Gates: Echte Feature-Implementierung",
+    "Budget pro Task definieren, nicht pro Session"
+  ],
+  "tradeoffs": ["Mehr Vorlaufzeit", "Kill-Conditions können zu früh stoppen wenn schlecht kalibriert"],
+  "copy_ready": true,
+  "evidence": { "signals": ["GhostOS failed without fail-fast", "StepStack v2.1 rated 83/100 vs 72/100"], "code_refs": [], "notes": "Entstand aus GhostOS-Projekt-Disaster wo direkt UI gebaut wurde ohne Viability-Check." },
+  "links": { "fixes": ["err-dev-01"], "causes": [], "related": ["sol-maya-003"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

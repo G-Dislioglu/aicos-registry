@@ -1,0 +1,26 @@
+{
+  "id": "sol-ux-001",
+  "type": "solution_proof",
+  "token": "maya_sight_ui_awareness",
+  "title": "Maya Sight: KI-UI-Awareness durch DOM-Introspection + Struggle-Tracking",
+  "essence": "KI scannt UI automatisch, erkennt Benutzer-Verwirrung, kann Elemente visuell hervorheben und erklären. Agent-Architektur: jedes UI-Element wird ein eigenständiger Agent mit describe(), perform(), introduce() Methoden.",
+  "domain": ["frontend", "meta_cognition"],
+  "scope": ["cross_app"],
+  "tags": ["theme:ux_intelligence", "theme:ai_ui", "tech:react", "theme:accessibility"],
+  "impact": { "value": 84, "risk": 35, "confidence": 76 },
+  "status": "active",
+  "applies_to": ["Apps mit komplexen UIs für nicht-technische User", "Onboarding-Flows", "Feature-Discovery"],
+  "steps": [
+    "DOM-Introspection Hook: automatisch alle UI-Elemente scannen",
+    "Struggle-Tracker: Maus-Zögern, mehrfache Klicks, Zeit auf Element → Frustrations-Signal",
+    "Maya Commands: highlight(elementId), guide(steps[]), explain(text)",
+    "CSS-Overlay für Highlighting ohne Layout-Disruption (pointer-events: none)",
+    "Optional: Vision Bridge — Screenshot via Gemini API wenn DOM nicht reicht",
+    "Security: zwei-Tier Permission — harmlose Aktionen direkt, sensible mit User-Bestätigung"
+  ],
+  "tradeoffs": ["Screenshot-Privacy Bedenken", "Kann als überwachend wirken ohne klare User-Kommunikation"],
+  "copy_ready": true,
+  "evidence": { "signals": ["Maya Sight spec rated 90%+ by multiple AI models", "Soulmatch implementation planned"], "code_refs": [], "notes": "Differenzierungsmerkmal für alle Soulmatch/Artifex UIs." },
+  "links": { "fixes": [], "causes": [], "related": [], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "sol-ux-002",
+  "type": "solution_proof",
+  "token": "demo_first_then_implement",
+  "title": "Demo-First: HTML-Mockup als Referenz vor Agent-Implementierung",
+  "essence": "Vor jeder UI-Implementierung durch Agent: HTML-Demo bauen die exakt das gewünschte Ergebnis zeigt. Agent implementiert 1:1 nach Demo — keine Interpretation, kein Improvisation. Eliminiert 'ich dachte du meintest...' Fehler.",
+  "domain": ["frontend", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:agent_workflow", "tech:windsurf", "theme:ux_guard"],
+  "impact": { "value": 87, "risk": 15, "confidence": 86 },
+  "status": "active",
+  "applies_to": ["Komplexe UI-Redesigns", "Neue Feature-Flows", "Wenn Design-Vision präzise ist"],
+  "steps": [
+    "HTML-Demo mit exaktem Design bauen (inline CSS, kein Framework)",
+    "User bestätigt Demo als korrekte Vision",
+    "Agent-Prompt: 'Implementiere exakt nach dieser Demo: [HTML code]'",
+    "Explizit in Prompt: 'Keine Improvisation, keine eigenen Design-Entscheidungen'",
+    "Nach Implementierung: Demo als Acceptance-Test nutzen"
+  ],
+  "tradeoffs": ["Mehr Vorlaufzeit durch Demo-Erstellung", "Demo kann überholt werden wenn Anforderungen ändern"],
+  "copy_ready": true,
+  "evidence": { "signals": ["Chat UI rebuild successful using HTML demo reference", "Agent implemented design 1:1 achieving green build"], "code_refs": [], "notes": "Besonders wertvoll bei 3-Spalten-Layouts und komplexen Komponenten-Hierarchien." },
+  "links": { "fixes": ["err-ui-02"], "causes": [], "related": [], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

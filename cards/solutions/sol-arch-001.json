@@ -1,0 +1,25 @@
+{
+  "id": "sol-arch-001",
+  "type": "solution_proof",
+  "token": "bluepilot_modules_are_agents",
+  "title": "Bluepilot-Module = Artifex-Agents: Einheitliches Fundament",
+  "essence": "Statt zwei separate Systeme zu bauen (Bluepilot + Artifex), ist das universelle Agent-Protokoll das Fundament. Bluepilot-Module sind die ersten Artifex-Agents. Das spart Entwicklungszeit und erzeugt ein Ecosystem.",
+  "domain": ["ai_governance", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:architecture", "theme:unification", "theme:agent_protocol"],
+  "impact": { "value": 92, "risk": 20, "confidence": 85 },
+  "status": "active",
+  "applies_to": ["Wenn mehrere ähnliche Systeme parallel entwickelt werden", "Vor Architektur-Entscheidungen bei Agent-Systemen"],
+  "steps": [
+    "Agent-Manifest definieren: agent_id, capabilities[], accepts[], delivers[], cost_tier",
+    "Universal Message Envelope: type, payload, userId, timestamp",
+    "4 Antwort-Zustände: SUCCESS, PARTIAL, FAILED, BLOCKED",
+    "Bluepilot-Module als erste Agents registrieren",
+    "Andere Apps können selbe Agents über Artifex-API nutzen"
+  ],
+  "tradeoffs": ["Höherer initialer Abstraktionsaufwand", "Protokoll muss von Anfang an stabil sein"],
+  "copy_ready": true,
+  "evidence": { "signals": ["Nexus Core = Orchestrator, Scout = Research, Forge = Builder — alle sind Artifex Agents"], "code_refs": [], "notes": "Erkannt in Bluepilot Session: 'Du baust nicht zwei Dinge, du baust eines.'" },
+  "links": { "fixes": [], "causes": [], "related": [], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}
