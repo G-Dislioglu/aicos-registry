@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-041",
+  "type": "solution_proof",
+  "token": "universal_state_guard_hook",
+  "title": "Universal State Guard Hook: useAsyncGuard() für alle React Async Operations",
+  "essence": "Speech State Machine + Async State Management zu wiederverwendbarem React Hook generalisieren. Jede async Operation bekommt automatischen Race Condition Schutz via Request IDs und Abort Controllers.",
+  "domain": ["frontend"],
+  "scope": ["cross_app"],
+  "tags": ["tech:react", "theme:race_condition", "theme:hooks", "theme:reusability"],
+  "impact": { "value": 85, "risk": 15, "confidence": 88 },
+  "status": "proposed",
+  "applies_to": ["Alle React Komponenten mit async Operations", "Speech, WebSocket, API Calls"],
+  "steps": [
+    "useAsyncGuard() Hook mit requestIdRef Pattern erstellen",
+    "Request IDs auto-generieren für jede Operation",
+    "AbortController für Cancellation integrieren",
+    "Request ID vor State Updates validieren",
+    "Auto-Cleanup bei Component Unmount"
+  ],
+  "tradeoffs": ["Leichter Overhead für jede async Operation", "Adoption über gesamte Codebase nötig"],
+  "copy_ready": false,
+  "evidence": { "signals": ["Speech refs eliminate abort loops", "Request IDs prevent state races"], "code_refs": [], "notes": "Kimi: Concrete React Hook — direkt implementierbar in Soulmatch" },
+  "links": { "fixes": [], "causes": [], "related": ["sol-audio-01", "sol-ui-01"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

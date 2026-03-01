@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-029",
+  "type": "solution_proof",
+  "token": "demo_driven_validation",
+  "title": "Demo-Driven Validation: HTML Demo als Spec UND Acceptance Test",
+  "essence": "Demo-First + Split-Role Technique: HTML Demo dient als Spezifikation UND Acceptance Test. Auditor validiert Implementierung pixel-perfect gegen Demo — keine Interpretation erlaubt.",
+  "domain": ["frontend", "ai_governance"],
+  "scope": ["cross_app"],
+  "tags": ["theme:agent_workflow", "theme:quality_control", "theme:ux_guard", "theme:acceptance_testing"],
+  "impact": { "value": 89, "risk": 20, "confidence": 85 },
+  "status": "proposed",
+  "applies_to": ["Komplexe UI Redesigns", "Neue Feature Flows", "Wenn Design-Vision präzise ist"],
+  "steps": [
+    "Pixel-perfect HTML Demo als Spezifikation erstellen",
+    "Executor implementiert basierend auf Demo",
+    "Auditor vergleicht Output mit Demo via Visual Diff",
+    "Pass Criteria: Implementierung matcht Demo innerhalb Threshold",
+    "Demo wird Regression Test für zukünftige Änderungen"
+  ],
+  "tradeoffs": ["Demo Maintenance Overhead wenn Requirements sich ändern", "Visual Comparison kann brüchig sein"],
+  "copy_ready": false,
+  "evidence": { "signals": ["Demo-first eliminates misinterpretation", "Split-role improves code quality"], "code_refs": [], "notes": "Kimi: Demo als Spec UND Test — eliminiert 'ich dachte du meintest...' Fehler" },
+  "links": { "fixes": ["err-ui-02"], "causes": [], "related": ["sol-ux-002", "sol-dev-006"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

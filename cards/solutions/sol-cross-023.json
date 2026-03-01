@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-023",
+  "type": "solution_proof",
+  "token": "adaptive_complexity_execution",
+  "title": "Adaptive Complexity: Lite vs Full Mode — Match Complexity to Task",
+  "essence": "PROOF CORE Lite/Full Mode + Trading (simple RSI > complex indicators) + Demo-First teilen dasselbe Prinzip: mehr Struktur ≠ besser. Complexity Level dem Task anpassen, nicht maximieren.",
+  "domain": ["devserver", "trading", "frontend", "ai_governance"],
+  "scope": ["cross_app"],
+  "tags": ["theme:adaptive_execution", "theme:prompt_engineering", "theme:prioritization"],
+  "impact": { "value": 86, "risk": 20, "confidence": 82 },
+  "status": "proposed",
+  "applies_to": ["Coding Agents", "Trading Strategien", "Jeden Task mit konfigurierbarer Komplexität"],
+  "steps": [
+    "Task Komplexität einschätzen vor Execution (simple fix vs complex feature)",
+    "Lite Mode für Routine Tasks: minimaler Overhead, schnelle Execution",
+    "Full Mode für komplexe Tasks: gründliche Verification, Quality Gates",
+    "Threshold: >3 Dateien betroffen → Full Mode; einzelne Datei → Lite",
+    "Trading: simple Strategie + perfekte Execution > komplexes System + schlechte Execution"
+  ],
+  "tradeoffs": ["Complexity Assessment kann falsch sein", "Lite Mode kann Issues übersehen"],
+  "copy_ready": false,
+  "evidence": { "signals": ["sol-dev-006: PROOF CORE Lite für einfache, Full für komplexe Tasks", "sol-trading-001: 2 RSI Indikatoren, nicht 10+", "sol-ux-002: HTML Demo als simple Referenz"], "code_refs": [], "notes": "Minimax: Core Insight — more structure ≠ better" },
+  "links": { "fixes": [], "causes": ["err-dev-003", "err-trading-001"], "related": ["sol-dev-006", "sol-trading-001", "sol-ux-002"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

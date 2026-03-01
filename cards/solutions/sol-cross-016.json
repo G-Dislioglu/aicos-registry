@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-016",
+  "type": "solution_proof",
+  "token": "agent_registry_protocol",
+  "title": "Agent Registry Protocol: Vollständiger Agent Governance Stack",
+  "essence": "Bluepilot Modules + Marketplace Audit + Assumption Registry + Claim Lineage bilden einen vollständigen Agent Governance Stack: Registration → Validation → Execution → Audit Trail.",
+  "domain": ["ai_governance", "meta_cognition", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:agent_protocol", "theme:governance", "theme:audit", "theme:provenance"],
+  "impact": { "value": 95, "risk": 25, "confidence": 82 },
+  "status": "proposed",
+  "applies_to": ["Agent Marketplace Plattformen", "Multi-Agent Systems", "AI Governance Frameworks"],
+  "steps": [
+    "REGISTRATION: Agent Manifest (id, capabilities[], accepts[], delivers[], cost_tier)",
+    "VALIDATION: Audit vor Marketplace-Zugang (sol-arch-002 Scoring: Bronze/Silver/Gold/Platinum)",
+    "EXECUTION: Message Envelope mit type, payload, userId, timestamp",
+    "TRACKING: Claim Lineage für jeden Output (sol-maya-002)",
+    "ASSUMPTIONS: Explicit Assumption Registry pro Reasoning Chain (sol-maya-005)"
+  ],
+  "tradeoffs": ["Signifikanter Infrastructure Investment", "Kann Agent-Onboarding verlangsamen"],
+  "copy_ready": false,
+  "evidence": { "signals": ["sol-arch-001: agent protocol", "sol-arch-002: audit system", "sol-maya-002: lineage", "sol-maya-005: assumptions"], "code_refs": [], "notes": "GLM5: Vollständigster Agent Governance Stack — direkt als Artifex-Fundament nutzbar" },
+  "links": { "fixes": [], "causes": [], "related": ["sol-arch-001", "sol-arch-002", "sol-maya-002", "sol-maya-005"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

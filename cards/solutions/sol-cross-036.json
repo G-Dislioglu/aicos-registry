@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-036",
+  "type": "solution_proof",
+  "token": "knowledge_synthesis_pipeline",
+  "title": "Knowledge Synthesis Pipeline: Destill → Cross → Synthesize → Verify → Deliver",
+  "essence": "Nexus Garden Card Crossing + Silent Director Synthesis + Demo-First Verification bilden eine Knowledge Pipeline: Distillation → Crossing → Synthese → Verifikation → Delivery.",
+  "domain": ["meta_cognition", "ai_governance", "frontend", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:knowledge_management", "theme:synthesis", "theme:distillation", "theme:pipeline"],
+  "impact": { "value": 87, "risk": 25, "confidence": 78 },
+  "status": "proposed",
+  "applies_to": ["Knowledge Management Systeme", "AI-powered Research Tools", "Documentation Systeme"],
+  "steps": [
+    "DISTILL: Chat History → Strukturierte Cards (Nexus Garden Pattern)",
+    "CROSS: Verbindungen zwischen Cards aus verschiedenen Domains finden",
+    "SYNTHESIZE: Silent Director orchestriert Multi-Model Synthese",
+    "VERIFY: Demo-First Pattern — Referenz erstellen vor Delivery",
+    "DELIVER: Synthese-Card mit Provenance Links zu Sources"
+  ],
+  "tradeoffs": ["Komplexe Pipeline zu maintainen", "Qualität hängt von Destillations-Genauigkeit ab"],
+  "copy_ready": false,
+  "evidence": { "signals": ["sol-arch-003: Nexus Garden card crossing", "sol-multiagent-001: Silent Director", "sol-ux-002: Demo-first"], "code_refs": [], "notes": "GLM5: AICOS Registry lebt diese Pipeline — meta-self-referential" },
+  "links": { "fixes": [], "causes": [], "related": ["sol-arch-003", "sol-multiagent-001", "sol-ux-002"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

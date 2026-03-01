@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-035",
+  "type": "solution_proof",
+  "token": "safe_external_input_handler",
+  "title": "Safe External Input Handler: JSON + API Keys + Provider Params unified",
+  "essence": "Safe JSON Parsing + Secure API Key Handling + Provider Param Normalization teilen dasselbe Muster: externer Input ist untrusted und braucht Validation. Unified Input Sanitization Layer für alle externen Daten.",
+  "domain": ["frontend", "auth", "api", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:input_validation", "theme:security", "theme:sanitization", "theme:defensive_programming"],
+  "impact": { "value": 85, "risk": 8, "confidence": 94 },
+  "status": "proposed",
+  "applies_to": ["Alle External API Calls", "LLM Response Handling", "User Input Verarbeitung"],
+  "steps": [
+    "INPUT CLASSIFICATION: JSON, API Key, Provider Param, User Data",
+    "VALIDATION SCHEMA: Pro-Klasse Validation Rules",
+    "SANITIZATION: Sensitive Daten entfernen/maskieren vor Logging",
+    "FALLBACK: Safe Default bei Validation-Failure",
+    "AUDIT: Alle Validation-Failures für Security Monitoring loggen"
+  ],
+  "tradeoffs": ["Performance Overhead durch Validation", "Kann valide Edge Cases ablehnen"],
+  "copy_ready": false,
+  "evidence": { "signals": ["sol-frontend-01: safe JSON parsing", "sol-auth-01: secure API key handling", "sol-api-02: provider normalization"], "code_refs": [], "notes": "GLM5: confidence 94 — höchste Confidence aller Cards im gesamten Test" },
+  "links": { "fixes": [], "causes": [], "related": ["sol-frontend-01", "sol-auth-01", "sol-api-02"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

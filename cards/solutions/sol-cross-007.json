@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-007",
+  "type": "solution_proof",
+  "token": "context_complexity_trap",
+  "title": "Context Complexity Trap: Trading Paralyse = Agent Prompt-Bloat",
+  "essence": "Trading-Analyse-Paralyse und Agent-Prompt-Bloat sind dasselbe psychologische Muster: mehr Kontext/Indikatoren = schlechtere Execution. Max 2-3 Variablen gilt für Trading UND Prompts.",
+  "domain": ["trading", "ai_governance", "devserver"],
+  "scope": ["cross_app"],
+  "tags": ["theme:psychology", "theme:prompt_engineering", "theme:minimalism", "theme:anti_over_engineering"],
+  "impact": { "value": 100, "risk": 10, "confidence": 95 },
+  "status": "proposed",
+  "applies_to": ["Prompt Engineering", "Trading Strategy Design", "Architecture Planning"],
+  "steps": [
+    "Max 2-3 Indikatoren-Regel aus Trading auf System-Prompts anwenden",
+    "Infrastructure-for-Infrastructure Kontext aus Prompts entfernen",
+    "Verbose Instruktionen durch einfache Regime-Exit Bedingungen ersetzen",
+    "1-Satz-Test: Kann Strategie/Prompt in 1 Satz erklärt werden?",
+    "Wenn nein: zu komplex — vereinfachen bevor fortfahren"
+  ],
+  "tradeoffs": ["Große Tasks in mehr Micro-Tasks aufteilen nötig", "Lokaler Kontext kann suboptimale Entscheidungen verursachen"],
+  "copy_ready": false,
+  "evidence": { "signals": ["err-trading-001: over-engineering kills performance", "err-dev-003: long prompts slow agents", "err-arch-001: complexity without value"], "code_refs": [], "notes": "Gemini 3.1: Trading + Prompt + Architektur als universelles kognitives Prinzip" },
+  "links": { "fixes": ["err-dev-003", "err-arch-001"], "causes": [], "related": ["sol-trading-001", "sol-maya-003", "err-trading-001"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

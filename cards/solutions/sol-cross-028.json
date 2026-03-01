@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-028",
+  "type": "solution_proof",
+  "token": "audited_director_pattern",
+  "title": "Audited Director: Self-Correcting Multi-Agent Orchestration",
+  "essence": "Silent Director + Agent Audit kombiniert: Director routet zu spezialisierten Agents UND trackt deren Performance-History. Routing-Entscheidungen verbessern sich über Zeit basierend auf historischen Quality Scores.",
+  "domain": ["ai_governance", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:multi_agent", "theme:quality_control", "theme:learning", "theme:routing"],
+  "impact": { "value": 84, "risk": 28, "confidence": 78 },
+  "status": "proposed",
+  "applies_to": ["Multi-Agent Plattformen", "Agent Marketplaces", "Komplexe AI Systeme"],
+  "steps": [
+    "Director assigned Task zu spezialisiertem Agent",
+    "Ergebnis-Qualität nach Completion auditieren",
+    "Agent Performance Score für diesen Task-Typ updaten",
+    "Routing Weights anpassen: High-performing Agents bevorzugen",
+    "Agents für Re-Audit flaggen wenn Scores unter Threshold fallen"
+  ],
+  "tradeoffs": ["Viele Interactions nötig um optimales Routing zu lernen", "Cold Start Problem für neue Agents"],
+  "copy_ready": false,
+  "evidence": { "signals": ["sol-multiagent-001: Silent Director", "sol-arch-002: Agent Audit Scoring"], "code_refs": [], "notes": "Kimi: Director lernt über Zeit — self-improving Routing" },
+  "links": { "fixes": [], "causes": [], "related": ["sol-multiagent-001", "sol-arch-002"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

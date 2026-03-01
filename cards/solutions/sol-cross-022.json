@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-022",
+  "type": "solution_proof",
+  "token": "provenance_freshness_security_trinity",
+  "title": "Provenance + Freshness + Security: Truth Verification Trinity",
+  "essence": "Claim Lineage + Freshness Sentinel + API Key Sanitization bilden ein Cross-Domain Verification Pattern: Track Provenance, validiere Freshness, maskiere sensitive Daten — alle drei zusammen.",
+  "domain": ["ai_governance", "meta_cognition", "auth", "db"],
+  "scope": ["cross_app"],
+  "tags": ["theme:provenance", "theme:temporal_awareness", "theme:verification", "theme:security"],
+  "impact": { "value": 85, "risk": 15, "confidence": 90 },
+  "status": "proposed",
+  "applies_to": ["AI Reasoning Systems", "Data Pipelines", "Audit-critical Applications"],
+  "steps": [
+    "Immutable Audit Trail mit kryptographischen Hashes für jeden Claim/Record",
+    "Timestamp Validation und Staleness Detection für alle Data Sources",
+    "Niemals sensitive Daten (API Keys, Tokens) loggen — immer maskieren",
+    "Backward Tracing: von Result zurück zur Source",
+    "Automatic Refresh Triggers wenn Daten Freshness-Threshold überschreiten"
+  ],
+  "tradeoffs": ["Storage Overhead für vollständige History", "Performance Impact durch Hash Calculations"],
+  "copy_ready": false,
+  "evidence": { "signals": ["sol-maya-002: immutable claim registry", "sol-maya-004: staleness detection", "sol-auth-01: key masking"], "code_refs": [], "notes": "Minimax: Unified Pattern — jede Information sollte Herkunft, Freshness und Sichtbarkeit kennen" },
+  "links": { "fixes": [], "causes": [], "related": ["sol-maya-002", "sol-maya-004", "sol-auth-01"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

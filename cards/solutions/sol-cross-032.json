@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-032",
+  "type": "solution_proof",
+  "token": "timeout_protected_resource_wrapper",
+  "title": "Timeout-Protected Resource Wrapper: Promise.race für alle externen Calls",
+  "essence": "Astrology Calculation Timeouts + Speech Recognition Timeouts + Native Module Probes teilen dasselbe Muster: externe Ressourcen brauchen Timeout-Schutz. Unified Wrapper für jeden blockierenden External Call.",
+  "domain": ["api", "audio", "devserver", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:timeout", "theme:resource_management", "theme:blocking_prevention"],
+  "impact": { "value": 82, "risk": 10, "confidence": 92 },
+  "status": "proposed",
+  "applies_to": ["Alle externen API Calls", "Native Module Probes", "Speech Recognition", "Astro Calculations"],
+  "steps": [
+    "Promise.race Wrapper: Resource Call vs Timeout Promise",
+    "Konfigurierbarer Timeout pro Resource-Typ (Default 5s)",
+    "Bei Timeout: Log + Fallback + User Notification",
+    "Metrics: Timeout Rate, Average Latency, p95 Latency",
+    "Auto-Tuning: Timeout basierend auf beobachteter Latenz-Distribution anpassen"
+  ],
+  "tradeoffs": ["Kann valide langsame Operationen timeoutten", "Latenz durch Timeout-Checks"],
+  "copy_ready": false,
+  "evidence": { "signals": ["sol-astro-01: timeout-protected calculations", "sol-audio-01: restart delays", "sol-dev-02: native module probe"], "code_refs": [], "notes": "GLM5: Auto-Tuning Mechanismus — bisher einziges Modell mit adaptiver Threshold-Anpassung" },
+  "links": { "fixes": [], "causes": [], "related": ["sol-astro-01", "sol-audio-01", "sol-dev-02"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

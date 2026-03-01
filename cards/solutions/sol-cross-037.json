@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-037",
+  "type": "solution_proof",
+  "token": "trading_regime_controls",
+  "title": "Trading Regime Controls: Maya Regime-Exit auf Markt-Zustände anwenden",
+  "essence": "Maya Regime-Exit Pattern auf Trading übertragen: Markt-Regime-Shifts (Trending/Ranging/Volatile) automatisch erkennen und Position Sizing + Strategie-Parameter anpassen. Verluste verhindern wenn Marktbedingungen Strategie invalidieren.",
+  "domain": ["trading", "ai_governance"],
+  "scope": ["cross_app"],
+  "tags": ["theme:regime_control", "theme:risk_management", "theme:adaptive_strategy"],
+  "impact": { "value": 82, "risk": 35, "confidence": 78 },
+  "status": "proposed",
+  "applies_to": ["RSI-basierte Strategien", "Trend-Following Systeme", "Automatisiertes Trading"],
+  "steps": [
+    "Markt-Regime Indikatoren definieren (Volatilität, Trend-Stärke, Volumen-Profil)",
+    "Regime Detection Thresholds mit Kill Conditions setzen",
+    "Jedes Regime auf zugelassene Strategien und Position Sizes mappen",
+    "Automatische Position-Reduktion wenn Regime sich ungünstig verschiebt",
+    "Regime-Transitions mit Reasoning für Audit Trail loggen"
+  ],
+  "tradeoffs": ["Kann Gewinn-Trades früh beenden durch Regime Noise", "Historische Regime-Klassifikation für Kalibrierung nötig"],
+  "copy_ready": false,
+  "evidence": { "signals": ["RSI Strategie scheitert in Ranging Markets", "Maya Regime Exit verhindert infinite loops"], "code_refs": [], "notes": "Kimi: Maya-Governance auf Trading — niemand sonst hat diese Domänen kombiniert" },
+  "links": { "fixes": [], "causes": [], "related": ["sol-maya-003", "sol-trading-001", "err-trading-001"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

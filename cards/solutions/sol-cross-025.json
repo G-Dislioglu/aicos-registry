@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-025",
+  "type": "solution_proof",
+  "token": "monetization_before_abstraction",
+  "title": "Monetization Before Abstraction: Validate Value Before Complexity",
+  "essence": "Cash-Flow-First + Demo-First + Fail-Fast Gates teilen eine gemeinsame Priorität: Wert validieren bevor in Komplexität investiert wird. Ship first, systematize later.",
+  "domain": ["ai_governance", "frontend", "devserver", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:solo_dev", "theme:prioritization", "theme:monetization", "theme:validation"],
+  "impact": { "value": 90, "risk": 12, "confidence": 92 },
+  "status": "proposed",
+  "applies_to": ["Solo Developers", "Pre-Revenue Startups", "Projekte mit begrenzten Ressourcen"],
+  "steps": [
+    "Frage: Was könnte in 2 Wochen monetarisiert werden? Nur das bauen.",
+    "Alle anderen Ideen → 'maybe-later' Ordner, nicht löschen",
+    "HTML Demo vor Agent-Implementierung: Vision zuerst validieren",
+    "Fail-Fast Gates: Viability Check vor teurer Implementierung",
+    "Revenue-Ziel definieren bevor Phase 2 startet"
+  ],
+  "tradeoffs": ["Interessante Ideen müssen warten", "Kann sich einengend anfühlen"],
+  "copy_ready": false,
+  "evidence": { "signals": ["sol-arch-004: cash-flow first", "sol-ux-002: HTML demo before builds", "sol-dev-005: viability gates", "err-arch-001: infrastructure trap"], "code_refs": [], "notes": "Minimax: Drei Patterns unified — schwerste aber wichtigste Regel für Solo-Dev" },
+  "links": { "fixes": ["err-arch-001"], "causes": [], "related": ["sol-arch-004", "sol-ux-002", "sol-dev-005"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

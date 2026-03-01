@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-027",
+  "type": "solution_proof",
+  "token": "cache_as_resilience_layer",
+  "title": "Cache Layer als Resilience: User bevorzugt alte Daten über nichts",
+  "essence": "Memory Fallback + TTS Cache Fallback + Safe JSON Fallback teilen dasselbe Prinzip: wenn Primary scheitert, cached/synthetic servieren statt nichts. User bevorzugt 'alte Daten' über 'Fehlermeldung'.",
+  "domain": ["db", "audio", "frontend", "api"],
+  "scope": ["cross_app"],
+  "tags": ["theme:data_persistence", "theme:cache", "theme:fallback", "theme:resilience"],
+  "impact": { "value": 82, "risk": 15, "confidence": 88 },
+  "status": "proposed",
+  "applies_to": ["Nicht-kritische Daten die UX verbessern", "API Responses die gecacht werden können", "Session State"],
+  "steps": [
+    "Daten identifizieren die 'nice to have' aber nicht kritisch sind",
+    "localStorage/in-memory Cache als ersten Fallback implementieren",
+    "Synthetic/Placeholder als finalen Fallback implementieren",
+    "Niemals Blank/Error zeigen wenn Cache etwas servieren kann",
+    "Cache Hits vs Misses loggen für Monitoring"
+  ],
+  "tradeoffs": ["Stale Data Risiko", "Storage Limits (localStorage 5MB)", "Komplexität in Cache Invalidation"],
+  "copy_ready": false,
+  "evidence": { "signals": ["sol-db-01: DB → localStorage fallback", "sol-audio-02: TTS → cached/synthetic", "sol-frontend-01: parse failure → fallback value"], "code_refs": [], "notes": "Minimax: Core Insight klar formuliert — user prefers old data over nothing" },
+  "links": { "fixes": [], "causes": [], "related": ["sol-db-01", "sol-audio-02", "sol-frontend-01"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

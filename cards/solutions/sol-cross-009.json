@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-009",
+  "type": "solution_proof",
+  "token": "agentic_race_condition_guards",
+  "title": "Agentic Race Condition Guards: React requestIdRef Pattern auf Multi-Agent",
+  "essence": "React UI Race Conditions und Audio State Mismatches haben dieselbe Ursache wie Multi-Agent State Kollisionen. React-style Request ID Refs und State Machine Guards direkt auf Agent-Orchestration anwenden.",
+  "domain": ["frontend", "audio", "ai_governance"],
+  "scope": ["cross_app"],
+  "tags": ["theme:race_condition", "theme:state_management", "theme:agent_workflow"],
+  "impact": { "value": 90, "risk": 15, "confidence": 85 },
+  "status": "proposed",
+  "applies_to": ["Agent Orchestration", "Multi-LLM Systems", "Async Agent Workflows"],
+  "steps": [
+    "requestIdRef Pattern aus sol-ui-01 auf PROOF CORE Executor/Auditor Loop mappen",
+    "State Machine Guards aus sol-audio-01 in Silent Director implementieren",
+    "Overlapping Execution Contexts durch Guard-Checks verhindern",
+    "Explizite Cancellation Tokens für LLM API Calls",
+    "Stale Context Detection: Agent ignoriert Responses auf veraltete Requests"
+  ],
+  "tradeoffs": ["Striktere Concurrency kann parallele Agent-Execution verlangsamen", "Explizite Cancellation Token für alle LLM Calls nötig"],
+  "copy_ready": false,
+  "evidence": { "signals": ["Agents in Loops = React stale closures", "sol-audio-01: refs eliminate abort loops", "sol-ui-01: requestIdRef prevents races"], "code_refs": [], "notes": "Gemini 3.1: React-Pattern auf Agent-Orchestration — niemand sonst hat das gesehen" },
+  "links": { "fixes": [], "causes": [], "related": ["sol-ui-01", "sol-audio-01", "sol-dev-006", "sol-multiagent-001"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

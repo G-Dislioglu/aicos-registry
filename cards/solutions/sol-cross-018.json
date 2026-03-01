@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-018",
+  "type": "solution_proof",
+  "token": "env_diagnosis_escape_hatch",
+  "title": "Environment Diagnosis Escape Hatch: Unified ENV vs Code Failure",
+  "essence": "ENV-Block + Stale Bundle + Native Module Failures teilen dasselbe Muster: Agent kann Code-Fehler nicht von Environment-Fehler unterscheiden. Escape Hatch gibt Environment-Health Verdict bevor Code diagnostiziert wird.",
+  "domain": ["devserver", "frontend", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:env_diagnosis", "theme:escape_hatch", "theme:agent_workflow", "theme:debugging"],
+  "impact": { "value": 85, "risk": 15, "confidence": 88 },
+  "status": "proposed",
+  "applies_to": ["Windsurf Agent Sessions", "Build Pipelines", "Native Module Dependencies"],
+  "steps": [
+    "ENV-CHECK: Probe Command der erfolgreich sein muss (echo test, file write/read)",
+    "TIMEOUT: Wenn Probe > 10s → ENV-BLOCK Verdict, Code-Diagnose überspringen",
+    "ALTERNATIVE VERIFICATION: Exit Code in Datei schreiben, separat lesen",
+    "ESCALATION: > 15 Min ohne Fortschritt → stoppen und User informieren",
+    "RECOVERY: Environment Fix vorschlagen (Terminal restart, Cache leeren, Rebuild)"
+  ],
+  "tradeoffs": ["Overhead bei jedem Task", "False Negatives auf langsamen Environments möglich"],
+  "copy_ready": false,
+  "evidence": { "signals": ["err-api-004: PowerShell kein Output", "err-dev-01: OneDrive Sync Delays", "err-dev-02: Native Module Load Failures"], "code_refs": [], "notes": "GLM5: Alle drei Environment Errors unified — direkt in PROOF CORE v4 integrierbar" },
+  "links": { "fixes": ["err-api-004"], "causes": [], "related": ["sol-dev-006", "sol-dev-01", "sol-dev-02"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

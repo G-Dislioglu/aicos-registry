@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-030",
+  "type": "solution_proof",
+  "token": "solo_dev_focus_framework",
+  "title": "Solo Dev Focus Framework: 4-Gate Cashflow Prioritization",
+  "essence": "Infrastructure Trap Awareness + Cashflow First = systematisches Evaluation Framework. Jeder Task muss 4 Gates passieren bevor Start. Kill Condition: 'maybe later' Ordner für alle Rejected Ideas.",
+  "domain": ["ai_governance", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:solo_dev", "theme:prioritization", "theme:focus", "theme:cashflow"],
+  "impact": { "value": 92, "risk": 10, "confidence": 90 },
+  "status": "proposed",
+  "applies_to": ["Solo Developer mit Familie und begrenztem Budget", "Vor jeder neuen Projekt-Idee"],
+  "steps": [
+    "Gate 1: Direct Revenue Test — generiert das in 2 Wochen Revenue?",
+    "Gate 2: Strategic Fit Test — aligned mit aktuellem monetisierbarem App?",
+    "Gate 3: Complexity Budget — einfachster Weg zum Wert?",
+    "Gate 4: Opportunity Cost — welcher monetisierbare Task wird NICHT gemacht?",
+    "Kill Condition: 'maybe later' Ordner für abgelehnte Ideen"
+  ],
+  "tradeoffs": ["Interessante Ideen werden verzögert", "Kurzfristiger Fokus kann strategische Chancen verpassen"],
+  "copy_ready": false,
+  "evidence": { "signals": ["err-arch-001: infrastructure trap kills projects", "sol-arch-004: cashflow first ensures survival"], "code_refs": [], "notes": "Kimi: 4-Gate Framework — konkreteste Solo-Dev Regel aller Modelle" },
+  "links": { "fixes": ["err-arch-001"], "causes": [], "related": ["err-arch-001", "sol-arch-004"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

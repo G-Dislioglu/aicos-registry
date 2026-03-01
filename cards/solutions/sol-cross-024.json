@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-024",
+  "type": "solution_proof",
+  "token": "orchestration_over_collaboration",
+  "title": "Orchestration über direkte Kollaboration: Silent Director Prinzip universal",
+  "essence": "Silent Director + Unified Provider Routing teilen denselben Insight: direkte Peer-zu-Peer Kollaboration ist chaotisch. Zentraler Orchestrator ist effizienter — 80% des Nutzens bei 30% der Komplexität.",
+  "domain": ["ai_governance", "api", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:multi_agent", "theme:orchestration", "theme:cost_efficiency", "theme:provider_routing"],
+  "impact": { "value": 84, "risk": 20, "confidence": 85 },
+  "status": "proposed",
+  "applies_to": ["Multi-LLM Systeme", "Multi-Provider APIs", "Multi-Agent Architekturen"],
+  "steps": [
+    "Zentraler Orchestrator (Maya / Provider Router) trifft Routing-Entscheidungen",
+    "Jeder Provider/Agent bekommt spezifische, gezielte Requests (kein Free-Form)",
+    "Orchestrator synthetisiert Responses statt Peers debattieren zu lassen",
+    "User sieht finale Synthese, nicht interne Deliberation",
+    "Free LLM-to-LLM produziert: Repetition, Off-Topic, Agreement-Seeking"
+  ],
+  "tradeoffs": ["Weniger 'Live-Gefühl' als echte Kollaboration", "Orchestrator-Qualität ist Flaschenhals"],
+  "copy_ready": false,
+  "evidence": { "signals": ["sol-multiagent-001: Silent Director 85% vs Talk-Show 65%", "sol-api-02: centralized provider config", "sol-arch-001: Bluepilot als orchestrierte Agents"], "code_refs": [], "notes": "Minimax: 80/30 Regel klar formuliert" },
+  "links": { "fixes": [], "causes": [], "related": ["sol-multiagent-001", "sol-api-02", "sol-arch-001"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

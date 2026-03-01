@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-040",
+  "type": "solution_proof",
+  "token": "sol_model_selection",
+  "title": "Modell-Selektion nach Task-Typ: Empirisches Ranking aus Arena-Test",
+  "essence": "Arena-Test mit 7 Modellen für Crossing-Aufgaben zeigt: Qualität korreliert nicht mit Preis. Gemini 3.1 Low und GLM5 dominieren, SWE-1.5 und Grok Fast sind für konzeptuelle Arbeit ungeeignet.",
+  "domain": ["ai_governance", "devserver", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:model_selection", "theme:cost_efficiency", "theme:ai_benchmarking"],
+  "impact": { "value": 90, "risk": 5, "confidence": 88 },
+  "status": "active",
+  "applies_to": ["Crossing-Aufgaben", "Knowledge Synthesis", "Konzeptuelle Arbeit", "Code-Aufgaben"],
+  "steps": [
+    "CROSSING: Gemini 3.1 Low > GLM5 > Minimax 2.5 > GPT-4.1 > Kimi K2",
+    "CODING: SWE-1.5 > GPT-5.3 Codex > Claude Sonnet",
+    "COMMIT/MECHANICAL: SWE-1.5 Fast (günstigste Option)",
+    "REVIEW/FILTER: Claude (hier im Chat, kostenlos für Synthesis)",
+    "NIE für Crossing: SWE-1.5, Grok Fast, GPT-5.2 High Thinking (teuerste, schlechteste)"
+  ],
+  "tradeoffs": ["Ranking kann sich mit neuen Modell-Versionen ändern", "Task-spezifische Varianz möglich"],
+  "copy_ready": true,
+  "evidence": { "signals": ["Gemini 3.1 Low: 91/100, 5 Cards alle top", "GLM5: 93/100, 13 Cards mit 95% Trefferquote", "GPT-5.2 High Thinking: 65/100, teuerste schlechteste Option"], "code_refs": [], "notes": "Aus heutigem Arena-Test entstanden — regelmäßig wiederholen wenn neue Modelle verfügbar" },
+  "links": { "fixes": [], "causes": [], "related": ["sol-dev-004", "sol-dev-006"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-02", "updated_at": "2026-03-02" }
+}

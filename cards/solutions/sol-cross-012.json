@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-012",
+  "type": "solution_proof",
+  "token": "over_engineering_early_warning",
+  "title": "Over-Engineering Early Warning: 7-Tage Shippable Feature Gate",
+  "essence": "Trading Complexity Trap + Infrastructure-for-Infrastructure + Indicator Complexity haben dieselbe Wurzel. Early Warning mit harten Zeitmetriken: >7 Tage ohne shippbares Feature = Warning, >14 Tage = Mandatory Pivot.",
+  "domain": ["trading", "ai_governance", "devserver", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:anti_over_engineering", "theme:focus", "theme:complexity_budget", "theme:shipping"],
+  "impact": { "value": 90, "risk": 10, "confidence": 92 },
+  "status": "proposed",
+  "applies_to": ["Solo-Developer Projekte", "Startup-Phasen", "Jedes Projekt mit Komplexitätsrisiko"],
+  "steps": [
+    "Complexity Budget: max 3 Abstraktionsebenen von User-facing Feature",
+    "Value Test: 'Würde User dafür zahlen?' — wenn nein, stopp",
+    "Time-to-Value Metric: Tage seit letztem shipbarem Feature tracken",
+    "Warning Threshold: >7 Tage ohne User-sichtbaren Fortschritt → Review",
+    "Kill Decision: >14 Tage → Mandatory Pivot zu Core Feature"
+  ],
+  "tradeoffs": ["Kann vielversprechende Langzeit-Projekte abwürgen", "Erfordert ehrliche Selbsteinschätzung"],
+  "copy_ready": false,
+  "evidence": { "signals": ["err-arch-001: SpecBridge Anti-Pattern", "err-trading-001: Indicator Complexity Trap", "err-dev-003: Prompt zu lang verlangsamt Agent"], "code_refs": [], "notes": "GLM5: Konkrete Zeitmetriken — bisher einziges Modell mit harten Zahlen" },
+  "links": { "fixes": ["err-arch-001", "err-trading-001"], "causes": [], "related": ["sol-arch-004", "sol-trading-001", "sol-dev-006"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

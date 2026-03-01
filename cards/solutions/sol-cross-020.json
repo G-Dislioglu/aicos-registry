@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-020",
+  "type": "solution_proof",
+  "token": "ref_based_state_machine_guard",
+  "title": "Ref-Based State Machine Guards: React State vs Refs Grundprinzip",
+  "essence": "Speech State Machine und Async Race Condition lösen dasselbe Core-Problem: Stale Closures in async React. Core Insight: React State ist async-safe nur für Rendering — Refs sind für Control Flow.",
+  "domain": ["audio", "frontend", "devserver"],
+  "scope": ["cross_app"],
+  "tags": ["tech:react", "theme:state_machine", "theme:guards", "theme:async_stability"],
+  "impact": { "value": 88, "risk": 20, "confidence": 85 },
+  "status": "proposed",
+  "applies_to": ["Alle kontinuierlichen async Operationen in React", "Speech Recognition", "WebSocket Handler", "Polling Mechanisms"],
+  "steps": [
+    "Refs (nicht State) für Control Flags die sich häufig ändern",
+    "State Machine mit definierten States: idle → running → stopping → idle",
+    "Guards: safeStart() prüft ob bereits running bevor Start",
+    "stop() als Primary, abort() nur als Emergency Brake",
+    "Restart Delay + Throttle um Cascade Restarts zu verhindern"
+  ],
+  "tradeoffs": ["Mehr Boilerplate als simples useState", "State Machine Design erfordert Sorgfalt"],
+  "copy_ready": false,
+  "evidence": { "signals": ["sol-audio-01: runningRef/shouldRunRef", "sol-ui-01: requestIdRef", "sol-ws-01: abort controllers"], "code_refs": [], "notes": "Minimax: Core Insight klar formuliert — React state für Rendering, refs für Control Flow" },
+  "links": { "fixes": [], "causes": ["err-audio-01", "err-ui-01"], "related": ["sol-audio-01", "sol-ui-01", "sol-ws-01"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

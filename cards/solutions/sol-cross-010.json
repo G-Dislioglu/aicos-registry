@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-010",
+  "type": "solution_proof",
+  "token": "assumption_bound_parsing",
+  "title": "Assumption-Bound Schema Parsing: Assumption Registry → JSON Validation",
+  "essence": "JSON Parsing Errors von LLM-Responses sind stille Assumption-Failures. Assumption Registry direkt an JSON Validation Layer binden fängt Provider-Drift und Format-Änderungen bevor sie als Frontend-Crashes erscheinen.",
+  "domain": ["frontend", "api", "meta_cognition"],
+  "scope": ["cross_app"],
+  "tags": ["theme:parsing", "theme:assumptions", "theme:anti_hallucination", "theme:provider_drift"],
+  "impact": { "value": 85, "risk": 15, "confidence": 90 },
+  "status": "proposed",
+  "applies_to": ["LLM Response Handling", "API Integration", "Data Validation Layers"],
+  "steps": [
+    "Erwartete Schemas aus Assumption Registry extrahieren (sol-maya-005)",
+    "Diese Expectations in Safe JSON Parsing Validation Layer einspeisen",
+    "Bei Parse-Failure: exakte verletzte Assumption identifizieren",
+    "Automatisch Provider Routing Fallback triggern (sol-api-02)",
+    "Assumption-Violation loggen für spätere Registry-Aktualisierung"
+  ],
+  "tradeoffs": ["Tightere Kopplung zwischen Meta-Cognition und Low-Level Utilities", "Performance-Overhead bei großen Payloads"],
+  "copy_ready": false,
+  "evidence": { "signals": ["err-frontend-01: unsafe parsing crashes apps", "err-api-02: provider format changes break parsing"], "code_refs": [], "notes": "Gemini 3.1: sol-maya-005 + sol-frontend-01 + sol-api-02" },
+  "links": { "fixes": ["err-frontend-01"], "causes": [], "related": ["sol-maya-005", "sol-frontend-01", "sol-api-02"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

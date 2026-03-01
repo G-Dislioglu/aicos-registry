@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-026",
+  "type": "solution_proof",
+  "token": "marketplace_trust_quality_gates",
+  "title": "Marketplace Trust durch Audit + Quality Gates: Verify Before Trust",
+  "essence": "Agent Audit + PROOF CORE Split-Role + Safe JSON Parsing teilen ein Quality Control Pattern: verify before trusting, audit before deployment. Core Principle: Don't trust what you didn't verify.",
+  "domain": ["ai_governance", "devserver", "frontend", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:quality_control", "theme:trust", "theme:audit", "theme:verification"],
+  "impact": { "value": 88, "risk": 20, "confidence": 85 },
+  "status": "proposed",
+  "applies_to": ["Agent Marketplaces", "Code Deployment", "API Response Handling", "Untrusted Input"],
+  "steps": [
+    "Audit vor Marketplace: Kompetenz 30%, Ethik 25%, Konsistenz 20%, Kommunikation 15%, Spezialisierung 10%",
+    "Score Tiers: Bronze 60-74%, Silver 75-84%, Gold 85-94%, Platinum 95-100%",
+    "Vor Deployment: Adversarial Audit (Executor + Auditor Split-Role)",
+    "Vor Parsing: Struktur validieren, try/catch wrapper",
+    "Re-Audit nach Optimierung möglich"
+  ],
+  "tradeoffs": ["Barrier to Entry für Creators", "Audit System muss selbst qualitätskontrolliert sein"],
+  "copy_ready": false,
+  "evidence": { "signals": ["sol-arch-002: mandatory audit", "sol-dev-006: split-role", "sol-frontend-01: try/catch validation"], "code_refs": [], "notes": "Minimax: Core Principle — don't trust what you didn't verify" },
+  "links": { "fixes": [], "causes": [], "related": ["sol-arch-002", "sol-dev-006", "sol-frontend-01"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

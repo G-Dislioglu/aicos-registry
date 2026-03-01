@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-019",
+  "type": "solution_proof",
+  "token": "universal_fallback_chain",
+  "title": "Universal Fallback Chain: N-1 Fallback, niemals silent fail to zero",
+  "essence": "TTS Fallback + Provider Routing + Memory Fallback + Native Module Fallback teilen dasselbe 3-Layer Prinzip: Primary → Secondary → Cache/Synthetic. Niemals null zurückgeben ohne User-Notification.",
+  "domain": ["audio", "api", "db", "devserver", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:resilience", "theme:fallback", "theme:graceful_degradation"],
+  "impact": { "value": 92, "risk": 15, "confidence": 88 },
+  "status": "proposed",
+  "applies_to": ["Alle externen Dependencies", "Multi-Provider Systeme", "Critical Path Features"],
+  "steps": [
+    "Alle externen Dependencies identifizieren",
+    "Für jede Dependency: mindestens 2 Fallback-Alternativen definieren",
+    "Fallback Chain: Primary → Secondary → Cache/Synthetic → User Feedback",
+    "Niemals null/undefined ohne User-Notification zurückgeben",
+    "Jeden Fallback-Transition loggen für Debugging"
+  ],
+  "tradeoffs": ["Erhöhte Latenz durch mehrere Fallback-Versuche", "Höhere Komplexität im Error Handling"],
+  "copy_ready": false,
+  "evidence": { "signals": ["sol-audio-02: TTS Gemini → OpenAI → cache", "sol-api-02: unified provider routing", "sol-db-01: DB → localStorage", "sol-dev-02: native → fallback calculation"], "code_refs": [], "notes": "Minimax: Beste Formulierung des universellen Fallback-Prinzips" },
+  "links": { "fixes": [], "causes": [], "related": ["sol-audio-02", "sol-api-02", "sol-db-01", "sol-dev-02"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

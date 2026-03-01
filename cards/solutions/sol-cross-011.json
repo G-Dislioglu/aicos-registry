@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-011",
+  "type": "solution_proof",
+  "token": "mirror_lineage_overlay",
+  "title": "Mirror + Claim Lineage: Transparente AI Reasoning mit Immutable Audit",
+  "essence": "Real-time Mirror Overlay + immutable Claim Lineage Registry = vollständig transparente, auditierbare AI Reasoning Chains. Jeder Reasoning-Step ist live sichtbar UND dauerhaft rückverfolgbar.",
+  "domain": ["ai_governance", "meta_cognition"],
+  "scope": ["cross_app"],
+  "tags": ["theme:calibration", "theme:anti_hallucination", "theme:provenance", "theme:debuggability"],
+  "impact": { "value": 90, "risk": 10, "confidence": 92 },
+  "status": "proposed",
+  "applies_to": ["AI Agents in Regulatory Environments", "Debug-intensive AI Systems", "Trust-critical Applications"],
+  "steps": [
+    "Mirror Overlay für Real-time Reasoning und Confidence Scores implementieren",
+    "Jeden Reasoning-Step in immutable Claim Lineage Registry aufzeichnen",
+    "Backward-Tracing vom Outcome bis zu initialen Inputs ermöglichen",
+    "Audit Trail via Developer/Debug Interface exposieren",
+    "User sieht vereinfachte Version, Developer sieht vollständige Lineage"
+  ],
+  "tradeoffs": ["Erhöhter Storage und Compute Overhead", "Potentielle Information Overload für User"],
+  "copy_ready": false,
+  "evidence": { "signals": ["Full traceability of reasoning", "Rapid debugging of AI errors", "Increased user trust"], "code_refs": [], "notes": "GPT-4.1: sol-maya-001 + sol-maya-002 kombiniert" },
+  "links": { "fixes": [], "causes": [], "related": ["sol-maya-001", "sol-maya-002"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

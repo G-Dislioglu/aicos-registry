@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-021",
+  "type": "solution_proof",
+  "token": "fail_fast_with_escape_hatch",
+  "title": "Fail-Fast Gates mit Escape Hatch: Code vs Environment unterscheiden",
+  "essence": "StepStack Fail-Fast Gates + Regime-Exit Conditions teilen dasselbe Muster: Kill Conditions upfront definieren, Escape Hatch wenn Environment scheitert, niemals endlos loopen.",
+  "domain": ["devserver", "ai_governance", "meta_cognition"],
+  "scope": ["cross_app"],
+  "tags": ["theme:fail_fast", "theme:cost_control", "theme:anti_loop", "theme:escape_hatch"],
+  "impact": { "value": 90, "risk": 18, "confidence": 88 },
+  "status": "proposed",
+  "applies_to": ["Agent Workflows", "Build/CI Pipelines", "Multi-step Processes"],
+  "steps": [
+    "Harte Kill Conditions mit spezifischen Zahlen VOR Start definieren",
+    "Escape Hatch implementieren: wenn Environment blockiert aber Code OK ist, graceful exit",
+    "Niemals denselben Befehl >3x ohne Diagnose wiederholen",
+    "Zeit-Budget: >15 Min ohne Fortschritt → eskalieren/escapen",
+    "Soft-Fail bewahrt Teilfortschritt, Hard-Fail nur bei kritischen Problemen"
+  ],
+  "tradeoffs": ["Kill Conditions anfangs schlecht kalibriert", "Escape Hatches erhöhen Komplexität"],
+  "copy_ready": false,
+  "evidence": { "signals": ["sol-dev-005: latency >4s kills, cost >€0.02 kills", "sol-maya-003: regime-exit mit timeout", "err-api-004: ENV-block escape"], "code_refs": [], "notes": "Minimax: Unterscheidung Code-Failure vs Environment-Failure als Kern-Insight" },
+  "links": { "fixes": [], "causes": ["err-api-004", "err-dev-003"], "related": ["sol-dev-005", "sol-maya-003", "sol-dev-006"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-014",
+  "type": "solution_proof",
+  "token": "agent_self_correction_protocol",
+  "title": "Agent Self-Correction Protocol: Split-Role + Assumption + Regime Exit",
+  "essence": "Split-Role Executor/Auditor + Assumption Registry + Regime Exit ermöglichen autonome Selbstkorrektur: Agent erkennt Probleme, hinterfragt Annahmen, verlässt defekte Regimes eigenständig.",
+  "domain": ["ai_governance", "meta_cognition", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:self_correction", "theme:quality_control", "theme:anti_loop", "theme:autonomy"],
+  "impact": { "value": 91, "risk": 20, "confidence": 85 },
+  "status": "proposed",
+  "applies_to": ["Autonome Coding Agents", "Self-improving AI Systems", "Long-running AI Tasks"],
+  "steps": [
+    "EXECUTE: Agent führt Task als Executor aus",
+    "AUDIT: Selber Agent wechselt zu Auditor-Rolle, hinterfragt eigene Arbeit",
+    "ASSUMPTION CHECK: Gegen Assumption Registry prüfen — Prämissen noch valide?",
+    "REGIME CHECK: Ist Agent in Loop? Zeit für Regime Exit?",
+    "CORRECT: Bei jedem fehlgeschlagenem Check → Korrekturplan generieren und neu starten"
+  ],
+  "tradeoffs": ["Langsamere Execution durch Self-Audit", "Kann valide Arbeit over-correten"],
+  "copy_ready": false,
+  "evidence": { "signals": ["sol-dev-006: split-role technique", "sol-maya-005: assumption registry", "sol-maya-003: regime exit"], "code_refs": [], "notes": "GLM5: Stärkster dreiteiliger Crossing des gesamten Tests" },
+  "links": { "fixes": [], "causes": [], "related": ["sol-dev-006", "sol-maya-005", "sol-maya-003"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

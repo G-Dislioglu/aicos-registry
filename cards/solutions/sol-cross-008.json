@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-008",
+  "type": "solution_proof",
+  "token": "visual_tdd_agent_loop",
+  "title": "Visual TDD for Agents: HTML Demo als automatischer DOM-Test-Guard",
+  "essence": "HTML Demo-First + Maya Sight DOM-Introspection + StepStack Fail-Fast bilden einen automatischen visuellen Test-Loop: Agent nutzt HTML-Mockup als Invariante und schlägt fehl wenn React-DOM abweicht.",
+  "domain": ["frontend", "meta_cognition", "devserver"],
+  "scope": ["cross_app"],
+  "tags": ["theme:ux_guard", "theme:fail_fast", "theme:automation", "theme:tdd"],
+  "impact": { "value": 95, "risk": 30, "confidence": 80 },
+  "status": "proposed",
+  "applies_to": ["Frontend Agent Workflows", "UI-intensive Features", "Regression Prevention"],
+  "steps": [
+    "HTML Demo als Baseline erstellen (sol-ux-002)",
+    "Maya Sight DOM-Introspection als Verification Gate integrieren",
+    "StepStack Fail-Fast triggern wenn React-Output von HTML-Baseline abweicht",
+    "DOM-Snapshot vor und nach Implementierung vergleichen",
+    "Abweichung > Schwellenwert → automatischer Fail, kein manuelles Review nötig"
+  ],
+  "tradeoffs": ["Strict DOM-Matching kann kleine valide Verbesserungen ablehnen", "Robuste DOM-Snapshot-Mechanismen erforderlich"],
+  "copy_ready": false,
+  "evidence": { "signals": ["Agents halluzinieren UI-Layouts", "err-dev-002: overlay blocks everything"], "code_refs": [], "notes": "Gemini 3.1: Kombination sol-ux-001 + sol-ux-002 + sol-dev-005" },
+  "links": { "fixes": ["err-dev-002"], "causes": [], "related": ["sol-ux-001", "sol-ux-002", "sol-dev-005"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}
