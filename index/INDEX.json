@@ -1,0 +1,7 @@
+[
+  { "id": "err-dev-01", "type": "error_pattern", "token": "vite_onedrive_stale_bundle", "title": "Vite zeigt alten Code", "domain": ["devserver","frontend"], "tags": ["tech:vite","env:onedrive","risk:stale_assets"], "status": "active", "fixes": ["sol-dev-01"] },
+  { "id": "err-audio-01", "type": "error_pattern", "token": "speech_abort_loop_stale_closure", "title": "SpeechRecognition Abort-Loop", "domain": ["audio","frontend"], "tags": ["tech:web_speech_api","tech:react","risk:race_condition"], "status": "active", "fixes": ["sol-audio-01"] },
+  { "id": "err-api-01", "type": "error_pattern", "token": "openai_gpt5_max_tokens_mismatch", "title": "GPT-5 max_tokens abgelehnt", "domain": ["api"], "tags": ["tech:openai","theme:provider_compat","risk:runtime_error"], "status": "active", "fixes": ["sol-api-01"] },
+  { "id": "sol-dev-01", "type": "solution_proof", "token": "vite_use_polling_onedrive", "title": "Vite Polling + Cache Reset", "domain": ["devserver","frontend"], "tags": ["tech:vite","env:onedrive","theme:cache"], "status": "active", "copy_ready": true },
+  { "id": "sol-audio-01", "type": "solution_proof", "token": "speech_state_machine_ref_guards", "title": "Speech State Machine Refs + Guards", "domain": ["audio","frontend"], "tags": ["tech:web_speech_api","tech:react","theme:guards"], "status": "active", "copy_ready": true }
+]

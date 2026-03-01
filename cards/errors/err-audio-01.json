@@ -1,0 +1,21 @@
+{
+  "id": "err-audio-01",
+  "type": "error_pattern",
+  "token": "speech_abort_loop_stale_closure",
+  "title": "SpeechRecognition Abort-Loop durch Race-Condition / stale closure",
+  "essence": "start→aborted→onend→restart→start Endlosschleife, besonders bei continuous Workarounds.",
+  "domain": ["audio", "frontend"],
+  "scope": ["soulmatch", "cross_app"],
+  "tags": ["tech:web_speech_api", "tech:react", "risk:race_condition", "theme:state_machine"],
+  "impact": { "value": 92, "risk": 75, "confidence": 80 },
+  "status": "active",
+  "symptoms": ["Logs: start / aborted / onend / restart wiederholt", "Mikro restarted ohne Ende; keine stabilen Transkripte"],
+  "repro_steps": ["Continuous listening aktiv", "stop/abort kombiniert oder doppelte start() Aufrufe", "onend triggert restart ohne Guards"],
+  "root_cause": "Ungesicherte Restart-Logik + stale state in Closures; abort() feuert Events die Restart-Kaskaden triggern.",
+  "do_not_do": ["recognition.abort() als Standard-Stop verwenden", "onend restart ohne Guard/Delay"],
+  "guardrails": ["State Machine mit Refs (running/shouldRun)", "safeStart() mit Guard + Throttle + Delay", "stop() bevorzugen; abort nur als Notbremse"],
+  "prevent_tests": ["Start/Stop 10x hintereinander ohne Loop", "onend darf nicht mehr als 1 Restart pro Sekunde auslösen"],
+  "evidence": { "signals": ["Abort-Loop in Logs"], "code_refs": ["client/src/hooks/useSpeechToText.ts"], "notes": "Explizit in Soulmatch LiveTalk Debug aufgetreten." },
+  "links": { "fixes": ["sol-audio-01"], "causes": [], "related": [], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

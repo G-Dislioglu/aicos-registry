@@ -1,0 +1,20 @@
+{
+  "id": "sol-dev-01",
+  "type": "solution_proof",
+  "token": "vite_use_polling_onedrive",
+  "title": "Vite Watch Polling aktivieren + Cache/SW bereinigen",
+  "essence": "Polling ersetzt Filewatch; plus harte Cache-Bereinigung verhindert stale Assets.",
+  "domain": ["devserver", "frontend"],
+  "scope": ["soulmatch", "cross_app"],
+  "tags": ["tech:vite", "env:onedrive", "theme:cache"],
+  "impact": { "value": 90, "risk": 20, "confidence": 80 },
+  "status": "active",
+  "applies_to": ["env:onedrive", "symptom:stale_bundle"],
+  "steps": ["vite.config: server.watch.usePolling=true (+ interval)", "Dev-Server neu starten", "Browser: hard refresh; ggf. Site Data löschen", "Falls PWA/SW: unregister + clear storage"],
+  "tradeoffs": ["Polling kann CPU-Last erhöhen (dev only)."],
+  "rollback": ["Polling wieder entfernen wenn Projekt nicht mehr unter OneDrive liegt."],
+  "copy_ready": true,
+  "evidence": { "signals": ["neue Logs erscheinen nach Hard Refresh + Polling"], "code_refs": ["client/vite.config.*"], "notes": "Empfohlen als Sofort-Fix in Soulmatch." },
+  "links": { "fixes": [], "causes": ["err-dev-01"], "related": [], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

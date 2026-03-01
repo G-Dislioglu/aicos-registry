@@ -1,0 +1,21 @@
+{
+  "id": "err-api-01",
+  "type": "error_pattern",
+  "token": "openai_gpt5_max_tokens_mismatch",
+  "title": "OpenAI GPT-5: max_tokens abgelehnt (max_completion_tokens erforderlich)",
+  "essence": "Bei GPT-5 wird max_tokens abgelehnt; in Multi-Provider-Routing führt das zu inkonsistenten Parametern.",
+  "domain": ["api"],
+  "scope": ["soulmatch", "cross_app"],
+  "tags": ["tech:openai", "theme:provider_compat", "risk:runtime_error"],
+  "impact": { "value": 88, "risk": 60, "confidence": 70 },
+  "status": "active",
+  "symptoms": ["API Error: Unsupported parameter max_tokens ... use max_completion_tokens"],
+  "repro_steps": ["OpenAI GPT-5 call mit max_tokens", "Provider-Mix: xAI/DeepSeek akzeptieren max_tokens"],
+  "root_cause": "Provider-inkompatible Request-Parameter in einem gemeinsamen Request-Builder.",
+  "do_not_do": ["Einheitliche Param-Namen ohne Provider-Mapping"],
+  "guardrails": ["Provider-spezifisches Param-Mapping Layer", "Contract-Test: jede Persona-Provider-Kombi einmal probe-callen"],
+  "prevent_tests": ["Probe: OpenAI call success + xAI/DeepSeek call success mit jeweils korrekten Token-Feldern"],
+  "evidence": { "signals": ["Fehlertext im Log"], "code_refs": ["server request builder / persona router"], "notes": "Explizit in Soulmatch GPT-5 Integration aufgetreten." },
+  "links": { "fixes": ["sol-api-01"], "causes": [], "related": [], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

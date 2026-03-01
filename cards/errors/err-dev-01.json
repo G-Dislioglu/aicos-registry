@@ -1,0 +1,21 @@
+{
+  "id": "err-dev-01",
+  "type": "error_pattern",
+  "token": "vite_onedrive_stale_bundle",
+  "title": "Vite zeigt alten Code (OneDrive/Watch verliert Änderungen)",
+  "essence": "Dev-Server liefert alte Bundles; Logs/Verhalten passen nicht zum aktuellen Code.",
+  "domain": ["devserver", "frontend"],
+  "scope": ["soulmatch", "cross_app"],
+  "tags": ["tech:vite", "env:onedrive", "risk:stale_assets"],
+  "impact": { "value": 85, "risk": 70, "confidence": 85 },
+  "status": "active",
+  "symptoms": ["UI/Logs entsprechen altem Code", "Fixes scheinen nicht zu wirken obwohl gepusht"],
+  "repro_steps": ["Projekt unter OneDrive-Pfad", "Code ändern speichern", "Browser zeigt unverändertes Verhalten"],
+  "root_cause": "File watching verliert Events auf OneDrive/Sync-Pfaden; Cache liefert alte Assets.",
+  "do_not_do": ["Nicht weiter am Code drehen bevor HMR/Cache ausgeschlossen ist"],
+  "guardrails": ["Vite polling aktivieren", "Hard refresh; Site data löschen; Service Worker prüfen"],
+  "prevent_tests": ["Nach Änderung muss ein neuer Logstring sichtbar werden"],
+  "evidence": { "signals": ["alte Logzeilen trotz neuem Commit"], "code_refs": ["client/vite.config.*"], "notes": "Bekannt aus Soulmatch Dev-Flow mit OneDrive." },
+  "links": { "fixes": ["sol-dev-01"], "causes": [], "related": [], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

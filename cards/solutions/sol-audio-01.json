@@ -1,0 +1,20 @@
+{
+  "id": "sol-audio-01",
+  "type": "solution_proof",
+  "token": "speech_state_machine_ref_guards",
+  "title": "Speech State Machine: Refs + Guards + stop() + Restart-Delay",
+  "essence": "Stabilisiert continuous speech: keine stale closures, kein Abort-Loop, kontrollierte Restarts.",
+  "domain": ["audio", "frontend"],
+  "scope": ["soulmatch", "cross_app"],
+  "tags": ["tech:web_speech_api", "tech:react", "theme:guards", "theme:cooldown"],
+  "impact": { "value": 95, "risk": 25, "confidence": 75 },
+  "status": "active",
+  "applies_to": ["err-audio-01", "risk:race_condition"],
+  "steps": ["runningRef/shouldRunRef statt React state für Control Flags", "stop() als Standard; abort vermeiden", "safeStart() Guard: wenn runningRef true → return", "Restart Delay 250–1000ms + Throttle", "Optional: einmal getUserMedia() nur für Permission Prompt dann Tracks stoppen"],
+  "tradeoffs": ["Etwas mehr Code/Komplexität, aber massiv stabiler."],
+  "rollback": ["Fallback auf push-to-talk statt full continuous falls Browser zickt."],
+  "copy_ready": true,
+  "evidence": { "signals": ["Loop stoppt; Logs werden stabil"], "code_refs": ["client/src/hooks/useSpeechToText.ts"], "notes": "Als richtige Fix-Richtung in Soulmatch diskutiert." },
+  "links": { "fixes": [], "causes": ["err-audio-01"], "related": [], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}
