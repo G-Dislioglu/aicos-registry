@@ -1,0 +1,38 @@
+{
+  "id": "sol-astro-01",
+  "type": "solution_proof",
+  "token": "timeout_protected_calculations",
+  "title": "Timeout-Protected Astrology Calculations",
+  "essence": "Swiss Ephemeris calls wrapped with Promise.race and timeout protection",
+  "domain": ["api"],
+  "scope": ["soulmatch"],
+  "tags": ["tech:astrology", "theme:timeout"],
+  "impact": { "value": 50, "risk": 10, "confidence": 85 },
+  "status": "active",
+  "applies_to": ["err-astro-01"],
+  "steps": [
+    "Wrap all Swiss Ephemeris calls in Promise.race with timeout",
+    "Implement 5-second timeout for native calculations",
+    "Add proper error handling for timeout scenarios",
+    "Provide fallback calculations when timeout occurs",
+    "Monitor calculation performance and timeouts"
+  ],
+  "tradeoffs": [
+    "Potential for false timeouts on slow calculations",
+    "Additional complexity in calculation wrapper",
+    "May lose some calculation accuracy with fallbacks"
+  ],
+  "rollback": [
+    "Remove timeout protection from native calls",
+    "Allow calculations to run indefinitely",
+    "Skip fallback logic on timeout"
+  ],
+  "copy_ready": true,
+  "evidence": { 
+    "signals": ["No hanging requests", "Consistent response times", "Graceful fallback on timeout"],
+    "code_refs": ["server/src/routes/astro.ts:359-393", "server/src/routes/astro.ts:387-391"],
+    "notes": "Prevents server blocking and maintains responsiveness during calculations"
+  },
+  "links": { "fixes": ["err-astro-01"], "causes": [], "related": ["sol-dev-02"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

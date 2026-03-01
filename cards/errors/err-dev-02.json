@@ -1,0 +1,48 @@
+{
+  "id": "err-dev-02",
+  "type": "error_pattern",
+  "token": "swiss_ephemeris_compatibility",
+  "title": "Swiss Ephemeris Native Module Compatibility",
+  "essence": "Native Swiss Ephemeris module fails to load on certain platforms/deployments",
+  "domain": ["devserver"],
+  "scope": ["soulmatch"],
+  "tags": ["tech:native_module", "risk:medium", "theme:deployment"],
+  "impact": { "value": 55, "risk": 60, "confidence": 90 },
+  "status": "active",
+  "symptoms": [
+    "Astrology calculations fail with module load errors",
+    "Server crashes on startup in production",
+    "Platform-specific binary compatibility issues"
+  ],
+  "repro_steps": [
+    "Deploy to different platform (e.g., Render vs local)",
+    "Try to access astrology endpoints",
+    "Check server logs for sweph load failures",
+    "Verify Swiss Ephemeris probe results"
+  ],
+  "root_cause": "Swiss Ephemeris native module has platform-specific binaries that may not be available or compatible in all deployment environments",
+  "do_not_do": [
+    "Assume native modules work across platforms",
+    "Deploy without testing native module compatibility",
+    "Ignore module load failures in production"
+  ],
+  "guardrails": [
+    "Implement graceful fallback for missing modules",
+    "Add platform detection and compatibility checks",
+    "Provide alternative calculation methods",
+    "Monitor module availability in production"
+  ],
+  "prevent_tests": [
+    "Test on all target deployment platforms",
+    "Verify fallback behavior when module unavailable",
+    "Test with missing native dependencies",
+    "Check error handling for module failures"
+  ],
+  "evidence": { 
+    "signals": ["Module load failures", "Swiss Ephemeris unavailable errors", "Platform-specific crashes"],
+    "code_refs": ["server/src/lib/swissEphemerisProbe.ts:23-41", "server/src/routes/astro.ts:308-312", "server/src/routes/astro.ts:590-607"],
+    "notes": "Deployment critical - affects core astrology functionality"
+  },
+  "links": { "fixes": ["sol-dev-02"], "causes": [], "related": ["err-dev-01"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

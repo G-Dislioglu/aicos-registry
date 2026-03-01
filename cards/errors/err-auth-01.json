@@ -1,0 +1,49 @@
+{
+  "id": "err-auth-01",
+  "type": "error_pattern",
+  "token": "api_key_exposure_risk",
+  "title": "Client API Key Exposure in Provider Calls",
+  "essence": "API keys passed through client requests can be exposed in logs and error messages",
+  "domain": ["auth"],
+  "scope": ["soulmatch"],
+  "tags": ["tech:security", "risk:high", "theme:api_keys"],
+  "impact": { "value": 90, "risk": 95, "confidence": 80 },
+  "status": "active",
+  "symptoms": [
+    "API keys visible in browser network requests",
+    "Keys appearing in error responses",
+    "Potential key leakage through logs"
+  ],
+  "repro_steps": [
+    "Use client-side API key configuration",
+    "Trigger an API error condition",
+    "Inspect network request/response in browser dev tools",
+    "Check server logs for key exposure"
+  ],
+  "root_cause": "Client API keys are passed through request chain and may be logged or exposed in error responses without proper sanitization",
+  "do_not_do": [
+    "Log raw API keys from client requests",
+    "Include keys in error responses",
+    "Store client keys in browser localStorage",
+    "Pass keys through multiple service layers"
+  ],
+  "guardrails": [
+    "Sanitize API keys in all logging",
+    "Never include keys in error responses",
+    "Use server-side key management when possible",
+    "Implement key validation and masking"
+  ],
+  "prevent_tests": [
+    "Test error responses with client API keys",
+    "Verify key masking in logs",
+    "Check network request payloads",
+    "Test key validation endpoints"
+  ],
+  "evidence": { 
+    "signals": ["API keys in network tab", "Keys in error JSON responses", "Unsanitized key logs"],
+    "code_refs": ["server/src/lib/providers.ts:34-35", "server/src/lib/providers.ts:82-83", "server/src/lib/deepModeHandler.ts:29"],
+    "notes": "Critical security issue - API keys should never be exposed to clients"
+  },
+  "links": { "fixes": ["sol-auth-01"], "causes": [], "related": ["err-api-02"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

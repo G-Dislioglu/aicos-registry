@@ -1,0 +1,38 @@
+{
+  "id": "sol-audio-02",
+  "type": "solution_proof",
+  "token": "robust_tts_fallback",
+  "title": "Robust TTS Engine Fallback Strategy",
+  "essence": "Multi-engine TTS fallback with proper error handling and user feedback",
+  "domain": ["audio"],
+  "scope": ["soulmatch"],
+  "tags": ["tech:tts", "theme:audio_fallback"],
+  "impact": { "value": 85, "risk": 20, "confidence": 95 },
+  "status": "active",
+  "applies_to": ["err-audio-02"],
+  "steps": [
+    "Try Gemini Preview TTS first with comprehensive error handling",
+    "Fall back to OpenAI TTS with different voice mapping",
+    "Implement final fallback to cached/synthetic responses",
+    "Provide user feedback for TTS failures",
+    "Log detailed diagnostics for debugging"
+  ],
+  "tradeoffs": [
+    "Increased latency due to fallback attempts",
+    "Higher API costs with multiple provider usage",
+    "Complex error handling logic to maintain"
+  ],
+  "rollback": [
+    "Remove fallback logic and use single provider",
+    "Simplify to basic try/catch without user feedback",
+    "Disable TTS on failure instead of falling back"
+  ],
+  "copy_ready": true,
+  "evidence": { 
+    "signals": ["Successful audio playback even when primary engine fails", "User notifications for TTS issues", "Detailed engine diagnostics"],
+    "code_refs": ["server/src/lib/ttsService.ts:65-106", "server/src/lib/ttsService.ts:109-144"],
+    "notes": "Proven in production - maintains user experience during provider issues"
+  },
+  "links": { "fixes": ["err-audio-02"], "causes": [], "related": ["sol-api-02"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

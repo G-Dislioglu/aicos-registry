@@ -1,0 +1,38 @@
+{
+  "id": "sol-db-01",
+  "type": "solution_proof",
+  "token": "resilient_memory_service",
+  "title": "Resilient Memory Service with Fallback Storage",
+  "essence": "Database memory with retry logic and localStorage fallback for session continuity",
+  "domain": ["db"],
+  "scope": ["soulmatch"],
+  "tags": ["tech:database", "theme:data_persistence"],
+  "impact": { "value": 40, "risk": 5, "confidence": 80 },
+  "status": "active",
+  "applies_to": ["err-db-01"],
+  "steps": [
+    "Implement retry logic for transient database failures",
+    "Add localStorage fallback for critical memory data",
+    "Provide user feedback for memory failures",
+    "Monitor memory service health and availability",
+    "Graceful degradation when memory unavailable"
+  ],
+  "tradeoffs": [
+    "Increased client-side storage usage",
+    "Potential memory inconsistency between storage layers",
+    "Additional complexity in memory management"
+  ],
+  "rollback": [
+    "Remove retry logic and fail fast",
+    "Eliminate localStorage fallback",
+    "Skip user notifications for memory failures"
+  ],
+  "copy_ready": true,
+  "evidence": { 
+    "signals": ["Memory continuity during database issues", "User notifications for failures", "Graceful degradation behavior"],
+    "code_refs": ["server/src/lib/memoryService.ts:111-112", "server/src/lib/memoryService.ts:166-168"],
+    "notes": "Improves user experience by maintaining conversation context even during database issues"
+  },
+  "links": { "fixes": ["err-db-01"], "causes": [], "related": ["sol-api-02"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

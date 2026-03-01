@@ -1,0 +1,48 @@
+{
+  "id": "err-astro-01",
+  "type": "error_pattern",
+  "token": "astrology_calculation_timeout",
+  "title": "Swiss Ephemeris Calculation Timeouts",
+  "essence": "Swiss Ephemeris native calls can hang indefinitely without proper timeout handling",
+  "domain": ["api"],
+  "scope": ["soulmatch"],
+  "tags": ["tech:astrology", "risk:medium", "theme:timeout"],
+  "impact": { "value": 50, "risk": 65, "confidence": 80 },
+  "status": "active",
+  "symptoms": [
+    "Astrology requests hang indefinitely",
+    "Server becomes unresponsive during chart calculations",
+    "HTTP timeouts from client perspective"
+  ],
+  "repro_steps": [
+    "Request complex astrology calculation",
+    "Monitor server response time",
+    "Observe hanging requests beyond 30 seconds",
+    "Check for Swiss Ephemeris call blocking"
+  ],
+  "root_cause": "Native Swiss Ephemeris calls wrapped in Promise but without proper timeout mechanism",
+  "do_not_do": [
+    "Make native calls without timeout protection",
+    "Assume all calculations complete quickly",
+    "Block event loop with synchronous operations"
+  ],
+  "guardrails": [
+    "Implement timeout for all native calls",
+    "Add calculation progress monitoring",
+    "Provide fallback for timeout scenarios",
+    "Monitor calculation performance metrics"
+  ],
+  "prevent_tests": [
+    "Test with complex chart calculations",
+    "Verify timeout handling works correctly",
+    "Test fallback behavior on timeout",
+    "Monitor server responsiveness under load"
+  ],
+  "evidence": { 
+    "signals": ["Hanging HTTP requests", "Unresponsive server", "Swiss Ephemeris call blocking"],
+    "code_refs": ["server/src/routes/astro.ts:359-393", "server/src/routes/astro.ts:387-391"],
+    "notes": "Affects server reliability - can cause cascading failures under load"
+  },
+  "links": { "fixes": ["sol-astro-01"], "causes": [], "related": ["err-dev-02"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

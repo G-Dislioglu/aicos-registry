@@ -1,0 +1,38 @@
+{
+  "id": "sol-ws-01",
+  "type": "solution_proof",
+  "token": "speech_recognition_lifecycle",
+  "title": "Speech Recognition Lifecycle Management",
+  "essence": "Proper cleanup and timer management for speech recognition with abort controllers",
+  "domain": ["frontend"],
+  "scope": ["soulmatch"],
+  "tags": ["tech:websocket", "theme:memory_leak"],
+  "impact": { "value": 65, "risk": 10, "confidence": 95 },
+  "status": "active",
+  "applies_to": ["err-ws-01"],
+  "steps": [
+    "Implement useEffect cleanup for all timers",
+    "Use abort controllers for recognition cancellation",
+    "Clear all refs on component unmount",
+    "Add proper restart logic with backoff",
+    "Implement recognition state validation"
+  ],
+  "tradeoffs": [
+    "More complex state management logic",
+    "Additional overhead for cleanup operations",
+    "Potential for premature cancellation"
+  ],
+  "rollback": [
+    "Remove abort controller usage",
+    "Skip timer cleanup in useEffect",
+    "Simplify to basic start/stop without lifecycle management"
+  ],
+  "copy_ready": true,
+  "evidence": { 
+    "signals": ["Stable memory usage", "Proper recognition cleanup", "No timer leaks"],
+    "code_refs": ["client/src/hooks/useSpeechToText.ts:84", "client/src/hooks/useSpeechToText.ts:110", "client/src/hooks/useSpeechToText.ts:152"],
+    "notes": "Tested in long-running sessions - maintains performance and prevents memory leaks"
+  },
+  "links": { "fixes": ["err-ws-01"], "causes": [], "related": ["sol-ui-01"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

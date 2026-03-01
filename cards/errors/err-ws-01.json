@@ -1,0 +1,48 @@
+{
+  "id": "err-ws-01",
+  "type": "error_pattern",
+  "token": "speech_recognition_memory_leak",
+  "title": "Speech Recognition Timer Memory Leaks",
+  "essence": "Multiple timeout/restart timers not properly cleaned up causing memory leaks and race conditions",
+  "domain": ["frontend"],
+  "scope": ["soulmatch"],
+  "tags": ["tech:websocket", "risk:medium", "theme:memory_leak"],
+  "impact": { "value": 65, "risk": 50, "confidence": 95 },
+  "status": "active",
+  "symptoms": [
+    "Browser memory usage increases during long chat sessions",
+    "Speech recognition becomes unresponsive over time",
+    "Multiple simultaneous recognition instances"
+  ],
+  "repro_steps": [
+    "Start continuous speech recognition mode",
+    "Let session run for extended period (10+ minutes)",
+    "Monitor browser memory usage",
+    "Try stopping/starting recognition multiple times"
+  ],
+  "root_cause": "Multiple timer refs (debounceTimerRef, restartTimerRef) not consistently cleared, and recognition lifecycle not properly managed",
+  "do_not_do": [
+    "Create timers without cleanup in useEffect",
+    "Start new recognition before stopping previous",
+    "Ignore recognition abort controllers"
+  ],
+  "guardrails": [
+    "Always clear timers in useEffect cleanup",
+    "Implement proper recognition lifecycle management",
+    "Use abort controllers for cancellation",
+    "Add memory leak detection in development"
+  ],
+  "prevent_tests": [
+    "Test long-running speech sessions",
+    "Verify timer cleanup on component unmount",
+    "Test rapid start/stop cycles",
+    "Monitor memory usage during tests"
+  ],
+  "evidence": { 
+    "signals": ["Memory usage growth", "Multiple active timers", "Recognition race conditions"],
+    "code_refs": ["client/src/hooks/useSpeechToText.ts:40-50", "client/src/hooks/useSpeechToText.ts:84", "client/src/hooks/useSpeechToText.ts:110"],
+    "notes": "Affects users with long chat sessions - gradual performance degradation"
+  },
+  "links": { "fixes": ["sol-ws-01"], "causes": [], "related": ["err-ui-01"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

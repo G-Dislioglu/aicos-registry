@@ -1,0 +1,47 @@
+{
+  "id": "err-api-02",
+  "type": "error_pattern",
+  "token": "provider_routing_failure",
+  "title": "LLM Provider Routing Inconsistency",
+  "essence": "Provider normalization (grok->xai) and endpoint mismatches cause API call failures",
+  "domain": ["api"],
+  "scope": ["soulmatch"],
+  "tags": ["tech:llm", "risk:medium", "theme:provider_routing"],
+  "impact": { "value": 70, "risk": 60, "confidence": 85 },
+  "status": "active",
+  "symptoms": [
+    "Chat responses fail with API errors",
+    "Provider-specific error messages in logs",
+    "Fallback between providers doesn't work properly"
+  ],
+  "repro_steps": [
+    "Configure persona to use 'grok' provider",
+    "Send a message in chat",
+    "Observe API call fails with routing error",
+    "Check console for provider mismatch logs"
+  ],
+  "root_cause": "Provider names are normalized (grok->xai) but endpoint configurations and API key handling are inconsistent across providers",
+  "do_not_do": [
+    "Mix provider names without normalization",
+    "Use different API key retrieval patterns per provider",
+    "Assume all providers use same endpoint format"
+  ],
+  "guardrails": [
+    "Standardize provider name normalization early",
+    "Validate provider configuration before API calls",
+    "Implement consistent error handling per provider type"
+  ],
+  "prevent_tests": [
+    "Test all provider configurations with valid keys",
+    "Test invalid provider name handling",
+    "Verify API key retrieval for each provider",
+    "Test endpoint URL construction"
+  ],
+  "evidence": { 
+    "signals": ["Provider normalization logs", "API 401/403 errors", "Unknown provider errors"],
+    "code_refs": ["server/src/lib/providers.ts:79-90", "server/src/lib/deepModeHandler.ts:89", "server/src/lib/providers.ts:12-16"],
+    "notes": "Affects chat reliability - users see cryptic API errors"
+  },
+  "links": { "fixes": ["sol-api-02"], "causes": [], "related": ["err-api-01"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

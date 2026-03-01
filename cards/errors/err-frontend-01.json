@@ -1,0 +1,48 @@
+{
+  "id": "err-frontend-01",
+  "type": "error_pattern",
+  "token": "json_parsing_vulnerability",
+  "title": "Unsafe JSON Parsing in API Responses",
+  "essence": "JSON.parse() calls without try/catch can crash the application on malformed responses",
+  "domain": ["frontend"],
+  "scope": ["soulmatch"],
+  "tags": ["tech:json", "risk:high", "theme:parsing"],
+  "impact": { "value": 75, "risk": 70, "confidence": 95 },
+  "status": "active",
+  "symptoms": [
+    "Application crashes on API response parsing",
+    "White screen or unhandled exceptions",
+    "Console errors about JSON parsing"
+  ],
+  "repro_steps": [
+    "Trigger API call that returns malformed JSON",
+    "Observe application crash or white screen",
+    "Check console for JSON parsing errors",
+    "Verify no error handling around JSON.parse()"
+  ],
+  "root_cause": "Direct JSON.parse() calls without validation or error handling for malformed API responses",
+  "do_not_do": [
+    "Parse JSON without try/catch blocks",
+    "Assume API responses are always valid JSON",
+    "Skip response validation before parsing"
+  ],
+  "guardrails": [
+    "Always wrap JSON.parse() in try/catch",
+    "Validate response structure before parsing",
+    "Provide fallback values for parsing failures",
+    "Log parsing errors for debugging"
+  ],
+  "prevent_tests": [
+    "Test with malformed JSON responses",
+    "Verify error handling for invalid responses",
+    "Test with null/undefined response data",
+    "Check application stability during parsing errors"
+  ],
+  "evidence": { 
+    "signals": ["Application crashes", "JSON parsing errors in console", "Unhandled exceptions"],
+    "code_refs": ["client/src/app/App.tsx:311", "client/src/app/App.tsx:344", "server/src/lib/memoryService.ts:97"],
+    "notes": "Critical stability issue - can cause complete application failure"
+  },
+  "links": { "fixes": ["sol-frontend-01"], "causes": [], "related": ["err-api-02"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

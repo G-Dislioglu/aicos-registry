@@ -1,0 +1,38 @@
+{
+  "id": "sol-auth-01",
+  "type": "solution_proof",
+  "token": "secure_api_key_handling",
+  "title": "Secure API Key Management with Client Support",
+  "essence": "Server-side key management with optional client keys and comprehensive sanitization",
+  "domain": ["auth"],
+  "scope": ["soulmatch"],
+  "tags": ["tech:security", "theme:api_keys"],
+  "impact": { "value": 90, "risk": 10, "confidence": 85 },
+  "status": "active",
+  "applies_to": ["err-auth-01"],
+  "steps": [
+    "Prioritize server-side environment variables for API keys",
+    "Accept client keys as optional override with validation",
+    "Sanitize all keys in logging and error responses",
+    "Implement key masking for debugging",
+    "Add key validation before API calls"
+  ],
+  "tradeoffs": [
+    "Reduced flexibility for client-side key management",
+    "Additional server configuration required",
+    "Limited debugging visibility with masked keys"
+  ],
+  "rollback": [
+    "Allow client-side key storage",
+    "Remove key sanitization in logs",
+    "Skip key validation for faster development"
+  ],
+  "copy_ready": true,
+  "evidence": { 
+    "signals": ["No keys in client responses", "Masked keys in server logs", "Secure key validation"],
+    "code_refs": ["server/src/lib/providers.ts:172-179", "server/src/lib/providers.ts:82-83"],
+    "notes": "Security best practices implemented - prevents key exposure while maintaining functionality"
+  },
+  "links": { "fixes": ["err-auth-01"], "causes": [], "related": ["sol-api-02"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

@@ -1,0 +1,48 @@
+{
+  "id": "err-ui-01",
+  "type": "error_pattern",
+  "token": "race_condition_state_updates",
+  "title": "React State Race Conditions in Async Operations",
+  "essence": "Multiple async operations update same state simultaneously causing UI inconsistencies",
+  "domain": ["frontend"],
+  "scope": ["soulmatch"],
+  "tags": ["tech:react", "risk:medium", "theme:race_condition"],
+  "impact": { "value": 60, "risk": 55, "confidence": 75 },
+  "status": "active",
+  "symptoms": [
+    "UI shows stale data during async operations",
+    "Button states not matching actual operation status",
+    "Intermittent UI glitches during rapid interactions"
+  ],
+  "repro_steps": [
+    "Start multiple async operations rapidly (e.g., score calculation + match computation)",
+    "Observe UI state during operations",
+    "Check for inconsistent loading states",
+    "Verify final state correctness"
+  ],
+  "root_cause": "Async operations don't check if they're still current before updating state, causing race conditions with requestIdRef patterns",
+  "do_not_do": [
+    "Update state without checking operation validity",
+    "Start new operations without canceling previous",
+    "Ignore component unmount during async updates"
+  ],
+  "guardrails": [
+    "Use request IDs or abort controllers",
+    "Check component mounted state before updates",
+    "Implement proper loading state management",
+    "Cancel pending operations on new requests"
+  ],
+  "prevent_tests": [
+    "Test rapid user interactions",
+    "Verify state consistency during async operations",
+    "Test component unmount during operations",
+    "Check for memory leaks in event listeners"
+  ],
+  "evidence": { 
+    "signals": ["Inconsistent loading states", "Stale data display", "State update after component unmount"],
+    "code_refs": ["client/src/app/App.tsx:230-289", "client/src/app/App.tsx:254-256", "client/src/app/App.tsx:274-278"],
+    "notes": "Common React pattern issue - affects user perceived performance"
+  },
+  "links": { "fixes": ["sol-ui-01"], "causes": [], "related": ["err-ws-01"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

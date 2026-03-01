@@ -1,0 +1,38 @@
+{
+  "id": "sol-api-02",
+  "type": "solution_proof",
+  "token": "unified_provider_routing",
+  "title": "Unified LLM Provider Routing System",
+  "essence": "Centralized provider configuration with consistent normalization and error handling",
+  "domain": ["api"],
+  "scope": ["soulmatch"],
+  "tags": ["tech:llm", "theme:provider_routing"],
+  "impact": { "value": 70, "risk": 15, "confidence": 90 },
+  "status": "active",
+  "applies_to": ["err-api-02"],
+  "steps": [
+    "Centralize all provider configurations in PROVIDER_ENDPOINTS",
+    "Implement consistent provider name normalization (grok->xai)",
+    "Use unified API key retrieval pattern",
+    "Standardize error handling per provider type",
+    "Add provider validation before API calls"
+  ],
+  "tradeoffs": [
+    "Less flexibility for provider-specific features",
+    "Single point of failure for provider logic",
+    "Additional abstraction layer to maintain"
+  ],
+  "rollback": [
+    "Return to provider-specific call functions",
+    "Remove normalization logic",
+    "Handle each provider independently in calling code"
+  ],
+  "copy_ready": true,
+  "evidence": { 
+    "signals": ["Consistent API call patterns", "Successful provider switching", "Normalized error responses"],
+    "code_refs": ["server/src/lib/providers.ts:12-16", "server/src/lib/providers.ts:30-170", "server/src/lib/deepModeHandler.ts:89"],
+    "notes": "Stable in production - enables easy provider switching and consistent behavior"
+  },
+  "links": { "fixes": ["err-api-02"], "causes": [], "related": ["sol-auth-01"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}

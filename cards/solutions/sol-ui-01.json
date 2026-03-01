@@ -1,0 +1,38 @@
+{
+  "id": "sol-ui-01",
+  "type": "solution_proof",
+  "token": "async_state_management",
+  "title": "Async Operation State Management with Request IDs",
+  "essence": "Request ID pattern and abort controllers to prevent race conditions in async operations",
+  "domain": ["frontend"],
+  "scope": ["soulmatch"],
+  "tags": ["tech:react", "theme:race_condition"],
+  "impact": { "value": 60, "risk": 10, "confidence": 85 },
+  "status": "active",
+  "applies_to": ["err-ui-01"],
+  "steps": [
+    "Implement request ID counters for async operations",
+    "Check request validity before state updates",
+    "Use abort controllers for cancellation",
+    "Cancel pending operations on new requests",
+    "Add loading state management per operation"
+  ],
+  "tradeoffs": [
+    "More complex async operation handling",
+    "Additional state to manage and track",
+    "Potential for over-cancellation"
+  ],
+  "rollback": [
+    "Remove request ID checking",
+    "Skip abort controller usage",
+    "Allow multiple concurrent operations without cancellation"
+  ],
+  "copy_ready": true,
+  "evidence": { 
+    "signals": ["Consistent UI state", "No race conditions", "Proper operation cancellation"],
+    "code_refs": ["client/src/app/App.tsx:230-289", "client/src/app/App.tsx:254-256"],
+    "notes": "Prevents UI inconsistencies and improves user experience during rapid interactions"
+  },
+  "links": { "fixes": ["err-ui-01"], "causes": [], "related": ["sol-ws-01"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
+}
