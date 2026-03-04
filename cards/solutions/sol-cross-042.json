@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-042",
+  "type": "solution_proof",
+  "token": "ui_aware_self_correcting_agent",
+  "title": "UI-Aware Self-Correcting Agent: Maya Sight + Self-Correction Protocol",
+  "essence": "Maya Sight (UI-Introspection) + Agent Self-Correction Protocol kombiniert: Agent sieht UI-Probleme in Echtzeit via DOM-Introspection und triggert automatisch Selbstkorrektur. UI-Struggle wird zum direkten Selbstkorrektur-Trigger.",
+  "domain": ["frontend", "ai_governance", "meta_cognition"],
+  "scope": ["cross_app"],
+  "tags": ["theme:self_correction", "theme:ui_intelligence", "theme:quality_control", "theme:reactive_agents"],
+  "impact": { "value": 88, "risk": 22, "confidence": 82 },
+  "status": "active",
+  "applies_to": ["Frontend Agents", "UI-intensive Features", "Automated UI Testing", "Self-healing UIs"],
+  "steps": [
+    "Maya Sight DOM-Introspection aktivieren für Live-UI-Monitoring",
+    "Struggle Detection: UI-Elemente die nicht erreichbar/interagierbar sind erkennen",
+    "Trigger: Bei Struggle → Split-Role Wechsel zu Auditor",
+    "Auditor analysiert UI-Problem und generiert Korrekturplan",
+    "Executor führt Korrektur aus, Auditor verifiziert visuell"
+  ],
+  "tradeoffs": ["Erhöhter Overhead durch kontinuierliche DOM-Introspection", "Kann valide UI-Zustände als Probleme interpretieren"],
+  "copy_ready": true,
+  "evidence": { "signals": ["sol-ux-001: Maya Sight sieht UI", "sol-cross-014: Self-Correction korrigiert sich selbst", "UI-Struggle als direkter Trigger eliminiert manuelles Debugging"], "code_refs": [], "notes": "Erster Crossing der UI-Introspection mit autonomer Selbstkorrektur" },
+  "links": { "fixes": [], "causes": [], "related": ["sol-ux-001", "sol-cross-014", "sol-dev-006"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-04", "updated_at": "2026-03-04" }
+}

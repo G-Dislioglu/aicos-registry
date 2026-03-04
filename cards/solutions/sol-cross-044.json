@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-044",
+  "type": "solution_proof",
+  "token": "resilient_timeout_wrapper",
+  "title": "Resilient Timeout Wrapper: Promise.race + Fallback Chain Combined",
+  "essence": "Timeout-Protected Wrapper (sol-cross-032) + Universal Fallback Chain (sol-cross-019) kombiniert: Bei Timeout nicht nur Error, sondern sofort Fallback. Promise.race mit integrierter Fallback-Chain für maximale Resilience.",
+  "domain": ["api", "audio", "devserver", "cross_app"],
+  "scope": ["cross_app"],
+  "tags": ["theme:timeout", "theme:fallback", "theme:resilience", "theme:graceful_degradation"],
+  "impact": { "value": 90, "risk": 10, "confidence": 90 },
+  "status": "active",
+  "applies_to": ["Alle externen API Calls", "LLM Requests", "Speech Recognition", "Astro Calculations", "Native Module Probes"],
+  "steps": [
+    "Promise.race Wrapper: Primary Call vs Timeout Promise",
+    "Bei Timeout: Sofort Fallback Call triggern (nicht Error)",
+    "Fallback Chain: Primary → Secondary → Cache/Synthetic",
+    "Gesamt-Latenz inkl. Fallback tracken",
+    "Auto-Tuning: Timeout basierend auf beobachteter Latenz anpassen"
+  ],
+  "tradeoffs": ["Latenz kann sich durch Fallback-Versuche erhöhen", "Benötigt vordefinierte Fallback-Alternativen"],
+  "copy_ready": true,
+  "evidence": { "signals": ["sol-cross-032: Timeout schützt vor Hängern", "sol-cross-019: Fallback verhindert Totalausfall", "Kombination: Timeout → Fallback statt Timeout → Error"], "code_refs": [], "notes": "Vollständigste Resilience-Lösung: Timeout + Fallback in einem Wrapper" },
+  "links": { "fixes": [], "causes": [], "related": ["sol-cross-032", "sol-cross-019", "sol-audio-02", "sol-api-02"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-04", "updated_at": "2026-03-04" }
+}

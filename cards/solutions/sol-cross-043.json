@@ -1,0 +1,25 @@
+{
+  "id": "sol-cross-043",
+  "type": "solution_proof",
+  "token": "cost_optimized_model_router",
+  "title": "Cost-Optimized Model Router: Model Selection + Silent Director Integration",
+  "essence": "Model-Selection-Ranking (sol-cross-040) direkt in Silent Director Routing (sol-cross-024) integriert. Automatisch günstigstes geeignetes Modell pro Task-Typ wählen. Cost-Efficiency wird zur Routing-Entscheidung.",
+  "domain": ["ai_governance", "api", "devserver"],
+  "scope": ["cross_app"],
+  "tags": ["theme:model_selection", "theme:cost_efficiency", "theme:orchestration", "theme:routing"],
+  "impact": { "value": 92, "risk": 12, "confidence": 88 },
+  "status": "active",
+  "applies_to": ["Multi-LLM Systeme", "Agent Orchestration", "Cost-sensitive AI Applications", "Production AI Systems"],
+  "steps": [
+    "Task-Typ klassifizieren: CROSSING, CODING, COMMIT, REVIEW",
+    "Model-Selection-Ranking abrufen: Gemini 3.1 Low für Crossing, SWE-1.5 für Coding",
+    "Silent Director routet zu ausgewähltem Modell",
+    "Kosten pro Request tracken und Budget überwachen",
+    "Bei Budget-Limit: Fallback zu günstigerer Option"
+  ],
+  "tradeoffs": ["Ranking muss regelmäßig aktualisiert werden", "Neue Modelle benötigen Re-Benchmarking"],
+  "copy_ready": true,
+  "evidence": { "signals": ["sol-cross-040: empirisches Model-Ranking verfügbar", "sol-cross-024: Silent Director orchestriert", "Integration eliminiert manuelle Model-Wahl"], "code_refs": [], "notes": "Direkte Integration des Arena-Test Rankings in Routing-Logic" },
+  "links": { "fixes": [], "causes": [], "related": ["sol-cross-040", "sol-cross-024", "sol-api-02", "sol-multiagent-001"], "supersedes": [] },
+  "timestamps": { "created_at": "2026-03-04", "updated_at": "2026-03-04" }
+}
