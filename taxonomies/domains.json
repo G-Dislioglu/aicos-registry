@@ -1,0 +1,21 @@
+{
+  "_comment": "Controlled vocabulary for card domains. Add new domains sparingly.",
+  "_version": "1.0.0",
+  "_updated": "2026-03-05",
+  "domains": [
+    { "name": "api", "description": "External API integrations, provider routing, LLM calls" },
+    { "name": "audio", "description": "Speech recognition, TTS, audio processing" },
+    { "name": "auth", "description": "Authentication, API keys, security tokens" },
+    { "name": "cross_app", "description": "Patterns applicable across multiple applications" },
+    { "name": "db", "description": "Database operations, storage, persistence" },
+    { "name": "devserver", "description": "Development server, build tools, hot reload" },
+    { "name": "frontend", "description": "UI components, React, state management, DOM" },
+    { "name": "g_mind", "description": "G-MIND system-specific patterns" },
+    { "name": "aicos", "description": "AICOS registry internal patterns" },
+    { "name": "ai_governance", "description": "AI safety, agent protocols, meta-cognition" },
+    { "name": "meta_cognition", "description": "Self-awareness, reflection, reasoning about reasoning" },
+    { "name": "philosophy", "description": "Philosophical principles, abstract concepts" },
+    { "name": "systems", "description": "System design, architecture principles" },
+    { "name": "trading", "description": "Trading strategies, market analysis, indicators" }
+  ]
+}

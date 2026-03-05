@@ -1,0 +1,78 @@
+{
+  "_comment": "Controlled vocabulary for card tags. Format: category:value (e.g., tech:react, theme:state_machine)",
+  "_version": "1.0.0",
+  "_updated": "2026-03-05",
+  "categories": {
+    "tech": "Technology stack identifiers",
+    "theme": "Conceptual themes and patterns",
+    "risk": "Risk levels and types",
+    "meta": "Meta-level identifiers (e.g., meta:gürcan_dna)"
+  },
+  "tags": {
+    "tech": [
+      "react",
+      "node",
+      "typescript",
+      "powershell",
+      "windsurf",
+      "openai",
+      "llm",
+      "astrology"
+    ],
+    "theme": [
+      "state_machine",
+      "race_condition",
+      "timeout",
+      "fallback",
+      "resilience",
+      "self_correction",
+      "ui_intelligence",
+      "quality_control",
+      "model_selection",
+      "cost_efficiency",
+      "orchestration",
+      "routing",
+      "connection",
+      "emergence",
+      "anti_entropy",
+      "over_engineering",
+      "focus",
+      "complexity_budget",
+      "shipping",
+      "adaptive_execution",
+      "prompt_engineering",
+      "prioritization",
+      "input_validation",
+      "security",
+      "sanitization",
+      "defensive_programming",
+      "provenance",
+      "debuggability",
+      "anti_loop",
+      "regime_control",
+      "temporal_awareness",
+      "verification",
+      "assumptions",
+      "anti_hallucination",
+      "calibration",
+      "agent_protocol",
+      "governance",
+      "audit",
+      "ramanujan",
+      "numdsl",
+      "numbers_as_meaning",
+      "mock_theta_decay",
+      "highly_composite"
+    ],
+    "risk": [
+      "infinite_loop",
+      "runtime_error",
+      "medium",
+      "no_product",
+      "slow_execution"
+    ],
+    "meta": [
+      "gürcan_dna"
+    ]
+  }
+}

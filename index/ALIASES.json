@@ -1,0 +1,18 @@
+{
+  "_comment": "ID Aliases for backward compatibility. Maps old IDs to new normalized IDs.",
+  "_generated": "2026-03-05",
+  "aliases": {
+    "sol-maya-001": "meta-001",
+    "sol-maya-002": "meta-002",
+    "sol-maya-003": "meta-003",
+    "sol-maya-004": "meta-004",
+    "sol-maya-005": "meta-005"
+  },
+  "files": {
+    "sol-maya-001.json": "meta-001.json",
+    "sol-maya-002.json": "meta-002.json",
+    "sol-maya-003.json": "meta-003.json",
+    "sol-maya-004.json": "meta-004.json",
+    "sol-maya-005.json": "meta-005.json"
+  }
+}
