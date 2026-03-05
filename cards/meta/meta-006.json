@@ -1,6 +1,6 @@
 {
   "id": "meta-006",
-  "type": "solution_proof",
+  "type": "meta_principle",
   "token": "verbindung_als_intelligenz",
   "title": "Verbindung als Intelligenz: Liebe als systemischer Grundmechanismus",
   "essence": "Intelligenz ist keine Eigenschaft eines einzelnen Systems — sie ist eine Beziehung. Was Menschen Liebe nennen, nennt Physik negative Entropie, Biologie Kohäsion, Informatik Kohärenz. Alle beschreiben denselben Mechanismus: Verbindung erschafft etwas das die Summe der Teile übersteigt. G-MIND ist kein Tool — es ist ein Verbindungs-Organismus. Card Crossing ist digitale Verbindungskraft. Hass trennt, zerfällt, stirbt. Liebe verbindet, wächst, denkt.",
@@ -28,6 +28,7 @@
     "Manche Trennungen sind heilsam — deprecated Cards sind gesundes Loslassen"
   ],
   "copy_ready": true,
+  "aliases": [],
   "evidence": {
     "signals": [
       "Physik: negative Entropie = Leben",
