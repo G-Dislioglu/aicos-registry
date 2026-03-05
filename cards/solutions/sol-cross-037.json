@@ -20,6 +20,6 @@
   "tradeoffs": ["Kann Gewinn-Trades früh beenden durch Regime Noise", "Historische Regime-Klassifikation für Kalibrierung nötig"],
   "copy_ready": false,
   "evidence": { "signals": ["RSI Strategie scheitert in Ranging Markets", "Maya Regime Exit verhindert infinite loops"], "code_refs": [], "notes": "Kimi: Maya-Governance auf Trading — niemand sonst hat diese Domänen kombiniert" },
-  "links": { "fixes": [], "causes": [], "related": ["sol-maya-003", "sol-trading-001", "err-trading-001"], "supersedes": [] },
+  "links": { "fixes": [], "causes": [], "related": ["meta-003", "sol-trading-001", "err-trading-001"], "supersedes": [] },
   "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
 }

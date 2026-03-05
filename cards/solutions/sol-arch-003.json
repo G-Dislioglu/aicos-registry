@@ -21,6 +21,6 @@
   "tradeoffs": ["Erfordert Disziplin beim Import", "Bei 50+ Cards ohne Filter: unübersichtlich"],
   "copy_ready": true,
   "evidence": { "signals": ["Soulmatch Soul Cards als Vorstufe erfolgreich konzipiert", "AICOS Registry ist lebender Beweis dieser Mechanik"], "code_refs": [], "notes": "AICOS Registry IST Nexus Garden für Developer-Kontext." },
-  "links": { "fixes": [], "causes": [], "related": ["sol-maya-005"], "supersedes": [] },
+  "links": { "fixes": [], "causes": [], "related": ["meta-002"], "supersedes": [] },
   "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
 }

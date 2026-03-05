@@ -19,7 +19,7 @@
   ],
   "tradeoffs": ["Tightere Kopplung zwischen Meta-Cognition und Low-Level Utilities", "Performance-Overhead bei großen Payloads"],
   "copy_ready": false,
-  "evidence": { "signals": ["err-frontend-01: unsafe parsing crashes apps", "err-api-02: provider format changes break parsing"], "code_refs": [], "notes": "Gemini 3.1: sol-maya-005 + sol-frontend-01 + sol-api-02" },
-  "links": { "fixes": ["err-frontend-01"], "causes": [], "related": ["sol-maya-005", "sol-frontend-01", "sol-api-02"], "supersedes": [] },
+  "evidence": { "signals": ["err-frontend-01: unsafe parsing crashes apps", "err-api-02: provider format changes break parsing"], "code_refs": [], "notes": "Gemini 3.1: meta-005 + sol-frontend-01 + sol-api-02" },
+  "links": { "fixes": [], "causes": [], "related": ["meta-005", "sol-frontend-01"], "supersedes": [] },
   "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
 }

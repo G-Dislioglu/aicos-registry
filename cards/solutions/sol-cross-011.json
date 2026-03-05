@@ -20,6 +20,6 @@
   "tradeoffs": ["Erhöhter Storage und Compute Overhead", "Potentielle Information Overload für User"],
   "copy_ready": false,
   "evidence": { "signals": ["Full traceability of reasoning", "Rapid debugging of AI errors", "Increased user trust"], "code_refs": [], "notes": "GPT-4.1: sol-maya-001 + sol-maya-002 kombiniert" },
-  "links": { "fixes": [], "causes": [], "related": ["sol-maya-001", "sol-maya-002"], "supersedes": [] },
+  "links": { "fixes": [], "causes": [], "related": ["meta-001", "meta-002"], "supersedes": [] },
   "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
 }

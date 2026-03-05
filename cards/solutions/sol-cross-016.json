@@ -14,12 +14,12 @@
     "REGISTRATION: Agent Manifest (id, capabilities[], accepts[], delivers[], cost_tier)",
     "VALIDATION: Audit vor Marketplace-Zugang (sol-arch-002 Scoring: Bronze/Silver/Gold/Platinum)",
     "EXECUTION: Message Envelope mit type, payload, userId, timestamp",
-    "TRACKING: Claim Lineage für jeden Output (sol-maya-002)",
-    "ASSUMPTIONS: Explicit Assumption Registry pro Reasoning Chain (sol-maya-005)"
+    "TRACKING: Claim Lineage für jeden Output (meta-002)",
+    "ASSUMPTIONS: Explicit Assumption Registry pro Reasoning Chain (meta-005)"
   ],
   "tradeoffs": ["Signifikanter Infrastructure Investment", "Kann Agent-Onboarding verlangsamen"],
   "copy_ready": false,
-  "evidence": { "signals": ["sol-arch-001: agent protocol", "sol-arch-002: audit system", "sol-maya-002: lineage", "sol-maya-005: assumptions"], "code_refs": [], "notes": "GLM5: Vollständigster Agent Governance Stack — direkt als Artifex-Fundament nutzbar" },
-  "links": { "fixes": [], "causes": [], "related": ["sol-arch-001", "sol-arch-002", "sol-maya-002", "sol-maya-005"], "supersedes": [] },
+  "evidence": { "signals": ["sol-arch-001: agent protocol", "sol-arch-002: audit system", "meta-002: lineage", "meta-005: assumptions"], "code_refs": [], "notes": "GLM5: Vollständigster Agent Governance Stack — direkt als Artifex-Fundament nutzbar" },
+  "links": { "fixes": [], "causes": [], "related": ["sol-arch-001", "sol-arch-002", "meta-002", "meta-005"], "supersedes": [] },
   "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
 }

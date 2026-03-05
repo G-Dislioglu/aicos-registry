@@ -20,6 +20,6 @@
   "tradeoffs": ["Signifikanter Computational Overhead", "Kann einfache Tasks verlangsamen"],
   "copy_ready": false,
   "evidence": { "signals": ["Mirror overlay improves reasoning quality", "Split-role catches errors early"], "code_refs": [], "notes": "Kimi: Mirror Overlay Prinzip auf Coding angewendet" },
-  "links": { "fixes": [], "causes": [], "related": ["sol-maya-001", "sol-dev-006"], "supersedes": [] },
+  "links": { "fixes": [], "causes": [], "related": ["meta-001", "sol-dev-006"], "supersedes": [] },
   "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
 }

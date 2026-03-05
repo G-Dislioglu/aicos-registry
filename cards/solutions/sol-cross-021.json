@@ -19,7 +19,7 @@
   ],
   "tradeoffs": ["Kill Conditions anfangs schlecht kalibriert", "Escape Hatches erhöhen Komplexität"],
   "copy_ready": false,
-  "evidence": { "signals": ["sol-dev-005: latency >4s kills, cost >€0.02 kills", "sol-maya-003: regime-exit mit timeout", "err-api-004: ENV-block escape"], "code_refs": [], "notes": "Minimax: Unterscheidung Code-Failure vs Environment-Failure als Kern-Insight" },
-  "links": { "fixes": [], "causes": ["err-api-004", "err-dev-003"], "related": ["sol-dev-005", "sol-maya-003", "sol-dev-006"], "supersedes": [] },
+  "evidence": { "signals": ["sol-dev-005: latency >4s kills, cost >€0.02 kills", "meta-003: regime-exit mit timeout", "err-api-004: ENV-block escape"], "code_refs": [], "notes": "Minimax: Unterscheidung Code-Failure vs Environment-Failure als Kern-Insight" },
+  "links": { "fixes": [], "causes": ["err-api-004", "err-dev-003"], "related": ["sol-dev-005", "meta-003", "sol-dev-006"], "supersedes": [] },
   "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
 }

@@ -21,6 +21,6 @@
   "tradeoffs": ["Verlangsamt Agent bei einfachen Tasks", "Sollte situativ eingesetzt werden, nicht als Permanent-Modus"],
   "copy_ready": true,
   "evidence": { "signals": ["Split-role technique overcomes confirmation bias", "PROOF CORE v4.2 rated improvement from 74/100"], "code_refs": [], "notes": "PROOF CORE v3 mit Registry-Gate ist aktuelle Version für Soulmatch." },
-  "links": { "fixes": [], "causes": [], "related": ["sol-maya-008"], "supersedes": [] },
+  "links": { "fixes": [], "causes": [], "related": ["meta-008"], "supersedes": [] },
   "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
 }

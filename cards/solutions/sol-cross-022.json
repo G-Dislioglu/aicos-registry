@@ -19,7 +19,7 @@
   ],
   "tradeoffs": ["Storage Overhead für vollständige History", "Performance Impact durch Hash Calculations"],
   "copy_ready": false,
-  "evidence": { "signals": ["sol-maya-002: immutable claim registry", "sol-maya-004: staleness detection", "sol-auth-01: key masking"], "code_refs": [], "notes": "Minimax: Unified Pattern — jede Information sollte Herkunft, Freshness und Sichtbarkeit kennen" },
-  "links": { "fixes": [], "causes": [], "related": ["sol-maya-002", "sol-maya-004", "sol-auth-01"], "supersedes": [] },
+  "evidence": { "signals": ["meta-002: immutable claim registry", "meta-004: staleness detection", "sol-auth-01: key masking"], "code_refs": [], "notes": "Minimax: Unified Pattern — jede Information sollte Herkunft, Freshness und Sichtbarkeit kennen" },
+  "links": { "fixes": [], "causes": [], "related": ["meta-002", "meta-004", "sol-auth-01"], "supersedes": [] },
   "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
 }

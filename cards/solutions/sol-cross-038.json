@@ -20,6 +20,6 @@
   "tradeoffs": ["Zusätzliche Manifest-Komplexität", "Runtime Validation Overhead"],
   "copy_ready": false,
   "evidence": { "signals": ["Assumption registry prevents hallucinations", "Bluepilot modules need clear contracts"], "code_refs": [], "notes": "Kimi: Direkte Erweiterung des Agent-Protocols um Assumption Layer" },
-  "links": { "fixes": [], "causes": [], "related": ["sol-maya-005", "sol-arch-001"], "supersedes": [] },
+  "links": { "fixes": [], "causes": [], "related": ["meta-005", "sol-arch-001"], "supersedes": [] },
   "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
 }

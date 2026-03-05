@@ -19,7 +19,7 @@
   ],
   "tradeoffs": ["Mehr Boilerplate pro Resource-Typ", "Erfordert konsistente Implementierung überall"],
   "copy_ready": false,
-  "evidence": { "signals": ["sol-audio-01: refs + guards", "sol-maya-003: exit conditions", "sol-ui-01: request IDs als Guards"], "code_refs": [], "notes": "GLM5: IDLE/STARTING/ACTIVE/PAUSED/STOPPING/ERROR — komplettstes State Schema aller Modelle" },
-  "links": { "fixes": [], "causes": [], "related": ["sol-audio-01", "sol-ui-01", "sol-ws-01", "sol-maya-003"], "supersedes": [] },
+  "evidence": { "signals": ["sol-audio-01: refs + guards", "meta-003: exit conditions", "sol-ui-01: request IDs als Guards"], "code_refs": [], "notes": "GLM5: IDLE/STARTING/ACTIVE/PAUSED/STOPPING/ERROR — komplettstes State Schema aller Modelle" },
+  "links": { "fixes": [], "causes": [], "related": ["sol-audio-01", "sol-ui-01", "sol-ws-01", "meta-003"], "supersedes": [] },
   "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
 }

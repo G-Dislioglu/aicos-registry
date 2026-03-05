@@ -19,7 +19,7 @@
   ],
   "tradeoffs": ["Information Overload Risiko", "Privacy Concerns bei Reasoning-Exposition"],
   "copy_ready": false,
-  "evidence": { "signals": ["sol-ux-001: Maya Sight", "sol-maya-001: Mirror Overlay", "sol-maya-002: Claim Lineage"], "code_refs": [], "notes": "GLM5: Vollständigster Transparency Stack — Differenzierungsmerkmal für Soulmatch/Artifex" },
-  "links": { "fixes": [], "causes": [], "related": ["sol-ux-001", "sol-maya-001", "sol-maya-002"], "supersedes": [] },
+  "evidence": { "signals": ["sol-ux-001: Maya Sight", "meta-001: Mirror Overlay", "meta-002: Claim Lineage"], "code_refs": [], "notes": "GLM5: Vollständigster Transparency Stack — Differenzierungsmerkmal für Soulmatch/Artifex" },
+  "links": { "fixes": [], "causes": [], "related": ["sol-ux-001", "meta-001", "meta-002"], "supersedes": [] },
   "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
 }

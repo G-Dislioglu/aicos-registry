@@ -20,6 +20,6 @@
   "tradeoffs": ["Schema Komplexitäts-Zunahme", "Manuelle Pflege der Relationships"],
   "copy_ready": false,
   "evidence": { "signals": ["Nexus Garden manages knowledge", "Claim lineage tracks reasoning"], "code_refs": [], "notes": "Kimi: Natürliche Evolution der Registry — AICOS v2 Feature" },
-  "links": { "fixes": [], "causes": [], "related": ["sol-arch-003", "sol-maya-002"], "supersedes": [] },
+  "links": { "fixes": [], "causes": [], "related": ["sol-arch-003", "meta-002"], "supersedes": [] },
   "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
 }

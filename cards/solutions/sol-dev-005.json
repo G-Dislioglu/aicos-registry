@@ -20,6 +20,6 @@
   "tradeoffs": ["Mehr Vorlaufzeit", "Kill-Conditions können zu früh stoppen wenn schlecht kalibriert"],
   "copy_ready": true,
   "evidence": { "signals": ["GhostOS failed without fail-fast", "StepStack v2.1 rated 83/100 vs 72/100"], "code_refs": [], "notes": "Entstand aus GhostOS-Projekt-Disaster wo direkt UI gebaut wurde ohne Viability-Check." },
-  "links": { "fixes": ["err-dev-01"], "causes": [], "related": ["sol-maya-003"], "supersedes": [] },
+  "links": { "fixes": ["err-dev-01"], "causes": [], "related": ["meta-003"], "supersedes": [] },
   "timestamps": { "created_at": "2026-03-01", "updated_at": "2026-03-01" }
 }
