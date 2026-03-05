@@ -1,85 +1,1456 @@
 [
-  { "id": "err-dev-01", "type": "error_pattern", "token": "vite_onedrive_stale_bundle", "title": "Vite zeigt alten Code", "domain": ["devserver","frontend"], "tags": ["tech:vite","env:onedrive","risk:stale_assets"], "status": "active", "fixes": ["sol-dev-01"] },
-  { "id": "err-audio-01", "type": "error_pattern", "token": "speech_abort_loop_stale_closure", "title": "SpeechRecognition Abort-Loop", "domain": ["audio","frontend"], "tags": ["tech:web_speech_api","tech:react","risk:race_condition"], "status": "active", "fixes": ["sol-audio-01"] },
-  { "id": "err-api-01", "type": "error_pattern", "token": "openai_gpt5_max_tokens_mismatch", "title": "GPT-5 max_tokens abgelehnt", "domain": ["api"], "tags": ["tech:openai","theme:provider_compat","risk:runtime_error"], "status": "active", "fixes": ["sol-api-01"] },
-  { "id": "sol-dev-01", "type": "solution_proof", "token": "vite_use_polling_onedrive", "title": "Vite Polling + Cache Reset", "domain": ["devserver","frontend"], "tags": ["tech:vite","env:onedrive","theme:cache"], "status": "active", "copy_ready": true },
-  { "id": "sol-audio-01", "type": "solution_proof", "token": "speech_state_machine_ref_guards", "title": "Speech State Machine Refs + Guards", "domain": ["audio","frontend"], "tags": ["tech:web_speech_api","tech:react","theme:guards"], "status": "active", "copy_ready": true },
-  { "id": "err-audio-02", "type": "error_pattern", "token": "tts_fallback_cascade", "title": "TTS Engine Fallback Cascade Failure", "domain": ["audio"], "tags": ["tech:tts","risk:high","theme:audio_fallback"], "status": "active", "fixes": ["sol-audio-02"] },
-  { "id": "sol-audio-02", "type": "solution_proof", "token": "robust_tts_fallback", "title": "Robust TTS Engine Fallback Strategy", "domain": ["audio"], "tags": ["tech:tts","theme:audio_fallback"], "status": "active", "copy_ready": true },
-  { "id": "err-api-02", "type": "error_pattern", "token": "provider_routing_failure", "title": "LLM Provider Routing Inconsistency", "domain": ["api"], "tags": ["tech:llm","risk:medium","theme:provider_routing"], "status": "active", "fixes": ["sol-api-02"] },
-  { "id": "sol-api-02", "type": "solution_proof", "token": "unified_provider_routing", "title": "Unified LLM Provider Routing System", "domain": ["api"], "tags": ["tech:llm","theme:provider_routing"], "status": "active", "copy_ready": true },
-  { "id": "err-auth-01", "type": "error_pattern", "token": "api_key_exposure_risk", "title": "Client API Key Exposure in Provider Calls", "domain": ["auth"], "tags": ["tech:security","risk:high","theme:api_keys"], "status": "active", "fixes": ["sol-auth-01"] },
-  { "id": "sol-auth-01", "type": "solution_proof", "token": "secure_api_key_handling", "title": "Secure API Key Management with Client Support", "domain": ["auth"], "tags": ["tech:security","theme:api_keys"], "status": "active", "copy_ready": true },
-  { "id": "err-ws-01", "type": "error_pattern", "token": "speech_recognition_memory_leak", "title": "Speech Recognition Timer Memory Leaks", "domain": ["frontend"], "tags": ["tech:websocket","risk:medium","theme:memory_leak"], "status": "active", "fixes": ["sol-ws-01"] },
-  { "id": "sol-ws-01", "type": "solution_proof", "token": "speech_recognition_lifecycle", "title": "Speech Recognition Lifecycle Management", "domain": ["frontend"], "tags": ["tech:websocket","theme:memory_leak"], "status": "active", "copy_ready": true },
-  { "id": "err-db-01", "type": "error_pattern", "token": "memory_service_silent_failure", "title": "Memory Service Silent Database Failures", "domain": ["db"], "tags": ["tech:database","risk:low","theme:data_persistence"], "status": "active", "fixes": ["sol-db-01"] },
-  { "id": "sol-db-01", "type": "solution_proof", "token": "resilient_memory_service", "title": "Resilient Memory Service with Fallback Storage", "domain": ["db"], "tags": ["tech:database","theme:data_persistence"], "status": "active", "copy_ready": true },
-  { "id": "err-ui-01", "type": "error_pattern", "token": "race_condition_state_updates", "title": "React State Race Conditions in Async Operations", "domain": ["frontend"], "tags": ["tech:react","risk:medium","theme:race_condition"], "status": "active", "fixes": ["sol-ui-01"] },
-  { "id": "sol-ui-01", "type": "solution_proof", "token": "async_state_management", "title": "Async Operation State Management with Request IDs", "domain": ["frontend"], "tags": ["tech:react","theme:race_condition"], "status": "active", "copy_ready": true },
-  { "id": "err-dev-02", "type": "error_pattern", "token": "swiss_ephemeris_compatibility", "title": "Swiss Ephemeris Native Module Compatibility", "domain": ["devserver"], "tags": ["tech:native_module","risk:medium","theme:deployment"], "status": "active", "fixes": ["sol-dev-02"] },
-  { "id": "sol-dev-02", "type": "solution_proof", "token": "graceful_native_fallback", "title": "Graceful Native Module Fallback System", "domain": ["devserver"], "tags": ["tech:native_module","theme:deployment"], "status": "active", "copy_ready": true },
-  { "id": "err-astro-01", "type": "error_pattern", "token": "astrology_calculation_timeout", "title": "Swiss Ephemeris Calculation Timeouts", "domain": ["api"], "tags": ["tech:astrology","risk:medium","theme:timeout"], "status": "active", "fixes": ["sol-astro-01"] },
-  { "id": "sol-astro-01", "type": "solution_proof", "token": "timeout_protected_calculations", "title": "Timeout-Protected Astrology Calculations", "domain": ["api"], "tags": ["tech:astrology","theme:timeout"], "status": "active", "copy_ready": true },
-  { "id": "err-frontend-01", "type": "error_pattern", "token": "json_parsing_vulnerability", "title": "Unsafe JSON Parsing in API Responses", "domain": ["frontend"], "tags": ["tech:json","risk:high","theme:parsing"], "status": "active", "fixes": ["sol-frontend-01"] },
-  { "id": "sol-frontend-01", "type": "solution_proof", "token": "safe_json_parsing", "title": "Safe JSON Parsing with Validation", "domain": ["frontend"], "tags": ["tech:json","theme:parsing"], "status": "active", "copy_ready": true },
-  { "id": "sol-maya-001", "type": "solution_proof", "token": "mirror_overlay", "title": "Mirror Overlay", "domain": ["ai_governance","meta_cognition","cross_app"], "tags": ["theme:calibration","theme:anti_hallucination"], "status": "active", "copy_ready": true },
-  { "id": "sol-maya-002", "type": "solution_proof", "token": "claim_lineage", "title": "Claim Lineage", "domain": ["ai_governance","meta_cognition","cross_app"], "tags": ["theme:provenance","theme:debuggability"], "status": "active", "copy_ready": true },
-  { "id": "sol-maya-003", "type": "solution_proof", "token": "regime_exit", "title": "Regime-Exit Conditions", "domain": ["ai_governance","meta_cognition","cross_app"], "tags": ["theme:anti_loop","theme:regime_control"], "status": "active", "copy_ready": true },
-  { "id": "sol-maya-004", "type": "solution_proof", "token": "freshness_sentinel", "title": "Freshness Sentinel", "domain": ["ai_governance","meta_cognition","cross_app"], "tags": ["theme:temporal_awareness","theme:verification"], "status": "active", "copy_ready": true },
-  { "id": "sol-maya-005", "type": "solution_proof", "token": "assumption_registry", "title": "Assumption Registry", "domain": ["ai_governance","meta_cognition","cross_app"], "tags": ["theme:assumptions","theme:anti_hallucination"], "status": "active", "copy_ready": true },
-  { "id": "err-trading-001", "type": "error_pattern", "token": "indicator_complexity_trap", "title": "Indikator-Komplexitätsfalle: Mehr Bestätigung = Schlechter", "domain": ["trading"], "tags": ["theme:psychology","theme:over_engineering","risk:analysis_paralysis"], "status": "active", "fixes": ["sol-trading-001"] },
-  { "id": "sol-trading-001", "type": "solution_proof", "token": "multi_provider_rsi_strategy", "title": "RSI-Strategie: 250-Period Trend + 10-Period Pullback", "domain": ["trading"], "tags": ["tech:pine_script","theme:trend_following","theme:entry_timing"], "status": "active", "copy_ready": true },
-  { "id": "err-dev-002", "type": "error_pattern", "token": "overlay_ui_blocks_everything", "title": "Desktop-Overlay blockiert alle anderen UI-Elemente", "domain": ["frontend","devserver"], "tags": ["tech:desktop_app","tech:overlay","risk:ux_blocker"], "status": "active", "fixes": [] },
-  { "id": "sol-dev-005", "type": "solution_proof", "token": "stepstack_fail_fast_gates", "title": "StepStack: Fail-Fast Gates vor teuren Phasen", "domain": ["devserver","cross_app"], "tags": ["theme:fail_fast","theme:cost_control","tech:stepstack"], "status": "active", "copy_ready": true },
-  { "id": "err-arch-001", "type": "error_pattern", "token": "infrastructure_for_infrastructure", "title": "Infrastructure-for-Infrastructure Falle: SpecBridge Anti-Pattern", "domain": ["ai_governance","cross_app"], "tags": ["theme:over_engineering","risk:no_product","theme:focus"], "status": "active", "fixes": [] },
-  { "id": "sol-arch-001", "type": "solution_proof", "token": "bluepilot_modules_are_agents", "title": "Bluepilot-Module = Artifex-Agents: Einheitliches Fundament", "domain": ["ai_governance","cross_app"], "tags": ["theme:architecture","theme:unification","theme:agent_protocol"], "status": "active", "copy_ready": true },
-  { "id": "sol-arch-002", "type": "solution_proof", "token": "agent_audit_before_marketplace", "title": "Pflicht-Audit vor Marketplace-Zugang verhindert Fake-Agent-Problem", "domain": ["ai_governance","cross_app"], "tags": ["theme:quality_control","theme:trust","theme:audit"], "status": "active", "copy_ready": true },
-  { "id": "sol-arch-003", "type": "solution_proof", "token": "nexus_garden_card_crossing", "title": "Nexus Garden: KI-Destillation + Card-Crossing-Mechanik", "domain": ["meta_cognition","cross_app"], "tags": ["theme:knowledge_management","theme:synthesis","theme:card_system"], "status": "active", "copy_ready": true },
-  { "id": "err-dev-003", "type": "error_pattern", "token": "prompt_too_long_slows_agent", "title": "Zu komplexer Prompt verlangsamt Coding-Agent signifikant", "domain": ["devserver","cross_app"], "tags": ["theme:prompt_engineering","risk:slow_execution","tech:windsurf"], "status": "active", "fixes": ["sol-dev-006"] },
-  { "id": "sol-dev-006", "type": "solution_proof", "token": "proof_core_split_role_technique", "title": "PROOF CORE Split-Role: Executor + Auditor in einem Agent", "domain": ["ai_governance","cross_app"], "tags": ["theme:agent_workflow","theme:quality_control","tech:windsurf","tech:proof_core"], "status": "active", "copy_ready": true },
-  { "id": "sol-ux-001", "type": "solution_proof", "token": "maya_sight_ui_awareness", "title": "Maya Sight: KI-UI-Awareness durch DOM-Introspection + Struggle-Tracking", "domain": ["frontend","meta_cognition"], "tags": ["theme:ux_intelligence","theme:ai_ui","tech:react","theme:accessibility"], "status": "active", "copy_ready": true },
-  { "id": "sol-arch-004", "type": "solution_proof", "token": "cashflow_first_then_complexity", "title": "Cash-Flow First: Monetarisierbares MVP vor Meta-Infrastruktur", "domain": ["cross_app","ai_governance"], "tags": ["theme:solo_dev","theme:prioritization","theme:monetization"], "status": "active", "copy_ready": true },
-  { "id": "err-api-004", "type": "error_pattern", "token": "env_block_vs_code_failure", "title": "ENV-Block: Agent verwechselt Umgebungsfehler mit Code-Fehler", "domain": ["devserver","cross_app"], "tags": ["tech:windsurf","tech:powershell","risk:infinite_loop","theme:env_diagnosis"], "status": "active", "fixes": ["sol-dev-006"] },
-  { "id": "sol-multiagent-001", "type": "solution_proof", "token": "silent_director_pattern", "title": "Silent Director: Maya als stille Dirigentin statt freiem LLM-Gespräch", "domain": ["ai_governance","cross_app"], "tags": ["theme:multi_agent","theme:orchestration","theme:cost_efficiency"], "status": "active", "copy_ready": true },
-  { "id": "sol-ux-002", "type": "solution_proof", "token": "demo_first_then_implement", "title": "Demo-First: HTML-Mockup als Referenz vor Agent-Implementierung", "domain": ["frontend","cross_app"], "tags": ["theme:agent_workflow","tech:windsurf","theme:ux_guard"], "status": "active", "copy_ready": true },
-  { "id": "sol-cross-007", "type": "solution_proof", "token": "context_complexity_trap", "title": "Context Complexity Trap: Trading Paralyse = Agent Prompt-Bloat", "domain": ["trading","ai_governance","devserver"], "tags": ["theme:psychology","theme:prompt_engineering","theme:minimalism"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-008", "type": "solution_proof", "token": "visual_tdd_agent_loop", "title": "Visual TDD for Agents: HTML Demo als automatischer DOM-Test-Guard", "domain": ["frontend","meta_cognition","devserver"], "tags": ["theme:ux_guard","theme:fail_fast","theme:tdd"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-009", "type": "solution_proof", "token": "agentic_race_condition_guards", "title": "Agentic Race Condition Guards: React requestIdRef Pattern auf Multi-Agent", "domain": ["frontend","audio","ai_governance"], "tags": ["theme:race_condition","theme:state_management","theme:agent_workflow"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-010", "type": "solution_proof", "token": "assumption_bound_parsing", "title": "Assumption-Bound Schema Parsing: Assumption Registry → JSON Validation", "domain": ["frontend","api","meta_cognition"], "tags": ["theme:parsing","theme:assumptions","theme:anti_hallucination"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-011", "type": "solution_proof", "token": "mirror_lineage_overlay", "title": "Mirror + Claim Lineage: Transparente AI Reasoning mit Immutable Audit", "domain": ["ai_governance","meta_cognition"], "tags": ["theme:calibration","theme:anti_hallucination","theme:provenance"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-012", "type": "solution_proof", "token": "over_engineering_early_warning", "title": "Over-Engineering Early Warning: 7-Tage Shippable Feature Gate", "domain": ["trading","ai_governance","devserver","cross_app"], "tags": ["theme:anti_over_engineering","theme:focus","theme:complexity_budget"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-013", "type": "solution_proof", "token": "self_monitoring_agent_stack", "title": "Self-Monitoring Agent Stack: Mirror + Freshness + Regime Exit", "domain": ["ai_governance","meta_cognition","cross_app"], "tags": ["theme:self_monitoring","theme:anti_hallucination","theme:anti_loop"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-014", "type": "solution_proof", "token": "agent_self_correction_protocol", "title": "Agent Self-Correction Protocol: Split-Role + Assumption + Regime Exit", "domain": ["ai_governance","meta_cognition","cross_app"], "tags": ["theme:self_correction","theme:quality_control","theme:autonomy"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-015", "type": "solution_proof", "token": "state_machine_lifecycle_protocol", "title": "State Machine Lifecycle Protocol: Unified Async Resource States", "domain": ["audio","frontend","ai_governance","cross_app"], "tags": ["theme:state_machine","theme:lifecycle","theme:guards"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-016", "type": "solution_proof", "token": "agent_registry_protocol", "title": "Agent Registry Protocol: Vollständiger Agent Governance Stack", "domain": ["ai_governance","meta_cognition","cross_app"], "tags": ["theme:agent_protocol","theme:governance","theme:audit"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-017", "type": "solution_proof", "token": "fail_fast_viability_gates", "title": "Fail-Fast Viability Gates: Unified Pre-Flight Checks mit konkreten Zahlen", "domain": ["devserver","ai_governance","frontend","cross_app"], "tags": ["theme:fail_fast","theme:viability_check","theme:cost_control"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-018", "type": "solution_proof", "token": "env_diagnosis_escape_hatch", "title": "Environment Diagnosis Escape Hatch: Unified ENV vs Code Failure", "domain": ["devserver","frontend","cross_app"], "tags": ["theme:env_diagnosis","theme:escape_hatch","theme:debugging"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-019", "type": "solution_proof", "token": "universal_fallback_chain", "title": "Universal Fallback Chain: N-1 Fallback, niemals silent fail to zero", "domain": ["audio","api","db","devserver","cross_app"], "tags": ["theme:resilience","theme:fallback","theme:graceful_degradation"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-020", "type": "solution_proof", "token": "ref_based_state_machine_guard", "title": "Ref-Based State Machine Guards: React State vs Refs Grundprinzip", "domain": ["audio","frontend","devserver"], "tags": ["tech:react","theme:state_machine","theme:guards"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-021", "type": "solution_proof", "token": "fail_fast_with_escape_hatch", "title": "Fail-Fast Gates mit Escape Hatch: Code vs Environment unterscheiden", "domain": ["devserver","ai_governance","meta_cognition"], "tags": ["theme:fail_fast","theme:cost_control","theme:escape_hatch"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-022", "type": "solution_proof", "token": "provenance_freshness_security_trinity", "title": "Provenance + Freshness + Security: Truth Verification Trinity", "domain": ["ai_governance","meta_cognition","auth","db"], "tags": ["theme:provenance","theme:temporal_awareness","theme:security"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-023", "type": "solution_proof", "token": "adaptive_complexity_execution", "title": "Adaptive Complexity: Lite vs Full Mode — Match Complexity to Task", "domain": ["devserver","trading","frontend","ai_governance"], "tags": ["theme:adaptive_execution","theme:prompt_engineering","theme:prioritization"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-024", "type": "solution_proof", "token": "orchestration_over_collaboration", "title": "Orchestration über direkte Kollaboration: Silent Director Prinzip universal", "domain": ["ai_governance","api","cross_app"], "tags": ["theme:multi_agent","theme:orchestration","theme:cost_efficiency"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-025", "type": "solution_proof", "token": "monetization_before_abstraction", "title": "Monetization Before Abstraction: Validate Value Before Complexity", "domain": ["ai_governance","frontend","devserver","cross_app"], "tags": ["theme:solo_dev","theme:prioritization","theme:monetization"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-026", "type": "solution_proof", "token": "marketplace_trust_quality_gates", "title": "Marketplace Trust durch Audit + Quality Gates: Verify Before Trust", "domain": ["ai_governance","devserver","frontend","cross_app"], "tags": ["theme:quality_control","theme:trust","theme:audit"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-027", "type": "solution_proof", "token": "cache_as_resilience_layer", "title": "Cache Layer als Resilience: User bevorzugt alte Daten über nichts", "domain": ["db","audio","frontend","api"], "tags": ["theme:data_persistence","theme:cache","theme:resilience"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-028", "type": "solution_proof", "token": "audited_director_pattern", "title": "Audited Director: Self-Correcting Multi-Agent Orchestration", "domain": ["ai_governance","cross_app"], "tags": ["theme:multi_agent","theme:quality_control","theme:learning"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-029", "type": "solution_proof", "token": "demo_driven_validation", "title": "Demo-Driven Validation: HTML Demo als Spec UND Acceptance Test", "domain": ["frontend","ai_governance"], "tags": ["theme:agent_workflow","theme:quality_control","theme:acceptance_testing"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-030", "type": "solution_proof", "token": "solo_dev_focus_framework", "title": "Solo Dev Focus Framework: 4-Gate Cashflow Prioritization", "domain": ["ai_governance","cross_app"], "tags": ["theme:solo_dev","theme:prioritization","theme:cashflow"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-031", "type": "solution_proof", "token": "self_aware_coding_agent", "title": "Self-Aware Coding Agent: Mirror Overlay für Coding Patterns", "domain": ["ai_governance","devserver"], "tags": ["theme:self_awareness","theme:quality_control","theme:meta_cognition"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-032", "type": "solution_proof", "token": "timeout_protected_resource_wrapper", "title": "Timeout-Protected Resource Wrapper: Promise.race für alle externen Calls", "domain": ["api","audio","devserver","cross_app"], "tags": ["theme:timeout","theme:resource_management","theme:blocking_prevention"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-033", "type": "solution_proof", "token": "multi_provider_orchestration", "title": "Multi-Provider Orchestration: Silent Director + Routing + TTS Cascade", "domain": ["ai_governance","api","audio","cross_app"], "tags": ["theme:multi_provider","theme:orchestration","theme:cost_efficiency"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-034", "type": "solution_proof", "token": "ui_agent_transparency_stack", "title": "UI-Agent Transparency Stack: Maya Sight + Mirror + Claim Lineage", "domain": ["frontend","meta_cognition","ai_governance","cross_app"], "tags": ["theme:transparency","theme:ui_intelligence","theme:explainability"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-035", "type": "solution_proof", "token": "safe_external_input_handler", "title": "Safe External Input Handler: JSON + API Keys + Provider Params unified", "domain": ["frontend","auth","api","cross_app"], "tags": ["theme:input_validation","theme:security","theme:sanitization"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-036", "type": "solution_proof", "token": "knowledge_synthesis_pipeline", "title": "Knowledge Synthesis Pipeline: Destill → Cross → Synthesize → Verify → Deliver", "domain": ["meta_cognition","ai_governance","frontend","cross_app"], "tags": ["theme:knowledge_management","theme:synthesis","theme:pipeline"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-037", "type": "solution_proof", "token": "trading_regime_controls", "title": "Trading Regime Controls: Maya Regime-Exit auf Markt-Zustände anwenden", "domain": ["trading","ai_governance"], "tags": ["theme:regime_control","theme:risk_management","theme:adaptive_strategy"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-038", "type": "solution_proof", "token": "agent_capability_assumptions", "title": "Agent Capability Assumptions: Explicit Assumption Registry im Agent Manifest", "domain": ["ai_governance","meta_cognition"], "tags": ["theme:assumptions","theme:agent_protocol","theme:validation"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-039", "type": "solution_proof", "token": "card_genealogy_system", "title": "Card Genealogy System: Vollständiges Ancestry Tracking für alle Cards", "domain": ["meta_cognition","cross_app"], "tags": ["theme:provenance","theme:knowledge_management","theme:genealogy"], "status": "proposed", "copy_ready": false },
-  { "id": "sol-cross-040", "type": "solution_proof", "token": "sol_model_selection", "title": "Modell-Selektion nach Task-Typ: Empirisches Ranking aus Arena-Test", "domain": ["ai_governance","devserver","cross_app"], "tags": ["theme:model_selection","theme:cost_efficiency","theme:ai_benchmarking"], "status": "active", "copy_ready": true },
-  { "id": "sol-cross-041", "type": "solution_proof", "token": "universal_state_guard_hook", "title": "Universal State Guard Hook: useAsyncGuard() für alle React Async Operations", "domain": ["frontend"], "tags": ["tech:react","theme:race_condition","theme:hooks","theme:reusability"], "status": "proposed", "copy_ready": false },
-  { "id": "meta-006", "type": "solution_proof", "token": "verbindung_als_intelligenz", "title": "Verbindung als Intelligenz: Liebe als systemischer Grundmechanismus", "domain": ["meta_cognition","cross_app","philosophy","systems"], "tags": ["meta:gürcan_dna","theme:connection","theme:emergence","theme:love_as_mechanism"], "status": "active", "copy_ready": true },
-  { "id": "sol-cross-042", "type": "solution_proof", "token": "ui_aware_self_correcting_agent", "title": "UI-Aware Self-Correcting Agent: Maya Sight + Self-Correction Protocol", "domain": ["frontend","ai_governance","meta_cognition"], "tags": ["theme:self_correction","theme:ui_intelligence","theme:quality_control"], "status": "active", "copy_ready": true },
-  { "id": "sol-cross-043", "type": "solution_proof", "token": "cost_optimized_model_router", "title": "Cost-Optimized Model Router: Model Selection + Silent Director Integration", "domain": ["ai_governance","api","devserver"], "tags": ["theme:model_selection","theme:cost_efficiency","theme:orchestration"], "status": "active", "copy_ready": true },
-  { "id": "sol-cross-044", "type": "solution_proof", "token": "resilient_timeout_wrapper", "title": "Resilient Timeout Wrapper: Promise.race + Fallback Chain Combined", "domain": ["api","audio","devserver","cross_app"], "tags": ["theme:timeout","theme:fallback","theme:resilience"], "status": "active", "copy_ready": true },
-  { "id": "sol-cross-045", "type": "solution_proof", "token": "ramanujan_numdsl_bridge", "title": "Ramanujan-NUMDSL Bridge: Zahlen als zweisprachige Träger", "domain": ["meta_cognition","systems","g_mind","aicos"], "tags": ["theme:ramanujan","theme:numdsl","theme:numbers_as_meaning","meta:gürcan_dna"], "status": "active", "copy_ready": true }
+  {
+    "id": "err-api-004",
+    "type": "error_pattern",
+    "token": "env_block_vs_code_failure",
+    "title": "ENV-Block: Agent verwechselt Umgebungsfehler mit Code-Fehler",
+    "domain": [
+      "devserver",
+      "cross_app"
+    ],
+    "tags": [
+      "tech:windsurf",
+      "tech:powershell",
+      "risk:infinite_loop",
+      "theme:env_diagnosis"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "err-api-01",
+    "type": "error_pattern",
+    "token": "openai_gpt5_max_tokens_mismatch",
+    "title": "OpenAI GPT-5: max_tokens abgelehnt (max_completion_tokens erforderlich)",
+    "domain": [
+      "api"
+    ],
+    "tags": [
+      "tech:openai",
+      "theme:provider_compat",
+      "risk:runtime_error"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "err-api-02",
+    "type": "error_pattern",
+    "token": "provider_routing_failure",
+    "title": "LLM Provider Routing Inconsistency",
+    "domain": [
+      "api"
+    ],
+    "tags": [
+      "tech:llm",
+      "risk:medium",
+      "theme:provider_routing"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "err-arch-001",
+    "type": "error_pattern",
+    "token": "infrastructure_for_infrastructure",
+    "title": "Infrastructure-for-Infrastructure Falle: SpecBridge Anti-Pattern",
+    "domain": [
+      "ai_governance",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:over_engineering",
+      "risk:no_product",
+      "theme:focus"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "err-astro-01",
+    "type": "error_pattern",
+    "token": "astrology_calculation_timeout",
+    "title": "Swiss Ephemeris Calculation Timeouts",
+    "domain": [
+      "api"
+    ],
+    "tags": [
+      "tech:astrology",
+      "risk:medium",
+      "theme:timeout"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "err-audio-01",
+    "type": "error_pattern",
+    "token": "speech_abort_loop_stale_closure",
+    "title": "SpeechRecognition Abort-Loop durch Race-Condition / stale closure",
+    "domain": [
+      "audio",
+      "frontend"
+    ],
+    "tags": [
+      "tech:web_speech_api",
+      "tech:react",
+      "risk:race_condition",
+      "theme:state_machine"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "err-audio-02",
+    "type": "error_pattern",
+    "token": "tts_fallback_cascade",
+    "title": "TTS Engine Fallback Cascade Failure",
+    "domain": [
+      "audio"
+    ],
+    "tags": [
+      "tech:tts",
+      "risk:high",
+      "theme:audio_fallback"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "err-auth-01",
+    "type": "error_pattern",
+    "token": "api_key_exposure_risk",
+    "title": "Client API Key Exposure in Provider Calls",
+    "domain": [
+      "auth"
+    ],
+    "tags": [
+      "tech:security",
+      "risk:high",
+      "theme:api_keys"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "err-db-01",
+    "type": "error_pattern",
+    "token": "memory_service_silent_failure",
+    "title": "Memory Service Silent Database Failures",
+    "domain": [
+      "db"
+    ],
+    "tags": [
+      "tech:database",
+      "risk:low",
+      "theme:data_persistence"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "err-dev-002",
+    "type": "error_pattern",
+    "token": "overlay_ui_blocks_everything",
+    "title": "Desktop-Overlay blockiert alle anderen UI-Elemente",
+    "domain": [
+      "frontend",
+      "devserver"
+    ],
+    "tags": [
+      "tech:desktop_app",
+      "tech:overlay",
+      "risk:ux_blocker"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "err-dev-003",
+    "type": "error_pattern",
+    "token": "prompt_too_long_slows_agent",
+    "title": "Zu komplexer Prompt verlangsamt Coding-Agent signifikant",
+    "domain": [
+      "devserver",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:prompt_engineering",
+      "risk:slow_execution",
+      "tech:windsurf"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "err-dev-01",
+    "type": "error_pattern",
+    "token": "vite_onedrive_stale_bundle",
+    "title": "Vite zeigt alten Code (OneDrive/Watch verliert Änderungen)",
+    "domain": [
+      "devserver",
+      "frontend"
+    ],
+    "tags": [
+      "tech:vite",
+      "env:onedrive",
+      "risk:stale_assets"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "err-dev-02",
+    "type": "error_pattern",
+    "token": "swiss_ephemeris_compatibility",
+    "title": "Swiss Ephemeris Native Module Compatibility",
+    "domain": [
+      "devserver"
+    ],
+    "tags": [
+      "tech:native_module",
+      "risk:medium",
+      "theme:deployment"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "err-frontend-01",
+    "type": "error_pattern",
+    "token": "json_parsing_vulnerability",
+    "title": "Unsafe JSON Parsing in API Responses",
+    "domain": [
+      "frontend"
+    ],
+    "tags": [
+      "tech:json",
+      "risk:high",
+      "theme:parsing"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "err-trading-001",
+    "type": "error_pattern",
+    "token": "indicator_complexity_trap",
+    "title": "Indikator-Komplexitätsfalle: Mehr Bestätigung = Schlechter",
+    "domain": [
+      "trading"
+    ],
+    "tags": [
+      "theme:psychology",
+      "theme:over_engineering",
+      "risk:analysis_paralysis"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "err-ui-01",
+    "type": "error_pattern",
+    "token": "race_condition_state_updates",
+    "title": "React State Race Conditions in Async Operations",
+    "domain": [
+      "frontend"
+    ],
+    "tags": [
+      "tech:react",
+      "risk:medium",
+      "theme:race_condition"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "err-ws-01",
+    "type": "error_pattern",
+    "token": "speech_recognition_memory_leak",
+    "title": "Speech Recognition Timer Memory Leaks",
+    "domain": [
+      "frontend"
+    ],
+    "tags": [
+      "tech:websocket",
+      "risk:medium",
+      "theme:memory_leak"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "meta-001",
+    "type": "meta_principle",
+    "token": "mirror_overlay",
+    "title": "Mirror Overlay",
+    "domain": [
+      "ai_governance",
+      "meta_cognition",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:calibration",
+      "theme:anti_hallucination"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "meta-002",
+    "type": "meta_principle",
+    "token": "claim_lineage",
+    "title": "Claim Lineage",
+    "domain": [
+      "ai_governance",
+      "meta_cognition",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:provenance",
+      "theme:debuggability"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "meta-003",
+    "type": "meta_principle",
+    "token": "regime_exit",
+    "title": "Regime-Exit Conditions",
+    "domain": [
+      "ai_governance",
+      "meta_cognition",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:anti_loop",
+      "theme:regime_control"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "meta-004",
+    "type": "meta_principle",
+    "token": "freshness_sentinel",
+    "title": "Freshness Sentinel",
+    "domain": [
+      "ai_governance",
+      "meta_cognition",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:temporal_awareness",
+      "theme:verification"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "meta-005",
+    "type": "meta_principle",
+    "token": "assumption_registry",
+    "title": "Assumption Registry",
+    "domain": [
+      "ai_governance",
+      "meta_cognition",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:assumptions",
+      "theme:anti_hallucination"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "meta-006",
+    "type": "meta_principle",
+    "token": "verbindung_als_intelligenz",
+    "title": "Verbindung als Intelligenz: Liebe als systemischer Grundmechanismus",
+    "domain": [
+      "meta_cognition",
+      "cross_app",
+      "philosophy",
+      "systems"
+    ],
+    "tags": [
+      "meta:gürcan_dna",
+      "theme:connection",
+      "theme:emergence",
+      "theme:love_as_mechanism",
+      "theme:anti_entropy"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-api-02",
+    "type": "solution_proof",
+    "token": "unified_provider_routing",
+    "title": "Unified LLM Provider Routing System",
+    "domain": [
+      "api"
+    ],
+    "tags": [
+      "tech:llm",
+      "theme:provider_routing"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-arch-001",
+    "type": "solution_proof",
+    "token": "bluepilot_modules_are_agents",
+    "title": "Bluepilot-Module = Artifex-Agents: Einheitliches Fundament",
+    "domain": [
+      "ai_governance",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:architecture",
+      "theme:unification",
+      "theme:agent_protocol"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-arch-002",
+    "type": "solution_proof",
+    "token": "agent_audit_before_marketplace",
+    "title": "Pflicht-Audit vor Marketplace-Zugang verhindert Fake-Agent-Problem",
+    "domain": [
+      "ai_governance",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:quality_control",
+      "theme:trust",
+      "theme:audit"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-arch-003",
+    "type": "solution_proof",
+    "token": "nexus_garden_card_crossing",
+    "title": "Nexus Garden: KI-Destillation + Card-Crossing-Mechanik",
+    "domain": [
+      "meta_cognition",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:knowledge_management",
+      "theme:synthesis",
+      "theme:card_system"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-arch-004",
+    "type": "solution_proof",
+    "token": "cashflow_first_then_complexity",
+    "title": "Cash-Flow First: Monetarisierbares MVP vor Meta-Infrastruktur",
+    "domain": [
+      "cross_app",
+      "ai_governance"
+    ],
+    "tags": [
+      "theme:solo_dev",
+      "theme:prioritization",
+      "theme:monetization"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-astro-01",
+    "type": "solution_proof",
+    "token": "timeout_protected_calculations",
+    "title": "Timeout-Protected Astrology Calculations",
+    "domain": [
+      "api"
+    ],
+    "tags": [
+      "tech:astrology",
+      "theme:timeout"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-audio-01",
+    "type": "solution_proof",
+    "token": "speech_state_machine_ref_guards",
+    "title": "Speech State Machine: Refs + Guards + stop() + Restart-Delay",
+    "domain": [
+      "audio",
+      "frontend"
+    ],
+    "tags": [
+      "tech:web_speech_api",
+      "tech:react",
+      "theme:guards",
+      "theme:cooldown"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-audio-02",
+    "type": "solution_proof",
+    "token": "robust_tts_fallback",
+    "title": "Robust TTS Engine Fallback Strategy",
+    "domain": [
+      "audio"
+    ],
+    "tags": [
+      "tech:tts",
+      "theme:audio_fallback"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-auth-01",
+    "type": "solution_proof",
+    "token": "secure_api_key_handling",
+    "title": "Secure API Key Management with Client Support",
+    "domain": [
+      "auth"
+    ],
+    "tags": [
+      "tech:security",
+      "theme:api_keys"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-cross-007",
+    "type": "solution_proof",
+    "token": "context_complexity_trap",
+    "title": "Context Complexity Trap: Trading Paralyse = Agent Prompt-Bloat",
+    "domain": [
+      "trading",
+      "ai_governance",
+      "devserver"
+    ],
+    "tags": [
+      "theme:psychology",
+      "theme:prompt_engineering",
+      "theme:minimalism",
+      "theme:anti_over_engineering"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-008",
+    "type": "solution_proof",
+    "token": "visual_tdd_agent_loop",
+    "title": "Visual TDD for Agents: HTML Demo als automatischer DOM-Test-Guard",
+    "domain": [
+      "frontend",
+      "meta_cognition",
+      "devserver"
+    ],
+    "tags": [
+      "theme:ux_guard",
+      "theme:fail_fast",
+      "theme:automation",
+      "theme:tdd"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-009",
+    "type": "solution_proof",
+    "token": "agentic_race_condition_guards",
+    "title": "Agentic Race Condition Guards: React requestIdRef Pattern auf Multi-Agent",
+    "domain": [
+      "frontend",
+      "audio",
+      "ai_governance"
+    ],
+    "tags": [
+      "theme:race_condition",
+      "theme:state_management",
+      "theme:agent_workflow"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-010",
+    "type": "solution_proof",
+    "token": "assumption_bound_parsing",
+    "title": "Assumption-Bound Schema Parsing: Assumption Registry → JSON Validation",
+    "domain": [
+      "frontend",
+      "api",
+      "meta_cognition"
+    ],
+    "tags": [
+      "theme:parsing",
+      "theme:assumptions",
+      "theme:anti_hallucination",
+      "theme:provider_drift"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-011",
+    "type": "solution_proof",
+    "token": "mirror_lineage_overlay",
+    "title": "Mirror + Claim Lineage: Transparente AI Reasoning mit Immutable Audit",
+    "domain": [
+      "ai_governance",
+      "meta_cognition"
+    ],
+    "tags": [
+      "theme:calibration",
+      "theme:anti_hallucination",
+      "theme:provenance",
+      "theme:debuggability"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-012",
+    "type": "solution_proof",
+    "token": "over_engineering_early_warning",
+    "title": "Over-Engineering Early Warning: 7-Tage Shippable Feature Gate",
+    "domain": [
+      "trading",
+      "ai_governance",
+      "devserver",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:anti_over_engineering",
+      "theme:focus",
+      "theme:complexity_budget",
+      "theme:shipping"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-013",
+    "type": "solution_proof",
+    "token": "self_monitoring_agent_stack",
+    "title": "Self-Monitoring Agent Stack: Mirror + Freshness + Regime Exit",
+    "domain": [
+      "ai_governance",
+      "meta_cognition",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:self_monitoring",
+      "theme:anti_hallucination",
+      "theme:temporal_awareness",
+      "theme:anti_loop"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-014",
+    "type": "solution_proof",
+    "token": "agent_self_correction_protocol",
+    "title": "Agent Self-Correction Protocol: Split-Role + Assumption + Regime Exit",
+    "domain": [
+      "ai_governance",
+      "meta_cognition",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:self_correction",
+      "theme:quality_control",
+      "theme:anti_loop",
+      "theme:autonomy"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-015",
+    "type": "solution_proof",
+    "token": "state_machine_lifecycle_protocol",
+    "title": "State Machine Lifecycle Protocol: Unified Async Resource States",
+    "domain": [
+      "audio",
+      "frontend",
+      "ai_governance",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:state_machine",
+      "theme:lifecycle",
+      "theme:guards",
+      "theme:anti_loop"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-016",
+    "type": "solution_proof",
+    "token": "agent_registry_protocol",
+    "title": "Agent Registry Protocol: Vollständiger Agent Governance Stack",
+    "domain": [
+      "ai_governance",
+      "meta_cognition",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:agent_protocol",
+      "theme:governance",
+      "theme:audit",
+      "theme:provenance"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-017",
+    "type": "solution_proof",
+    "token": "fail_fast_viability_gates",
+    "title": "Fail-Fast Viability Gates: Unified Pre-Flight Checks mit konkreten Zahlen",
+    "domain": [
+      "devserver",
+      "ai_governance",
+      "frontend",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:fail_fast",
+      "theme:viability_check",
+      "theme:cost_control",
+      "theme:pre_flight"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-018",
+    "type": "solution_proof",
+    "token": "env_diagnosis_escape_hatch",
+    "title": "Environment Diagnosis Escape Hatch: Unified ENV vs Code Failure",
+    "domain": [
+      "devserver",
+      "frontend",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:env_diagnosis",
+      "theme:escape_hatch",
+      "theme:agent_workflow",
+      "theme:debugging"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-019",
+    "type": "solution_proof",
+    "token": "universal_fallback_chain",
+    "title": "Universal Fallback Chain: N-1 Fallback, niemals silent fail to zero",
+    "domain": [
+      "audio",
+      "api",
+      "db",
+      "devserver",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:resilience",
+      "theme:fallback",
+      "theme:graceful_degradation"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-020",
+    "type": "solution_proof",
+    "token": "ref_based_state_machine_guard",
+    "title": "Ref-Based State Machine Guards: React State vs Refs Grundprinzip",
+    "domain": [
+      "audio",
+      "frontend",
+      "devserver"
+    ],
+    "tags": [
+      "tech:react",
+      "theme:state_machine",
+      "theme:guards",
+      "theme:async_stability"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-021",
+    "type": "solution_proof",
+    "token": "fail_fast_with_escape_hatch",
+    "title": "Fail-Fast Gates mit Escape Hatch: Code vs Environment unterscheiden",
+    "domain": [
+      "devserver",
+      "ai_governance",
+      "meta_cognition"
+    ],
+    "tags": [
+      "theme:fail_fast",
+      "theme:cost_control",
+      "theme:anti_loop",
+      "theme:escape_hatch"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-022",
+    "type": "solution_proof",
+    "token": "provenance_freshness_security_trinity",
+    "title": "Provenance + Freshness + Security: Truth Verification Trinity",
+    "domain": [
+      "ai_governance",
+      "meta_cognition",
+      "auth",
+      "db"
+    ],
+    "tags": [
+      "theme:provenance",
+      "theme:temporal_awareness",
+      "theme:verification",
+      "theme:security"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-023",
+    "type": "solution_proof",
+    "token": "adaptive_complexity_execution",
+    "title": "Adaptive Complexity: Lite vs Full Mode — Match Complexity to Task",
+    "domain": [
+      "devserver",
+      "trading",
+      "frontend",
+      "ai_governance"
+    ],
+    "tags": [
+      "theme:adaptive_execution",
+      "theme:prompt_engineering",
+      "theme:prioritization"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-024",
+    "type": "solution_proof",
+    "token": "orchestration_over_collaboration",
+    "title": "Orchestration über direkte Kollaboration: Silent Director Prinzip universal",
+    "domain": [
+      "ai_governance",
+      "api",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:multi_agent",
+      "theme:orchestration",
+      "theme:cost_efficiency",
+      "theme:provider_routing"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-025",
+    "type": "solution_proof",
+    "token": "monetization_before_abstraction",
+    "title": "Monetization Before Abstraction: Validate Value Before Complexity",
+    "domain": [
+      "ai_governance",
+      "frontend",
+      "devserver",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:solo_dev",
+      "theme:prioritization",
+      "theme:monetization",
+      "theme:validation"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-026",
+    "type": "solution_proof",
+    "token": "marketplace_trust_quality_gates",
+    "title": "Marketplace Trust durch Audit + Quality Gates: Verify Before Trust",
+    "domain": [
+      "ai_governance",
+      "devserver",
+      "frontend",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:quality_control",
+      "theme:trust",
+      "theme:audit",
+      "theme:verification"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-027",
+    "type": "solution_proof",
+    "token": "cache_as_resilience_layer",
+    "title": "Cache Layer als Resilience: User bevorzugt alte Daten über nichts",
+    "domain": [
+      "db",
+      "audio",
+      "frontend",
+      "api"
+    ],
+    "tags": [
+      "theme:data_persistence",
+      "theme:cache",
+      "theme:fallback",
+      "theme:resilience"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-028",
+    "type": "solution_proof",
+    "token": "audited_director_pattern",
+    "title": "Audited Director: Self-Correcting Multi-Agent Orchestration",
+    "domain": [
+      "ai_governance",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:multi_agent",
+      "theme:quality_control",
+      "theme:learning",
+      "theme:routing"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-029",
+    "type": "solution_proof",
+    "token": "demo_driven_validation",
+    "title": "Demo-Driven Validation: HTML Demo als Spec UND Acceptance Test",
+    "domain": [
+      "frontend",
+      "ai_governance"
+    ],
+    "tags": [
+      "theme:agent_workflow",
+      "theme:quality_control",
+      "theme:ux_guard",
+      "theme:acceptance_testing"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-030",
+    "type": "solution_proof",
+    "token": "solo_dev_focus_framework",
+    "title": "Solo Dev Focus Framework: 4-Gate Cashflow Prioritization",
+    "domain": [
+      "ai_governance",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:solo_dev",
+      "theme:prioritization",
+      "theme:focus",
+      "theme:cashflow"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-031",
+    "type": "solution_proof",
+    "token": "self_aware_coding_agent",
+    "title": "Self-Aware Coding Agent: Mirror Overlay für Coding Patterns",
+    "domain": [
+      "ai_governance",
+      "devserver"
+    ],
+    "tags": [
+      "theme:self_awareness",
+      "theme:quality_control",
+      "theme:meta_cognition",
+      "theme:pattern_recognition"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-032",
+    "type": "solution_proof",
+    "token": "timeout_protected_resource_wrapper",
+    "title": "Timeout-Protected Resource Wrapper: Promise.race für alle externen Calls",
+    "domain": [
+      "api",
+      "audio",
+      "devserver",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:timeout",
+      "theme:resource_management",
+      "theme:blocking_prevention"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-033",
+    "type": "solution_proof",
+    "token": "multi_provider_orchestration",
+    "title": "Multi-Provider Orchestration: Silent Director + Routing + TTS Cascade",
+    "domain": [
+      "ai_governance",
+      "api",
+      "audio",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:multi_provider",
+      "theme:orchestration",
+      "theme:cost_efficiency",
+      "theme:provider_routing"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-034",
+    "type": "solution_proof",
+    "token": "ui_agent_transparency_stack",
+    "title": "UI-Agent Transparency Stack: Maya Sight + Mirror + Claim Lineage",
+    "domain": [
+      "frontend",
+      "meta_cognition",
+      "ai_governance",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:transparency",
+      "theme:ui_intelligence",
+      "theme:provenance",
+      "theme:explainability"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-035",
+    "type": "solution_proof",
+    "token": "safe_external_input_handler",
+    "title": "Safe External Input Handler: JSON + API Keys + Provider Params unified",
+    "domain": [
+      "frontend",
+      "auth",
+      "api",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:input_validation",
+      "theme:security",
+      "theme:sanitization",
+      "theme:defensive_programming"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-036",
+    "type": "solution_proof",
+    "token": "knowledge_synthesis_pipeline",
+    "title": "Knowledge Synthesis Pipeline: Destill → Cross → Synthesize → Verify → Deliver",
+    "domain": [
+      "meta_cognition",
+      "ai_governance",
+      "frontend",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:knowledge_management",
+      "theme:synthesis",
+      "theme:distillation",
+      "theme:pipeline"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-037",
+    "type": "solution_proof",
+    "token": "trading_regime_controls",
+    "title": "Trading Regime Controls: Maya Regime-Exit auf Markt-Zustände anwenden",
+    "domain": [
+      "trading",
+      "ai_governance"
+    ],
+    "tags": [
+      "theme:regime_control",
+      "theme:risk_management",
+      "theme:adaptive_strategy"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-038",
+    "type": "solution_proof",
+    "token": "agent_capability_assumptions",
+    "title": "Agent Capability Assumptions: Explicit Assumption Registry im Agent Manifest",
+    "domain": [
+      "ai_governance",
+      "meta_cognition"
+    ],
+    "tags": [
+      "theme:assumptions",
+      "theme:agent_protocol",
+      "theme:validation",
+      "theme:contracts"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-039",
+    "type": "solution_proof",
+    "token": "card_genealogy_system",
+    "title": "Card Genealogy System: Vollständiges Ancestry Tracking für alle Cards",
+    "domain": [
+      "meta_cognition",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:provenance",
+      "theme:knowledge_management",
+      "theme:card_system",
+      "theme:genealogy"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-040",
+    "type": "solution_proof",
+    "token": "sol_model_selection",
+    "title": "Modell-Selektion nach Task-Typ: Empirisches Ranking aus Arena-Test",
+    "domain": [
+      "ai_governance",
+      "devserver",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:model_selection",
+      "theme:cost_efficiency",
+      "theme:ai_benchmarking"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-cross-041",
+    "type": "solution_proof",
+    "token": "universal_state_guard_hook",
+    "title": "Universal State Guard Hook: useAsyncGuard() für alle React Async Operations",
+    "domain": [
+      "frontend"
+    ],
+    "tags": [
+      "tech:react",
+      "theme:race_condition",
+      "theme:hooks",
+      "theme:reusability"
+    ],
+    "status": "proposed",
+    "copy_ready": false
+  },
+  {
+    "id": "sol-cross-042",
+    "type": "solution_proof",
+    "token": "ui_aware_self_correcting_agent",
+    "title": "UI-Aware Self-Correcting Agent: Maya Sight + Self-Correction Protocol",
+    "domain": [
+      "frontend",
+      "ai_governance",
+      "meta_cognition"
+    ],
+    "tags": [
+      "theme:self_correction",
+      "theme:ui_intelligence",
+      "theme:quality_control",
+      "theme:reactive_agents"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-cross-043",
+    "type": "solution_proof",
+    "token": "cost_optimized_model_router",
+    "title": "Cost-Optimized Model Router: Model Selection + Silent Director Integration",
+    "domain": [
+      "ai_governance",
+      "api",
+      "devserver"
+    ],
+    "tags": [
+      "theme:model_selection",
+      "theme:cost_efficiency",
+      "theme:orchestration",
+      "theme:routing"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-cross-044",
+    "type": "solution_proof",
+    "token": "resilient_timeout_wrapper",
+    "title": "Resilient Timeout Wrapper: Promise.race + Fallback Chain Combined",
+    "domain": [
+      "api",
+      "audio",
+      "devserver",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:timeout",
+      "theme:fallback",
+      "theme:resilience",
+      "theme:graceful_degradation"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-cross-045",
+    "type": "solution_proof",
+    "token": "ramanujan_numdsl_bridge",
+    "title": "Ramanujan-NUMDSL Bridge: Zahlen als zweisprachige Träger",
+    "domain": [
+      "meta_cognition",
+      "systems",
+      "g_mind",
+      "aicos"
+    ],
+    "tags": [
+      "theme:ramanujan",
+      "theme:numdsl",
+      "theme:numbers_as_meaning",
+      "theme:mock_theta_decay",
+      "theme:highly_composite",
+      "meta:gürcan_dna"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-db-01",
+    "type": "solution_proof",
+    "token": "resilient_memory_service",
+    "title": "Resilient Memory Service with Fallback Storage",
+    "domain": [
+      "db"
+    ],
+    "tags": [
+      "tech:database",
+      "theme:data_persistence"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-dev-005",
+    "type": "solution_proof",
+    "token": "stepstack_fail_fast_gates",
+    "title": "StepStack: Fail-Fast Gates vor teuren Phasen",
+    "domain": [
+      "devserver",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:fail_fast",
+      "theme:cost_control",
+      "tech:stepstack"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-dev-006",
+    "type": "solution_proof",
+    "token": "proof_core_split_role_technique",
+    "title": "PROOF CORE Split-Role: Executor + Auditor in einem Agent",
+    "domain": [
+      "ai_governance",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:agent_workflow",
+      "theme:quality_control",
+      "tech:windsurf",
+      "tech:proof_core"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-dev-01",
+    "type": "solution_proof",
+    "token": "vite_use_polling_onedrive",
+    "title": "Vite Watch Polling aktivieren + Cache/SW bereinigen",
+    "domain": [
+      "devserver",
+      "frontend"
+    ],
+    "tags": [
+      "tech:vite",
+      "env:onedrive",
+      "theme:cache"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-dev-02",
+    "type": "solution_proof",
+    "token": "graceful_native_fallback",
+    "title": "Graceful Native Module Fallback System",
+    "domain": [
+      "devserver"
+    ],
+    "tags": [
+      "tech:native_module",
+      "theme:deployment"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-frontend-01",
+    "type": "solution_proof",
+    "token": "safe_json_parsing",
+    "title": "Safe JSON Parsing with Validation",
+    "domain": [
+      "frontend"
+    ],
+    "tags": [
+      "tech:json",
+      "theme:parsing"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-multiagent-001",
+    "type": "solution_proof",
+    "token": "silent_director_pattern",
+    "title": "Silent Director: Maya als stille Dirigentin statt freiem LLM-Gespräch",
+    "domain": [
+      "ai_governance",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:multi_agent",
+      "theme:orchestration",
+      "theme:cost_efficiency"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-trading-001",
+    "type": "solution_proof",
+    "token": "multi_provider_rsi_strategy",
+    "title": "RSI-Strategie: 250-Period Trend + 10-Period Pullback",
+    "domain": [
+      "trading"
+    ],
+    "tags": [
+      "tech:pine_script",
+      "theme:trend_following",
+      "theme:entry_timing"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-ui-01",
+    "type": "solution_proof",
+    "token": "async_state_management",
+    "title": "Async Operation State Management with Request IDs",
+    "domain": [
+      "frontend"
+    ],
+    "tags": [
+      "tech:react",
+      "theme:race_condition"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-ux-001",
+    "type": "solution_proof",
+    "token": "maya_sight_ui_awareness",
+    "title": "Maya Sight: KI-UI-Awareness durch DOM-Introspection + Struggle-Tracking",
+    "domain": [
+      "frontend",
+      "meta_cognition"
+    ],
+    "tags": [
+      "theme:ux_intelligence",
+      "theme:ai_ui",
+      "tech:react",
+      "theme:accessibility"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-ux-002",
+    "type": "solution_proof",
+    "token": "demo_first_then_implement",
+    "title": "Demo-First: HTML-Mockup als Referenz vor Agent-Implementierung",
+    "domain": [
+      "frontend",
+      "cross_app"
+    ],
+    "tags": [
+      "theme:agent_workflow",
+      "tech:windsurf",
+      "theme:ux_guard"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-ws-01",
+    "type": "solution_proof",
+    "token": "speech_recognition_lifecycle",
+    "title": "Speech Recognition Lifecycle Management",
+    "domain": [
+      "frontend"
+    ],
+    "tags": [
+      "tech:websocket",
+      "theme:memory_leak"
+    ],
+    "status": "active",
+    "copy_ready": true
+  }
 ]
