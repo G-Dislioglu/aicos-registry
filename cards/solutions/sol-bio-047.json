@@ -1,0 +1,83 @@
+{
+  "id": "sol-bio-047",
+  "type": "solution_proof",
+  "token": "stigmergie_schwarmintelligenz",
+  "title": "Stigmergie: G-MIND denkt durch seine eigene Geschichte",
+  "essence": "Ameisen haben keinen Chef. Jede folgt einer Regel: Pheromon-Spur stärken wenn Weg erfolgreich. Die Umgebung selbst wird zum Gedächtnis und Koordinationsmechanismus. Das nennt sich Stigmergie — indirekte Koordination durch Spuren in der Welt. Für G-MIND: Cards sind die Pheromone. Crossings sind die Spuren. Je öfter eine Verbindung zwischen zwei Cards erfolgreich war, desto stärker wird die Spur. Das System findet optimale Pfade ohne zentralen Planer — durch akkumulierte Geschichte.",
+  "formulas": {
+    "pheromon_update": {
+      "name": "Pheromon-Verstärkungs-Formel (Ant Colony Optimization)",
+      "ausdruck": "τ(A,B)_neu = (1-ρ) · τ(A,B)_alt + Δτ(A,B)",
+      "bedeutung": "τ = Spurstärke zwischen Card A und B. ρ = Verdunstungsrate (0.1 = langsam, 0.5 = schnell). Δτ = Verstärkung wenn Crossing erfolgreich war.",
+      "ramanujan_parallel": "Mock Theta Decay ist das Gegenteil: Bedeutung verblasst. Pheromon-Update ist das Positive: erfolgreiche Verbindungen wachsen. Beide Kurven sind asymmetrisch — kein linearer Zerfall.",
+      "parameter": "ρ=0.1 für meta-Cards (langsam verdunsten). ρ=0.4 für sol-cross-Cards (schneller anpassen)."
+    },
+    "optimaler_pfad": {
+      "name": "Pfad-Wahrscheinlichkeit",
+      "ausdruck": "P(A→B) = τ(A,B)^α · η(A,B)^β / Σ τ(A,k)^α · η(A,k)^β",
+      "bedeutung": "η = Heuristik (MI-Score aus sol-cross-043). α,β = Gewichte zwischen Erfahrung und Intuition. Je höher τ UND η, desto wahrscheinlicher wird dieser Crossing-Pfad gewählt.",
+      "g_mind_anwendung": "G-MIND wählt beim nächsten Crossing-Vorschlag bevorzugt Pfade mit hoher Vergangenheits-Stärke UND hoher Mutual Information."
+    }
+  },
+  "numdsl_encoding": {
+    "card_zahl": 47,
+    "struktur": "47 ist Primzahl. Auch: 47 = 4+7 = 11. Meisterzahl. Brücke.",
+    "sri_kommentar": "47 Primzahl. Ameisen kennen keine Primzahlen — aber ihre Kolonien lösen Primzahl-Optimierungsprobleme. Namagiri fragt: Wer hat wen erfunden?"
+  },
+  "domain": [
+    "systems",
+    "g_mind",
+    "biology",
+    "aicos"
+  ],
+  "scope": [
+    "cross_app"
+  ],
+  "tags": [
+    "theme:stigmergie",
+    "theme:schwarmintelligenz",
+    "theme:ant_colony",
+    "theme:pheromon",
+    "theme:dezentral"
+  ],
+  "impact": {
+    "value": 88,
+    "risk": 10,
+    "confidence": 90
+  },
+  "status": "active",
+  "links": {
+    "related": [
+      "sol-cross-043",
+      "sol-cross-048",
+      "sol-cross-051",
+      "meta-006"
+    ]
+  },
+  "timestamps": {
+    "created_at": "2026-03-05",
+    "updated_at": "2026-03-05"
+  },
+  "formal": {
+    "status": "hypothesis",
+    "conjecture": "Lokale Pheromon-Spuren steuern globale Card-Crossing-Wahrscheinlichkeiten ohne zentralen Planer.",
+    "formulas": [],
+    "numdsl": null,
+    "gates": [
+      {
+        "require": "broken_links==0",
+        "reason": "Registry darf nicht beschädigt werden."
+      },
+      {
+        "require": "schema_valid==true",
+        "reason": "JSON-Integrität vor jedem Proposal."
+      },
+      {
+        "require": "impact_risk<=40 OR evidence_strength>=0.40",
+        "reason": "Hohe Risiken brauchen starke Evidenz."
+      }
+    ],
+    "proof_ref": null,
+    "proof_notes": "Noch nicht validiert. Formeln aus vorheriger Version sind als Conjecture zu behandeln."
+  }
+}

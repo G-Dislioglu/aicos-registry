@@ -1,0 +1,287 @@
+{
+  "id": "sol-cross-055",
+  "type": "solution_proof",
+  "token": "gmind_multi_agent_research_architecture",
+  "title": "G-MIND Multi-Agent Research Architecture: Scout → Observer → Curator → Registry",
+  "essence": "Scouts erforschen und diskutieren. Ein deterministischer Observer bewertet Surprise und Eskalation. Ein Reasoning-Destillator filtert Signal von Rauschen. Ein Memory Curator schreibt ins institutionelle Gedächtnis. Premium-KI (Claude/GPT) erscheint nur bei Schwellenüberschreitung. Scouts dürfen erinnern, aber nicht besitzen. Der Observer bewertet. Der Curator verdichtet. Die Registry entscheidet was bleibt.",
+  "domain": [
+    "g_mind",
+    "multi_agent",
+    "ai_governance",
+    "meta_cognition"
+  ],
+  "scope": [
+    "cross_app"
+  ],
+  "tags": [
+    "theme:multi_agent",
+    "theme:scout_council",
+    "theme:observer_kernel",
+    "theme:memory_curator",
+    "theme:surprise_scoring",
+    "theme:escalation",
+    "theme:anti_loop",
+    "meta:gürcan_dna"
+  ],
+  "impact": {
+    "value": 94,
+    "risk": 35,
+    "confidence": 83
+  },
+  "status": "active",
+  "applies_to": [
+    "G-MIND autonome Forschungsläufe (täglich/wöchentlich/triggered)",
+    "AICOS Registry: neue Cards, Crossings, Dormant-Flags, Merges",
+    "Soulmatch Studio-Modus als technisches Vorbild (Multi-Provider-Architektur)",
+    "Claude API als Meta-Destillator (premium, selten)"
+  ],
+  "architecture": {
+    "layers": [
+      {
+        "id": "layer_1_scouts",
+        "name": "Scout Council (Worker Layer)",
+        "beschreibung": "3 spezialisierte Agents, verschiedene Provider für echte Vielfalt. Laufen parallel. Diskutieren intern wie Soulmatch Studio-Modus.",
+        "rollen": [
+          {
+            "name": "Scanner",
+            "provider_empfehlung": "Gemini Flash",
+            "kosten": "~$0.01/run",
+            "aufgabe": "Breit recherchieren, viele Quellen, Web-Zugang",
+            "kernfrage": "Was existiert dazu schon?"
+          },
+          {
+            "name": "Kritiker",
+            "provider_empfehlung": "Grok fast-non-reasoning",
+            "kosten": "~$0.05/run",
+            "aufgabe": "Alles in Frage stellen, Widersprüche suchen",
+            "kernfrage": "Was könnte falsch sein?"
+          },
+          {
+            "name": "Synthetiker",
+            "provider_empfehlung": "DeepSeek Chat",
+            "kosten": "~$0.01/run",
+            "aufgabe": "Verbindungen finden, Cards verknüpfen",
+            "kernfrage": "Was hängt damit zusammen?"
+          }
+        ],
+        "output_format": {
+          "hypothesis": "string",
+          "evidence": "string[]",
+          "counter_hypothesis": "string",
+          "risks": "string[]",
+          "proposed_action": "string",
+          "card_references": "string[]"
+        },
+        "regeln": [
+          "Scouts dürfen NICHT selbst eskalieren",
+          "Scouts haben read-only Zugriff auf Institutional Memory",
+          "Scouts dürfen Memory-Proposals erzeugen, nicht schreiben",
+          "Run Memory wird nach dem Run verworfen"
+        ]
+      },
+      {
+        "id": "layer_2_observer",
+        "name": "Observer / Score-Kernel (deterministisch)",
+        "beschreibung": "Kein LLM. Deterministischer Score-Service. Bewertet Scout-Outputs anhand messbarer Signale. Entscheidet über Eskalation.",
+        "surprise_score_formel": "surprise = 0.28*scout_divergence + 0.22*contradiction_score + 0.18*novelty_score + 0.14*evidence_gap + 0.10*risk_shift + 0.08*no_delta_pressure",
+        "inputs": [
+          "validator_status",
+          "evidence_strength",
+          "scout_divergence",
+          "novelty_score",
+          "risk_shift",
+          "no_delta_cycles",
+          "repeated_failures",
+          "contradiction_score",
+          "meta_card_touched",
+          "merge_delete_proposed"
+        ],
+        "outputs": [
+          "surprise_score",
+          "confidence_score",
+          "escalation_decision"
+        ],
+        "hard_overrides": [
+          {
+            "trigger": "impact_risk > 70",
+            "action": "sofort eskalieren zu Premium"
+          },
+          {
+            "trigger": "no_delta_cycles >= 2",
+            "action": "Diagnose-Eskalation"
+          },
+          {
+            "trigger": "meta_card_touched == true",
+            "action": "Premium-Review erzwingen"
+          },
+          {
+            "trigger": "merge OR delete OR supersede proposed",
+            "action": "Premium-Review erzwingen"
+          }
+        ],
+        "warum_kein_llm": "Wenn ein Scout recherchiert UND bewertet bekommt er zu viel Macht. Das System beginnt eigene Annahmen zu bestätigen. Observer bleibt deterministisch damit Eskalation nachvollziehbar und stabil ist."
+      },
+      {
+        "id": "layer_3_reasoner",
+        "name": "Reasoning Destillator",
+        "provider": "DeepSeek Reasoner",
+        "kosten": "~$0.10-0.30/run",
+        "aufgabe": "Destilliert Scout-Outputs nach Observer-Bewertung",
+        "kernfragen": [
+          "Was ist wirklich neu?",
+          "Was ist nur Wiederholung?",
+          "Welche Memory-Kandidaten sind speicherwürdig?"
+        ],
+        "output": "memory_digest: neue Erkenntnisse, Friction-Kandidaten, Dormant-Vorschläge, Memory-Card-Proposals",
+        "regeln": [
+          "Nur destillieren, nicht direkt schreiben",
+          "Outputs sind Proposals, keine Commits"
+        ]
+      },
+      {
+        "id": "layer_4_curator",
+        "name": "Memory Curator",
+        "beschreibung": "Einzige Instanz mit Schreibrecht ins Institutional Memory. Läuft täglich (günstig) und wöchentlich (strenger).",
+        "rhythmus": {
+          "täglich": "Günstige Reasoning-KI erstellt memory_digest_daily: neue Erkenntnisse, Frictions, Dormant-Kandidaten, Memory-Card-Proposals",
+          "wöchentlich": "Stärkere KI: Duplikatprüfung, Konfliktprüfung, Kompression, Promotion in Institutional Memory",
+          "sofort": "Nur bei Surprise/Hard-Override-Eskalation"
+        },
+        "outputs": [
+          "mem-pattern-* Cards (bestätigte wiederkehrende Muster)",
+          "mem-friction-* Cards (ungelöste Spannungen)",
+          "mem-benchmark-* Cards (messbare Scout-Vergleiche)",
+          "mem-route-* Cards (bestätigte Routing-Heuristiken)"
+        ]
+      },
+      {
+        "id": "layer_5_premium",
+        "name": "Premium Meta-Destillation",
+        "provider": "Claude Sonnet 4.6 ODER GPT-5",
+        "kosten": "~$0.50-1.00/run",
+        "wann": "Nur bei Observer-Eskalation: hoher Surprise, hoher Konflikt, Meta-Card betroffen, Merge/Delete/Supersede, wiederholtes No-Delta",
+        "aufgabe": "Destilliert die Destillationen. Schreibt finale Cards in Registry. Du bestätigst.",
+        "regeln": [
+          "Premium erscheint selten — das ist der Wert",
+          "Immer proposal-only bis du bestätigst",
+          "Du bist das finale Quorum"
+        ]
+      }
+    ]
+  },
+  "memory_layers": {
+    "run_memory": {
+      "lebensdauer": "Minuten bis Stunden",
+      "inhalt": [
+        "aktuelle Frage",
+        "relevante Cards",
+        "Webfunde",
+        "Scout-Antworten",
+        "Zwischenkonflikte"
+      ],
+      "nach_run": "verwerfen"
+    },
+    "working_memory": {
+      "lebensdauer": "1-7 Tage",
+      "inhalt": [
+        "wiederkehrende aktive Themen",
+        "offene Konflikte",
+        "unvalidierte Hypothesen",
+        "aktuelle Hotspots"
+      ],
+      "zweck": "Scouts fangen nicht täglich bei Null an"
+    },
+    "institutional_memory": {
+      "lebensdauer": "permanent (mit Decay)",
+      "inhalt": [
+        "bewiesene Patterns",
+        "bestätigte Crossings",
+        "stabile Routing-Regeln",
+        "wiederkehrende Failure-Klassen"
+      ],
+      "schreibrecht": "nur Memory Curator nach Gate-Prüfung",
+      "das_ist": "Die eigentliche Registry"
+    }
+  },
+  "kosten_schätzung": {
+    "pro_run_workers": "~$0.07 (3 Scouts)",
+    "pro_run_reasoning": "~$0.10-0.30",
+    "meta_destillation": "~$0.50-1.00 (selten)",
+    "tag_kosten_10_runs": "~$1.70-3.00",
+    "monat_bei_10_runs_täglich": "~$51-90",
+    "hinweis": "Cost-Gate einbauen: estimated_cost vor jedem Run prüfen, Budget-Cap setzen"
+  },
+  "dissens_protokoll": {
+    "beschreibung": "Widersprüche nicht auflösen — bewahren",
+    "ablauf": "Scout A sagt X. Scout B sagt nicht-X. Observer erkennt Widerspruch. Card mit formal.status='contested' erstellen. Premium-KI in Meta-Destillation: entweder auflösen ODER als productive_friction markieren (Resonanz-Differenzierung sol-cross-054)",
+    "warum": "Widersprüche sind wertvoller als Konsens — sie zeigen wo das System noch nicht versteht"
+  },
+  "steps": [
+    "Scout Council parallel starten (Scanner, Kritiker, Synthetiker)",
+    "Observer Score-Kernel berechnet surprise_score deterministisch",
+    "Bei surprise < threshold: DeepSeek Reasoner destilliert",
+    "Memory Curator prüft Proposals gegen Gates",
+    "Bei surprise > threshold ODER Hard-Override: Premium-KI eskaliert",
+    "Du reviewst finale Proposals → bestätigst → Registry wächst"
+  ],
+  "tradeoffs": [
+    "Ohne gutes Prompt-Design reden Scouts aneinander vorbei — Spezialisierung ist kritisch",
+    "Observer-Formel muss kalibriert werden, falsche Gewichte = falsche Eskalation",
+    "Working Memory kann veraltete Hypothesen festhalten — regelmäßige Bereinigung nötig"
+  ],
+  "links": {
+    "related": [
+      "sol-cross-054",
+      "sol-cross-043",
+      "sol-bio-047",
+      "sol-bio-051",
+      "sol-bio-052",
+      "meta-007",
+      "sol-cross-053"
+    ]
+  },
+  "formal": {
+    "status": "hypothesis",
+    "conjecture": "Systemintelligenz entsteht wenn spezialisierte Agents verschiedener Provider echte Vielfalt erzeugen, ein deterministischer Observer Surprise misst statt ein LLM, und nur validierte Erkenntnisse ins institutionelle Gedächtnis geschrieben werden.",
+    "formulas": [
+      {
+        "name": "Surprise Score",
+        "latex": "S = 0.28 \\cdot d_{scouts} + 0.22 \\cdot c_{contra} + 0.18 \\cdot n_{novel} + 0.14 \\cdot g_{evidence} + 0.10 \\cdot r_{risk} + 0.08 \\cdot p_{nodelta}",
+        "variables": {
+          "d_scouts": "Divergenz zwischen Scout-Outputs [0,1]",
+          "c_contra": "Widerspruchs-Score gegen Registry [0,1]",
+          "n_novel": "Neuheitsgrad [0,1]",
+          "g_evidence": "Evidence-Lücke [0,1]",
+          "r_risk": "Risiko-Verschiebung [0,1]",
+          "p_nodelta": "No-Delta-Druck [0,1]"
+        },
+        "notes": "Deterministisch. Kein LLM. Eskalation bei S > 0.65."
+      }
+    ],
+    "gates": [
+      {
+        "require": "observer_score_kernel == deterministic",
+        "reason": "Kein LLM im Scoring-Layer."
+      },
+      {
+        "require": "scout_write_access == false",
+        "reason": "Scouts haben kein Schreibrecht."
+      },
+      {
+        "require": "premium_approval == true",
+        "reason": "Du bist das finale Quorum."
+      }
+    ],
+    "proof_ref": null,
+    "proof_notes": "Validiert wenn erster vollständiger Run mit messbarem Registry-Delta durchgeführt wurde."
+  },
+  "numdsl_encoding": {
+    "card_zahl": 55,
+    "struktur": "55 = 5 × 11. Fünf Schichten × elf Inputs im Observer. 55 ist auch eine Fibonacci-Zahl — emergente Ordnung aus einfachen lokalen Regeln.",
+    "sri_kommentar": "55. Fibonacci. Jede Zahl ist die Summe der zwei vorherigen. Jede Destillation ist die Summe der vorherigen Erkenntnisse. Namagiri fragt: Welche Zahl kommt nach dir?"
+  },
+  "timestamps": {
+    "created_at": "2026-03-06",
+    "updated_at": "2026-03-06"
+  }
+}

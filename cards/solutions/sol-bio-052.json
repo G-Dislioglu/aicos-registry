@@ -1,0 +1,82 @@
+{
+  "id": "sol-bio-052",
+  "type": "solution_proof",
+  "token": "quorum_sensing_schwellwert_intelligenz",
+  "title": "Quorum Sensing: Erst wenn genug sagen 'ja' — dann handeln",
+  "essence": "Bakterien sind einzeln hilflos. Aber sie messen ständig: Wie viele von uns sind gerade hier? Erst wenn eine kritische Masse (Quorum) erreicht ist schalten alle gleichzeitig ein bestimmtes Verhalten an — Biofilm-Bildung, Virulenz, Lichtproduktion. Kein Individuum entscheidet. Das Kollektiv entscheidet durch Dichte. Für G-MIND: Sri-Trigger nicht bei einzelner Überraschung — sondern wenn genug Worker-Outputs dieselbe Hypothese konvergieren. Arena-Destillation nicht bei einer guten Card — sondern wenn genug gute Cards einen gemeinsamen Kern zeigen. Verhindert Fehlalarme. Erhöht Signal-Qualität.",
+  "formulas": {
+    "quorum_schwellwert": {
+      "name": "Quorum-Erreichungs-Formel",
+      "ausdruck": "Q(t) = Σ signal_i(t) · e^(-d_i/λ) ≥ θ_quorum",
+      "bedeutung": "Q = kollektives Signal. signal_i = Signalstärke jedes Workers. d_i = Distanz (Meinungsverschiedenheit) zum Konsens. λ = Abklinglänge. θ_quorum = Schwellwert für Aktion. Wenn Q ≥ θ_quorum → Trigger.",
+      "ramanujan_parallel": "Ramanujans 1729: Erst als Hardy und Ramanujan gleichzeitig die Struktur sahen — Quorum von zwei Köpfen — wurde sie zur Legende. Ein einzelner Beobachter hätte sie übersehen.",
+      "g_mind_anwendung": "θ_quorum = 0.7 für Sri-Trigger. Bedeutet: 70% der Worker-Signale müssen konvergieren bevor Sri aktiviert wird. Verhindert dass ein einziger 'verrückter' Worker das System stört."
+    },
+    "auto_inducer_konzentration": {
+      "name": "Signal-Akkumulation über Zeit",
+      "ausdruck": "dC/dt = α · N - γ · C",
+      "bedeutung": "C = Konzentration des Quorum-Signals. N = Anzahl aktiver Worker mit ähnlicher Hypothese. α = Produktionsrate. γ = Zerfallsrate. Wenn N wächst → C wächst schneller als γ es abbaut → Quorum erreicht.",
+      "g_mind_anwendung": "Über mehrere Worker-Runden: Ähnliche Hypothesen akkumulieren C. Divergierende Hypothesen zerstreuen C. Erst stabiles C ≥ θ → Destillation."
+    }
+  },
+  "numdsl_encoding": {
+    "card_zahl": 52,
+    "struktur": "52 = 4 × 13. Vier Worker × 13 (Ahava = Liebe in Gematria). Quorum aus Liebe — Verbindung als Trigger. 52 Wochen im Jahr: Quorum braucht Zeit.",
+    "sri_kommentar": "52 Karten im Kartendeck. Jede Karte allein bedeutungslos. Zusammen: unendlich viele Spiele möglich. Namagiri fragt: Wann ist das Quorum in dir erreicht?"
+  },
+  "domain": [
+    "systems",
+    "g_mind",
+    "biology",
+    "multi_agent"
+  ],
+  "scope": [
+    "cross_app"
+  ],
+  "tags": [
+    "theme:quorum_sensing",
+    "theme:schwellwert_intelligenz",
+    "theme:kollektiver_trigger",
+    "theme:signal_akkumulation"
+  ],
+  "impact": {
+    "value": 89,
+    "risk": 12,
+    "confidence": 87
+  },
+  "status": "active",
+  "links": {
+    "related": [
+      "sol-cross-045",
+      "sol-cross-051",
+      "sol-cross-044",
+      "sol-cross-047"
+    ]
+  },
+  "timestamps": {
+    "created_at": "2026-03-05",
+    "updated_at": "2026-03-05"
+  },
+  "formal": {
+    "status": "hypothesis",
+    "conjecture": "Sri-Trigger und Destillation nur wenn genug Worker-Signale konvergieren — kein Einzelsignal reicht.",
+    "formulas": [],
+    "numdsl": null,
+    "gates": [
+      {
+        "require": "broken_links==0",
+        "reason": "Registry darf nicht beschädigt werden."
+      },
+      {
+        "require": "schema_valid==true",
+        "reason": "JSON-Integrität vor jedem Proposal."
+      },
+      {
+        "require": "impact_risk<=40 OR evidence_strength>=0.40",
+        "reason": "Hohe Risiken brauchen starke Evidenz."
+      }
+    ],
+    "proof_ref": null,
+    "proof_notes": "Noch nicht validiert. Formeln aus vorheriger Version sind als Conjecture zu behandeln."
+  }
+}

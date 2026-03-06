@@ -1,0 +1,120 @@
+{
+  "id": "sol-cross-053",
+  "type": "solution_proof",
+  "token": "formal_layer_werkstatt",
+  "title": "Formel-Werkstatt: formal{}-Layer als Conjecture → Proof-Gate",
+  "essence": "Erweitert jede Card optional um ein formal{}-Feld. Formeln beginnen als Hypothesen (Ramanujan-artig: Muster gesehen, Beweis kommt später) und werden nur über Proof-Gates zu validierten Regeln. Sri ist der natürliche Conjecture-Generator — er wirft Formel-Vermutungen raus, die dann durch Gates laufen müssen. Verhindert Halluzinations-Drift und Endlosschleifen: hypothesis = nur vorschlagen, validated = ausführbar, deprecated = tot.",
+  "domain": [
+    "ai_governance",
+    "meta_cognition",
+    "cross_app",
+    "g_mind"
+  ],
+  "scope": [
+    "cross_app"
+  ],
+  "tags": [
+    "theme:governance",
+    "theme:anti_hallucination",
+    "theme:conjecture_engine",
+    "theme:formal_layer",
+    "theme:proof_gate",
+    "theme:ramanujan_methode",
+    "meta:gürcan_dna"
+  ],
+  "impact": {
+    "value": 90,
+    "risk": 32,
+    "confidence": 80
+  },
+  "status": "active",
+  "applies_to": [
+    "Alle Cards (errors/solutions/meta) wenn eine Formel/Score/Regel existiert",
+    "Sri als Conjecture-Generator: deepseek-reasoner wirft hypothesis, nie auto-validated",
+    "G-MIND Worker Council: nur validated Formeln als ausführbare Regeln",
+    "Crossing-Engine: Scores/Gates nachvollziehbar und prüfbar machen",
+    "Arena-Runs: Quorum (sol-bio-052) entscheidet ob hypothesis → validated"
+  ],
+  "steps": [
+    "Sri oder Worker generiert Formel-Vermutung → formal.status = 'hypothesis'",
+    "Solange hypothesis: nur Proposals erzeugen, niemals automatisch ausführen",
+    "Gates prüfen: broken_links, schema_valid, evidence vs. risk",
+    "Quorum-Check (sol-bio-052): genug unabhängige Signale für diese Formel?",
+    "Upgrade zu 'validated' nur mit proof_ref != null UND alle Gates grün",
+    "Bei Widerlegung oder Drift: status → 'deprecated', Grund dokumentieren"
+  ],
+  "tradeoffs": [
+    "Formeln können Scheingenauigkeit erzeugen wenn status/gates nicht strikt eingehalten",
+    "Optional halten — nicht jede Card braucht formal{}, Meta-Cards als Conjectures sind legitim",
+    "Zu viele Formalisierungen erhöhen Pflegeaufwand — klein starten"
+  ],
+  "copy_ready": true,
+  "evidence": {
+    "signals": [
+      "status_gating verhindert Autonomie bei ungeprüften Hypothesen",
+      "proof_ref verhindert erfundene Wahrheiten",
+      "Ramanujan selbst hatte viele falsche Vermutungen — Hardy war das Proof-Gate",
+      "ChatGPT-Review bestätigt: 90/100 Wert wenn hypothesis+propose-only strikt"
+    ],
+    "code_refs": [],
+    "notes": "Governance-first. Formeln erlaubt, aber nur mit klarer Status-Schranke. Meta-Cards dürfen Conjectures enthalten — negative Entropie, Attraktor-Formeln etc. sind legitim als hypothesis."
+  },
+  "links": {
+    "fixes": [],
+    "causes": [],
+    "related": [
+      "sol-cross-042",
+      "sol-cross-043",
+      "sol-bio-052",
+      "meta-006"
+    ]
+  },
+  "formal_schema": {
+    "version": "0.1",
+    "shape": {
+      "formal": {
+        "status": "hypothesis | validated | deprecated",
+        "conjecture": "string (Sri/Worker Vermutung, kurz, Ramanujan-artig)",
+        "formulas": [
+          {
+            "name": "string",
+            "latex": "string (optional)",
+            "variables": {
+              "var": "Bedeutung"
+            },
+            "notes": "string (optional)"
+          }
+        ],
+        "numdsl": "string (ausführbare Kurzform, optional)",
+        "gates": [
+          {
+            "require": "string",
+            "reason": "string"
+          }
+        ],
+        "proof_ref": null,
+        "proof_notes": "string (optional)"
+      }
+    },
+    "governance_rules": [
+      "status=hypothesis → proposal_only=true (keine Auto-Edits, keine Auto-Links, kein Auto-Commit)",
+      "status=validated → requires proof_ref != null AND alle gates erfüllt AND Quorum erreicht",
+      "status=deprecated → darf nicht als Basis für neue Auto-Regeln dienen",
+      "Sri generiert immer hypothesis, nie validated — er ist Conjecture-Engine, kein Validator"
+    ],
+    "minimal_gates_pflicht": [
+      "REQUIRE(broken_links==0)",
+      "REQUIRE(schema_valid==true)",
+      "REQUIRE((impact.risk<=40) OR (evidence_strength>=0.40))"
+    ]
+  },
+  "numdsl_encoding": {
+    "card_zahl": 53,
+    "struktur": "53 ist Primzahl. Unteilbar. Das Schema selbst ist unteilbar — entweder hypothesis oder validated, kein Dazwischen.",
+    "sri_kommentar": "53. 5+3=8. Acht Bit = ein Byte. Das kleinste vollständige Informationspaket. Namagiri fragt: Was ist das kleinste vollständige Wissen?"
+  },
+  "timestamps": {
+    "created_at": "2026-03-05",
+    "updated_at": "2026-03-05"
+  }
+}

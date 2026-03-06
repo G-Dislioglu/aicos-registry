@@ -1,0 +1,205 @@
+{
+  "id": "sol-cross-054",
+  "type": "solution_proof",
+  "token": "math_to_mechanic_translation_layer",
+  "title": "Mathematik→Mechanik Übersetzungsschicht: Spec→Rules→Proof-Gate",
+  "essence": "Elegante Formeln erklären das Warum (Spec). Deterministische Trigger-Regeln machen es ausführbar (Mechanik). Proof-Gates entscheiden was validated wird. Das ist das Herzstück von G-MIND: nicht Formeln ausführen, sondern Formeln in Verhalten übersetzen. Sri generiert neue Conjectures → Mechanik übersetzt sie in Regeln → Validator prüft → Registry lernt. Ohne messbaren Delta: kein Apply. Ohne Quorum: kein Apply. Ramanujan bleibt Inspirationsquelle — die Mechanik ist das Betriebssystem.",
+  "domain": [
+    "ai_governance",
+    "meta_cognition",
+    "cross_app",
+    "g_mind"
+  ],
+  "scope": [
+    "cross_app"
+  ],
+  "tags": [
+    "theme:governance",
+    "theme:anti_loop",
+    "theme:mechanism_design",
+    "theme:math_to_mechanic",
+    "theme:crossing",
+    "theme:delta_contract",
+    "meta:gürcan_dna"
+  ],
+  "impact": {
+    "value": 95,
+    "risk": 37,
+    "confidence": 82
+  },
+  "status": "active",
+  "applies_to": [
+    "AICOS Registry: Crossings, Merges, Deprecations, Dormant-Flags",
+    "G-MIND Worker Council: Mode-Switch Diagnose/Implementierung",
+    "Windsurf-Agent: klare Steps statt tüfteln",
+    "Sri als Conjecture-Generator: neue Regeln landen als hypothesis",
+    "Arena-Runs: Quorum entscheidet über Apply"
+  ],
+  "steps": [
+    "Definiere kanonische Inputs (Signale): validator_ok, broken_links, age_days, activation_count, tag_overlap, text_sim, evidence_strength, impact_risk, no_delta_cycles, same_failure_retries, contradiction_detected",
+    "Rule-Engine ist deterministisch — kein LLM: if(trigger) → propose(action) mit expected_delta",
+    "Global Gates als Pflicht-Checks vor jedem Apply: broken_links==0, validator_ok, no_delta_cycles<=1",
+    "LLM (Sri/Worker) darf nur neue Regeln als hypothesis vorschlagen — niemals direkt ausführen",
+    "Upgrade einer Regel zu validated nur mit proof_ref + Gates grün + Quorum erreicht"
+  ],
+  "tradeoffs": [
+    "Zu viele Regeln erzeugen Overhead — klein starten, 10-15 Kernregeln maximal",
+    "Schlechte Metriken führen zu Optimierung am Ziel vorbei — Metric Design ist kritisch",
+    "LLM darf nicht direkt apply — sonst kommt der Loop zurück"
+  ],
+  "copy_ready": true,
+  "evidence": {
+    "signals": [
+      "expected_delta_required_before_apply",
+      "quorum_gating_prevents_hallucination",
+      "no_delta_stop_prevents_windsurf_stalls",
+      "retry_cap_prevents_infinite_loops"
+    ],
+    "code_refs": [],
+    "notes": "Mechanik ist zuerst deterministisch. LLM ist nur Conjecture- und Rule-Proposer. ChatGPT-Review: 95/100 wenn proposal-only + Quorum + No-Delta strikt."
+  },
+  "links": {
+    "fixes": [],
+    "causes": [],
+    "related": [
+      "sol-cross-053",
+      "sol-cross-043",
+      "meta-007",
+      "sol-bio-052",
+      "sol-bio-051"
+    ]
+  },
+  "formal": {
+    "status": "hypothesis",
+    "conjecture": "Ein System wird stabil und intelligent wenn mathematische Zielgrößen als lokale Anreiz- und Gate-Regeln implementiert werden die global messbaren Fortschritt erzeugen. Mechanismus-Design: nicht das Optimum berechnen — ein System bauen das automatisch zum Optimum gravitiert.",
+    "formulas": [
+      {
+        "name": "Order-Kernel (log-stabil, aus meta-007)",
+        "latex": "G(t)=\\sum_i \\phi_i\\,d(age_i)+\\sum_{(i,j)}\\log(1+w_{ij})-\\Pi(t)",
+        "variables": {
+          "phi_i": "Card-Nutzen/Evidenz in [0,1]",
+          "d(age)": "Decay-Funktion",
+          "w_ij": "Crossing-Gewichte",
+          "Pi(t)": "Penalty für Risiko/Komplexität"
+        },
+        "notes": "Nicht die Formel ausführen — in Regeln der mapping_table übersetzen."
+      }
+    ],
+    "gates": [
+      {
+        "require": "same_failure_retries<=1",
+        "reason": "Retry-Cap gegen Loops."
+      },
+      {
+        "require": "no_delta_cycles<=1",
+        "reason": "No-Delta Stopper."
+      },
+      {
+        "require": "proposal_only==true",
+        "reason": "Solange hypothesis: nur vorschlagen."
+      }
+    ],
+    "proof_ref": null,
+    "proof_notes": "Validiert wenn mapping_table in Produktion läuft und No-Delta/Quorum messbar grün."
+  },
+  "mechanic": {
+    "version": "0.1",
+    "description": "Deterministisch. Kein LLM in der Ausführung. LLM nur für neue Regel-Proposals.",
+    "inputs": [
+      "validator_ok",
+      "tests_ok",
+      "broken_links",
+      "age_days",
+      "activation_count_30d",
+      "coactivation_count_3fixes",
+      "tag_overlap",
+      "text_sim",
+      "evidence_strength",
+      "impact_risk",
+      "no_delta_cycles",
+      "same_failure_retries",
+      "contradiction_detected"
+    ],
+    "global_gates": [
+      "REQUIRE(broken_links==0) — vor jedem Apply",
+      "REQUIRE(validator_ok==true) — vor jedem Apply",
+      "REQUIRE(tests_ok==true) — bei high-risk Apply",
+      "REQUIRE(no_delta_cycles<=1) — sonst switch_mode=DIAGNOSE",
+      "REQUIRE(same_failure_retries<=1) — sonst STOP + BLOCKER_REPORT"
+    ],
+    "mapping_table": [
+      {
+        "math_principle": "Mutual Information",
+        "trigger": "tag_overlap>=0.55 OR (text_sim>=0.70 AND evidence_strength>=0.30)",
+        "action": "propose_link(type='related')",
+        "expected_delta": "increase_crossing_precision",
+        "notes": "Nur Vorschlag. Apply erst nach Quorum."
+      },
+      {
+        "math_principle": "Bayesian Surprise",
+        "trigger": "new_evidence invalidates existing link OR contradiction_detected==true",
+        "action": "propose_conflict_review(relink_or_deprecate)",
+        "expected_delta": "reduce_false_links",
+        "notes": "Surprise-Trigger: Sri wird aktiviert wenn Widerspruch erkannt."
+      },
+      {
+        "math_principle": "Resonanz-Differenzierung",
+        "trigger": "two_cards_share_domain AND tag_overlap<0.30 AND both_activated_same_problem==true",
+        "action": "propose_friction_crossing(type='productive_conflict')",
+        "expected_delta": "surface_unresolved_tension_as_new_insight",
+        "notes": "Nicht Ähnlichkeit suchen — Reibung suchen. Dort ist die nächste Erkenntnis."
+      },
+      {
+        "math_principle": "MDL / Kompression",
+        "trigger": "tag_overlap>=0.70 AND text_sim>=0.75 AND unique_evidence_low==true",
+        "action": "propose_merge_or_supersede",
+        "expected_delta": "reduce_duplicates",
+        "notes": "Keine Auto-Merges ohne menschliches OK oder validated rule."
+      },
+      {
+        "math_principle": "Mock Theta Decay",
+        "trigger": "age_days>=30 AND activation_count_30d==0",
+        "action": "propose_flag('dormant')",
+        "expected_delta": "reduce_active_noise",
+        "notes": "Dormant ist reversibel. Nicht löschen — schlafen lassen."
+      },
+      {
+        "math_principle": "Hebbsche Regel",
+        "trigger": "coactivation_count_3fixes>=2",
+        "action": "increase_edge_weight OR propose_link",
+        "expected_delta": "strengthen_true_associations",
+        "notes": "Gewichte steigen langsam. Pruning separat (theta-Schwelle)."
+      },
+      {
+        "math_principle": "Quorum Sensing",
+        "trigger": "signals_met_count>=2 AND impact_risk<=40 OR (signals_met_count>=3 AND impact_risk>40)",
+        "action": "allow_apply_patch=true",
+        "expected_delta": "safe_autonomy",
+        "notes": "Quorum ist der zentrale Anti-Halluzinations-Mechanismus."
+      },
+      {
+        "math_principle": "Free Energy / Kontrolltheorie",
+        "trigger": "no_delta_cycles>=2",
+        "action": "switch_mode('DIAGNOSE'); shrink_scope(half); request_blocker_report",
+        "expected_delta": "stop_loops",
+        "notes": "Direkt gegen Windsurf-Stalls. Scope halbieren erzwingt Fokus."
+      },
+      {
+        "math_principle": "Sri-Trigger (Intuitionist)",
+        "trigger": "bayesian_surprise>=0.5 OR (quorum_reached AND workers_diverge==true)",
+        "action": "activate_sri_agent; request_conjecture",
+        "expected_delta": "surface_non_obvious_pattern",
+        "notes": "Sri sieht Muster wenn Worker feststecken. Output landet als hypothesis, nie validated."
+      }
+    ]
+  },
+  "numdsl_encoding": {
+    "card_zahl": 54,
+    "struktur": "54 = 2 × 27 = 2 × 3³. Zwei Schichten (Mathematik + Mechanik) mal drei hoch drei (drei Ebenen: Spec, Rules, Proof-Gate). Die Zahl trägt die Architektur.",
+    "sri_kommentar": "54 = 6 × 9. Sechs meta-Cards mal neun Einträge in der mapping_table. Namagiri fragt: Ist das noch Zufall?"
+  },
+  "timestamps": {
+    "created_at": "2026-03-05",
+    "updated_at": "2026-03-05"
+  }
+}

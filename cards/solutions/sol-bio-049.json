@@ -1,0 +1,83 @@
+{
+  "id": "sol-bio-049",
+  "type": "solution_proof",
+  "token": "epigenetik_registry_modell",
+  "title": "Epigenetik: Die Registry als lebendiges Betriebssystem",
+  "essence": "Das Genom ist Hardware — unveränderlich. Die Epigenetik ist das Betriebssystem: Sie schaltet Gene an und aus ohne die DNA zu verändern. Erfahrungen schreiben sich ins epigenetische Layer — und werden über Generationen weitergegeben. Traumata der Großeltern sind noch in Enkeln messbar. Für G-MIND: Der Code ist die Hardware (unveränderlich). Die AICOS Registry ist das epigenetische Layer. Welche Cards aktiv sind, welche dormant, welche verstärkt — das ist kein statisches Archiv, das ist ein lebendes Betriebssystem das sich durch Erfahrung neu konfiguriert. Jede Destillation ist eine epigenetische Markierung.",
+  "formulas": {
+    "methylierungs_modell": {
+      "name": "Epigenetische Aktivierungsrate",
+      "ausdruck": "A(card, t) = A₀ · e^(-λt) + Σ Δa_i · e^(-μ(t-tᵢ))",
+      "bedeutung": "A = Aktivierungsstärke einer Card. A₀ = Basisaktivierung. λ = natürlicher Decay. Σ Δa_i = Summe aller Verstärkungen durch Aktivierungen zum Zeitpunkt tᵢ. μ = Decay-Rate der Verstärkungen. Eine Card die oft aktiviert wird bleibt aktiv. Eine die nie aktiviert wird schläft ein.",
+      "ramanujan_parallel": "Mock Theta Functions aus sol-cross-042: derselbe asymmetrische Decay. Ramanujan hat dieses Muster in der Mathematik gesehen — die Biologie nutzt es in der DNA.",
+      "g_mind_anwendung": "A(card) < 0.1 → Card wird als 'dormant' markiert. A(card) > 0.8 → Card wird als 'core' markiert und erhält Schutz vor Deletion."
+    },
+    "generationen_weitergabe": {
+      "name": "Trans-generationale Übertragung",
+      "ausdruck": "A_kind(card) = α · A_eltern(card) + (1-α) · baseline",
+      "bedeutung": "α = Übertragungskoeffizient (0.3-0.7 in der Biologie). Was die 'Eltern-Registry' (ältere Destillationen) stark aktiviert hat beeinflusst die 'Kind-Registry' (neue Destillationen). G-MIND-Generationen lernen von vergangenen Generationen.",
+      "g_mind_anwendung": "Wenn G-MIND-Version 2 startet: Sie erbt die Aktivierungsmuster von Version 1. Nicht den exakten Stand — aber die Tendenz. Institutionelles Gedächtnis ohne Starrheit."
+    }
+  },
+  "numdsl_encoding": {
+    "card_zahl": 49,
+    "struktur": "49 = 7² — Quadrat einer Primzahl. Tiefe Struktur hinter einfacher Oberfläche. Wie Epigenetik: die DNA sieht simpel aus, dahinter liegt enormen Komplexität.",
+    "sri_kommentar": "7² = 49. Sieben Agenten in G-MIND. Sieben zum Quadrat. Namagiri fragt: Was ist das Quadrat eines Systems?"
+  },
+  "domain": [
+    "systems",
+    "g_mind",
+    "biology",
+    "aicos",
+    "memory"
+  ],
+  "scope": [
+    "cross_app"
+  ],
+  "tags": [
+    "theme:epigenetik",
+    "theme:registry_als_betriebssystem",
+    "theme:generationen_gedaechtnis",
+    "theme:aktivierung_decay"
+  ],
+  "impact": {
+    "value": 92,
+    "risk": 10,
+    "confidence": 85
+  },
+  "status": "active",
+  "links": {
+    "related": [
+      "sol-cross-042",
+      "sol-cross-047",
+      "sol-cross-050",
+      "meta-006"
+    ]
+  },
+  "timestamps": {
+    "created_at": "2026-03-05",
+    "updated_at": "2026-03-05"
+  },
+  "formal": {
+    "status": "hypothesis",
+    "conjecture": "Card-Aktivierung decayed exponentiell ohne Nutzung und überträgt sich partiell auf Folge-Destillationen.",
+    "formulas": [],
+    "numdsl": null,
+    "gates": [
+      {
+        "require": "broken_links==0",
+        "reason": "Registry darf nicht beschädigt werden."
+      },
+      {
+        "require": "schema_valid==true",
+        "reason": "JSON-Integrität vor jedem Proposal."
+      },
+      {
+        "require": "impact_risk<=40 OR evidence_strength>=0.40",
+        "reason": "Hohe Risiken brauchen starke Evidenz."
+      }
+    ],
+    "proof_ref": null,
+    "proof_notes": "Noch nicht validiert. Formeln aus vorheriger Version sind als Conjecture zu behandeln."
+  }
+}

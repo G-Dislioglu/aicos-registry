@@ -369,6 +369,29 @@
     "copy_ready": true
   },
   {
+    "id": "meta-007",
+    "type": "meta_principle",
+    "token": "ramanujan_order_kernel",
+    "title": "Ramanujan-Ordnung: Identity · Shadow · Regularization",
+    "domain": [
+      "ai_governance",
+      "meta_cognition",
+      "cross_app",
+      "g_mind"
+    ],
+    "tags": [
+      "theme:governance",
+      "theme:anti_loop",
+      "theme:determinism",
+      "theme:memory",
+      "theme:regularization",
+      "theme:order_kernel",
+      "meta:gürcan_dna"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
     "id": "sol-api-02",
     "type": "solution_proof",
     "token": "unified_provider_routing",
@@ -513,6 +536,123 @@
     ],
     "status": "active",
     "copy_ready": true
+  },
+  {
+    "id": "sol-bio-047",
+    "type": "solution_proof",
+    "token": "stigmergie_schwarmintelligenz",
+    "title": "Stigmergie: G-MIND denkt durch seine eigene Geschichte",
+    "domain": [
+      "systems",
+      "g_mind",
+      "biology",
+      "aicos"
+    ],
+    "tags": [
+      "theme:stigmergie",
+      "theme:schwarmintelligenz",
+      "theme:ant_colony",
+      "theme:pheromon",
+      "theme:dezentral"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "sol-bio-048",
+    "type": "solution_proof",
+    "token": "slime_mold_optimierung",
+    "title": "Slime Mold: Paralleles Erkunden + intelligentes Vergessen",
+    "domain": [
+      "systems",
+      "g_mind",
+      "biology",
+      "optimization"
+    ],
+    "tags": [
+      "theme:slime_mold",
+      "theme:physarum",
+      "theme:paralleles_erkunden",
+      "theme:netzwerk_optimierung",
+      "theme:dezentral"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "sol-bio-049",
+    "type": "solution_proof",
+    "token": "epigenetik_registry_modell",
+    "title": "Epigenetik: Die Registry als lebendiges Betriebssystem",
+    "domain": [
+      "systems",
+      "g_mind",
+      "biology",
+      "aicos",
+      "memory"
+    ],
+    "tags": [
+      "theme:epigenetik",
+      "theme:registry_als_betriebssystem",
+      "theme:generationen_gedaechtnis",
+      "theme:aktivierung_decay"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "sol-bio-050",
+    "type": "solution_proof",
+    "token": "immunsystem_klonale_selektion",
+    "title": "Immunsystem: Verteiltes Gedächtnis + klonale Selektion",
+    "domain": [
+      "systems",
+      "g_mind",
+      "biology",
+      "memory"
+    ],
+    "tags": [
+      "theme:immunsystem",
+      "theme:klonale_selektion",
+      "theme:verteiltes_gedaechtnis",
+      "theme:fitness_scoring"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "sol-bio-051",
+    "type": "solution_proof",
+    "token": "hebbsche_regel_synapsen_staerkung",
+    "title": "Hebbsche Regel: Was zusammen feuert, verbindet sich",
+    "domain": [
+      "systems",
+      "g_mind",
+      "biology",
+      "learning"
+    ],
+    "tags": [
+      "theme:hebbsche_regel",
+      "theme:synaptisches_pruning",
+      "theme:emergente_cluster",
+      "theme:lernrate"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "sol-bio-052",
+    "type": "solution_proof",
+    "token": "quorum_sensing_schwellwert_intelligenz",
+    "title": "Quorum Sensing: Erst wenn genug sagen 'ja' — dann handeln",
+    "domain": [
+      "systems",
+      "g_mind",
+      "biology",
+      "multi_agent"
+    ],
+    "tags": [
+      "theme:quorum_sensing",
+      "theme:schwellwert_intelligenz",
+      "theme:kollektiver_trigger",
+      "theme:signal_akkumulation"
+    ],
+    "status": "active"
   },
   {
     "id": "sol-cross-007",
@@ -1200,21 +1340,24 @@
   {
     "id": "sol-cross-043",
     "type": "solution_proof",
-    "token": "cost_optimized_model_router",
-    "title": "Cost-Optimized Model Router: Model Selection + Silent Director Integration",
+    "token": "drei_intelligenz_schichten",
+    "title": "Drei Intelligenz-Schichten: MI + Bayesian Surprise + MDL",
     "domain": [
-      "ai_governance",
-      "api",
-      "devserver"
+      "meta_cognition",
+      "g_mind",
+      "systems",
+      "aicos"
     ],
     "tags": [
-      "theme:model_selection",
-      "theme:cost_efficiency",
-      "theme:orchestration",
-      "theme:routing"
+      "theme:mutual_information",
+      "theme:bayesian_surprise",
+      "theme:minimum_description_length",
+      "theme:intelligenz_schichten",
+      "theme:sri_trigger",
+      "theme:formeln",
+      "meta:gürcan_dna"
     ],
-    "status": "active",
-    "copy_ready": true
+    "status": "active"
   },
   {
     "id": "sol-cross-044",
@@ -1280,6 +1423,75 @@
     ],
     "status": "active",
     "copy_ready": true
+  },
+  {
+    "id": "sol-cross-053",
+    "type": "solution_proof",
+    "token": "formal_layer_werkstatt",
+    "title": "Formel-Werkstatt: formal{}-Layer als Conjecture → Proof-Gate",
+    "domain": [
+      "ai_governance",
+      "meta_cognition",
+      "cross_app",
+      "g_mind"
+    ],
+    "tags": [
+      "theme:governance",
+      "theme:anti_hallucination",
+      "theme:conjecture_engine",
+      "theme:formal_layer",
+      "theme:proof_gate",
+      "theme:ramanujan_methode",
+      "meta:gürcan_dna"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-cross-054",
+    "type": "solution_proof",
+    "token": "math_to_mechanic_translation_layer",
+    "title": "Mathematik→Mechanik Übersetzungsschicht: Spec→Rules→Proof-Gate",
+    "domain": [
+      "ai_governance",
+      "meta_cognition",
+      "cross_app",
+      "g_mind"
+    ],
+    "tags": [
+      "theme:governance",
+      "theme:anti_loop",
+      "theme:mechanism_design",
+      "theme:math_to_mechanic",
+      "theme:crossing",
+      "theme:delta_contract",
+      "meta:gürcan_dna"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
+    "id": "sol-cross-055",
+    "type": "solution_proof",
+    "token": "gmind_multi_agent_research_architecture",
+    "title": "G-MIND Multi-Agent Research Architecture: Scout → Observer → Curator → Registry",
+    "domain": [
+      "g_mind",
+      "multi_agent",
+      "ai_governance",
+      "meta_cognition"
+    ],
+    "tags": [
+      "theme:multi_agent",
+      "theme:scout_council",
+      "theme:observer_kernel",
+      "theme:memory_curator",
+      "theme:surprise_scoring",
+      "theme:escalation",
+      "theme:anti_loop",
+      "meta:gürcan_dna"
+    ],
+    "status": "active"
   },
   {
     "id": "sol-db-01",

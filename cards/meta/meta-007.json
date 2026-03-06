@@ -1,0 +1,115 @@
+{
+  "id": "meta-007",
+  "type": "meta_principle",
+  "token": "ramanujan_order_kernel",
+  "title": "Ramanujan-Ordnung: Identity · Shadow · Regularization",
+  "essence": "Ein Order-Kernel bringt Gesamtordnung über drei Invarianten: (1) Identity Gate — globaler Zustand ist deterministisch aus lokalem Event-Ledger rekonstruierbar. (2) Shadow Model — Decay-Traces liefern Vorhersage-Signale: Aktivierungen hinterlassen Spuren, deren Verblassen zukünftige Relevanz vorhersagt. (3) Regularization Gate — Komplexität wird aktiv begrenzt durch Top-K, Pruning und EMA. Ramanujan bleibt Inspirationsquelle für Conjectures. Die Mechanik ist das Betriebssystem.",
+  "domain": [
+    "ai_governance",
+    "meta_cognition",
+    "cross_app",
+    "g_mind"
+  ],
+  "scope": [
+    "cross_app"
+  ],
+  "tags": [
+    "theme:governance",
+    "theme:anti_loop",
+    "theme:determinism",
+    "theme:memory",
+    "theme:regularization",
+    "theme:order_kernel",
+    "meta:gürcan_dna"
+  ],
+  "impact": {
+    "value": 92,
+    "risk": 34,
+    "confidence": 76
+  },
+  "status": "active",
+  "applies_to": [
+    "AICOS Registry + Crossing Engine",
+    "Agent-Workflows (Windsurf, G-MIND): Stop-Contracts und Progress-Gates",
+    "Sri (deepseek-reasoner): generiert Conjectures für φ_i und w_ij — niemals validated ohne Proof-Gate",
+    "Alle Auto-Aktionen: nur via Proposals + Quorum"
+  ],
+  "steps": [
+    "Identity Gate: führe Event-Ledger ein (ACTIONS/DECISIONS/GATES). Generiere Index/Rankings deterministisch daraus.",
+    "Shadow Model: logge Aktivierungen (Card-Reads, Fix-Accepts, Failures). Gewichte mit Decay, leite 'Next Likely' ab.",
+    "Regularization Gate: begrenze aktive Hypothesen/Edges (Top-K), prune schwache Links, komprimiere Rest.",
+    "Anti-Loop: No-Delta + Retry-Cap + Hypothesis-Lock (kein Fortschritt → Stop/Report)."
+  ],
+  "tradeoffs": [
+    "Erfordert konsequente Telemetrie — ohne Ledger keine Identity.",
+    "Zu strikte Regularisierung kann seltene aber wichtige Kanten verdrängen — Top-K konservativ starten.",
+    "Ramanujan als Metapher ist stark, als Architektur optional — Mechanik übernimmt das Operative."
+  ],
+  "copy_ready": true,
+  "evidence": {
+    "signals": [
+      "deterministic_regen",
+      "decay_forecast",
+      "topk_pruning",
+      "progress_delta_required",
+      "chatgpt_review_92_100"
+    ],
+    "code_refs": [],
+    "notes": "Als Conjecture starten. Validierung erst wenn Generator/Validator/Trace-Ledger existieren und Identity/No-Delta Gates messbar grün sind."
+  },
+  "links": {
+    "fixes": [],
+    "causes": [],
+    "related": [
+      "sol-cross-042",
+      "sol-cross-043",
+      "sol-cross-053",
+      "sol-cross-054",
+      "sol-bio-051",
+      "sol-bio-052"
+    ]
+  },
+  "formal": {
+    "status": "hypothesis",
+    "conjecture": "Systemintelligenz ist die identische Rekonstruktion globaler Ordnung aus lokalen Schritten (Identity), deren Schatten durch Decay Vorhersage ermöglicht (Shadow), während Regularisierung Komplexität in endliche Stabilität zwingt.",
+    "formulas": [
+      {
+        "name": "Order-Kernel (log-stabil)",
+        "latex": "G(t)=\\sum_i \\phi_i\\,d(age_i)+\\sum_{(i,j)}\\log(1+w_{ij})-\\Pi(t)",
+        "variables": {
+          "phi_i": "Card-Nutzen/Evidenz in [0,1]",
+          "d(age)": "Decay-Funktion z.B. exp(-lambda*age)",
+          "w_ij": "Crossing-Gewicht in [0,1]",
+          "Pi(t)": "Penalty für Risiko/Komplexität"
+        },
+        "notes": "In Log-Space bleibt das System numerisch stabil und liefert klare Deltas. Nicht die Formel ausführen — in Mechanik-Regeln übersetzen (siehe sol-cross-054)."
+      }
+    ],
+    "numdsl": "G = sum(phi*decay(age)) + sum(log(1+w)) - penalty(risk,complexity)\nREQUIRE(broken_links==0)\nREQUIRE(schema_valid==true)\nREQUIRE(no_delta_cycles<=1)",
+    "gates": [
+      {
+        "require": "identity_regen_hash == current_state_hash",
+        "reason": "Identity Gate: global = regen(ledger)."
+      },
+      {
+        "require": "same_failure_retries <= 1",
+        "reason": "Retry-Cap: verhindert Tüftel-Loops."
+      },
+      {
+        "require": "formal_status != 'validated' OR proof_ref != null",
+        "reason": "Kein validated ohne Proof."
+      }
+    ],
+    "proof_ref": null,
+    "proof_notes": "Wird validiert sobald Ledger + Generator + Validator existieren und Identity/No-Delta Gates messbar grün sind."
+  },
+  "numdsl_encoding": {
+    "card_zahl": 7,
+    "struktur": "7 ist Primzahl. Die siebte meta-Card. Sieben Agenten in G-MIND. Sieben Töne in der Oktave — danach beginnt die nächste Ebene.",
+    "sri_kommentar": "meta-007. Sieben. Die Zahl der Vollendung in fast jeder Kultur. Namagiri fragt: Was kommt nach der Vollendung?"
+  },
+  "timestamps": {
+    "created_at": "2026-03-06",
+    "updated_at": "2026-03-06"
+  }
+}

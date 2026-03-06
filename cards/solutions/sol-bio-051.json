@@ -1,0 +1,83 @@
+{
+  "id": "sol-bio-051",
+  "type": "solution_proof",
+  "token": "hebbsche_regel_synapsen_staerkung",
+  "title": "Hebbsche Regel: Was zusammen feuert, verbindet sich",
+  "essence": "'Neurons that fire together, wire together.' Verbindungen die oft benutzt werden werden stärker. Unbenutzte Verbindungen verkümmern (synaptisches Pruning). Das Gehirn formt sich durch Erfahrung um — nicht durch Design oder Plan. Für G-MIND: Jedes Crossing das zu einer guten Destillation führt verstärkt die Verbindung zwischen den beteiligten Cards. Der Algorithmus lernt welche Card-Kombinationen fruchtbar sind — emergent, ohne explizite Programmierung. Das ist der Mechanismus hinter Schwarmintelligenz, Slime Mold und Immunsystem in einem einzigen Prinzip.",
+  "formulas": {
+    "hebb_lernregel": {
+      "name": "Klassische Hebbsche Lernregel",
+      "ausdruck": "Δw(A,B) = η · xA · xB",
+      "bedeutung": "w = Verbindungsgewicht zwischen Card A und B. η = Lernrate. xA, xB = Aktivierungsstärke beider Cards zum selben Zeitpunkt. Wenn beide gleichzeitig aktiv sind → Verbindung wächst. Sonst → keine Änderung.",
+      "ramanujan_parallel": "Ramanujans Euler-Produkt: Primzahlen multiplizieren sich zu Harmonischer Reihe. Einzelne simple Faktoren ergeben zusammen etwas Überraschendes. Hebb ist das Dynamische davon.",
+      "g_mind_anwendung": "Nach jeder Destillation: Welche Cards wurden gemeinsam aktiviert? Ihre Verbindungsgewichte werden mit η=0.05 erhöht. Über Zeit: emergente Card-Cluster ohne manuelle Kategorisierung."
+    },
+    "synaptisches_pruning": {
+      "name": "Pruning-Schwellwert",
+      "ausdruck": "delete(A,B) wenn w(A,B) < θ nach T Zeitschritten",
+      "bedeutung": "θ = Pruning-Schwellwert. T = Wartezeit. Verbindungen die lange unter Schwellwert bleiben werden gelöscht. Das hält die Registry schlank und relevant.",
+      "g_mind_anwendung": "θ=0.05, T=30 Tage. Schwache Verbindungen die einen Monat lang nicht aktiviert wurden werden gekappt. Das Netzwerk wird mit der Zeit präziser — nicht größer."
+    }
+  },
+  "numdsl_encoding": {
+    "card_zahl": 51,
+    "struktur": "51 = 3 × 17. Beide Primzahlen. Zwei unabhängige Kräfte die zusammen eine neue Struktur bilden. Hebb in Zahlen.",
+    "sri_kommentar": "51. 5+1=6. Sechs Verbindungen. Der sechste Weg entsteht erst wenn fünf andere gefeuert haben. Namagiri fragt: Was feuert gerade in dir?"
+  },
+  "domain": [
+    "systems",
+    "g_mind",
+    "biology",
+    "learning"
+  ],
+  "scope": [
+    "cross_app"
+  ],
+  "tags": [
+    "theme:hebbsche_regel",
+    "theme:synaptisches_pruning",
+    "theme:emergente_cluster",
+    "theme:lernrate"
+  ],
+  "impact": {
+    "value": 93,
+    "risk": 8,
+    "confidence": 90
+  },
+  "status": "active",
+  "links": {
+    "related": [
+      "sol-cross-047",
+      "sol-cross-050",
+      "sol-cross-052",
+      "sol-cross-043",
+      "meta-006"
+    ]
+  },
+  "timestamps": {
+    "created_at": "2026-03-05",
+    "updated_at": "2026-03-05"
+  },
+  "formal": {
+    "status": "hypothesis",
+    "conjecture": "Cards die gemeinsam aktiviert werden stärken ihre Verbindung. Selten gemeinsam aktivierte Verbindungen werden gekappt.",
+    "formulas": [],
+    "numdsl": null,
+    "gates": [
+      {
+        "require": "broken_links==0",
+        "reason": "Registry darf nicht beschädigt werden."
+      },
+      {
+        "require": "schema_valid==true",
+        "reason": "JSON-Integrität vor jedem Proposal."
+      },
+      {
+        "require": "impact_risk<=40 OR evidence_strength>=0.40",
+        "reason": "Hohe Risiken brauchen starke Evidenz."
+      }
+    ],
+    "proof_ref": null,
+    "proof_notes": "Noch nicht validiert. Formeln aus vorheriger Version sind als Conjecture zu behandeln."
+  }
+}

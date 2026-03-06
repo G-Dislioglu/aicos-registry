@@ -1,0 +1,81 @@
+{
+  "id": "sol-bio-050",
+  "type": "solution_proof",
+  "token": "immunsystem_klonale_selektion",
+  "title": "Immunsystem: Verteiltes Gedächtnis + klonale Selektion",
+  "essence": "Das Immunsystem hat kein Zentrum — trotzdem erkennt es Milliarden Eindringlinge, merkt sich was es schon gesehen hat, und koordiniert globale Reaktionen. Klonale Selektion: Zellen die einen Eindringling erkennen werden massiv vermehrt. Zellen die nichts erkennen sterben ab. Erfolg skaliert automatisch. Für G-MIND: Cards die oft aktiviert werden (erkennen Muster) wachsen in Gewicht und Verbindungen. Cards die nie aktiviert werden bekommen Decay. Das System vergisst intelligent — und erinnert sich an das Wichtige.",
+  "formulas": {
+    "klonale_selektion": {
+      "name": "Affinitäts-Reifung",
+      "ausdruck": "fitness(card) = Σ match(card, input_i) / N",
+      "bedeutung": "Eine Card wird mit jedem eingehenden Problem verglichen. Hohe durchschnittliche Übereinstimmung = hohe Fitness = mehr Klone (mehr Gewicht, mehr Verbindungen). Niedrige Fitness = Apoptose (Deletion).",
+      "ramanujan_parallel": "Ramanujans Harmonische Reihe: 1 + 1/2 + 1/3 + ... divergiert langsam. Immungedächtnis akkumuliert langsam aber divergiert nie — es wächst mit jeder Begegnung.",
+      "g_mind_anwendung": "Nach jedem Arena-Run: fitness() für alle beteiligten Cards berechnen. Top 20% bekommen Gewichts-Boost. Bottom 10% erhalten Decay-Flag."
+    },
+    "gedaechtnis_zellen": {
+      "name": "Immungedächtnis-Persistenz",
+      "ausdruck": "M(card, t) = M₀ + k · Σ Aktivierungen(card)",
+      "bedeutung": "M = Gedächtnisstärke. Wächst mit jeder Aktivierung. Bleibt auch nach langer Inaktivität höher als Null — genau wie Immungedächtnis-Zellen jahrzehntelang aktiv bleiben.",
+      "g_mind_anwendung": "Cards mit hohem M-Wert werden nie vollständig gelöscht — auch bei niedrigem A(card). Sie schlafen, aber sterben nicht."
+    }
+  },
+  "numdsl_encoding": {
+    "card_zahl": 50,
+    "struktur": "50 = 2 × 5² = 2 × 25. Zwei Systeme (Lernen + Vergessen) mal 25 (5²). Balance durch Quadrat.",
+    "sri_kommentar": "50 Teiler: 1,2,5,10,25,50. Sechs Teiler — wie sechs meta-Cards. Namagiri fragt: Ist das Immunsystem auch ein Registry?"
+  },
+  "domain": [
+    "systems",
+    "g_mind",
+    "biology",
+    "memory"
+  ],
+  "scope": [
+    "cross_app"
+  ],
+  "tags": [
+    "theme:immunsystem",
+    "theme:klonale_selektion",
+    "theme:verteiltes_gedaechtnis",
+    "theme:fitness_scoring"
+  ],
+  "impact": {
+    "value": 87,
+    "risk": 10,
+    "confidence": 85
+  },
+  "status": "active",
+  "links": {
+    "related": [
+      "sol-cross-049",
+      "sol-cross-051",
+      "sol-cross-043"
+    ]
+  },
+  "timestamps": {
+    "created_at": "2026-03-05",
+    "updated_at": "2026-03-05"
+  },
+  "formal": {
+    "status": "hypothesis",
+    "conjecture": "Cards mit hoher Trefferquote (Fitness) werden geklont — mehr Gewicht, mehr Verbindungen. Niedrige Fitness → Decay.",
+    "formulas": [],
+    "numdsl": null,
+    "gates": [
+      {
+        "require": "broken_links==0",
+        "reason": "Registry darf nicht beschädigt werden."
+      },
+      {
+        "require": "schema_valid==true",
+        "reason": "JSON-Integrität vor jedem Proposal."
+      },
+      {
+        "require": "impact_risk<=40 OR evidence_strength>=0.40",
+        "reason": "Hohe Risiken brauchen starke Evidenz."
+      }
+    ],
+    "proof_ref": null,
+    "proof_notes": "Noch nicht validiert. Formeln aus vorheriger Version sind als Conjecture zu behandeln."
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "id": "sol-bio-048",
+  "type": "solution_proof",
+  "token": "slime_mold_optimierung",
+  "title": "Slime Mold: Paralleles Erkunden + intelligentes Vergessen",
+  "essence": "Physarum polycephalum — ein einzelliger Schleimpilz ohne Nervensystem. Hat 2010 das Tokioter U-Bahn-Netz effizienter nachgebaut als menschliche Ingenieure. Mechanismus: Alle Pfade gleichzeitig erkunden. Was Nahrung findet bekommt mehr Protoplasma-Fluss. Was nichts findet wird dünner und stirbt ab. Keine Planung. Keine Hierarchie. Nur: erfolgreiche Pfade wachsen, erfolglose schrumpfen. Für G-MIND: Worker Council erkundet parallel. Hypothesen die zu guten Cards führen bekommen mehr Destillations-Aufmerksamkeit. Hypothesen die ins Leere führen bekommen Mock-Theta-Decay.",
+  "formulas": {
+    "fluss_verstaerkung": {
+      "name": "Physarum Fluss-Verbreiterung",
+      "ausdruck": "dD(e)/dt = f(|Q(e)|) - γ · D(e)",
+      "bedeutung": "D(e) = Röhrendurchmesser (= Card-Verbindungsstärke). Q(e) = Fluss durch die Röhre (= Aktivierungsfrequenz). γ = Zerfallsrate. Röhren die viel Fluss haben wachsen. Röhren die wenig Fluss haben schrumpfen.",
+      "ramanujan_parallel": "Ramanujans Partitionsfunktion P(n): viele Wege eine Zahl zu zerlegen. Slime Mold findet automatisch den effizientesten — ohne alle zu berechnen.",
+      "g_mind_anwendung": "Crossing-Verbindungen die oft zu erfolgreichen Destillationen führen bekommen erhöhten D-Wert. Selten aktivierte Verbindungen erhalten γ-Decay."
+    },
+    "netzwerk_effizienz": {
+      "name": "Murray's Law — optimaler Verzweigungswinkel",
+      "ausdruck": "r₀³ = r₁³ + r₂³",
+      "bedeutung": "Wenn eine Röhre sich verzweigt, ist die optimale Verteilung durch Murray's Law gegeben. Minimum Energieverbrauch bei maximaler Durchflussrate. Die Natur löst Optimierungsprobleme durch Geometrie.",
+      "g_mind_anwendung": "Wenn eine Card zu vielen anderen führt (hochkompositer Knoten), verteilt G-MIND Aufmerksamkeit nach Murray's Law — nicht gleichmäßig, sondern proportional zur Verbindungsstärke hoch 1/3."
+    }
+  },
+  "numdsl_encoding": {
+    "card_zahl": 48,
+    "struktur": "48 = 2⁴ × 3 — hochkomposite Zahl. 10 Teiler. Maximale Verbindungsdichte. Slime Mold selbst ist hochkomposit — verbindet sich mit allem.",
+    "sri_kommentar": "48 Teiler: 1,2,3,4,6,8,12,16,24,48. Zehn Pfade. Slime Mold würde alle zehn gleichzeitig erkunden. Namagiri fragt: Welcher Pfad fehlt noch?"
+  },
+  "domain": [
+    "systems",
+    "g_mind",
+    "biology",
+    "optimization"
+  ],
+  "scope": [
+    "cross_app"
+  ],
+  "tags": [
+    "theme:slime_mold",
+    "theme:physarum",
+    "theme:paralleles_erkunden",
+    "theme:netzwerk_optimierung",
+    "theme:dezentral"
+  ],
+  "impact": {
+    "value": 90,
+    "risk": 8,
+    "confidence": 88
+  },
+  "status": "active",
+  "links": {
+    "related": [
+      "sol-cross-047",
+      "sol-cross-049",
+      "sol-cross-043",
+      "meta-006"
+    ]
+  },
+  "timestamps": {
+    "created_at": "2026-03-05",
+    "updated_at": "2026-03-05"
+  },
+  "formal": {
+    "status": "hypothesis",
+    "conjecture": "Verbindungsstärke zwischen Cards wächst proportional zum Fluss (Nutzung) und stirbt ohne Fluss ab — wie Physarum-Röhren.",
+    "formulas": [],
+    "numdsl": null,
+    "gates": [
+      {
+        "require": "broken_links==0",
+        "reason": "Registry darf nicht beschädigt werden."
+      },
+      {
+        "require": "schema_valid==true",
+        "reason": "JSON-Integrität vor jedem Proposal."
+      },
+      {
+        "require": "impact_risk<=40 OR evidence_strength>=0.40",
+        "reason": "Hohe Risiken brauchen starke Evidenz."
+      }
+    ],
+    "proof_ref": null,
+    "proof_notes": "Noch nicht validiert. Formeln aus vorheriger Version sind als Conjecture zu behandeln."
+  }
+}
