@@ -1,0 +1,84 @@
+{
+  "id": "sol-cross-046",
+  "type": "solution_proof",
+  "token": "drei_intelligenz_schichten",
+  "title": "Drei Intelligenz-Schichten: MI + Bayesian Surprise + MDL",
+  "essence": "G-MIND braucht drei aufeinander aufbauende Mess-Schichten um Verbindungen zu erkennen, zu bewerten und zu destillieren. Schicht 1 (Mutual Information): Nicht 'wie ähnlich sind A und B?' sondern 'wie viel verrät mir A über B?' Schicht 2 (Bayesian Surprise): Was das bestehende Weltbild am stärksten verändert hat den höchsten Lernwert. Sri-Trigger bei hoher Überraschung. Schicht 3 (Minimum Description Length): Die intelligenteste Erkenntnis ist die kürzeste die am meisten erklärt.",
+
+  "formulas": {
+    "schicht_1_mutual_information": {
+      "name": "Mutual Information",
+      "ausdruck": "I(A;B) = Σ P(a,b) · log[ P(a,b) / (P(a)·P(b)) ]",
+      "bedeutung": "Wie viel Information trägt Card A über Card B? Null = völlig unabhängig. Hoch = tiefe versteckte Verbindung.",
+      "ramanujan_parallel": "Ramanujans Taxicab-Zahl 1729: zwei scheinbar unverbundene Kuben-Summen — dieselbe Zahl. Hohe MI zwischen zwei scheinbar fremden Cards.",
+      "grenzwert": "I(A;B) = 0 → kein Crossing wert. I(A;B) > 0.3 → Crossing-Kandidat."
+    },
+    "schicht_2_bayesian_surprise": {
+      "name": "Bayesian Surprise",
+      "ausdruck": "S = KL[ P(H | Daten) || P(H) ] = Σ P(H|D) · log[ P(H|D) / P(H) ]",
+      "bedeutung": "KL-Divergenz zwischen altem und neuem Weltmodell. Wie stark hat diese Card das System verändert? Kleine Überraschung = bekannt. Große Überraschung = Sri-Trigger.",
+      "ramanujan_parallel": "Ramanujans Brief an Hardy 1913: maximale Überraschung. Hardy erwartete Studentenarbeit — bekam Jahrhundertgenie. KL-Divergenz gegen unendlich.",
+      "grenzwert": "S > 0.5 nats → Sri-Agent wird aktiviert. S > 1.0 nats → Opus-Destillation triggern."
+    },
+    "schicht_3_minimum_description_length": {
+      "name": "Minimum Description Length",
+      "ausdruck": "MDL(H, D) = L(H) + L(D | H)",
+      "bedeutung": "L(H) = Länge der Hypothese (Card-Komplexität). L(D|H) = Länge der Daten gegeben die Hypothese (wie viel erklärt sie?). Minimiere die Summe. Die beste Card ist kurz UND erklärt viel.",
+      "ramanujan_parallel": "Ramanujans -1/12: Summe aller natürlichen Zahlen. Kürzester Ausdruck einer unendlichen Wahrheit. Perfekte MDL.",
+      "grenzwert": "MDL-Score < 0.4 → Card ist zu komplex für ihren Erklärungswert. Vereinfachen oder splitten."
+    },
+    "gesamt_formel": {
+      "name": "G-MIND Crossing-Score",
+      "ausdruck": "Score(A,B) = w₁·I(A;B) + w₂·S(A→B) + w₃·(1/MDL(A,B))",
+      "gewichte": "w₁=0.4 (MI), w₂=0.35 (Surprise), w₃=0.25 (MDL-Inverse)",
+      "bedeutung": "Verbindet alle drei Schichten zu einem einzigen Crossing-Qualitätswert. Hoher Score = wertvolles Crossing committen. Niedriger Score = verwerfen.",
+      "ramanujan_parallel": "Wie Ramanujans Mock Theta: eine Formel die drei verschiedene mathematische Welten in einem Ausdruck vereint."
+    }
+  },
+
+  "numdsl_encoding": {
+    "card_zahl": 43,
+    "struktur": "43 ist Primzahl — unteilbar, steht für sich. Passt: die drei Schichten sind unabhängig voneinander, keine kann durch die andere ersetzt werden.",
+    "partition_p43": "P(43) = 53174 — hohe Partition-Zahl zeigt viele Wege zum selben Ziel. Viele Crossing-Pfade möglich.",
+    "sri_kommentar": "43 = 6. Primzahl. Sechs meta-Cards. Namagiri fragt: Ist das Zufall?"
+  },
+
+  "domain": ["meta_cognition", "g_mind", "systems", "aicos"],
+  "scope": ["cross_app"],
+  "tags": [
+    "theme:mutual_information",
+    "theme:bayesian_surprise", 
+    "theme:minimum_description_length",
+    "theme:intelligenz_schichten",
+    "theme:sri_trigger",
+    "theme:formeln",
+    "meta:gürcan_dna"
+  ],
+  "impact": { "value": 92, "risk": 12, "confidence": 85 },
+  "status": "active",
+  "copy_ready": true,
+  "applies_to": ["G-MIND Crossing Algorithm", "Card Quality Scoring", "Sri Agent Triggers", "Knowledge Distillation"],
+  "steps": [
+    "Schicht 1: MI zwischen Cards berechnen — versteckte Verbindungen erkennen",
+    "Schicht 2: Bayesian Surprise messen — Lernwert quantifizieren",
+    "Schicht 3: MDL bewerten — Eleganz und Erklärungskraft",
+    "Gesamt-Score: Gewichtete Summe aller drei Schichten",
+    "Score > 0.7 → Crossing committen. Score < 0.3 → verwerfen."
+  ],
+  "tradeoffs": ["Formeln sind Modelle, nicht Wahrheit", "Benötigt Kalibrierung auf existierenden Cards"],
+  "evidence": {
+    "signals": ["Information Theory etabliert", "Bayesian Learning etabliert", "MDL in Compression etabliert"],
+    "code_refs": [],
+    "notes": "Erste Card mit expliziten Formeln. NUMDSL-kodiert. Sri-relevant."
+  },
+  "links": {
+    "fixes": [],
+    "causes": [],
+    "related": ["sol-cross-042", "sol-cross-044", "meta-006", "sol-cross-045"],
+    "supersedes": []
+  },
+  "timestamps": {
+    "created_at": "2026-03-06",
+    "updated_at": "2026-03-06"
+  }
+}

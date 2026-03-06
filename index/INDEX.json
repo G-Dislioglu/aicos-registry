@@ -1259,6 +1259,29 @@
     "copy_ready": true
   },
   {
+    "id": "sol-cross-046",
+    "type": "solution_proof",
+    "token": "drei_intelligenz_schichten",
+    "title": "Drei Intelligenz-Schichten: MI + Bayesian Surprise + MDL",
+    "domain": [
+      "meta_cognition",
+      "g_mind",
+      "systems",
+      "aicos"
+    ],
+    "tags": [
+      "theme:mutual_information",
+      "theme:bayesian_surprise",
+      "theme:minimum_description_length",
+      "theme:intelligenz_schichten",
+      "theme:sri_trigger",
+      "theme:formeln",
+      "meta:gürcan_dna"
+    ],
+    "status": "active",
+    "copy_ready": true
+  },
+  {
     "id": "sol-db-01",
     "type": "solution_proof",
     "token": "resilient_memory_service",
