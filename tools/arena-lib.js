@@ -6,9 +6,13 @@ const {
   getStats,
   listCards
 } = require('./registry-readonly-lib');
+const {
+  getProfile
+} = require('./model-control-lib');
 
 const ROOT_DIR = path.join(__dirname, '..');
 const DEFAULT_RUNS_DIR = path.join(ROOT_DIR, 'runtime', 'arena-runs');
+const DEFAULT_AUDIT_DIR = path.join(ROOT_DIR, 'runtime', 'audit-records');
 
 function toArray(value) {
   if (!value) {
@@ -25,6 +29,7 @@ function normalizeInput(input = {}) {
   return {
     question: String(input.question || '').trim(),
     target_ids: toArray(input.target_ids || input.targetIds),
+    profile: String(input.profile || 'default').trim() || 'default',
     filters: {
       type: input.filters && input.filters.type ? input.filters.type : input.type,
       domain: input.filters && input.filters.domain ? input.filters.domain : input.domain,
@@ -82,7 +87,14 @@ function buildRegistryContext(input) {
     stats,
     candidate_cards: Array.from(cardMap.values()),
     requested_target_ids: input.target_ids,
-    filter_snapshot: input.filters
+    filter_snapshot: input.filters,
+    source: {
+      surface: 'registry-readonly-lib',
+      source_of_truth: 'registry',
+      index_file: 'index/INDEX.json',
+      aliases_file: 'index/ALIASES.json',
+      card_lookup: 'cards/<type>/<id>.json'
+    }
   };
 }
 
@@ -93,7 +105,23 @@ function buildSharedEvidencePack(input) {
     topic,
     requested_sources: input.shared_evidence_input.requested_sources,
     notes: input.shared_evidence_input.notes,
-    items: []
+    items: [],
+    placeholder_state: 'no_external_fetch_performed'
+  };
+}
+
+function buildModelControl(input) {
+  const selectedProfile = getProfile(input.profile);
+  return {
+    selected_profile: selectedProfile.id,
+    profile: selectedProfile,
+    provider_integration: 'not_configured',
+    selection_mode: selectedProfile.selection_strategy,
+    control_boundary: {
+      proposal_only: true,
+      validated_requires: ['proof_ref', 'gates'],
+      auto_apply: false
+    }
   };
 }
 
@@ -123,7 +151,7 @@ function buildScoutOutput(input, registryContext, sharedEvidencePack) {
   };
 }
 
-function buildObserverDecision(registryContext, scoutOutput) {
+function buildObserverDecision(registryContext, scoutOutput, modelControl) {
   const reasons = [];
   const riskSignals = [];
   let decision = 'proposal_only_continue';
@@ -139,6 +167,10 @@ function buildObserverDecision(registryContext, scoutOutput) {
     riskSignals.push('evidence_gap');
   }
 
+  if (modelControl.selected_profile === 'review_strict') {
+    reasons.push('Strict review profile keeps the proposal-only boundary conservative.');
+  }
+
   if (reasons.length === 0) {
     reasons.push('Minimal proposal-only arena run may continue without validation or apply.');
   }
@@ -150,39 +182,118 @@ function buildObserverDecision(registryContext, scoutOutput) {
     validated: false,
     apply_allowed: false,
     promotion_eligible: false,
-    validation_requirements: ['proof_ref', 'gates']
+    validation_requirements: ['proof_ref', 'gates'],
+    model_control_profile: modelControl.selected_profile
   };
 }
 
-function buildTrace(packet, outputDir) {
+function buildTrace(packet, outputDir, auditOutputDir) {
+  const phaseTimestamps = {
+    input_captured_at: packet.created_at,
+    shared_evidence_evaluated_at: packet.created_at,
+    scout_completed_at: packet.created_at,
+    observer_completed_at: packet.created_at
+  };
+
   return {
-    schema_version: 'phase2-minimal-trace/v1',
+    schema_version: 'phase3-minimal-trace/v1',
     output_dir: outputDir,
+    audit_output_dir: auditOutputDir,
+    run_metadata: {
+      run_id: packet.run_id,
+      created_at: packet.created_at,
+      status: packet.status,
+      mode: packet.mode
+    },
+    proposal_only_status: {
+      mode: packet.mode,
+      validated: packet.validation.status,
+      eligible: packet.validation.eligible,
+      requires: packet.validation.requires
+    },
+    decision_boundary: {
+      decision: packet.observer_decision.decision,
+      apply_allowed: packet.observer_decision.apply_allowed,
+      promotion_eligible: packet.observer_decision.promotion_eligible,
+      validated: packet.observer_decision.validated
+    },
+    registry_context_source: packet.registry_context.source,
+    evidence_placeholder_state: {
+      status: packet.shared_evidence_pack.status,
+      placeholder_state: packet.shared_evidence_pack.placeholder_state,
+      item_count: packet.shared_evidence_pack.items.length
+    },
+    phase_timestamps: phaseTimestamps,
     phases: [
-      { phase: 'input', status: 'captured' },
-      { phase: 'shared_evidence', status: packet.shared_evidence_pack.status },
-      { phase: 'scout', status: packet.scout_output.status },
-      { phase: 'observer', status: packet.observer_decision.decision }
+      { phase: 'input', status: 'captured', at: phaseTimestamps.input_captured_at },
+      { phase: 'shared_evidence', status: packet.shared_evidence_pack.status, at: phaseTimestamps.shared_evidence_evaluated_at },
+      { phase: 'scout', status: packet.scout_output.status, at: phaseTimestamps.scout_completed_at },
+      { phase: 'observer', status: packet.observer_decision.decision, at: phaseTimestamps.observer_completed_at }
     ],
     summary: {
       candidate_count: packet.registry_context.candidate_cards.length,
       evidence_item_count: packet.shared_evidence_pack.items.length,
-      proposal_only: true
+      proposal_only: true,
+      selected_profile: packet.model_control.selected_profile,
+      audit_record_expected: true
     }
+  };
+}
+
+function buildAuditRecord(packet, outputDir, auditOutputDir) {
+  return {
+    schema_version: 'phase3-minimal-audit/v1',
+    run_id: packet.run_id,
+    created_at: packet.created_at,
+    proposal_only_status: {
+      mode: packet.mode,
+      validated: packet.validation.status,
+      eligible: packet.validation.eligible,
+      apply_allowed: packet.observer_decision.apply_allowed
+    },
+    run_metadata: {
+      status: packet.status,
+      output_dir: outputDir,
+      audit_output_dir: auditOutputDir
+    },
+    model_control: {
+      selected_profile: packet.model_control.selected_profile,
+      selection_mode: packet.model_control.selection_mode,
+      provider_integration: packet.model_control.provider_integration,
+      budget_posture: packet.model_control.profile.budget_posture,
+      role_bindings: packet.model_control.profile.role_bindings
+    },
+    decision_boundary: {
+      decision: packet.observer_decision.decision,
+      reasons: packet.observer_decision.reasons,
+      risk_signals: packet.observer_decision.risk_signals,
+      validation_requirements: packet.observer_decision.validation_requirements
+    },
+    registry_context_source: packet.registry_context.source,
+    evidence_placeholder_state: {
+      status: packet.shared_evidence_pack.status,
+      placeholder_state: packet.shared_evidence_pack.placeholder_state,
+      topic: packet.shared_evidence_pack.topic,
+      requested_sources: packet.shared_evidence_pack.requested_sources,
+      item_count: packet.shared_evidence_pack.items.length
+    },
+    phase_summary: packet.trace.phases
   };
 }
 
 function createArenaRunPacket(rawInput = {}, options = {}) {
   const input = normalizeInput(rawInput);
   const outputDir = options.outputDir || process.env.ARENA_RUNS_DIR || DEFAULT_RUNS_DIR;
+  const auditOutputDir = options.auditOutputDir || process.env.ARENA_AUDIT_DIR || DEFAULT_AUDIT_DIR;
   const registryContext = buildRegistryContext(input);
   const sharedEvidencePack = buildSharedEvidencePack(input);
+  const modelControl = buildModelControl(input);
   const scoutOutput = buildScoutOutput(input, registryContext, sharedEvidencePack);
-  const observerDecision = buildObserverDecision(registryContext, scoutOutput);
+  const observerDecision = buildObserverDecision(registryContext, scoutOutput, modelControl);
   const runId = createRunId();
 
   const packet = {
-    schema_version: 'phase2-minimal-arena/v1',
+    schema_version: 'phase3-minimal-arena/v1',
     run_id: runId,
     created_at: new Date().toISOString(),
     mode: 'proposal_only',
@@ -190,6 +301,7 @@ function createArenaRunPacket(rawInput = {}, options = {}) {
     input,
     shared_evidence_pack: sharedEvidencePack,
     registry_context: registryContext,
+    model_control: modelControl,
     scout_output: scoutOutput,
     observer_decision: observerDecision,
     validation: {
@@ -199,7 +311,8 @@ function createArenaRunPacket(rawInput = {}, options = {}) {
     }
   };
 
-  packet.trace = buildTrace(packet, outputDir);
+  packet.trace = buildTrace(packet, outputDir, auditOutputDir);
+  packet.audit = buildAuditRecord(packet, outputDir, auditOutputDir);
   return packet;
 }
 
@@ -218,15 +331,32 @@ function saveRunTrace(packet, options = {}) {
   };
 }
 
+function saveAuditRecord(packet, options = {}) {
+  const auditOutputDir = options.auditOutputDir || process.env.ARENA_AUDIT_DIR || DEFAULT_AUDIT_DIR;
+  ensureDirectory(auditOutputDir);
+  const auditFilePath = path.join(auditOutputDir, `${packet.run_id}.json`);
+  fs.writeFileSync(auditFilePath, JSON.stringify(packet.audit, null, 2));
+  return {
+    auditFilePath,
+    auditRecord: packet.audit
+  };
+}
+
 function executeArenaRun(input = {}, options = {}) {
   const packet = createArenaRunPacket(input, options);
   if (options.persist === false) {
     return {
       filePath: null,
+      auditFilePath: null,
       packet
     };
   }
-  return saveRunTrace(packet, options);
+  const runResult = saveRunTrace(packet, options);
+  const auditResult = saveAuditRecord(packet, options);
+  return {
+    ...runResult,
+    ...auditResult
+  };
 }
 
 function listArenaRuns(options = {}) {
@@ -245,6 +375,7 @@ function listArenaRuns(options = {}) {
         run_id: payload.run_id,
         created_at: payload.created_at,
         decision: payload.observer_decision ? payload.observer_decision.decision : null,
+        profile: payload.model_control ? payload.model_control.selected_profile : null,
         file_path: filePath
       };
     });
@@ -259,10 +390,21 @@ function readArenaRun(runId, options = {}) {
   return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 }
 
+function readAuditRecord(runId, options = {}) {
+  const auditOutputDir = options.auditOutputDir || process.env.ARENA_AUDIT_DIR || DEFAULT_AUDIT_DIR;
+  const filePath = path.join(auditOutputDir, `${runId}.json`);
+  if (!fs.existsSync(filePath)) {
+    return null;
+  }
+  return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+}
+
 module.exports = {
+  DEFAULT_AUDIT_DIR,
   DEFAULT_RUNS_DIR,
   createArenaRunPacket,
   executeArenaRun,
   listArenaRuns,
-  readArenaRun
+  readArenaRun,
+  readAuditRecord
 };
