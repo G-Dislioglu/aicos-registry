@@ -1,14 +1,18 @@
 #!/usr/bin/env node
 const {
   DEFAULT_AUDIT_DIR,
+  DEFAULT_EVENTS_DIR,
   DEFAULT_MEMORY_CANDIDATES_DIR,
   DEFAULT_MEMORY_REVIEWS_DIR,
   DEFAULT_RUNS_DIR,
+  createMecEvent,
   executeArenaRun,
   listArenaRuns,
+  listMecEvents,
   listMemoryCandidates,
   listMemoryReviews,
   listReviewableCandidates,
+  readMecEvent,
   readArenaRun,
   readAuditRecord,
   readMemoryCandidate,
@@ -49,6 +53,9 @@ function parseArgs(argv) {
 function printUsage() {
   console.log('Usage:');
   console.log('  node tools/arena.js run --question TEXT [--target-id ID] [--type TYPE] [--domain DOMAIN] [--tag TAG] [--status STATUS] [--q QUERY] [--profile PROFILE] [--memory-proposals] [--memory-candidate-type TYPE] [--memory-tag TAG] [--memory-note NOTE] [--evidence-topic TOPIC] [--requested-source SOURCE] [--output-dir DIR] [--audit-dir DIR] [--memory-dir DIR] [--memory-review-dir DIR] [--json]');
+  console.log('  node tools/arena.js create-event --event-type TYPE --domain DOMAIN --summary TEXT --source-ref REF --trace-ref REF [--confidence LEVEL] [--privacy-class CLASS] [--ttl-days DAYS] [--priority-score VALUE] [--salience SIGNAL] [--event-status STATUS] [--event-dir DIR] [--json]');
+  console.log('  node tools/arena.js list-events [--event-dir DIR] [--json]');
+  console.log('  node tools/arena.js get-event <event_id> [--event-dir DIR] [--json]');
   console.log('  node tools/arena.js list-runs [--output-dir DIR] [--json]');
   console.log('  node tools/arena.js get-run <run_id> [--output-dir DIR] [--json]');
   console.log('  node tools/arena.js get-audit <run_id> [--audit-dir DIR] [--json]');
@@ -88,6 +95,22 @@ function buildRunInput(args) {
   };
 }
 
+function buildEventInput(args) {
+  return {
+    event_type: args['event-type'],
+    domain: args.domain,
+    summary: args.summary,
+    source_ref: args['source-ref'],
+    trace_ref: args['trace-ref'],
+    confidence: args.confidence,
+    privacy_class: args['privacy-class'],
+    ttl_days: args['ttl-days'],
+    priority_score: args['priority-score'],
+    salience_signals: args.salience,
+    status: args['event-status']
+  };
+}
+
 function formatRun(result) {
   return [
     `run_id: ${result.packet.run_id}`,
@@ -113,6 +136,13 @@ function formatProfiles(items) {
     return 'No profiles found.';
   }
   return items.map(item => `${item.id} | ${item.budget_posture} | ${item.selection_strategy}`).join('\n');
+}
+
+function formatEvents(items) {
+  if (items.length === 0) {
+    return 'No MEC events found.';
+  }
+  return items.map(item => `${item.id} | ${item.event_type} | ${item.domain} | priority:${item.priority_score} | ttl:${item.ttl_days} | ${item.status}`).join('\n');
 }
 
 function formatMemoryCandidates(items) {
@@ -145,12 +175,45 @@ function main() {
   const command = args._[0];
   const outputDir = args['output-dir'] || DEFAULT_RUNS_DIR;
   const auditDir = args['audit-dir'] || DEFAULT_AUDIT_DIR;
+  const eventDir = args['event-dir'] || DEFAULT_EVENTS_DIR;
   const memoryDir = args['memory-dir'] || DEFAULT_MEMORY_CANDIDATES_DIR;
   const memoryReviewDir = args['memory-review-dir'] || DEFAULT_MEMORY_REVIEWS_DIR;
 
   if (!command) {
     printUsage();
     process.exit(1);
+  }
+
+  if (command === 'create-event') {
+    try {
+      const result = createMecEvent(buildEventInput(args), { eventOutputDir: eventDir });
+      output(args.json ? result : JSON.stringify(result, null, 2), args.json);
+    } catch (error) {
+      console.error(error.message);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (command === 'list-events') {
+    const items = listMecEvents({ eventOutputDir: eventDir });
+    output(args.json ? items : formatEvents(items), args.json);
+    return;
+  }
+
+  if (command === 'get-event') {
+    const eventId = args._[1];
+    if (!eventId) {
+      printUsage();
+      process.exit(1);
+    }
+    const payload = readMecEvent(eventId, { eventOutputDir: eventDir });
+    if (!payload) {
+      console.error(`MEC event not found: ${eventId}`);
+      process.exit(1);
+    }
+    output(payload, true);
+    return;
   }
 
   if (command === 'run') {

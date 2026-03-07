@@ -21,6 +21,12 @@ const {
   normalizeReviewInput,
   sortReviewRecords
 } = require('./memory-review-lib');
+const {
+  DEFAULT_EVENTS_DIR,
+  createEvent,
+  getEvent,
+  listEvents
+} = require('./mec-event-lib');
 
 const ROOT_DIR = path.join(__dirname, '..');
 const DEFAULT_RUNS_DIR = path.join(ROOT_DIR, 'runtime', 'arena-runs');
@@ -361,6 +367,21 @@ function readJsonFile(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 }
 
+function createMecEvent(eventInput = {}, options = {}) {
+  const eventOutputDir = options.eventOutputDir || process.env.MEC_EVENT_DIR || DEFAULT_EVENTS_DIR;
+  return createEvent(eventInput, { eventOutputDir });
+}
+
+function listMecEvents(options = {}) {
+  const eventOutputDir = options.eventOutputDir || process.env.MEC_EVENT_DIR || DEFAULT_EVENTS_DIR;
+  return listEvents({ eventOutputDir });
+}
+
+function readMecEvent(eventId, options = {}) {
+  const eventOutputDir = options.eventOutputDir || process.env.MEC_EVENT_DIR || DEFAULT_EVENTS_DIR;
+  return getEvent(eventId, { eventOutputDir });
+}
+
 function listMemoryReviewPayloads(options = {}) {
   const memoryReviewOutputDir = options.memoryReviewOutputDir || process.env.ARENA_MEMORY_REVIEW_DIR || DEFAULT_MEMORY_REVIEWS_DIR;
   if (!fs.existsSync(memoryReviewOutputDir)) {
@@ -646,15 +667,19 @@ function reviewMemoryCandidate(candidateId, reviewInput = {}, options = {}) {
 
 module.exports = {
   DEFAULT_AUDIT_DIR,
+  DEFAULT_EVENTS_DIR,
   DEFAULT_MEMORY_CANDIDATES_DIR,
   DEFAULT_MEMORY_REVIEWS_DIR,
   DEFAULT_RUNS_DIR,
+  createMecEvent,
   createArenaRunPacket,
   executeArenaRun,
+  listMecEvents,
   listArenaRuns,
   listMemoryCandidates,
   listMemoryReviews,
   listReviewableCandidates,
+  readMecEvent,
   readArenaRun,
   readAuditRecord,
   readMemoryCandidate,
