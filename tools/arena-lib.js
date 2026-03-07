@@ -13,11 +13,20 @@ const {
   buildMemoryCandidates,
   normalizeMemoryProposalInput
 } = require('./memory-proposal-lib');
+const {
+  createReviewRecord,
+  getCurrentCandidateStatus,
+  getLatestReviewRecord,
+  isValidReviewDecisionStatus,
+  normalizeReviewInput,
+  sortReviewRecords
+} = require('./memory-review-lib');
 
 const ROOT_DIR = path.join(__dirname, '..');
 const DEFAULT_RUNS_DIR = path.join(ROOT_DIR, 'runtime', 'arena-runs');
 const DEFAULT_AUDIT_DIR = path.join(ROOT_DIR, 'runtime', 'audit-records');
 const DEFAULT_MEMORY_CANDIDATES_DIR = path.join(ROOT_DIR, 'runtime', 'memory-candidates');
+const DEFAULT_MEMORY_REVIEWS_DIR = path.join(ROOT_DIR, 'runtime', 'memory-reviews');
 
 function toArray(value) {
   if (!value) {
@@ -348,6 +357,89 @@ function ensureDirectory(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true });
 }
 
+function readJsonFile(filePath) {
+  return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+}
+
+function listMemoryReviewPayloads(options = {}) {
+  const memoryReviewOutputDir = options.memoryReviewOutputDir || process.env.ARENA_MEMORY_REVIEW_DIR || DEFAULT_MEMORY_REVIEWS_DIR;
+  if (!fs.existsSync(memoryReviewOutputDir)) {
+    return [];
+  }
+
+  return fs.readdirSync(memoryReviewOutputDir)
+    .filter(file => file.endsWith('.json'))
+    .sort()
+    .map(file => {
+      const filePath = path.join(memoryReviewOutputDir, file);
+      const payload = readJsonFile(filePath);
+      return {
+        payload,
+        filePath
+      };
+    });
+}
+
+function getReviewRecordsByCandidate(options = {}) {
+  const reviewMap = new Map();
+  for (const item of listMemoryReviewPayloads(options)) {
+    const records = reviewMap.get(item.payload.candidate_id) || [];
+    records.push(item.payload);
+    reviewMap.set(item.payload.candidate_id, records);
+  }
+
+  for (const [candidateId, records] of reviewMap.entries()) {
+    reviewMap.set(candidateId, sortReviewRecords(records));
+  }
+
+  return reviewMap;
+}
+
+function buildReviewSummary(reviewRecords = []) {
+  if (reviewRecords.length === 0) {
+    return {
+      review_count: 0,
+      current_status: 'proposal_only',
+      latest_review_id: null,
+      latest_reviewed_at: null,
+      review_source: null,
+      reviewer_mode: null,
+      registry_mutation: false,
+      promotion_executed: false
+    };
+  }
+
+  const latestReview = getLatestReviewRecord(reviewRecords);
+  return {
+    review_count: reviewRecords.length,
+    current_status: latestReview.review_status,
+    latest_review_id: latestReview.review_id,
+    latest_reviewed_at: latestReview.reviewed_at,
+    review_source: latestReview.review_source,
+    reviewer_mode: latestReview.reviewer_mode,
+    registry_mutation: latestReview.audit_meta.registry_mutation,
+    promotion_executed: latestReview.audit_meta.promotion_executed
+  };
+}
+
+function enrichMemoryCandidate(payload, reviewRecords = []) {
+  const reviewSummary = buildReviewSummary(reviewRecords);
+  return {
+    ...payload,
+    current_status: getCurrentCandidateStatus(reviewRecords),
+    review_summary: reviewSummary
+  };
+}
+
+function readStoredMemoryCandidate(candidateId, options = {}) {
+  const memoryOutputDir = options.memoryOutputDir || process.env.ARENA_MEMORY_DIR || DEFAULT_MEMORY_CANDIDATES_DIR;
+  const filePath = path.join(memoryOutputDir, `${candidateId}.json`);
+  if (!fs.existsSync(filePath)) {
+    return null;
+  }
+  return readJsonFile(filePath);
+}
+
 function saveRunTrace(packet, options = {}) {
   const outputDir = options.outputDir || process.env.ARENA_RUNS_DIR || DEFAULT_RUNS_DIR;
   ensureDirectory(outputDir);
@@ -382,6 +474,17 @@ function saveMemoryCandidates(packet, options = {}) {
   return {
     memoryCandidateFilePaths,
     memoryCandidates: packet.memory_candidates.items
+  };
+}
+
+function saveMemoryReview(reviewRecord, options = {}) {
+  const memoryReviewOutputDir = options.memoryReviewOutputDir || process.env.ARENA_MEMORY_REVIEW_DIR || DEFAULT_MEMORY_REVIEWS_DIR;
+  ensureDirectory(memoryReviewOutputDir);
+  const reviewFilePath = path.join(memoryReviewOutputDir, `${reviewRecord.review_id}.json`);
+  fs.writeFileSync(reviewFilePath, JSON.stringify(reviewRecord, null, 2));
+  return {
+    reviewFilePath,
+    reviewRecord
   };
 }
 
@@ -451,43 +554,110 @@ function listMemoryCandidates(options = {}) {
   if (!fs.existsSync(memoryOutputDir)) {
     return [];
   }
+  const reviewMap = getReviewRecordsByCandidate(options);
 
   return fs.readdirSync(memoryOutputDir)
     .filter(file => file.endsWith('.json'))
     .sort()
     .map(file => {
       const filePath = path.join(memoryOutputDir, file);
-      const payload = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      const payload = readJsonFile(filePath);
+      const reviewRecords = reviewMap.get(payload.candidate_id) || [];
+      const reviewSummary = buildReviewSummary(reviewRecords);
       return {
         candidate_id: payload.candidate_id,
         source_run_id: payload.source_run_id,
         created_at: payload.created_at,
         candidate_type: payload.candidate_type,
         status: payload.status,
+        current_status: reviewSummary.current_status,
         promoted: payload.promoted,
+        review_count: reviewSummary.review_count,
         file_path: filePath
       };
     });
 }
 
 function readMemoryCandidate(candidateId, options = {}) {
-  const memoryOutputDir = options.memoryOutputDir || process.env.ARENA_MEMORY_DIR || DEFAULT_MEMORY_CANDIDATES_DIR;
-  const filePath = path.join(memoryOutputDir, `${candidateId}.json`);
+  const payload = readStoredMemoryCandidate(candidateId, options);
+  if (!payload) {
+    return null;
+  }
+  const reviewMap = getReviewRecordsByCandidate(options);
+  const reviewRecords = reviewMap.get(candidateId) || [];
+  return enrichMemoryCandidate(payload, reviewRecords);
+}
+
+function listReviewableCandidates(options = {}) {
+  return listMemoryCandidates(options).filter(item => item.current_status === 'proposal_only' || item.current_status === 'reviewed');
+}
+
+function listMemoryReviews(options = {}) {
+  return listMemoryReviewPayloads(options).map(item => ({
+    review_id: item.payload.review_id,
+    candidate_id: item.payload.candidate_id,
+    source_run_id: item.payload.source_run_id,
+    reviewed_at: item.payload.reviewed_at,
+    review_status: item.payload.review_status,
+    review_source: item.payload.review_source,
+    reviewer_mode: item.payload.reviewer_mode,
+    file_path: item.filePath
+  }));
+}
+
+function readMemoryReview(reviewId, options = {}) {
+  const memoryReviewOutputDir = options.memoryReviewOutputDir || process.env.ARENA_MEMORY_REVIEW_DIR || DEFAULT_MEMORY_REVIEWS_DIR;
+  const filePath = path.join(memoryReviewOutputDir, `${reviewId}.json`);
   if (!fs.existsSync(filePath)) {
     return null;
   }
-  return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+  return readJsonFile(filePath);
+}
+
+function reviewMemoryCandidate(candidateId, reviewInput = {}, options = {}) {
+  const candidate = readStoredMemoryCandidate(candidateId, options);
+  if (!candidate) {
+    const error = new Error(`Memory candidate not found: ${candidateId}`);
+    error.code = 'memory_candidate_not_found';
+    throw error;
+  }
+
+  const normalizedReviewInput = normalizeReviewInput(reviewInput);
+  if (!isValidReviewDecisionStatus(normalizedReviewInput.review_status)) {
+    const error = new Error(`Invalid review status: ${normalizedReviewInput.review_status || '(empty)'}`);
+    error.code = 'invalid_review_status';
+    throw error;
+  }
+  if (!normalizedReviewInput.review_rationale) {
+    const error = new Error('Review rationale is required.');
+    error.code = 'missing_review_rationale';
+    throw error;
+  }
+
+  const reviewMap = getReviewRecordsByCandidate(options);
+  const existingReviewRecords = reviewMap.get(candidateId) || [];
+  const reviewRecord = createReviewRecord(candidate, normalizedReviewInput, getCurrentCandidateStatus(existingReviewRecords));
+  const saved = saveMemoryReview(reviewRecord, options);
+  return {
+    ...saved,
+    candidate: enrichMemoryCandidate(candidate, [...existingReviewRecords, reviewRecord])
+  };
 }
 
 module.exports = {
   DEFAULT_AUDIT_DIR,
   DEFAULT_MEMORY_CANDIDATES_DIR,
+  DEFAULT_MEMORY_REVIEWS_DIR,
   DEFAULT_RUNS_DIR,
   createArenaRunPacket,
   executeArenaRun,
   listArenaRuns,
   listMemoryCandidates,
+  listMemoryReviews,
+  listReviewableCandidates,
   readArenaRun,
   readAuditRecord,
-  readMemoryCandidate
+  readMemoryCandidate,
+  readMemoryReview,
+  reviewMemoryCandidate
 };

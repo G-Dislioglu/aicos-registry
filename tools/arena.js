@@ -2,13 +2,18 @@
 const {
   DEFAULT_AUDIT_DIR,
   DEFAULT_MEMORY_CANDIDATES_DIR,
+  DEFAULT_MEMORY_REVIEWS_DIR,
   DEFAULT_RUNS_DIR,
   executeArenaRun,
   listArenaRuns,
   listMemoryCandidates,
+  listMemoryReviews,
+  listReviewableCandidates,
   readArenaRun,
   readAuditRecord,
-  readMemoryCandidate
+  readMemoryCandidate,
+  readMemoryReview,
+  reviewMemoryCandidate
 } = require('./arena-lib');
 const {
   listProfiles
@@ -43,12 +48,16 @@ function parseArgs(argv) {
 
 function printUsage() {
   console.log('Usage:');
-  console.log('  node tools/arena.js run --question TEXT [--target-id ID] [--type TYPE] [--domain DOMAIN] [--tag TAG] [--status STATUS] [--q QUERY] [--profile PROFILE] [--memory-proposals] [--memory-candidate-type TYPE] [--memory-tag TAG] [--memory-note NOTE] [--evidence-topic TOPIC] [--requested-source SOURCE] [--output-dir DIR] [--audit-dir DIR] [--memory-dir DIR] [--json]');
+  console.log('  node tools/arena.js run --question TEXT [--target-id ID] [--type TYPE] [--domain DOMAIN] [--tag TAG] [--status STATUS] [--q QUERY] [--profile PROFILE] [--memory-proposals] [--memory-candidate-type TYPE] [--memory-tag TAG] [--memory-note NOTE] [--evidence-topic TOPIC] [--requested-source SOURCE] [--output-dir DIR] [--audit-dir DIR] [--memory-dir DIR] [--memory-review-dir DIR] [--json]');
   console.log('  node tools/arena.js list-runs [--output-dir DIR] [--json]');
   console.log('  node tools/arena.js get-run <run_id> [--output-dir DIR] [--json]');
   console.log('  node tools/arena.js get-audit <run_id> [--audit-dir DIR] [--json]');
-  console.log('  node tools/arena.js list-memory-candidates [--memory-dir DIR] [--json]');
-  console.log('  node tools/arena.js get-memory-candidate <candidate_id> [--memory-dir DIR] [--json]');
+  console.log('  node tools/arena.js list-memory-candidates [--memory-dir DIR] [--memory-review-dir DIR] [--json]');
+  console.log('  node tools/arena.js list-reviewable-candidates [--memory-dir DIR] [--memory-review-dir DIR] [--json]');
+  console.log('  node tools/arena.js get-memory-candidate <candidate_id> [--memory-dir DIR] [--memory-review-dir DIR] [--json]');
+  console.log('  node tools/arena.js review-memory-candidate <candidate_id> --review-status STATUS --review-rationale TEXT [--review-source SOURCE] [--reviewer-mode MODE] [--confidence LEVEL] [--review-note NOTE] [--memory-dir DIR] [--memory-review-dir DIR] [--json]');
+  console.log('  node tools/arena.js list-memory-reviews [--memory-review-dir DIR] [--json]');
+  console.log('  node tools/arena.js get-memory-review <review_id> [--memory-review-dir DIR] [--json]');
   console.log('  node tools/arena.js list-profiles [--json]');
 }
 
@@ -110,7 +119,25 @@ function formatMemoryCandidates(items) {
   if (items.length === 0) {
     return 'No memory candidates found.';
   }
-  return items.map(item => `${item.candidate_id} | ${item.source_run_id} | ${item.candidate_type} | ${item.status} | promoted:${item.promoted}`).join('\n');
+  return items.map(item => `${item.candidate_id} | ${item.source_run_id} | ${item.candidate_type} | stored:${item.status} | current:${item.current_status} | reviews:${item.review_count || 0} | promoted:${item.promoted}`).join('\n');
+}
+
+function formatMemoryReviews(items) {
+  if (items.length === 0) {
+    return 'No memory reviews found.';
+  }
+  return items.map(item => `${item.review_id} | ${item.candidate_id} | ${item.review_status} | ${item.review_source} | ${item.reviewed_at}`).join('\n');
+}
+
+function buildReviewInput(args) {
+  return {
+    review_status: args['review-status'],
+    review_rationale: args['review-rationale'],
+    review_source: args['review-source'],
+    reviewer_mode: args['reviewer-mode'],
+    confidence: args.confidence,
+    review_notes: args['review-note']
+  };
 }
 
 function main() {
@@ -119,6 +146,7 @@ function main() {
   const outputDir = args['output-dir'] || DEFAULT_RUNS_DIR;
   const auditDir = args['audit-dir'] || DEFAULT_AUDIT_DIR;
   const memoryDir = args['memory-dir'] || DEFAULT_MEMORY_CANDIDATES_DIR;
+  const memoryReviewDir = args['memory-review-dir'] || DEFAULT_MEMORY_REVIEWS_DIR;
 
   if (!command) {
     printUsage();
@@ -126,7 +154,7 @@ function main() {
   }
 
   if (command === 'run') {
-    const result = executeArenaRun(buildRunInput(args), { outputDir, auditOutputDir: auditDir, memoryOutputDir: memoryDir });
+    const result = executeArenaRun(buildRunInput(args), { outputDir, auditOutputDir: auditDir, memoryOutputDir: memoryDir, memoryReviewOutputDir: memoryReviewDir });
     output(args.json ? result : formatRun(result), args.json);
     return;
   }
@@ -168,7 +196,13 @@ function main() {
   }
 
   if (command === 'list-memory-candidates') {
-    const items = listMemoryCandidates({ memoryOutputDir: memoryDir });
+    const items = listMemoryCandidates({ memoryOutputDir: memoryDir, memoryReviewOutputDir: memoryReviewDir });
+    output(args.json ? items : formatMemoryCandidates(items), args.json);
+    return;
+  }
+
+  if (command === 'list-reviewable-candidates') {
+    const items = listReviewableCandidates({ memoryOutputDir: memoryDir, memoryReviewOutputDir: memoryReviewDir });
     output(args.json ? items : formatMemoryCandidates(items), args.json);
     return;
   }
@@ -179,9 +213,46 @@ function main() {
       printUsage();
       process.exit(1);
     }
-    const payload = readMemoryCandidate(candidateId, { memoryOutputDir: memoryDir });
+    const payload = readMemoryCandidate(candidateId, { memoryOutputDir: memoryDir, memoryReviewOutputDir: memoryReviewDir });
     if (!payload) {
       console.error(`Memory candidate not found: ${candidateId}`);
+      process.exit(1);
+    }
+    output(payload, true);
+    return;
+  }
+
+  if (command === 'review-memory-candidate') {
+    const candidateId = args._[1];
+    if (!candidateId) {
+      printUsage();
+      process.exit(1);
+    }
+    try {
+      const result = reviewMemoryCandidate(candidateId, buildReviewInput(args), { memoryOutputDir: memoryDir, memoryReviewOutputDir: memoryReviewDir });
+      output(args.json ? result : JSON.stringify(result, null, 2), args.json);
+    } catch (error) {
+      console.error(error.message);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (command === 'list-memory-reviews') {
+    const items = listMemoryReviews({ memoryReviewOutputDir: memoryReviewDir });
+    output(args.json ? items : formatMemoryReviews(items), args.json);
+    return;
+  }
+
+  if (command === 'get-memory-review') {
+    const reviewId = args._[1];
+    if (!reviewId) {
+      printUsage();
+      process.exit(1);
+    }
+    const payload = readMemoryReview(reviewId, { memoryReviewOutputDir: memoryReviewDir });
+    if (!payload) {
+      console.error(`Memory review not found: ${reviewId}`);
       process.exit(1);
     }
     output(payload, true);
