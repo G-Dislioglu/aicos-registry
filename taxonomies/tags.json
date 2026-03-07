@@ -17,7 +17,15 @@
       "windsurf",
       "openai",
       "llm",
-      "astrology"
+      "astrology",
+      "database",
+      "json",
+      "native_module",
+      "security",
+      "tts",
+      "vite",
+      "web_speech_api",
+      "websocket"
     ],
     "theme": [
       "state_machine",

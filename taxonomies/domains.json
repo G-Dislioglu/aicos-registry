@@ -4,6 +4,7 @@
   "_updated": "2026-03-05",
   "domains": [
     { "name": "api", "description": "External API integrations, provider routing, LLM calls" },
+    { "name": "biology", "description": "Biological analogies, swarm behavior, adaptive natural-system patterns" },
     { "name": "audio", "description": "Speech recognition, TTS, audio processing" },
     { "name": "auth", "description": "Authentication, API keys, security tokens" },
     { "name": "cross_app", "description": "Patterns applicable across multiple applications" },
@@ -11,6 +12,7 @@
     { "name": "devserver", "description": "Development server, build tools, hot reload" },
     { "name": "frontend", "description": "UI components, React, state management, DOM" },
     { "name": "g_mind", "description": "G-MIND system-specific patterns" },
+    { "name": "multi_agent", "description": "Multi-agent coordination, worker systems, and collaborative agent architectures" },
     { "name": "aicos", "description": "AICOS registry internal patterns" },
     { "name": "ai_governance", "description": "AI safety, agent protocols, meta-cognition" },
     { "name": "meta_cognition", "description": "Self-awareness, reflection, reasoning about reasoning" },
