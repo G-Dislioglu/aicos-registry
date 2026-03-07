@@ -20,6 +20,6 @@
   "tradeoffs": ["Ranking kann sich mit neuen Modell-Versionen ändern", "Task-spezifische Varianz möglich"],
   "copy_ready": true,
   "evidence": { "signals": ["Gemini 3.1 Low: 91/100, 5 Cards alle top", "GLM5: 93/100, 13 Cards mit 95% Trefferquote", "GPT-5.2 High Thinking: 65/100, teuerste schlechteste Option"], "code_refs": [], "notes": "Aus heutigem Arena-Test entstanden — regelmäßig wiederholen wenn neue Modelle verfügbar" },
-  "links": { "fixes": [], "causes": [], "related": ["sol-dev-004", "sol-dev-006"], "supersedes": [] },
+  "links": { "fixes": [], "causes": [], "related": ["sol-dev-006"], "supersedes": [] },
   "timestamps": { "created_at": "2026-03-02", "updated_at": "2026-03-02" }
 }
