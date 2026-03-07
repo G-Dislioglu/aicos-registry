@@ -1,0 +1,138 @@
+#!/usr/bin/env node
+const http = require('http');
+const path = require('path');
+const { URL } = require('url');
+const {
+  DEFAULT_RUNS_DIR,
+  executeArenaRun,
+  listArenaRuns,
+  readArenaRun
+} = require('./arena-lib');
+
+function sendJson(res, statusCode, payload) {
+  res.writeHead(statusCode, { 'Content-Type': 'application/json; charset=utf-8' });
+  res.end(JSON.stringify(payload, null, 2));
+}
+
+function sendMethodNotAllowed(res, method) {
+  sendJson(res, 405, {
+    error: 'method_not_allowed',
+    method,
+    allowed: ['GET', 'POST']
+  });
+}
+
+function sendNotFound(res, pathname) {
+  sendJson(res, 404, {
+    error: 'not_found',
+    path: pathname
+  });
+}
+
+function readRequestBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
+    req.on('end', () => {
+      const raw = Buffer.concat(chunks).toString('utf-8').trim();
+      if (!raw) {
+        resolve({});
+        return;
+      }
+      try {
+        resolve(JSON.parse(raw));
+      } catch (error) {
+        reject(error);
+      }
+    });
+    req.on('error', reject);
+  });
+}
+
+async function handleRequest(req, res, options = {}) {
+  const outputDir = options.outputDir || process.env.ARENA_RUNS_DIR || DEFAULT_RUNS_DIR;
+  const requestUrl = new URL(req.url, 'http://127.0.0.1');
+  const pathname = requestUrl.pathname;
+
+  if (pathname === '/arena/health' && req.method === 'GET') {
+    sendJson(res, 200, {
+      ok: true,
+      surface: 'arena-server',
+      output_dir: outputDir
+    });
+    return;
+  }
+
+  if (pathname === '/arena/runs' && req.method === 'GET') {
+    const items = listArenaRuns({ outputDir });
+    sendJson(res, 200, {
+      total: items.length,
+      items
+    });
+    return;
+  }
+
+  if (pathname === '/arena/runs' && req.method === 'POST') {
+    try {
+      const payload = await readRequestBody(req);
+      const result = executeArenaRun(payload, { outputDir });
+      sendJson(res, 201, result);
+    } catch (error) {
+      sendJson(res, 400, {
+        error: 'invalid_json',
+        message: error.message
+      });
+    }
+    return;
+  }
+
+  if (pathname.startsWith('/arena/runs/') && req.method === 'GET') {
+    const runId = decodeURIComponent(pathname.slice('/arena/runs/'.length));
+    const payload = readArenaRun(runId, { outputDir });
+    if (!payload) {
+      sendJson(res, 404, {
+        error: 'run_not_found',
+        run_id: runId
+      });
+      return;
+    }
+    sendJson(res, 200, payload);
+    return;
+  }
+
+  if (pathname.startsWith('/arena/')) {
+    sendMethodNotAllowed(res, req.method);
+    return;
+  }
+
+  sendNotFound(res, pathname);
+}
+
+function startServer(port = Number.parseInt(process.env.PORT || '3220', 10), options = {}) {
+  const server = http.createServer((req, res) => {
+    handleRequest(req, res, options).catch(error => {
+      sendJson(res, 500, {
+        error: 'internal_error',
+        message: error.message
+      });
+    });
+  });
+
+  server.listen(port, () => {
+    const address = server.address();
+    const effectivePort = typeof address === 'object' && address ? address.port : port;
+    const outputDir = options.outputDir || process.env.ARENA_RUNS_DIR || DEFAULT_RUNS_DIR;
+    console.log(`arena-server listening on http://127.0.0.1:${effectivePort} -> ${path.resolve(outputDir)}`);
+  });
+
+  return server;
+}
+
+if (require.main === module) {
+  startServer();
+}
+
+module.exports = {
+  handleRequest,
+  startServer
+};
