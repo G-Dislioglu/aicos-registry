@@ -22,23 +22,23 @@
 
 | ID | Token | Title | Domain | Status | Fixes |
 |---|---|---|---|---|---|
-| err-api-004 | env_block_vs_code_failure | ENV-Block: Agent verwechselt Umgebungsfehler mit Code-Fehler | devserver, cross_app | active | - |
-| err-api-01 | openai_gpt5_max_tokens_mismatch | OpenAI GPT-5: max_tokens abgelehnt (max_completion_tokens erforderlich) | api | active | - |
-| err-api-02 | provider_routing_failure | LLM Provider Routing Inconsistency | api | active | - |
+| err-api-004 | env_block_vs_code_failure | ENV-Block: Agent verwechselt Umgebungsfehler mit Code-Fehler | devserver, cross_app | active | sol-dev-006 |
+| err-api-01 | openai_gpt5_max_tokens_mismatch | OpenAI GPT-5: max_tokens abgelehnt (max_completion_tokens erforderlich) | api | active | sol-api-01 |
+| err-api-02 | provider_routing_failure | LLM Provider Routing Inconsistency | api | active | sol-api-02 |
 | err-arch-001 | infrastructure_for_infrastructure | Infrastructure-for-Infrastructure Falle: SpecBridge Anti-Pattern | ai_governance, cross_app | active | - |
-| err-astro-01 | astrology_calculation_timeout | Swiss Ephemeris Calculation Timeouts | api | active | - |
-| err-audio-01 | speech_abort_loop_stale_closure | SpeechRecognition Abort-Loop durch Race-Condition / stale closure | audio, frontend | active | - |
-| err-audio-02 | tts_fallback_cascade | TTS Engine Fallback Cascade Failure | audio | active | - |
-| err-auth-01 | api_key_exposure_risk | Client API Key Exposure in Provider Calls | auth | active | - |
-| err-db-01 | memory_service_silent_failure | Memory Service Silent Database Failures | db | active | - |
+| err-astro-01 | astrology_calculation_timeout | Swiss Ephemeris Calculation Timeouts | api | active | sol-astro-01 |
+| err-audio-01 | speech_abort_loop_stale_closure | SpeechRecognition Abort-Loop durch Race-Condition / stale closure | audio, frontend | active | sol-audio-01 |
+| err-audio-02 | tts_fallback_cascade | TTS Engine Fallback Cascade Failure | audio | active | sol-audio-02 |
+| err-auth-01 | api_key_exposure_risk | Client API Key Exposure in Provider Calls | auth | active | sol-auth-01 |
+| err-db-01 | memory_service_silent_failure | Memory Service Silent Database Failures | db | active | sol-db-01 |
 | err-dev-002 | overlay_ui_blocks_everything | Desktop-Overlay blockiert alle anderen UI-Elemente | frontend, devserver | active | - |
-| err-dev-003 | prompt_too_long_slows_agent | Zu komplexer Prompt verlangsamt Coding-Agent signifikant | devserver, cross_app | active | - |
-| err-dev-01 | vite_onedrive_stale_bundle | Vite zeigt alten Code (OneDrive/Watch verliert Änderungen) | devserver, frontend | active | - |
-| err-dev-02 | swiss_ephemeris_compatibility | Swiss Ephemeris Native Module Compatibility | devserver | active | - |
-| err-frontend-01 | json_parsing_vulnerability | Unsafe JSON Parsing in API Responses | frontend | active | - |
-| err-trading-001 | indicator_complexity_trap | Indikator-Komplexitätsfalle: Mehr Bestätigung = Schlechter | trading | active | - |
-| err-ui-01 | race_condition_state_updates | React State Race Conditions in Async Operations | frontend | active | - |
-| err-ws-01 | speech_recognition_memory_leak | Speech Recognition Timer Memory Leaks | frontend | active | - |
+| err-dev-003 | prompt_too_long_slows_agent | Zu komplexer Prompt verlangsamt Coding-Agent signifikant | devserver, cross_app | active | sol-dev-006 |
+| err-dev-01 | vite_onedrive_stale_bundle | Vite zeigt alten Code (OneDrive/Watch verliert Änderungen) | devserver, frontend | active | sol-dev-01 |
+| err-dev-02 | swiss_ephemeris_compatibility | Swiss Ephemeris Native Module Compatibility | devserver | active | sol-dev-02 |
+| err-frontend-01 | json_parsing_vulnerability | Unsafe JSON Parsing in API Responses | frontend | active | sol-frontend-01 |
+| err-trading-001 | indicator_complexity_trap | Indikator-Komplexitätsfalle: Mehr Bestätigung = Schlechter | trading | active | sol-trading-001 |
+| err-ui-01 | race_condition_state_updates | React State Race Conditions in Async Operations | frontend | active | sol-ui-01 |
+| err-ws-01 | speech_recognition_memory_leak | Speech Recognition Timer Memory Leaks | frontend | active | sol-ws-01 |
 
 ## Solution Proofs
 

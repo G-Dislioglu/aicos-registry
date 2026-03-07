@@ -14,7 +14,10 @@
       "risk:infinite_loop",
       "theme:env_diagnosis"
     ],
-    "status": "active"
+    "status": "active",
+    "fixes": [
+      "sol-dev-006"
+    ]
   },
   {
     "id": "err-api-01",
@@ -29,7 +32,10 @@
       "theme:provider_compat",
       "risk:runtime_error"
     ],
-    "status": "active"
+    "status": "active",
+    "fixes": [
+      "sol-api-01"
+    ]
   },
   {
     "id": "err-api-02",
@@ -44,7 +50,10 @@
       "risk:medium",
       "theme:provider_routing"
     ],
-    "status": "active"
+    "status": "active",
+    "fixes": [
+      "sol-api-02"
+    ]
   },
   {
     "id": "err-arch-001",
@@ -75,7 +84,10 @@
       "risk:medium",
       "theme:timeout"
     ],
-    "status": "active"
+    "status": "active",
+    "fixes": [
+      "sol-astro-01"
+    ]
   },
   {
     "id": "err-audio-01",
@@ -92,7 +104,10 @@
       "risk:race_condition",
       "theme:state_machine"
     ],
-    "status": "active"
+    "status": "active",
+    "fixes": [
+      "sol-audio-01"
+    ]
   },
   {
     "id": "err-audio-02",
@@ -107,7 +122,10 @@
       "risk:high",
       "theme:audio_fallback"
     ],
-    "status": "active"
+    "status": "active",
+    "fixes": [
+      "sol-audio-02"
+    ]
   },
   {
     "id": "err-auth-01",
@@ -122,7 +140,10 @@
       "risk:high",
       "theme:api_keys"
     ],
-    "status": "active"
+    "status": "active",
+    "fixes": [
+      "sol-auth-01"
+    ]
   },
   {
     "id": "err-db-01",
@@ -137,7 +158,10 @@
       "risk:low",
       "theme:data_persistence"
     ],
-    "status": "active"
+    "status": "active",
+    "fixes": [
+      "sol-db-01"
+    ]
   },
   {
     "id": "err-dev-002",
@@ -169,7 +193,10 @@
       "risk:slow_execution",
       "tech:windsurf"
     ],
-    "status": "active"
+    "status": "active",
+    "fixes": [
+      "sol-dev-006"
+    ]
   },
   {
     "id": "err-dev-01",
@@ -185,7 +212,10 @@
       "env:onedrive",
       "risk:stale_assets"
     ],
-    "status": "active"
+    "status": "active",
+    "fixes": [
+      "sol-dev-01"
+    ]
   },
   {
     "id": "err-dev-02",
@@ -200,7 +230,10 @@
       "risk:medium",
       "theme:deployment"
     ],
-    "status": "active"
+    "status": "active",
+    "fixes": [
+      "sol-dev-02"
+    ]
   },
   {
     "id": "err-frontend-01",
@@ -215,7 +248,10 @@
       "risk:high",
       "theme:parsing"
     ],
-    "status": "active"
+    "status": "active",
+    "fixes": [
+      "sol-frontend-01"
+    ]
   },
   {
     "id": "err-trading-001",
@@ -230,7 +266,10 @@
       "theme:over_engineering",
       "risk:analysis_paralysis"
     ],
-    "status": "active"
+    "status": "active",
+    "fixes": [
+      "sol-trading-001"
+    ]
   },
   {
     "id": "err-ui-01",
@@ -245,7 +284,10 @@
       "risk:medium",
       "theme:race_condition"
     ],
-    "status": "active"
+    "status": "active",
+    "fixes": [
+      "sol-ui-01"
+    ]
   },
   {
     "id": "err-ws-01",
@@ -260,7 +302,10 @@
       "risk:medium",
       "theme:memory_leak"
     ],
-    "status": "active"
+    "status": "active",
+    "fixes": [
+      "sol-ws-01"
+    ]
   },
   {
     "id": "meta-001",
@@ -404,7 +449,10 @@
       "theme:provider_routing"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "fixes": [
+      "err-api-02"
+    ]
   },
   {
     "id": "sol-arch-001",
@@ -472,7 +520,10 @@
       "theme:monetization"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "fixes": [
+      "err-arch-001"
+    ]
   },
   {
     "id": "sol-astro-01",
@@ -487,7 +538,10 @@
       "theme:timeout"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "fixes": [
+      "err-astro-01"
+    ]
   },
   {
     "id": "sol-audio-01",
@@ -520,7 +574,10 @@
       "theme:audio_fallback"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "fixes": [
+      "err-audio-02"
+    ]
   },
   {
     "id": "sol-auth-01",
@@ -535,7 +592,10 @@
       "theme:api_keys"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "fixes": [
+      "err-auth-01"
+    ]
   },
   {
     "id": "sol-bio-047",
@@ -671,7 +731,11 @@
       "theme:anti_over_engineering"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "fixes": [
+      "err-dev-003",
+      "err-arch-001"
+    ]
   },
   {
     "id": "sol-cross-008",
@@ -690,7 +754,10 @@
       "theme:tdd"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "fixes": [
+      "err-dev-002"
+    ]
   },
   {
     "id": "sol-cross-009",
@@ -765,7 +832,11 @@
       "theme:shipping"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "fixes": [
+      "err-arch-001",
+      "err-trading-001"
+    ]
   },
   {
     "id": "sol-cross-013",
@@ -881,7 +952,10 @@
       "theme:debugging"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "fixes": [
+      "err-api-004"
+    ]
   },
   {
     "id": "sol-cross-019",
@@ -1017,7 +1091,10 @@
       "theme:validation"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "fixes": [
+      "err-arch-001"
+    ]
   },
   {
     "id": "sol-cross-026",
@@ -1093,7 +1170,10 @@
       "theme:acceptance_testing"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "fixes": [
+      "err-ui-02"
+    ]
   },
   {
     "id": "sol-cross-030",
@@ -1111,7 +1191,10 @@
       "theme:cashflow"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "fixes": [
+      "err-arch-001"
+    ]
   },
   {
     "id": "sol-cross-031",
@@ -1506,7 +1589,10 @@
       "theme:data_persistence"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "fixes": [
+      "err-db-01"
+    ]
   },
   {
     "id": "sol-dev-005",
@@ -1523,7 +1609,10 @@
       "tech:stepstack"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "fixes": [
+      "err-dev-01"
+    ]
   },
   {
     "id": "sol-dev-006",
@@ -1573,7 +1662,10 @@
       "theme:deployment"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "fixes": [
+      "err-dev-02"
+    ]
   },
   {
     "id": "sol-frontend-01",
@@ -1588,7 +1680,10 @@
       "theme:parsing"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "fixes": [
+      "err-frontend-01"
+    ]
   },
   {
     "id": "sol-multiagent-001",
@@ -1636,7 +1731,10 @@
       "theme:race_condition"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "fixes": [
+      "err-ui-01"
+    ]
   },
   {
     "id": "sol-ux-001",
@@ -1671,7 +1769,10 @@
       "theme:ux_guard"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "fixes": [
+      "err-ui-02"
+    ]
   },
   {
     "id": "sol-ws-01",
@@ -1686,6 +1787,9 @@
       "theme:memory_leak"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "fixes": [
+      "err-ws-01"
+    ]
   }
 ]

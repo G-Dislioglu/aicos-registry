@@ -16,7 +16,7 @@ const INDEX_FILE = path.join(ROOT_DIR, 'index', 'INDEX.json');
 const REQUIRED_FIELDS = ['id', 'type', 'token', 'title', 'domain', 'tags', 'status'];
 
 // Fields to include in INDEX.json (minimal for fast scanning)
-const INDEX_FIELDS = ['id', 'type', 'token', 'title', 'domain', 'tags', 'status', 'copy_ready', 'fixes'];
+const INDEX_FIELDS = ['id', 'type', 'token', 'title', 'domain', 'tags', 'status', 'copy_ready'];
 
 function readCard(filePath) {
   const content = fs.readFileSync(filePath, 'utf-8');
@@ -85,6 +85,9 @@ function buildIndexEntry(card) {
     if (field in card) {
       entry[field] = card[field];
     }
+  }
+  if (card.links && Array.isArray(card.links.fixes) && card.links.fixes.length > 0) {
+    entry.fixes = card.links.fixes;
   }
   return entry;
 }
