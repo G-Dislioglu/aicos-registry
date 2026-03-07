@@ -4,11 +4,14 @@ const path = require('path');
 const { URL } = require('url');
 const {
   DEFAULT_AUDIT_DIR,
+  DEFAULT_MEMORY_CANDIDATES_DIR,
   DEFAULT_RUNS_DIR,
   executeArenaRun,
   listArenaRuns,
+  listMemoryCandidates,
   readArenaRun,
-  readAuditRecord
+  readAuditRecord,
+  readMemoryCandidate
 } = require('./arena-lib');
 const {
   listProfiles
@@ -57,6 +60,7 @@ function readRequestBody(req) {
 async function handleRequest(req, res, options = {}) {
   const outputDir = options.outputDir || process.env.ARENA_RUNS_DIR || DEFAULT_RUNS_DIR;
   const auditOutputDir = options.auditOutputDir || process.env.ARENA_AUDIT_DIR || DEFAULT_AUDIT_DIR;
+  const memoryOutputDir = options.memoryOutputDir || process.env.ARENA_MEMORY_DIR || DEFAULT_MEMORY_CANDIDATES_DIR;
   const requestUrl = new URL(req.url, 'http://127.0.0.1');
   const pathname = requestUrl.pathname;
 
@@ -65,7 +69,8 @@ async function handleRequest(req, res, options = {}) {
       ok: true,
       surface: 'arena-server',
       output_dir: outputDir,
-      audit_output_dir: auditOutputDir
+      audit_output_dir: auditOutputDir,
+      memory_output_dir: memoryOutputDir
     });
     return;
   }
@@ -91,7 +96,7 @@ async function handleRequest(req, res, options = {}) {
   if (pathname === '/arena/runs' && req.method === 'POST') {
     try {
       const payload = await readRequestBody(req);
-      const result = executeArenaRun(payload, { outputDir });
+      const result = executeArenaRun(payload, { outputDir, auditOutputDir, memoryOutputDir });
       sendJson(res, 201, result);
     } catch (error) {
       sendJson(res, 400, {
@@ -130,6 +135,29 @@ async function handleRequest(req, res, options = {}) {
     return;
   }
 
+  if (pathname === '/arena/memory-candidates' && req.method === 'GET') {
+    const items = listMemoryCandidates({ memoryOutputDir });
+    sendJson(res, 200, {
+      total: items.length,
+      items
+    });
+    return;
+  }
+
+  if (pathname.startsWith('/arena/memory-candidates/') && req.method === 'GET') {
+    const candidateId = decodeURIComponent(pathname.slice('/arena/memory-candidates/'.length));
+    const payload = readMemoryCandidate(candidateId, { memoryOutputDir });
+    if (!payload) {
+      sendJson(res, 404, {
+        error: 'memory_candidate_not_found',
+        candidate_id: candidateId
+      });
+      return;
+    }
+    sendJson(res, 200, payload);
+    return;
+  }
+
   if (pathname.startsWith('/arena/')) {
     sendMethodNotAllowed(res, req.method);
     return;
@@ -153,7 +181,8 @@ function startServer(port = Number.parseInt(process.env.PORT || '3220', 10), opt
     const effectivePort = typeof address === 'object' && address ? address.port : port;
     const outputDir = options.outputDir || process.env.ARENA_RUNS_DIR || DEFAULT_RUNS_DIR;
     const auditOutputDir = options.auditOutputDir || process.env.ARENA_AUDIT_DIR || DEFAULT_AUDIT_DIR;
-    console.log(`arena-server listening on http://127.0.0.1:${effectivePort} -> ${path.resolve(outputDir)} | audit: ${path.resolve(auditOutputDir)}`);
+    const memoryOutputDir = options.memoryOutputDir || process.env.ARENA_MEMORY_DIR || DEFAULT_MEMORY_CANDIDATES_DIR;
+    console.log(`arena-server listening on http://127.0.0.1:${effectivePort} -> ${path.resolve(outputDir)} | audit: ${path.resolve(auditOutputDir)} | memory: ${path.resolve(memoryOutputDir)}`);
   });
 
   return server;

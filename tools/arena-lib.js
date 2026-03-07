@@ -9,10 +9,15 @@ const {
 const {
   getProfile
 } = require('./model-control-lib');
+const {
+  buildMemoryCandidates,
+  normalizeMemoryProposalInput
+} = require('./memory-proposal-lib');
 
 const ROOT_DIR = path.join(__dirname, '..');
 const DEFAULT_RUNS_DIR = path.join(ROOT_DIR, 'runtime', 'arena-runs');
 const DEFAULT_AUDIT_DIR = path.join(ROOT_DIR, 'runtime', 'audit-records');
+const DEFAULT_MEMORY_CANDIDATES_DIR = path.join(ROOT_DIR, 'runtime', 'memory-candidates');
 
 function toArray(value) {
   if (!value) {
@@ -41,7 +46,8 @@ function normalizeInput(input = {}) {
       topic: input.shared_evidence_input && input.shared_evidence_input.topic ? input.shared_evidence_input.topic : String(input.evidence_topic || '').trim(),
       requested_sources: toArray(input.shared_evidence_input && input.shared_evidence_input.requested_sources ? input.shared_evidence_input.requested_sources : input.requested_sources),
       notes: toArray(input.shared_evidence_input && input.shared_evidence_input.notes ? input.shared_evidence_input.notes : input.evidence_notes)
-    }
+    },
+    memory_proposal_input: normalizeMemoryProposalInput(input)
   };
 }
 
@@ -230,12 +236,20 @@ function buildTrace(packet, outputDir, auditOutputDir) {
       { phase: 'scout', status: packet.scout_output.status, at: phaseTimestamps.scout_completed_at },
       { phase: 'observer', status: packet.observer_decision.decision, at: phaseTimestamps.observer_completed_at }
     ],
+    memory_proposals: {
+      enabled: packet.memory_candidates.enabled,
+      count: packet.memory_candidates.count,
+      storage_dir: packet.memory_candidate_storage.memory_output_dir,
+      proposal_only: true,
+      promoted: false
+    },
     summary: {
       candidate_count: packet.registry_context.candidate_cards.length,
       evidence_item_count: packet.shared_evidence_pack.items.length,
       proposal_only: true,
       selected_profile: packet.model_control.selected_profile,
-      audit_record_expected: true
+      audit_record_expected: true,
+      memory_candidate_count: packet.memory_candidates.count
     }
   };
 }
@@ -277,6 +291,13 @@ function buildAuditRecord(packet, outputDir, auditOutputDir) {
       requested_sources: packet.shared_evidence_pack.requested_sources,
       item_count: packet.shared_evidence_pack.items.length
     },
+    memory_proposals: {
+      enabled: packet.memory_candidates.enabled,
+      count: packet.memory_candidates.count,
+      candidate_ids: packet.memory_candidates.items.map(item => item.candidate_id),
+      promoted: false,
+      storage_dir: packet.memory_candidate_storage.memory_output_dir
+    },
     phase_summary: packet.trace.phases
   };
 }
@@ -285,6 +306,7 @@ function createArenaRunPacket(rawInput = {}, options = {}) {
   const input = normalizeInput(rawInput);
   const outputDir = options.outputDir || process.env.ARENA_RUNS_DIR || DEFAULT_RUNS_DIR;
   const auditOutputDir = options.auditOutputDir || process.env.ARENA_AUDIT_DIR || DEFAULT_AUDIT_DIR;
+  const memoryOutputDir = options.memoryOutputDir || process.env.ARENA_MEMORY_DIR || DEFAULT_MEMORY_CANDIDATES_DIR;
   const registryContext = buildRegistryContext(input);
   const sharedEvidencePack = buildSharedEvidencePack(input);
   const modelControl = buildModelControl(input);
@@ -308,9 +330,15 @@ function createArenaRunPacket(rawInput = {}, options = {}) {
       status: 'not_validated',
       eligible: false,
       requires: ['proof_ref', 'gates']
+    },
+    memory_candidate_storage: {
+      memory_output_dir: memoryOutputDir,
+      source_boundary: 'runtime_only',
+      registry_mutation: false
     }
   };
 
+  packet.memory_candidates = buildMemoryCandidates(packet);
   packet.trace = buildTrace(packet, outputDir, auditOutputDir);
   packet.audit = buildAuditRecord(packet, outputDir, auditOutputDir);
   return packet;
@@ -342,20 +370,38 @@ function saveAuditRecord(packet, options = {}) {
   };
 }
 
+function saveMemoryCandidates(packet, options = {}) {
+  const memoryOutputDir = options.memoryOutputDir || process.env.ARENA_MEMORY_DIR || DEFAULT_MEMORY_CANDIDATES_DIR;
+  ensureDirectory(memoryOutputDir);
+  const memoryCandidateFilePaths = [];
+  for (const candidate of packet.memory_candidates.items) {
+    const filePath = path.join(memoryOutputDir, `${candidate.candidate_id}.json`);
+    fs.writeFileSync(filePath, JSON.stringify(candidate, null, 2));
+    memoryCandidateFilePaths.push(filePath);
+  }
+  return {
+    memoryCandidateFilePaths,
+    memoryCandidates: packet.memory_candidates.items
+  };
+}
+
 function executeArenaRun(input = {}, options = {}) {
   const packet = createArenaRunPacket(input, options);
   if (options.persist === false) {
     return {
       filePath: null,
       auditFilePath: null,
+      memoryCandidateFilePaths: [],
       packet
     };
   }
   const runResult = saveRunTrace(packet, options);
   const auditResult = saveAuditRecord(packet, options);
+  const memoryResult = saveMemoryCandidates(packet, options);
   return {
     ...runResult,
-    ...auditResult
+    ...auditResult,
+    ...memoryResult
   };
 }
 
@@ -376,6 +422,7 @@ function listArenaRuns(options = {}) {
         created_at: payload.created_at,
         decision: payload.observer_decision ? payload.observer_decision.decision : null,
         profile: payload.model_control ? payload.model_control.selected_profile : null,
+        memory_candidate_count: payload.memory_candidates ? payload.memory_candidates.count : 0,
         file_path: filePath
       };
     });
@@ -399,12 +446,48 @@ function readAuditRecord(runId, options = {}) {
   return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 }
 
+function listMemoryCandidates(options = {}) {
+  const memoryOutputDir = options.memoryOutputDir || process.env.ARENA_MEMORY_DIR || DEFAULT_MEMORY_CANDIDATES_DIR;
+  if (!fs.existsSync(memoryOutputDir)) {
+    return [];
+  }
+
+  return fs.readdirSync(memoryOutputDir)
+    .filter(file => file.endsWith('.json'))
+    .sort()
+    .map(file => {
+      const filePath = path.join(memoryOutputDir, file);
+      const payload = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      return {
+        candidate_id: payload.candidate_id,
+        source_run_id: payload.source_run_id,
+        created_at: payload.created_at,
+        candidate_type: payload.candidate_type,
+        status: payload.status,
+        promoted: payload.promoted,
+        file_path: filePath
+      };
+    });
+}
+
+function readMemoryCandidate(candidateId, options = {}) {
+  const memoryOutputDir = options.memoryOutputDir || process.env.ARENA_MEMORY_DIR || DEFAULT_MEMORY_CANDIDATES_DIR;
+  const filePath = path.join(memoryOutputDir, `${candidateId}.json`);
+  if (!fs.existsSync(filePath)) {
+    return null;
+  }
+  return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+}
+
 module.exports = {
   DEFAULT_AUDIT_DIR,
+  DEFAULT_MEMORY_CANDIDATES_DIR,
   DEFAULT_RUNS_DIR,
   createArenaRunPacket,
   executeArenaRun,
   listArenaRuns,
+  listMemoryCandidates,
   readArenaRun,
-  readAuditRecord
+  readAuditRecord,
+  readMemoryCandidate
 };
