@@ -14,6 +14,7 @@ It exists to provide practical read-only access to the registry without introduc
 
 - `tools/registry-readonly-lib.js`
 - `tools/registry-readonly.js`
+- `tools/registry-readonly-server.js`
 - `tools/verify-phase1-readonly.js`
 
 ## 3. Data Sources
@@ -90,6 +91,26 @@ Behavior:
 - then loads the full card JSON from the canonical `cards/` path
 - returns the full read-only card payload
 
+### HTTP Surface
+
+```bash
+node tools/registry-readonly-server.js
+```
+
+Available read-only endpoints:
+- `GET /health`
+- `GET /stats`
+- `GET /cards`
+- `GET /cards?type=solution_proof&domain=biology&limit=3`
+- `GET /cards/:id`
+- `GET /resolve/:id`
+
+Behavior:
+- uses only built-in Node HTTP modules
+- exposes the same read-only query and lookup capabilities as the CLI layer
+- rejects non-`GET` methods
+- does not add any registry mutation capability
+
 ## 5. Read-Only Boundary
 
 This surface does not:
@@ -99,6 +120,9 @@ This surface does not:
 - change taxonomies
 - write to `index/`
 - write to `human/`
+
+This remains Phase 1 and not Phase 2 because it only exposes existing registry knowledge read-only.
+It does not introduce orchestration, write-back logic, runtime mutation, or arena behavior.
 
 ## 6. Verification
 
@@ -114,3 +138,4 @@ This checks:
 - filtered list access works
 - alias resolution works
 - full card lookup works
+- minimal HTTP endpoint access works

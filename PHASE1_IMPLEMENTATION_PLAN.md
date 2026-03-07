@@ -18,6 +18,7 @@ In scope:
 - exact-match filtering by `type`, `domain`, `tag`, and `status`
 - minimal text search over index-visible fields
 - a minimal command-line access surface for local use and verification
+- a minimal HTTP read-only access surface using only built-in Node modules
 
 Out of scope:
 - writes to `cards/`, `index/`, `human/`, or `taxonomies/`
@@ -45,8 +46,9 @@ To stay inside Phase 1, build only:
 
 1. a reusable read-only library in `tools/registry-readonly-lib.js`
 2. a minimal CLI surface in `tools/registry-readonly.js`
-3. a verification script in `tools/verify-phase1-readonly.js`
-4. this implementation plan and a surface description document
+3. a minimal HTTP read-only surface in `tools/registry-readonly-server.js`
+4. a verification script in `tools/verify-phase1-readonly.js`
+5. this implementation plan and a surface description document
 
 This keeps the implementation:
 - local
@@ -81,6 +83,17 @@ Support explicit ID resolution reporting:
 - whether alias resolution happened
 - whether the canonical card exists in the current index
 
+### HTTP Access Surface
+
+Support a minimal HTTP read-only surface with built-in Node modules only:
+- `GET /health`
+- `GET /stats`
+- `GET /cards`
+- `GET /cards/:id`
+- `GET /resolve/:id`
+
+The surface must stay read-only and reject non-`GET` methods.
+
 ### Verification
 
 Check that the new Phase 1 surface:
@@ -88,12 +101,14 @@ Check that the new Phase 1 surface:
 - avoids write APIs in the new Phase 1 scripts
 - resolves at least one known alias correctly
 - can list and read cards successfully
+- can serve the minimal HTTP read-only endpoints successfully
 
 ## 6. Files to Create
 
 - `PHASE1_IMPLEMENTATION_PLAN.md`
 - `tools/registry-readonly-lib.js`
 - `tools/registry-readonly.js`
+- `tools/registry-readonly-server.js`
 - `tools/verify-phase1-readonly.js`
 - `PHASE1_READONLY_SURFACE.md`
 
@@ -107,6 +122,7 @@ node tools/registry-readonly.js stats
 node tools/registry-readonly.js list --type solution_proof --domain biology --limit 3
 node tools/registry-readonly.js get err-api-004
 node tools/registry-readonly.js resolve sol-maya-001
+node tools/registry-readonly-server.js
 ```
 
 ## 8. Success Criteria
@@ -114,5 +130,6 @@ node tools/registry-readonly.js resolve sol-maya-001
 Phase 1 is locally satisfied if:
 - the new surface can list and fetch registry data read-only
 - alias resolution works against existing alias data
+- the HTTP surface exposes minimal read-only access without mutation paths
 - no write path is introduced into registry artifacts
 - the implementation stays within the Phase 1 architectural boundary
