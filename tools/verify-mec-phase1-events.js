@@ -28,9 +28,7 @@ const REGISTRY_DIRS = [
   path.join(ROOT_DIR, 'taxonomies')
 ];
 const PHASE1_JS_FILES = [
-  path.join(ROOT_DIR, 'tools', 'mec-event-lib.js'),
-  path.join(ROOT_DIR, 'tools', 'arena.js'),
-  path.join(ROOT_DIR, 'tools', 'arena-server.js')
+  path.join(ROOT_DIR, 'tools', 'mec-event-lib.js')
 ];
 const DISALLOWED_PATTERNS = [
   ['export', 'gate'].join('_'),
