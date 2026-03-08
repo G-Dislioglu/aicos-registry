@@ -337,6 +337,30 @@ function buildUiScriptHarness() {
       created_at: '2026-03-08T18:03:00.000Z',
       updated_at: '2026-03-08T18:03:00.000Z',
       freshness_state: 'fresh'
+    },
+    {
+      id: 'candidate-stale-linked',
+      candidate_type: 'invariant_candidate',
+      principle: 'Stale linked target',
+      mechanism: 'Locally visible target that disappears before create submit',
+      source_event_ids: ['event-alpha'],
+      source_card_ids: [],
+      status: 'proposal_only',
+      created_at: '2026-03-08T18:04:00.000Z',
+      updated_at: '2026-03-08T18:04:00.000Z',
+      freshness_state: 'fresh'
+    },
+    {
+      id: 'candidate-stale-refute',
+      candidate_type: 'invariant_candidate',
+      principle: 'Stale refuted target',
+      mechanism: 'Locally visible refuted target that disappears before create submit',
+      source_event_ids: ['event-beta'],
+      source_card_ids: [],
+      status: 'proposal_only',
+      created_at: '2026-03-08T18:05:00.000Z',
+      updated_at: '2026-03-08T18:05:00.000Z',
+      freshness_state: 'fresh'
     }
   ];
   const candidateDetails = {
@@ -392,16 +416,54 @@ function buildUiScriptHarness() {
     }
   };
 
-  async function fetch(url) {
+  async function fetch(url, options = {}) {
     const target = new URL(url, 'http://127.0.0.1:1');
-    if (target.pathname === '/arena/mec-candidates') {
+    const method = String(options.method || 'GET').toUpperCase();
+    if (target.pathname === '/arena/mec-candidates' && method === 'GET') {
       return createFetchResponse(200, { items: candidateList });
+    }
+    if (target.pathname === '/arena/mec-candidates' && method === 'POST') {
+      const payload = options.body ? JSON.parse(options.body) : {};
+      if (payload.candidate_type === 'boundary_candidate' && payload.linked_candidate_id === 'candidate-stale-linked') {
+        const staleIndex = candidateList.findIndex(item => item.id === 'candidate-stale-linked');
+        if (staleIndex >= 0) {
+          candidateList.splice(staleIndex, 1);
+        }
+        delete candidateDetails['candidate-stale-linked'];
+        return createFetchResponse(404, {
+          error: 'mec_linked_candidate_not_found',
+          candidate_id: 'candidate-stale-linked'
+        });
+      }
+      if (payload.candidate_type === 'counterexample_candidate' && payload.refutes_candidate_id === 'candidate-stale-refute') {
+        const staleIndex = candidateList.findIndex(item => item.id === 'candidate-stale-refute');
+        if (staleIndex >= 0) {
+          candidateList.splice(staleIndex, 1);
+        }
+        delete candidateDetails['candidate-stale-refute'];
+        return createFetchResponse(404, {
+          error: 'mec_refuted_candidate_not_found',
+          candidate_id: 'candidate-stale-refute'
+        });
+      }
+      return createFetchResponse(201, {
+        candidate: {
+          id: 'candidate-created',
+          candidate_type: payload.candidate_type || 'invariant_candidate'
+        }
+      });
     }
     if (target.pathname === '/arena/events') {
       return createFetchResponse(200, { items: events });
     }
     if (target.pathname.startsWith('/arena/mec-candidates/')) {
       const candidateId = decodeURIComponent(target.pathname.split('/').pop());
+      if (!candidateDetails[candidateId]) {
+        return createFetchResponse(404, {
+          error: 'mec_candidate_not_found',
+          candidate_id: candidateId
+        });
+      }
       return createFetchResponse(200, candidateDetails[candidateId]);
     }
     if (target.pathname.startsWith('/arena/events/')) {
@@ -445,8 +507,11 @@ async function verifyEmbeddedUiWriteSemantics() {
   const linkedCandidateIdEl = elements.get('linked-candidate-id');
   const refutesCandidateIdEl = elements.get('refutes-candidate-id');
   const detailSummaryEl = elements.get('detail-summary');
+  const detailMetaEl = elements.get('detail-meta');
   const detailLinkageEl = elements.get('detail-linkage');
   const formResultActionsEl = elements.get('form-result-actions');
+  const formMessageEl = elements.get('form-message');
+  const formEl = elements.get('create-form');
   const createSubmitButton = elements.get('create-form').children[0];
   const applySearch = value => {
     searchEl.value = value;
@@ -562,6 +627,33 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(refutesCandidateIdEl.value === 'candidate-invariant', 'Expected detail refuted-target carryover to replace refutes_candidate_id');
 
   context.renderDetail({
+    id: 'candidate-boundary-unresolved',
+    candidate_type: 'boundary_candidate',
+    principle: 'Boundary candidate unresolved reference',
+    mechanism: 'Boundary mechanism unresolved reference',
+    source_event_ids: ['event-alpha'],
+    source_card_ids: [],
+    created_at: '2026-03-08T18:06:00.000Z',
+    updated_at: '2026-03-08T18:06:00.000Z',
+    distillation_mode: 'manual',
+    freshness_state: 'fresh',
+    linked_candidate_id: 'missing-linked-target',
+    candidate_boundary: {
+      registry_mutation: false,
+      auto_resolve: false
+    }
+  });
+  assert(detailLinkageEl.innerHTML.includes('unresolved'), 'Expected unresolved detail linkage references to be labeled unresolved');
+  assert(detailLinkageEl.innerHTML.includes('Referenced runtime candidate is not present in the current runtime candidate list.'), 'Expected unresolved detail linkage references to explain the missing runtime object');
+  assert(detailLinkageEl.querySelector('.detail-open') === null, 'Expected unresolved detail linkage references to avoid open actions');
+  assert(detailLinkageEl.querySelector('.detail-use-linked') === null, 'Expected unresolved detail linkage references to avoid contradictory carryover actions');
+
+  await context.selectCandidate('missing-candidate');
+  assert(detailMetaEl.innerHTML.includes('reference unavailable'), 'Expected missing candidate detail fetches to surface a reference-unavailable badge');
+  assert(detailLinkageEl.innerHTML.includes('Reference unavailable'), 'Expected missing candidate detail fetches to render a reference-unavailable detail card');
+  assert(elements.get('candidate-detail').textContent.includes('Referenced runtime candidate is not available: missing-candidate'), 'Expected missing candidate detail fetches to explain the unavailable runtime candidate');
+
+  context.renderDetail({
     id: 'candidate-curiosity',
     candidate_type: 'curiosity_candidate',
     principle: 'Curiosity candidate',
@@ -600,6 +692,25 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(linkedCandidateIdEl.value === 'candidate-created', 'Expected create-result linked carryover to use result.candidate.id only');
   formResultActionsEl.querySelector('.create-result-use-refute').click();
   assert(refutesCandidateIdEl.value === 'candidate-created', 'Expected create-result refuted carryover to use result.candidate.id only');
+
+  elements.get('candidate-type').value = 'boundary_candidate';
+  linkedCandidateIdEl.value = 'candidate-stale-linked';
+  sourceEventIdsEl.value = 'event-alpha';
+  elements.get('boundary-fails-when').value = 'stale linked reference';
+  context.updateTypeSections();
+  assert(createSubmitButton.disabled === false, 'Expected stale linked target to remain submittable before the server reports the reference drift');
+  await formEl.listeners.submit[0]({ preventDefault() {} });
+  assert(formMessageEl.textContent.includes('Linked target is no longer present in the runtime candidate list: candidate-stale-linked'), 'Expected stale linked target submit failures to surface an operator-aligned reference message');
+  assert(createSubmitButton.disabled === true, 'Expected stale linked target submit failures to refresh operator safety and disable submit');
+
+  elements.get('candidate-type').value = 'counterexample_candidate';
+  refutesCandidateIdEl.value = 'candidate-stale-refute';
+  elements.get('case-description').value = 'stale refuted reference';
+  context.updateTypeSections();
+  assert(createSubmitButton.disabled === false, 'Expected stale refuted target to remain submittable before the server reports the reference drift');
+  await formEl.listeners.submit[0]({ preventDefault() {} });
+  assert(formMessageEl.textContent.includes('Refuted target is no longer present in the runtime candidate list: candidate-stale-refute'), 'Expected stale refuted target submit failures to surface an operator-aligned reference message');
+  assert(createSubmitButton.disabled === true, 'Expected stale refuted target submit failures to refresh operator safety and disable submit');
 }
 
 async function main() {

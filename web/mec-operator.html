@@ -805,9 +805,20 @@
       const response = await fetch(url, options);
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error(data.message || data.error || 'Request failed');
+        const error = new Error(data.message || data.error || 'Request failed');
+        error.code = data.error || '';
+        error.data = data;
+        throw error;
       }
       return data;
+    }
+
+    function buildReferenceUnavailableMessage(candidateId) {
+      return `Referenced runtime candidate is not available${candidateId ? `: ${candidateId}` : ''}. Refresh the operator if runtime state changed.`;
+    }
+
+    function buildTargetReferenceErrorMessage(roleLabel, candidateId) {
+      return `${roleLabel} is no longer present in the runtime candidate list${candidateId ? `: ${candidateId}` : ''}. Refresh the operator selection or choose a current runtime candidate id.`;
     }
 
     function matchesCandidateFilters(item) {
@@ -1148,13 +1159,17 @@
     }
 
     function renderDetailLinkageCard(label, candidateId, actions) {
+      const targetItem = getCandidateById(candidateId);
+      const isResolved = Boolean(targetItem);
       return `
         <div class="detail-card">
           <strong>${escapeHtml(label)}</strong>
           <div class="action-row">
             <span>${escapeHtml(candidateId)}</span>
-            ${actions.map(action => `<button class="mini-button ${escapeHtml(action.className)}" type="button" data-candidate-id="${escapeHtml(candidateId)}">${escapeHtml(action.label)}</button>`).join('')}
+            <span class="badge${isResolved ? '' : ' warn'}">${isResolved ? 'resolved' : 'unresolved'}</span>
+            ${isResolved ? actions.map(action => `<button class="mini-button ${escapeHtml(action.className)}" type="button" data-candidate-id="${escapeHtml(candidateId)}">${escapeHtml(action.label)}</button>`).join('') : ''}
           </div>
+          <div class="tiny">${escapeHtml(isResolved ? describeCandidateTarget(targetItem) : 'Referenced runtime candidate is not present in the current runtime candidate list.')}</div>
         </div>
       `;
     }
@@ -1363,7 +1378,22 @@
         renderDetail(payload);
         updateCreateTargetSafety();
       } catch (error) {
-        candidateDetailEl.textContent = error.message;
+        const missingCandidateId = error && error.data && error.data.candidate_id
+          ? error.data.candidate_id
+          : candidateId;
+        if (error && error.code === 'mec_candidate_not_found') {
+          detailMetaEl.innerHTML = '<span class="pill warn">reference unavailable</span>';
+          detailLinkageEl.innerHTML = `
+            <div class="detail-card">
+              <strong>Reference unavailable</strong>
+              <span>Referenced runtime candidate is not present in the current runtime candidate list.</span>
+              <div class="tiny">${escapeHtml(missingCandidateId)}</div>
+            </div>
+          `;
+          candidateDetailEl.textContent = buildReferenceUnavailableMessage(missingCandidateId);
+        } else {
+          candidateDetailEl.textContent = error.message;
+        }
         updateCreateTargetSafety();
       }
     }
@@ -1651,6 +1681,16 @@
         await refreshAll();
       } catch (error) {
         clearResultActions();
+        if (error && (error.code === 'mec_linked_candidate_not_found' || error.code === 'mec_refuted_candidate_not_found')) {
+          const missingCandidateId = error && error.data && error.data.candidate_id
+            ? error.data.candidate_id
+            : '';
+          await refreshAll().catch(() => null);
+          showMessage('error', error.code === 'mec_linked_candidate_not_found'
+            ? buildTargetReferenceErrorMessage('Linked target', missingCandidateId)
+            : buildTargetReferenceErrorMessage('Refuted target', missingCandidateId));
+          return;
+        }
         showMessage('error', error.message);
       }
     });
