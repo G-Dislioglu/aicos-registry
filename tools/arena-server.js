@@ -6,18 +6,22 @@ const {
   DEFAULT_AUDIT_DIR,
   DEFAULT_CANDIDATES_DIR,
   DEFAULT_EVENTS_DIR,
+  DEFAULT_EXPORT_REVIEWS_DIR,
   DEFAULT_MEMORY_CANDIDATES_DIR,
   DEFAULT_MEMORY_REVIEWS_DIR,
   DEFAULT_RUNS_DIR,
+  createExportReviewForCandidate,
   createMecCandidateRecord,
   createMecEvent,
   executeArenaRun,
+  listExportReviews,
   listMecCandidates,
   listArenaRuns,
   listMecEvents,
   listMemoryCandidates,
   listMemoryReviews,
   listReviewableCandidates,
+  readExportReview,
   readMecCandidate,
   readMecEvent,
   readArenaRun,
@@ -75,6 +79,7 @@ async function handleRequest(req, res, options = {}) {
   const auditOutputDir = options.auditOutputDir || process.env.ARENA_AUDIT_DIR || DEFAULT_AUDIT_DIR;
   const candidateOutputDir = options.candidateOutputDir || process.env.MEC_CANDIDATE_DIR || DEFAULT_CANDIDATES_DIR;
   const eventOutputDir = options.eventOutputDir || process.env.MEC_EVENT_DIR || DEFAULT_EVENTS_DIR;
+  const exportReviewOutputDir = options.exportReviewOutputDir || process.env.ARENA_EXPORT_REVIEW_DIR || DEFAULT_EXPORT_REVIEWS_DIR;
   const memoryOutputDir = options.memoryOutputDir || process.env.ARENA_MEMORY_DIR || DEFAULT_MEMORY_CANDIDATES_DIR;
   const memoryReviewOutputDir = options.memoryReviewOutputDir || process.env.ARENA_MEMORY_REVIEW_DIR || DEFAULT_MEMORY_REVIEWS_DIR;
   const requestUrl = new URL(req.url, 'http://127.0.0.1');
@@ -88,6 +93,7 @@ async function handleRequest(req, res, options = {}) {
       audit_output_dir: auditOutputDir,
       candidate_output_dir: candidateOutputDir,
       event_output_dir: eventOutputDir,
+      export_review_output_dir: exportReviewOutputDir,
       memory_output_dir: memoryOutputDir,
       memory_review_output_dir: memoryReviewOutputDir
     });
@@ -232,7 +238,7 @@ async function handleRequest(req, res, options = {}) {
   }
 
   if (pathname === '/arena/memory-candidates' && req.method === 'GET') {
-    const items = listMemoryCandidates({ memoryOutputDir, memoryReviewOutputDir });
+    const items = listMemoryCandidates({ memoryOutputDir, memoryReviewOutputDir, exportReviewOutputDir });
     sendJson(res, 200, {
       total: items.length,
       items
@@ -241,7 +247,7 @@ async function handleRequest(req, res, options = {}) {
   }
 
   if (pathname === '/arena/memory-candidates/reviewable' && req.method === 'GET') {
-    const items = listReviewableCandidates({ memoryOutputDir, memoryReviewOutputDir });
+    const items = listReviewableCandidates({ memoryOutputDir, memoryReviewOutputDir, exportReviewOutputDir });
     sendJson(res, 200, {
       total: items.length,
       items
@@ -251,7 +257,7 @@ async function handleRequest(req, res, options = {}) {
 
   if (pathname.startsWith('/arena/memory-candidates/') && req.method === 'GET') {
     const candidateId = decodeURIComponent(pathname.slice('/arena/memory-candidates/'.length));
-    const payload = readMemoryCandidate(candidateId, { memoryOutputDir, memoryReviewOutputDir });
+    const payload = readMemoryCandidate(candidateId, { memoryOutputDir, memoryReviewOutputDir, exportReviewOutputDir });
     if (!payload) {
       sendJson(res, 404, {
         error: 'memory_candidate_not_found',
@@ -284,6 +290,25 @@ async function handleRequest(req, res, options = {}) {
     return;
   }
 
+  if (pathname.startsWith('/arena/memory-candidates/') && pathname.endsWith('/export-reviews') && req.method === 'POST') {
+    const candidateId = decodeURIComponent(pathname.slice('/arena/memory-candidates/'.length, -'/export-reviews'.length));
+    try {
+      const payload = await readRequestBody(req);
+      const result = createExportReviewForCandidate(candidateId, payload, { memoryOutputDir, memoryReviewOutputDir, exportReviewOutputDir });
+      sendJson(res, 201, result);
+    } catch (error) {
+      const statusCode = error.code === 'memory_candidate_not_found'
+        ? 404
+        : 400;
+      sendJson(res, statusCode, {
+        error: error.code || 'invalid_export_review_request',
+        message: error.message,
+        candidate_id: candidateId
+      });
+    }
+    return;
+  }
+
   if (pathname === '/arena/memory-reviews' && req.method === 'GET') {
     const items = listMemoryReviews({ memoryReviewOutputDir });
     sendJson(res, 200, {
@@ -300,6 +325,29 @@ async function handleRequest(req, res, options = {}) {
       sendJson(res, 404, {
         error: 'memory_review_not_found',
         review_id: reviewId
+      });
+      return;
+    }
+    sendJson(res, 200, payload);
+    return;
+  }
+
+  if (pathname === '/arena/export-reviews' && req.method === 'GET') {
+    const items = listExportReviews({ exportReviewOutputDir });
+    sendJson(res, 200, {
+      total: items.length,
+      items
+    });
+    return;
+  }
+
+  if (pathname.startsWith('/arena/export-reviews/') && req.method === 'GET') {
+    const exportReviewId = decodeURIComponent(pathname.slice('/arena/export-reviews/'.length));
+    const payload = readExportReview(exportReviewId, { exportReviewOutputDir });
+    if (!payload) {
+      sendJson(res, 404, {
+        error: 'export_review_not_found',
+        export_review_id: exportReviewId
       });
       return;
     }
@@ -332,9 +380,10 @@ function startServer(port = Number.parseInt(process.env.PORT || '3220', 10), opt
     const auditOutputDir = options.auditOutputDir || process.env.ARENA_AUDIT_DIR || DEFAULT_AUDIT_DIR;
     const candidateOutputDir = options.candidateOutputDir || process.env.MEC_CANDIDATE_DIR || DEFAULT_CANDIDATES_DIR;
     const eventOutputDir = options.eventOutputDir || process.env.MEC_EVENT_DIR || DEFAULT_EVENTS_DIR;
+    const exportReviewOutputDir = options.exportReviewOutputDir || process.env.ARENA_EXPORT_REVIEW_DIR || DEFAULT_EXPORT_REVIEWS_DIR;
     const memoryOutputDir = options.memoryOutputDir || process.env.ARENA_MEMORY_DIR || DEFAULT_MEMORY_CANDIDATES_DIR;
     const memoryReviewOutputDir = options.memoryReviewOutputDir || process.env.ARENA_MEMORY_REVIEW_DIR || DEFAULT_MEMORY_REVIEWS_DIR;
-    console.log(`arena-server listening on http://127.0.0.1:${effectivePort} -> ${path.resolve(outputDir)} | audit: ${path.resolve(auditOutputDir)} | mec-candidates: ${path.resolve(candidateOutputDir)} | events: ${path.resolve(eventOutputDir)} | memory: ${path.resolve(memoryOutputDir)} | reviews: ${path.resolve(memoryReviewOutputDir)}`);
+    console.log(`arena-server listening on http://127.0.0.1:${effectivePort} -> ${path.resolve(outputDir)} | audit: ${path.resolve(auditOutputDir)} | mec-candidates: ${path.resolve(candidateOutputDir)} | events: ${path.resolve(eventOutputDir)} | export-reviews: ${path.resolve(exportReviewOutputDir)} | memory: ${path.resolve(memoryOutputDir)} | reviews: ${path.resolve(memoryReviewOutputDir)}`);
   });
 
   return server;

@@ -17,6 +17,11 @@ const {
   deriveExportReadiness
 } = require('./memory-export-readiness-lib');
 const {
+  createExportReviewRecord,
+  deriveCandidateExportReviewState,
+  normalizeExportReviewInput
+} = require('./memory-export-review-lib');
+const {
   createReviewRecord,
   deriveCandidateReviewState,
   getCurrentCandidateStatus,
@@ -42,6 +47,7 @@ const ROOT_DIR = path.join(__dirname, '..');
 const DEFAULT_RUNS_DIR = path.join(ROOT_DIR, 'runtime', 'arena-runs');
 const DEFAULT_AUDIT_DIR = path.join(ROOT_DIR, 'runtime', 'audit-records');
 const DEFAULT_MEMORY_CANDIDATES_DIR = path.join(ROOT_DIR, 'runtime', 'memory-candidates');
+const DEFAULT_EXPORT_REVIEWS_DIR = path.join(ROOT_DIR, 'runtime', 'export-reviews');
 const DEFAULT_MEMORY_REVIEWS_DIR = path.join(ROOT_DIR, 'runtime', 'memory-reviews');
 
 function toArray(value) {
@@ -427,6 +433,25 @@ function listMemoryReviewPayloads(options = {}) {
     });
 }
 
+function listExportReviewPayloads(options = {}) {
+  const exportReviewOutputDir = options.exportReviewOutputDir || process.env.ARENA_EXPORT_REVIEW_DIR || DEFAULT_EXPORT_REVIEWS_DIR;
+  if (!fs.existsSync(exportReviewOutputDir)) {
+    return [];
+  }
+
+  return fs.readdirSync(exportReviewOutputDir)
+    .filter(file => file.endsWith('.json'))
+    .sort()
+    .map(file => {
+      const filePath = path.join(exportReviewOutputDir, file);
+      const payload = readJsonFile(filePath);
+      return {
+        payload,
+        filePath
+      };
+    });
+}
+
 function getReviewRecordsByCandidate(options = {}) {
   const reviewMap = new Map();
   for (const item of listMemoryReviewPayloads(options)) {
@@ -442,13 +467,29 @@ function getReviewRecordsByCandidate(options = {}) {
   return reviewMap;
 }
 
+function getExportReviewRecordsByCandidate(options = {}) {
+  const exportReviewMap = new Map();
+  for (const item of listExportReviewPayloads(options)) {
+    const records = exportReviewMap.get(item.payload.candidate_id) || [];
+    records.push(item.payload);
+    exportReviewMap.set(item.payload.candidate_id, records);
+  }
+
+  return exportReviewMap;
+}
+
 function buildReviewSummary(reviewRecords = []) {
   return deriveCandidateReviewState(reviewRecords);
 }
 
-function enrichMemoryCandidate(payload, reviewRecords = []) {
+function buildExportReviewSummary(exportReviewRecords = []) {
+  return deriveCandidateExportReviewState(exportReviewRecords);
+}
+
+function enrichMemoryCandidate(payload, reviewRecords = [], exportReviewRecords = []) {
   const reviewSummary = buildReviewSummary(reviewRecords);
   const exportReadiness = deriveExportReadiness(payload, reviewSummary);
+  const exportReviewSummary = buildExportReviewSummary(exportReviewRecords);
   return {
     ...payload,
     current_status: reviewSummary.current_status,
@@ -461,7 +502,9 @@ function enrichMemoryCandidate(payload, reviewRecords = []) {
     },
     export_readiness_status: exportReadiness.export_readiness_status,
     export_blockers: exportReadiness.export_blockers,
-    export_readiness: exportReadiness
+    export_readiness: exportReadiness,
+    current_export_review_status: exportReviewSummary.current_export_review_status,
+    export_review_summary: exportReviewSummary
   };
 }
 
@@ -519,6 +562,17 @@ function saveMemoryReview(reviewRecord, options = {}) {
   return {
     reviewFilePath,
     reviewRecord
+  };
+}
+
+function saveExportReview(exportReviewRecord, options = {}) {
+  const exportReviewOutputDir = options.exportReviewOutputDir || process.env.ARENA_EXPORT_REVIEW_DIR || DEFAULT_EXPORT_REVIEWS_DIR;
+  ensureDirectory(exportReviewOutputDir);
+  const exportReviewFilePath = path.join(exportReviewOutputDir, `${exportReviewRecord.export_review_id}.json`);
+  fs.writeFileSync(exportReviewFilePath, JSON.stringify(exportReviewRecord, null, 2));
+  return {
+    exportReviewFilePath,
+    exportReviewRecord
   };
 }
 
@@ -589,6 +643,7 @@ function listMemoryCandidates(options = {}) {
     return [];
   }
   const reviewMap = getReviewRecordsByCandidate(options);
+  const exportReviewMap = getExportReviewRecordsByCandidate(options);
 
   return fs.readdirSync(memoryOutputDir)
     .filter(file => file.endsWith('.json'))
@@ -597,8 +652,10 @@ function listMemoryCandidates(options = {}) {
       const filePath = path.join(memoryOutputDir, file);
       const payload = readJsonFile(filePath);
       const reviewRecords = reviewMap.get(payload.candidate_id) || [];
+      const exportReviewRecords = exportReviewMap.get(payload.candidate_id) || [];
       const reviewSummary = buildReviewSummary(reviewRecords);
       const exportReadiness = deriveExportReadiness(payload, reviewSummary);
+      const exportReviewSummary = buildExportReviewSummary(exportReviewRecords);
       return {
         candidate_id: payload.candidate_id,
         source_run_id: payload.source_run_id,
@@ -613,6 +670,8 @@ function listMemoryCandidates(options = {}) {
         derivation_version: reviewSummary.derivation_version,
         export_readiness_status: exportReadiness.export_readiness_status,
         export_blocker_count: exportReadiness.export_blockers.length,
+        current_export_review_status: exportReviewSummary.current_export_review_status,
+        export_review_count: exportReviewSummary.export_review_count,
         has_boundary: exportReadiness.has_boundary,
         file_path: filePath
       };
@@ -625,8 +684,10 @@ function readMemoryCandidate(candidateId, options = {}) {
     return null;
   }
   const reviewMap = getReviewRecordsByCandidate(options);
+  const exportReviewMap = getExportReviewRecordsByCandidate(options);
   const reviewRecords = reviewMap.get(candidateId) || [];
-  return enrichMemoryCandidate(payload, reviewRecords);
+  const exportReviewRecords = exportReviewMap.get(candidateId) || [];
+  return enrichMemoryCandidate(payload, reviewRecords, exportReviewRecords);
 }
 
 function listReviewableCandidates(options = {}) {
@@ -663,6 +724,61 @@ function readMemoryReview(reviewId, options = {}) {
   return readJsonFile(filePath);
 }
 
+function listExportReviews(options = {}) {
+  const exportReviewMap = getExportReviewRecordsByCandidate(options);
+  return listExportReviewPayloads(options).map(item => {
+    const exportReviewSummary = buildExportReviewSummary(exportReviewMap.get(item.payload.candidate_id) || []);
+    return {
+      export_review_id: item.payload.export_review_id,
+      candidate_id: item.payload.candidate_id,
+      source_run_id: item.payload.source_run_id,
+      reviewed_at: item.payload.reviewed_at,
+      export_review_status: item.payload.export_review_status,
+      review_source: item.payload.review_source,
+      reviewer_mode: item.payload.reviewer_mode,
+      current_candidate_export_review_status: exportReviewSummary.current_export_review_status,
+      superseded: item.payload.export_review_id !== exportReviewSummary.latest_export_review_id,
+      file_path: item.filePath
+    };
+  });
+}
+
+function readExportReview(exportReviewId, options = {}) {
+  const exportReviewOutputDir = options.exportReviewOutputDir || process.env.ARENA_EXPORT_REVIEW_DIR || DEFAULT_EXPORT_REVIEWS_DIR;
+  const filePath = path.join(exportReviewOutputDir, `${exportReviewId}.json`);
+  if (!fs.existsSync(filePath)) {
+    return null;
+  }
+  return readJsonFile(filePath);
+}
+
+function createExportReviewForCandidate(candidateId, exportReviewInput = {}, options = {}) {
+  const candidate = readMemoryCandidate(candidateId, options);
+  if (!candidate) {
+    const error = new Error(`Memory candidate not found: ${candidateId}`);
+    error.code = 'memory_candidate_not_found';
+    throw error;
+  }
+
+  const normalizedInput = normalizeExportReviewInput(exportReviewInput);
+  if (!normalizedInput.export_review_rationale) {
+    const error = new Error('Export review rationale is required.');
+    error.code = 'missing_export_review_rationale';
+    throw error;
+  }
+
+  const exportReviewRecord = createExportReviewRecord(candidate, normalizedInput, candidate.export_readiness);
+  const saved = saveExportReview(exportReviewRecord, options);
+  const reviewMap = getReviewRecordsByCandidate(options);
+  const exportReviewMap = getExportReviewRecordsByCandidate(options);
+  const reviewRecords = reviewMap.get(candidateId) || [];
+  const existingExportReviewRecords = exportReviewMap.get(candidateId) || [];
+  return {
+    ...saved,
+    candidate: enrichMemoryCandidate(candidate, reviewRecords, existingExportReviewRecords)
+  };
+}
+
 function reviewMemoryCandidate(candidateId, reviewInput = {}, options = {}) {
   const candidate = readStoredMemoryCandidate(candidateId, options);
   if (!candidate) {
@@ -695,9 +811,11 @@ function reviewMemoryCandidate(candidateId, reviewInput = {}, options = {}) {
 
   const reviewRecord = createReviewRecord(candidate, normalizedReviewInput, currentStatus);
   const saved = saveMemoryReview(reviewRecord, options);
+  const exportReviewMap = getExportReviewRecordsByCandidate(options);
+  const exportReviewRecords = exportReviewMap.get(candidateId) || [];
   return {
     ...saved,
-    candidate: enrichMemoryCandidate(candidate, [...existingReviewRecords, reviewRecord])
+    candidate: enrichMemoryCandidate(candidate, [...existingReviewRecords, reviewRecord], exportReviewRecords)
   };
 }
 
@@ -705,19 +823,23 @@ module.exports = {
   DEFAULT_AUDIT_DIR,
   DEFAULT_CANDIDATES_DIR,
   DEFAULT_EVENTS_DIR,
+  DEFAULT_EXPORT_REVIEWS_DIR,
   DEFAULT_MEMORY_CANDIDATES_DIR,
   DEFAULT_MEMORY_REVIEWS_DIR,
   DEFAULT_RUNS_DIR,
+  createExportReviewForCandidate,
   createMecCandidateRecord,
   createMecEvent,
   createArenaRunPacket,
   executeArenaRun,
+  listExportReviews,
   listMecCandidates,
   listMecEvents,
   listArenaRuns,
   listMemoryCandidates,
   listMemoryReviews,
   listReviewableCandidates,
+  readExportReview,
   readMecCandidate,
   readMecEvent,
   readArenaRun,

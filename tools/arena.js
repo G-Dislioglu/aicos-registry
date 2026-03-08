@@ -3,18 +3,22 @@ const {
   DEFAULT_AUDIT_DIR,
   DEFAULT_CANDIDATES_DIR,
   DEFAULT_EVENTS_DIR,
+  DEFAULT_EXPORT_REVIEWS_DIR,
   DEFAULT_MEMORY_CANDIDATES_DIR,
   DEFAULT_MEMORY_REVIEWS_DIR,
   DEFAULT_RUNS_DIR,
+  createExportReviewForCandidate,
   createMecCandidateRecord,
   createMecEvent,
   executeArenaRun,
+  listExportReviews,
   listMecCandidates,
   listArenaRuns,
   listMecEvents,
   listMemoryCandidates,
   listMemoryReviews,
   listReviewableCandidates,
+  readExportReview,
   readMecCandidate,
   readMecEvent,
   readArenaRun,
@@ -70,8 +74,11 @@ function printUsage() {
   console.log('  node tools/arena.js list-reviewable-candidates [--memory-dir DIR] [--memory-review-dir DIR] [--json]');
   console.log('  node tools/arena.js get-memory-candidate <candidate_id> [--memory-dir DIR] [--memory-review-dir DIR] [--json]');
   console.log('  node tools/arena.js review-memory-candidate <candidate_id> --review-status STATUS --review-rationale TEXT [--review-source SOURCE] [--reviewer-mode MODE] [--confidence LEVEL] [--review-note NOTE] [--memory-dir DIR] [--memory-review-dir DIR] [--json]');
+  console.log('  node tools/arena.js export-review-memory-candidate <candidate_id> --export-review-rationale TEXT [--review-source SOURCE] [--reviewer-mode MODE] [--proof-note NOTE] [--gate-note NOTE] [--export-review-dir DIR] [--memory-dir DIR] [--memory-review-dir DIR] [--json]');
   console.log('  node tools/arena.js list-memory-reviews [--memory-review-dir DIR] [--json]');
   console.log('  node tools/arena.js get-memory-review <review_id> [--memory-review-dir DIR] [--json]');
+  console.log('  node tools/arena.js list-export-reviews [--export-review-dir DIR] [--json]');
+  console.log('  node tools/arena.js get-export-review <export_review_id> [--export-review-dir DIR] [--json]');
   console.log('  node tools/arena.js list-profiles [--json]');
 }
 
@@ -192,7 +199,7 @@ function formatMemoryCandidates(items) {
   if (items.length === 0) {
     return 'No memory candidates found.';
   }
-  return items.map(item => `${item.candidate_id} | ${item.source_run_id} | ${item.candidate_type} | stored:${item.status} | current:${item.current_status} | export:${item.export_readiness_status} | blockers:${item.export_blocker_count || 0} | reviews:${item.review_count || 0} | reviewable:${item.reviewable} | terminal:${item.terminal} | promoted:${item.promoted}`).join('\n');
+  return items.map(item => `${item.candidate_id} | ${item.source_run_id} | ${item.candidate_type} | stored:${item.status} | current:${item.current_status} | export:${item.export_readiness_status} | export-review:${item.current_export_review_status || '-'} | export-reviews:${item.export_review_count || 0} | blockers:${item.export_blocker_count || 0} | reviews:${item.review_count || 0} | reviewable:${item.reviewable} | terminal:${item.terminal} | promoted:${item.promoted}`).join('\n');
 }
 
 function formatMemoryReviews(items) {
@@ -200,6 +207,13 @@ function formatMemoryReviews(items) {
     return 'No memory reviews found.';
   }
   return items.map(item => `${item.review_id} | ${item.candidate_id} | ${item.review_status} | current:${item.current_candidate_status} | superseded:${item.superseded} | ${item.review_source} | ${item.reviewed_at}`).join('\n');
+}
+
+function formatExportReviews(items) {
+  if (items.length === 0) {
+    return 'No export reviews found.';
+  }
+  return items.map(item => `${item.export_review_id} | ${item.candidate_id} | ${item.export_review_status} | current:${item.current_candidate_export_review_status || '-'} | superseded:${item.superseded} | ${item.review_source} | ${item.reviewed_at}`).join('\n');
 }
 
 function buildReviewInput(args) {
@@ -213,6 +227,17 @@ function buildReviewInput(args) {
   };
 }
 
+function buildExportReviewInput(args) {
+  return {
+    export_review_rationale: args['export-review-rationale'],
+    review_source: args['review-source'],
+    reviewer_mode: args['reviewer-mode'],
+    proof_notes: args['proof-note'],
+    gate_notes: args['gate-note'],
+    export_review_status: args['export-review-status']
+  };
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
   const command = args._[0];
@@ -220,6 +245,7 @@ function main() {
   const auditDir = args['audit-dir'] || DEFAULT_AUDIT_DIR;
   const candidateDir = args['candidate-dir'] || DEFAULT_CANDIDATES_DIR;
   const eventDir = args['event-dir'] || DEFAULT_EVENTS_DIR;
+  const exportReviewDir = args['export-review-dir'] || DEFAULT_EXPORT_REVIEWS_DIR;
   const memoryDir = args['memory-dir'] || DEFAULT_MEMORY_CANDIDATES_DIR;
   const memoryReviewDir = args['memory-review-dir'] || DEFAULT_MEMORY_REVIEWS_DIR;
 
@@ -335,13 +361,13 @@ function main() {
   }
 
   if (command === 'list-memory-candidates') {
-    const items = listMemoryCandidates({ memoryOutputDir: memoryDir, memoryReviewOutputDir: memoryReviewDir });
+    const items = listMemoryCandidates({ memoryOutputDir: memoryDir, memoryReviewOutputDir: memoryReviewDir, exportReviewOutputDir: exportReviewDir });
     output(args.json ? items : formatMemoryCandidates(items), args.json);
     return;
   }
 
   if (command === 'list-reviewable-candidates') {
-    const items = listReviewableCandidates({ memoryOutputDir: memoryDir, memoryReviewOutputDir: memoryReviewDir });
+    const items = listReviewableCandidates({ memoryOutputDir: memoryDir, memoryReviewOutputDir: memoryReviewDir, exportReviewOutputDir: exportReviewDir });
     output(args.json ? items : formatMemoryCandidates(items), args.json);
     return;
   }
@@ -352,7 +378,7 @@ function main() {
       printUsage();
       process.exit(1);
     }
-    const payload = readMemoryCandidate(candidateId, { memoryOutputDir: memoryDir, memoryReviewOutputDir: memoryReviewDir });
+    const payload = readMemoryCandidate(candidateId, { memoryOutputDir: memoryDir, memoryReviewOutputDir: memoryReviewDir, exportReviewOutputDir: exportReviewDir });
     if (!payload) {
       console.error(`Memory candidate not found: ${candidateId}`);
       process.exit(1);
@@ -377,6 +403,22 @@ function main() {
     return;
   }
 
+  if (command === 'export-review-memory-candidate') {
+    const candidateId = args._[1];
+    if (!candidateId) {
+      printUsage();
+      process.exit(1);
+    }
+    try {
+      const result = createExportReviewForCandidate(candidateId, buildExportReviewInput(args), { memoryOutputDir: memoryDir, memoryReviewOutputDir: memoryReviewDir, exportReviewOutputDir: exportReviewDir });
+      output(args.json ? result : JSON.stringify(result, null, 2), args.json);
+    } catch (error) {
+      console.error(error.message);
+      process.exit(1);
+    }
+    return;
+  }
+
   if (command === 'list-memory-reviews') {
     const items = listMemoryReviews({ memoryReviewOutputDir: memoryReviewDir });
     output(args.json ? items : formatMemoryReviews(items), args.json);
@@ -392,6 +434,27 @@ function main() {
     const payload = readMemoryReview(reviewId, { memoryReviewOutputDir: memoryReviewDir });
     if (!payload) {
       console.error(`Memory review not found: ${reviewId}`);
+      process.exit(1);
+    }
+    output(payload, true);
+    return;
+  }
+
+  if (command === 'list-export-reviews') {
+    const items = listExportReviews({ exportReviewOutputDir: exportReviewDir });
+    output(args.json ? items : formatExportReviews(items), args.json);
+    return;
+  }
+
+  if (command === 'get-export-review') {
+    const exportReviewId = args._[1];
+    if (!exportReviewId) {
+      printUsage();
+      process.exit(1);
+    }
+    const payload = readExportReview(exportReviewId, { exportReviewOutputDir: exportReviewDir });
+    if (!payload) {
+      console.error(`Export review not found: ${exportReviewId}`);
       process.exit(1);
     }
     output(payload, true);
