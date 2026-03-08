@@ -273,7 +273,7 @@ async function handleRequest(req, res, options = {}) {
     const candidateId = decodeURIComponent(pathname.slice('/arena/memory-candidates/'.length, -'/reviews'.length));
     try {
       const payload = await readRequestBody(req);
-      const result = reviewMemoryCandidate(candidateId, payload, { memoryOutputDir, memoryReviewOutputDir });
+      const result = reviewMemoryCandidate(candidateId, payload, { memoryOutputDir, memoryReviewOutputDir, exportReviewOutputDir });
       sendJson(res, 201, result);
     } catch (error) {
       const statusCode = error.code === 'memory_candidate_not_found'

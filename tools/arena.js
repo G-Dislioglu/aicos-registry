@@ -199,7 +199,7 @@ function formatMemoryCandidates(items) {
   if (items.length === 0) {
     return 'No memory candidates found.';
   }
-  return items.map(item => `${item.candidate_id} | ${item.source_run_id} | ${item.candidate_type} | stored:${item.status} | current:${item.current_status} | export:${item.export_readiness_status} | export-review:${item.current_export_review_status || '-'} | export-reviews:${item.export_review_count || 0} | blockers:${item.export_blocker_count || 0} | reviews:${item.review_count || 0} | reviewable:${item.reviewable} | terminal:${item.terminal} | promoted:${item.promoted}`).join('\n');
+  return items.map(item => `${item.candidate_id} | ${item.source_run_id} | ${item.candidate_type} | stored:${item.status} | current:${item.current_status} | export:${item.export_readiness_status} | export-review:${item.current_export_review_status || '-'} | gate:${item.export_gate_status || '-'} | gate-blockers:${item.export_gate_blocker_count || 0} | export-reviews:${item.export_review_count || 0} | blockers:${item.export_blocker_count || 0} | reviews:${item.review_count || 0} | reviewable:${item.reviewable} | terminal:${item.terminal} | promoted:${item.promoted}`).join('\n');
 }
 
 function formatMemoryReviews(items) {
@@ -394,7 +394,7 @@ function main() {
       process.exit(1);
     }
     try {
-      const result = reviewMemoryCandidate(candidateId, buildReviewInput(args), { memoryOutputDir: memoryDir, memoryReviewOutputDir: memoryReviewDir });
+      const result = reviewMemoryCandidate(candidateId, buildReviewInput(args), { memoryOutputDir: memoryDir, memoryReviewOutputDir: memoryReviewDir, exportReviewOutputDir: exportReviewDir });
       output(args.json ? result : JSON.stringify(result, null, 2), args.json);
     } catch (error) {
       console.error(error.message);

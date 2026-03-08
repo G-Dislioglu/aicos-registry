@@ -17,6 +17,9 @@ const {
   deriveExportReadiness
 } = require('./memory-export-readiness-lib');
 const {
+  deriveExportGateDecision
+} = require('./memory-export-gate-lib');
+const {
   createExportReviewRecord,
   deriveCandidateExportReviewState,
   normalizeExportReviewInput
@@ -490,6 +493,7 @@ function enrichMemoryCandidate(payload, reviewRecords = [], exportReviewRecords 
   const reviewSummary = buildReviewSummary(reviewRecords);
   const exportReadiness = deriveExportReadiness(payload, reviewSummary);
   const exportReviewSummary = buildExportReviewSummary(exportReviewRecords);
+  const exportGateDecision = deriveExportGateDecision(payload, exportReadiness, exportReviewSummary);
   return {
     ...payload,
     current_status: reviewSummary.current_status,
@@ -504,7 +508,11 @@ function enrichMemoryCandidate(payload, reviewRecords = [], exportReviewRecords 
     export_blockers: exportReadiness.export_blockers,
     export_readiness: exportReadiness,
     current_export_review_status: exportReviewSummary.current_export_review_status,
-    export_review_summary: exportReviewSummary
+    export_review_summary: exportReviewSummary,
+    export_gate_status: exportGateDecision.export_gate_status,
+    export_gate_reasons: exportGateDecision.export_gate_reasons,
+    export_gate_blockers: exportGateDecision.export_gate_blockers,
+    export_gate_decision: exportGateDecision
   };
 }
 
@@ -656,6 +664,7 @@ function listMemoryCandidates(options = {}) {
       const reviewSummary = buildReviewSummary(reviewRecords);
       const exportReadiness = deriveExportReadiness(payload, reviewSummary);
       const exportReviewSummary = buildExportReviewSummary(exportReviewRecords);
+      const exportGateDecision = deriveExportGateDecision(payload, exportReadiness, exportReviewSummary);
       return {
         candidate_id: payload.candidate_id,
         source_run_id: payload.source_run_id,
@@ -672,6 +681,8 @@ function listMemoryCandidates(options = {}) {
         export_blocker_count: exportReadiness.export_blockers.length,
         current_export_review_status: exportReviewSummary.current_export_review_status,
         export_review_count: exportReviewSummary.export_review_count,
+        export_gate_status: exportGateDecision.export_gate_status,
+        export_gate_blocker_count: exportGateDecision.export_gate_blockers.length,
         has_boundary: exportReadiness.has_boundary,
         file_path: filePath
       };
