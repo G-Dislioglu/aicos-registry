@@ -909,6 +909,23 @@
       return ` | cp:${escapeHtml(compactId)}`;
     }
 
+    function getCandidateListContext(item) {
+      if (!item) {
+        return '';
+      }
+      if (item.candidate_type === 'boundary_candidate' && item.linked_candidate_id) {
+        return `Linked target ${item.linked_candidate_id}`;
+      }
+      if (item.candidate_type === 'counterexample_candidate' && item.refutes_candidate_id) {
+        const caseText = item.case_description ? ` | ${item.case_description}` : '';
+        return `Refutes ${item.refutes_candidate_id}${caseText}`;
+      }
+      if (item.mechanism) {
+        return item.mechanism;
+      }
+      return '';
+    }
+
     function renderPairReadingCard(item, roleLabel, title, note, actionLabel, actionCandidateId) {
       return `
         <div class="pair-reading-card">
@@ -1058,7 +1075,27 @@
     }
 
     function formatCandidateTitle(item) {
-      return item.principle || item.open_question || item.id;
+      return item.principle || item.open_question || item.case_description || item.id;
+    }
+
+    function renderTypeSpecificDetailCards(payload) {
+      if (payload.candidate_type === 'boundary_candidate') {
+        return [
+          renderDetailCard('Linked target id', payload.linked_candidate_id || '-'),
+          renderDetailCard('Fails when count', String((payload.fails_when || []).length)),
+          renderDetailCard('Edge cases count', String((payload.edge_cases || []).length)),
+          renderDetailCard('Severity', payload.severity || '-')
+        ];
+      }
+      if (payload.candidate_type === 'counterexample_candidate') {
+        return [
+          renderDetailCard('Refuted target id', payload.refutes_candidate_id || '-'),
+          renderDetailCard('Case description', payload.case_description || '-'),
+          renderDetailCard('Resolution', payload.resolution || '-'),
+          renderDetailCard('Impact on candidate', payload.impact_on_candidate || '-')
+        ];
+      }
+      return [];
     }
 
     function renderDetailCard(label, value) {
@@ -1115,6 +1152,7 @@
         renderDetailCard('Created at', formatDate(payload.created_at)),
         renderDetailCard('Updated at', formatDate(payload.updated_at)),
         renderDetailCard('Distillation mode', payload.distillation_mode || '-'),
+        ...renderTypeSpecificDetailCards(payload),
         renderDetailCard('Boundary flags', boundaryFlags)
       ].join('');
       detailSummaryEl.querySelectorAll('.detail-event-add').forEach(node => {
@@ -1196,6 +1234,7 @@
       candidateListEl.innerHTML = items.map(item => {
         const linkedBadge = getCandidateListLinkBadge(item);
         const counterpartHint = getCompactCounterpartIdHint(item);
+        const contextLine = getCandidateListContext(item);
         const active = state.selectedCandidateId === item.id ? 'active' : '';
         return `
           <article class="candidate-row ${active}" data-candidate-id="${item.id}">
@@ -1210,6 +1249,7 @@
               <span class="badge">events ${(item.source_event_ids || []).length}</span>
               <span class="badge">cards ${(item.source_card_ids || []).length}</span>
             </div>
+            ${contextLine ? `<div class="tiny">${escapeHtml(contextLine)}</div>` : ''}
             <div class="tiny">${item.id}${counterpartHint}</div>
           </article>
         `;

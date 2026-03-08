@@ -312,7 +312,9 @@ function buildUiScriptHarness() {
       id: 'candidate-counterexample',
       candidate_type: 'counterexample_candidate',
       principle: 'Counterexample candidate',
+      case_description: 'Counterexample detail',
       mechanism: 'Counterexample mechanism',
+      refutes_candidate_id: 'candidate-invariant',
       source_event_ids: ['event-beta'],
       source_card_ids: [],
       status: 'proposal_only',
@@ -410,12 +412,17 @@ async function verifyEmbeddedUiWriteSemantics() {
   await harness.flush();
 
   const { context, elements } = harness;
+  const candidateListEl = elements.get('candidate-list');
   const sourceEventIdsEl = elements.get('source-event-ids');
   const linkedCandidateIdEl = elements.get('linked-candidate-id');
   const refutesCandidateIdEl = elements.get('refutes-candidate-id');
   const detailSummaryEl = elements.get('detail-summary');
   const detailLinkageEl = elements.get('detail-linkage');
   const formResultActionsEl = elements.get('form-result-actions');
+
+  context.renderCandidateList();
+  assert(candidateListEl.innerHTML.includes('Linked target candidate-invariant'), 'Expected boundary candidate list row to expose linked target context');
+  assert(candidateListEl.innerHTML.includes('Refutes candidate-invariant | Counterexample detail'), 'Expected counterexample candidate list row to expose refuted target context');
 
   sourceEventIdsEl.value = 'event-alpha';
   context.appendSourceEventId('event-alpha');
@@ -464,6 +471,8 @@ async function verifyEmbeddedUiWriteSemantics() {
       auto_resolve: false
     }
   });
+  assert(detailSummaryEl.innerHTML.includes('Linked target id'), 'Expected boundary detail to expose linked target id');
+  assert(detailSummaryEl.innerHTML.includes('Fails when count'), 'Expected boundary detail to expose fails_when count');
   detailLinkageEl.querySelector('.detail-use-linked').click();
   assert(linkedCandidateIdEl.value === 'candidate-invariant', 'Expected detail linked-target carryover to replace linked_candidate_id');
 
@@ -485,6 +494,8 @@ async function verifyEmbeddedUiWriteSemantics() {
       auto_resolve: false
     }
   });
+  assert(detailSummaryEl.innerHTML.includes('Refuted target id'), 'Expected counterexample detail to expose refuted target id');
+  assert(detailSummaryEl.innerHTML.includes('Case description'), 'Expected counterexample detail to expose case description');
   detailLinkageEl.querySelector('.detail-use-refute').click();
   assert(refutesCandidateIdEl.value === 'candidate-invariant', 'Expected detail refuted-target carryover to replace refutes_candidate_id');
 
@@ -588,15 +599,57 @@ async function main() {
     assert(candidateResponse.json && candidateResponse.json.candidate && candidateResponse.json.candidate.id, 'Expected created candidate id');
     assert(candidateResponse.json && candidateResponse.json.linked_boundary_candidate && candidateResponse.json.linked_boundary_candidate.id, 'Expected linked boundary candidate');
 
+    const boundaryResponse = await request('POST', `http://127.0.0.1:${port}/arena/mec-candidates`, {
+      candidate_type: 'boundary_candidate',
+      principle: 'Stable local UI smoke boundary',
+      mechanism: 'Boundary path remains readable and target-linked in the operator shell',
+      linked_candidate_id: candidateResponse.json.candidate.id,
+      source_event_ids: [eventResponse.json.event.id],
+      fails_when: ['linked invariant no longer matches observed boundary'],
+      edge_cases: ['single runtime trace'],
+      severity: 'medium',
+      distillation_mode: 'manual'
+    });
+    assert(boundaryResponse.statusCode === 201, 'Expected boundary candidate creation to return 201');
+    assert(boundaryResponse.json && boundaryResponse.json.candidate && boundaryResponse.json.candidate.id, 'Expected created boundary candidate id');
+    assert(boundaryResponse.json.candidate.linked_candidate_id === candidateResponse.json.candidate.id, 'Expected boundary create response to preserve linked_candidate_id');
+
+    const counterexampleResponse = await request('POST', `http://127.0.0.1:${port}/arena/mec-candidates`, {
+      candidate_type: 'counterexample_candidate',
+      principle: 'Stable local UI smoke counterexample',
+      mechanism: 'Counterexample path remains target-specific in the operator shell',
+      refutes_candidate_id: candidateResponse.json.candidate.id,
+      case_description: 'Clean reproduction still fails after the supposed fix path.',
+      resolution: 'Keep the invariant local and attach the counterexample.',
+      impact_on_candidate: 'narrows_scope',
+      source_event_ids: [eventResponse.json.event.id],
+      distillation_mode: 'manual'
+    });
+    assert(counterexampleResponse.statusCode === 201, 'Expected counterexample candidate creation to return 201');
+    assert(counterexampleResponse.json && counterexampleResponse.json.candidate && counterexampleResponse.json.candidate.id, 'Expected created counterexample candidate id');
+    assert(counterexampleResponse.json.candidate.refutes_candidate_id === candidateResponse.json.candidate.id, 'Expected counterexample create response to preserve refutes_candidate_id');
+
     const listResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-candidates`);
     assert(listResponse.statusCode === 200, 'Expected candidate list to return 200');
-    assert(listResponse.json && Array.isArray(listResponse.json.items) && listResponse.json.items.length === 2, 'Expected invariant and linked boundary in list');
+    assert(listResponse.json && Array.isArray(listResponse.json.items) && listResponse.json.items.length === 4, 'Expected invariant, linked boundary, explicit boundary, and counterexample in list');
     assert(listResponse.json.items.every(item => item.freshness_state === 'fresh'), 'Expected candidate list freshness_state values to be fresh');
+    assert(listResponse.json.items.some(item => item.id === boundaryResponse.json.candidate.id && item.linked_candidate_id === candidateResponse.json.candidate.id), 'Expected candidate list to expose explicit boundary linkage');
+    assert(listResponse.json.items.some(item => item.id === counterexampleResponse.json.candidate.id && item.refutes_candidate_id === candidateResponse.json.candidate.id && item.case_description), 'Expected candidate list to expose counterexample refuted target and case description');
 
     const detailResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-candidates/${candidateResponse.json.candidate.id}`);
     assert(detailResponse.statusCode === 200, 'Expected candidate detail to return 200');
     assert(detailResponse.json && detailResponse.json.linked_boundary_candidate_id === candidateResponse.json.linked_boundary_candidate.id, 'Expected detail to preserve linked boundary id');
     assert(detailResponse.json && detailResponse.json.freshness_state === 'fresh', 'Expected candidate detail freshness_state to be fresh');
+
+    const boundaryDetailResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-candidates/${boundaryResponse.json.candidate.id}`);
+    assert(boundaryDetailResponse.statusCode === 200, 'Expected boundary candidate detail to return 200');
+    assert(boundaryDetailResponse.json && boundaryDetailResponse.json.linked_candidate_id === candidateResponse.json.candidate.id, 'Expected boundary detail to preserve linked_candidate_id');
+    assert(boundaryDetailResponse.json && Array.isArray(boundaryDetailResponse.json.fails_when) && boundaryDetailResponse.json.fails_when.length === 1, 'Expected boundary detail to preserve fails_when');
+
+    const counterexampleDetailResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-candidates/${counterexampleResponse.json.candidate.id}`);
+    assert(counterexampleDetailResponse.statusCode === 200, 'Expected counterexample candidate detail to return 200');
+    assert(counterexampleDetailResponse.json && counterexampleDetailResponse.json.refutes_candidate_id === candidateResponse.json.candidate.id, 'Expected counterexample detail to preserve refutes_candidate_id');
+    assert(counterexampleDetailResponse.json && counterexampleDetailResponse.json.case_description === 'Clean reproduction still fails after the supposed fix path.', 'Expected counterexample detail to preserve case_description');
 
     await verifyEmbeddedUiWriteSemantics();
 
