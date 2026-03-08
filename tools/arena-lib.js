@@ -14,6 +14,9 @@ const {
   normalizeMemoryProposalInput
 } = require('./memory-proposal-lib');
 const {
+  deriveExportReadiness
+} = require('./memory-export-readiness-lib');
+const {
   createReviewRecord,
   deriveCandidateReviewState,
   getCurrentCandidateStatus,
@@ -423,6 +426,7 @@ function buildReviewSummary(reviewRecords = []) {
 
 function enrichMemoryCandidate(payload, reviewRecords = []) {
   const reviewSummary = buildReviewSummary(reviewRecords);
+  const exportReadiness = deriveExportReadiness(payload, reviewSummary);
   return {
     ...payload,
     current_status: reviewSummary.current_status,
@@ -432,7 +436,10 @@ function enrichMemoryCandidate(payload, reviewRecords = []) {
       rule: reviewSummary.derivation_rule,
       reviewable: reviewSummary.reviewable,
       terminal: reviewSummary.terminal
-    }
+    },
+    export_readiness_status: exportReadiness.export_readiness_status,
+    export_blockers: exportReadiness.export_blockers,
+    export_readiness: exportReadiness
   };
 }
 
@@ -569,6 +576,7 @@ function listMemoryCandidates(options = {}) {
       const payload = readJsonFile(filePath);
       const reviewRecords = reviewMap.get(payload.candidate_id) || [];
       const reviewSummary = buildReviewSummary(reviewRecords);
+      const exportReadiness = deriveExportReadiness(payload, reviewSummary);
       return {
         candidate_id: payload.candidate_id,
         source_run_id: payload.source_run_id,
@@ -581,6 +589,9 @@ function listMemoryCandidates(options = {}) {
         reviewable: reviewSummary.reviewable,
         terminal: reviewSummary.terminal,
         derivation_version: reviewSummary.derivation_version,
+        export_readiness_status: exportReadiness.export_readiness_status,
+        export_blocker_count: exportReadiness.export_blockers.length,
+        has_boundary: exportReadiness.has_boundary,
         file_path: filePath
       };
     });

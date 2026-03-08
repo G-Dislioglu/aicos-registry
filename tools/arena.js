@@ -149,7 +149,7 @@ function formatMemoryCandidates(items) {
   if (items.length === 0) {
     return 'No memory candidates found.';
   }
-  return items.map(item => `${item.candidate_id} | ${item.source_run_id} | ${item.candidate_type} | stored:${item.status} | current:${item.current_status} | reviews:${item.review_count || 0} | reviewable:${item.reviewable} | terminal:${item.terminal} | promoted:${item.promoted}`).join('\n');
+  return items.map(item => `${item.candidate_id} | ${item.source_run_id} | ${item.candidate_type} | stored:${item.status} | current:${item.current_status} | export:${item.export_readiness_status} | blockers:${item.export_blocker_count || 0} | reviews:${item.review_count || 0} | reviewable:${item.reviewable} | terminal:${item.terminal} | promoted:${item.promoted}`).join('\n');
 }
 
 function formatMemoryReviews(items) {
