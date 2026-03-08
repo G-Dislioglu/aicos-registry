@@ -830,10 +830,16 @@
       const haystack = [
         item.id,
         item.candidate_type,
-        item.principle,
+        formatCandidateTitle(item),
         item.mechanism,
+        item.case_description,
+        item.open_question,
+        item.domain,
+        item.refutes_candidate_id,
         item.linked_candidate_id,
         item.linked_boundary_candidate_id,
+        item.blind_spot_score !== null && item.blind_spot_score !== undefined ? String(item.blind_spot_score) : '',
+        getCandidateListContext(item),
         ...(item.source_event_ids || []),
         ...(item.source_card_ids || [])
       ].filter(Boolean).join(' ').toLowerCase();
@@ -1051,7 +1057,9 @@
 
       const missingRequiredTarget = (selectedType === 'boundary_candidate' && !linkedTargetId)
         || (selectedType === 'counterexample_candidate' && !refutedTargetId);
-      createSubmitButtonEl.disabled = missingRequiredTarget;
+      const unresolvedRequiredTarget = (selectedType === 'boundary_candidate' && linkedTargetId && !linkedTargetItem)
+        || (selectedType === 'counterexample_candidate' && refutedTargetId && !refutedTargetItem);
+      createSubmitButtonEl.disabled = missingRequiredTarget || unresolvedRequiredTarget;
     }
 
     function renderSummary(candidates) {

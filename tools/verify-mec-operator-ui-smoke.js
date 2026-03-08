@@ -245,6 +245,7 @@ function buildUiScriptHarness() {
     'domain',
     'blind-spot-score',
     'refresh-button',
+    'search',
     'clear-filters-button',
     'use-selected-linked-button',
     'use-selected-refute-button',
@@ -439,17 +440,51 @@ async function verifyEmbeddedUiWriteSemantics() {
 
   const { context, elements } = harness;
   const candidateListEl = elements.get('candidate-list');
+  const searchEl = elements.get('search');
   const sourceEventIdsEl = elements.get('source-event-ids');
   const linkedCandidateIdEl = elements.get('linked-candidate-id');
   const refutesCandidateIdEl = elements.get('refutes-candidate-id');
   const detailSummaryEl = elements.get('detail-summary');
   const detailLinkageEl = elements.get('detail-linkage');
   const formResultActionsEl = elements.get('form-result-actions');
+  const createSubmitButton = elements.get('create-form').children[0];
+  const applySearch = value => {
+    searchEl.value = value;
+    vm.runInContext(`state.query = ${JSON.stringify(value)};`, context);
+    context.renderCandidateList();
+    context.renderPairView();
+  };
 
   context.renderCandidateList();
   assert(candidateListEl.innerHTML.includes('Linked target candidate-invariant'), 'Expected boundary candidate list row to expose linked target context');
   assert(candidateListEl.innerHTML.includes('Refutes candidate-invariant | Counterexample detail'), 'Expected counterexample candidate list row to expose refuted target context');
   assert(candidateListEl.innerHTML.includes('Domain mec_ui_harness | blind spot 0.5'), 'Expected curiosity candidate list row to expose domain and blind spot context');
+
+  applySearch('Counterexample detail');
+  assert(candidateListEl.innerHTML.includes('candidate-counterexample'), 'Expected search to find counterexample candidates by case_description');
+  assert(!candidateListEl.innerHTML.includes('candidate-curiosity'), 'Expected counterexample search to exclude unrelated curiosity candidates');
+
+  applySearch('blind spot 0.5');
+  assert(candidateListEl.innerHTML.includes('candidate-curiosity'), 'Expected search to find curiosity candidates by visible blind spot context');
+  assert(!candidateListEl.innerHTML.includes('candidate-counterexample'), 'Expected curiosity search to exclude unrelated counterexample candidates');
+
+  applySearch('');
+
+  elements.get('candidate-type').value = 'boundary_candidate';
+  linkedCandidateIdEl.value = 'missing-linked-target';
+  context.updateTypeSections();
+  assert(createSubmitButton.disabled === true, 'Expected submit to stay disabled when a required linked target id is unresolved');
+  linkedCandidateIdEl.value = 'candidate-invariant';
+  context.updateCreateTargetSafety();
+  assert(createSubmitButton.disabled === false, 'Expected submit to re-enable when the required linked target resolves in the current runtime list');
+
+  elements.get('candidate-type').value = 'counterexample_candidate';
+  refutesCandidateIdEl.value = 'missing-refuted-target';
+  context.updateTypeSections();
+  assert(createSubmitButton.disabled === true, 'Expected submit to stay disabled when a required refuted target id is unresolved');
+  refutesCandidateIdEl.value = 'candidate-invariant';
+  context.updateCreateTargetSafety();
+  assert(createSubmitButton.disabled === false, 'Expected submit to re-enable when the required refuted target resolves in the current runtime list');
 
   sourceEventIdsEl.value = 'event-alpha';
   context.appendSourceEventId('event-alpha');
