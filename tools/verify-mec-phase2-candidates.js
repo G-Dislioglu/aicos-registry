@@ -275,6 +275,41 @@ async function verifyCliSurface() {
     '--json'
   ]));
   assert(getPayload.linked_boundary_candidate_id === createdPayload.linked_boundary_candidate.id, 'Expected CLI get-mec-candidate to preserve linked boundary candidate');
+
+  const curiosityPayload = JSON.parse(runNode([
+    'tools/arena.js',
+    'create-mec-candidate',
+    '--candidate-type', 'curiosity_candidate',
+    '--principle', 'CLI curiosity probe',
+    '--mechanism', 'CLI verifies a minimal non-invariant runtime-only candidate path',
+    '--open-question', 'Where does the CLI proof boundary stop holding for non-invariant candidates?',
+    '--domain', 'mec_phase2_cli',
+    '--blind-spot-score', '0.6',
+    '--source-event-id', event.id,
+    '--candidate-dir', tempCandidateDir,
+    '--event-dir', tempEventDir,
+    '--json'
+  ]));
+  assert(curiosityPayload.candidate.id, 'Expected CLI curiosity create-mec-candidate to return a candidate id');
+  assert(curiosityPayload.candidate.open_question === 'Where does the CLI proof boundary stop holding for non-invariant candidates?', 'Expected CLI curiosity create-mec-candidate to preserve open_question');
+
+  const listWithCuriosityPayload = JSON.parse(runNode([
+    'tools/arena.js',
+    'list-mec-candidates',
+    '--candidate-dir', tempCandidateDir,
+    '--json'
+  ]));
+  assert(Array.isArray(listWithCuriosityPayload) && listWithCuriosityPayload.length === 3, 'Expected CLI list-mec-candidates to return invariant, boundary, and curiosity candidate');
+  assert(listWithCuriosityPayload.some(item => item.id === curiosityPayload.candidate.id && item.candidate_type === 'curiosity_candidate' && item.domain === 'mec_phase2_cli'), 'Expected CLI list-mec-candidates to expose curiosity candidate domain');
+
+  const curiosityGetPayload = JSON.parse(runNode([
+    'tools/arena.js',
+    'get-mec-candidate', curiosityPayload.candidate.id,
+    '--candidate-dir', tempCandidateDir,
+    '--json'
+  ]));
+  assert(curiosityGetPayload.domain === 'mec_phase2_cli', 'Expected CLI get-mec-candidate to preserve curiosity domain');
+  assert(curiosityGetPayload.candidate_boundary.auto_resolve === false, 'Expected CLI get-mec-candidate to preserve curiosity no-auto-resolve boundary');
 }
 
 async function verifyHttpSurface() {
@@ -347,6 +382,36 @@ async function verifyHttpSurface() {
     const getPayload = await getResponse.json();
     assert(getPayload.linked_boundary_candidate_id === createdPayload.linked_boundary_candidate.id, 'Expected HTTP get to preserve linked boundary candidate id');
     assert(getPayload.candidate_boundary.registry_mutation === false, 'Expected HTTP get to preserve runtime-only boundary');
+
+    const curiosityCreateResponse = await fetch(`http://127.0.0.1:${port}/arena/mec-candidates`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        candidate_type: 'curiosity_candidate',
+        principle: 'HTTP curiosity probe',
+        mechanism: 'HTTP verifies a minimal non-invariant runtime-only candidate path',
+        open_question: 'Where does the HTTP proof boundary stop holding for non-invariant candidates?',
+        domain: 'mec_phase2_http',
+        blind_spot_score: 0.6,
+        source_event_ids: [event.id]
+      })
+    });
+    assert(curiosityCreateResponse.status === 201, 'Expected POST /arena/mec-candidates to create a curiosity candidate');
+    const curiosityCreatedPayload = await curiosityCreateResponse.json();
+    assert(curiosityCreatedPayload.candidate.id, 'Expected HTTP curiosity candidate creation to return candidate id');
+    assert(curiosityCreatedPayload.candidate.open_question === 'Where does the HTTP proof boundary stop holding for non-invariant candidates?', 'Expected HTTP curiosity candidate creation to preserve open_question');
+
+    const listWithCuriosityResponse = await fetch(`http://127.0.0.1:${port}/arena/mec-candidates`);
+    assert(listWithCuriosityResponse.ok, 'Expected GET /arena/mec-candidates to return 200 after curiosity creation');
+    const listWithCuriosityPayload = await listWithCuriosityResponse.json();
+    assert(Array.isArray(listWithCuriosityPayload.items) && listWithCuriosityPayload.items.length === 3, 'Expected HTTP list to return invariant, boundary, and curiosity candidate');
+    assert(listWithCuriosityPayload.items.some(item => item.id === curiosityCreatedPayload.candidate.id && item.candidate_type === 'curiosity_candidate' && item.domain === 'mec_phase2_http'), 'Expected HTTP list to expose curiosity candidate domain');
+
+    const curiosityGetResponse = await fetch(`http://127.0.0.1:${port}/arena/mec-candidates/${curiosityCreatedPayload.candidate.id}`);
+    assert(curiosityGetResponse.ok, 'Expected GET /arena/mec-candidates/:id to return 200 for curiosity candidate');
+    const curiosityGetPayload = await curiosityGetResponse.json();
+    assert(curiosityGetPayload.domain === 'mec_phase2_http', 'Expected HTTP get to preserve curiosity domain');
+    assert(curiosityGetPayload.candidate_boundary.auto_resolve === false, 'Expected HTTP get to preserve curiosity no-auto-resolve boundary');
   } finally {
     serverProcess.kill();
   }
