@@ -15,8 +15,9 @@ const {
 } = require('./memory-proposal-lib');
 const {
   createReviewRecord,
+  deriveCandidateReviewState,
   getCurrentCandidateStatus,
-  getLatestReviewRecord,
+  isReviewableCandidateStatus,
   isValidReviewDecisionStatus,
   normalizeReviewInput,
   sortReviewRecords
@@ -417,38 +418,21 @@ function getReviewRecordsByCandidate(options = {}) {
 }
 
 function buildReviewSummary(reviewRecords = []) {
-  if (reviewRecords.length === 0) {
-    return {
-      review_count: 0,
-      current_status: 'proposal_only',
-      latest_review_id: null,
-      latest_reviewed_at: null,
-      review_source: null,
-      reviewer_mode: null,
-      registry_mutation: false,
-      promotion_executed: false
-    };
-  }
-
-  const latestReview = getLatestReviewRecord(reviewRecords);
-  return {
-    review_count: reviewRecords.length,
-    current_status: latestReview.review_status,
-    latest_review_id: latestReview.review_id,
-    latest_reviewed_at: latestReview.reviewed_at,
-    review_source: latestReview.review_source,
-    reviewer_mode: latestReview.reviewer_mode,
-    registry_mutation: latestReview.audit_meta.registry_mutation,
-    promotion_executed: latestReview.audit_meta.promotion_executed
-  };
+  return deriveCandidateReviewState(reviewRecords);
 }
 
 function enrichMemoryCandidate(payload, reviewRecords = []) {
   const reviewSummary = buildReviewSummary(reviewRecords);
   return {
     ...payload,
-    current_status: getCurrentCandidateStatus(reviewRecords),
-    review_summary: reviewSummary
+    current_status: reviewSummary.current_status,
+    review_summary: reviewSummary,
+    status_derivation: {
+      schema_version: reviewSummary.derivation_version,
+      rule: reviewSummary.derivation_rule,
+      reviewable: reviewSummary.reviewable,
+      terminal: reviewSummary.terminal
+    }
   };
 }
 
@@ -594,6 +578,9 @@ function listMemoryCandidates(options = {}) {
         current_status: reviewSummary.current_status,
         promoted: payload.promoted,
         review_count: reviewSummary.review_count,
+        reviewable: reviewSummary.reviewable,
+        terminal: reviewSummary.terminal,
+        derivation_version: reviewSummary.derivation_version,
         file_path: filePath
       };
     });
@@ -610,20 +597,28 @@ function readMemoryCandidate(candidateId, options = {}) {
 }
 
 function listReviewableCandidates(options = {}) {
-  return listMemoryCandidates(options).filter(item => item.current_status === 'proposal_only' || item.current_status === 'reviewed');
+  return listMemoryCandidates(options).filter(item => isReviewableCandidateStatus(item.current_status));
 }
 
 function listMemoryReviews(options = {}) {
-  return listMemoryReviewPayloads(options).map(item => ({
-    review_id: item.payload.review_id,
-    candidate_id: item.payload.candidate_id,
-    source_run_id: item.payload.source_run_id,
-    reviewed_at: item.payload.reviewed_at,
-    review_status: item.payload.review_status,
-    review_source: item.payload.review_source,
-    reviewer_mode: item.payload.reviewer_mode,
-    file_path: item.filePath
-  }));
+  const reviewMap = getReviewRecordsByCandidate(options);
+  return listMemoryReviewPayloads(options).map(item => {
+    const reviewSummary = buildReviewSummary(reviewMap.get(item.payload.candidate_id) || []);
+    return {
+      review_id: item.payload.review_id,
+      candidate_id: item.payload.candidate_id,
+      source_run_id: item.payload.source_run_id,
+      reviewed_at: item.payload.reviewed_at,
+      review_status: item.payload.review_status,
+      review_source: item.payload.review_source,
+      reviewer_mode: item.payload.reviewer_mode,
+      current_candidate_status: reviewSummary.current_status,
+      candidate_reviewable: reviewSummary.reviewable,
+      candidate_terminal: reviewSummary.terminal,
+      superseded: item.payload.review_id !== reviewSummary.latest_review_id,
+      file_path: item.filePath
+    };
+  });
 }
 
 function readMemoryReview(reviewId, options = {}) {
@@ -657,7 +652,15 @@ function reviewMemoryCandidate(candidateId, reviewInput = {}, options = {}) {
 
   const reviewMap = getReviewRecordsByCandidate(options);
   const existingReviewRecords = reviewMap.get(candidateId) || [];
-  const reviewRecord = createReviewRecord(candidate, normalizedReviewInput, getCurrentCandidateStatus(existingReviewRecords));
+  const currentStatus = getCurrentCandidateStatus(existingReviewRecords);
+  if (!isReviewableCandidateStatus(currentStatus)) {
+    const error = new Error(`Memory candidate is no longer reviewable: ${candidateId} (${currentStatus})`);
+    error.code = 'memory_candidate_not_reviewable';
+    error.current_status = currentStatus;
+    throw error;
+  }
+
+  const reviewRecord = createReviewRecord(candidate, normalizedReviewInput, currentStatus);
   const saved = saveMemoryReview(reviewRecord, options);
   return {
     ...saved,

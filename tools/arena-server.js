@@ -224,7 +224,11 @@ async function handleRequest(req, res, options = {}) {
       const result = reviewMemoryCandidate(candidateId, payload, { memoryOutputDir, memoryReviewOutputDir });
       sendJson(res, 201, result);
     } catch (error) {
-      const statusCode = error.code === 'memory_candidate_not_found' ? 404 : 400;
+      const statusCode = error.code === 'memory_candidate_not_found'
+        ? 404
+        : error.code === 'memory_candidate_not_reviewable'
+          ? 409
+          : 400;
       sendJson(res, statusCode, {
         error: error.code || 'invalid_review_request',
         message: error.message,

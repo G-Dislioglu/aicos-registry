@@ -149,14 +149,14 @@ function formatMemoryCandidates(items) {
   if (items.length === 0) {
     return 'No memory candidates found.';
   }
-  return items.map(item => `${item.candidate_id} | ${item.source_run_id} | ${item.candidate_type} | stored:${item.status} | current:${item.current_status} | reviews:${item.review_count || 0} | promoted:${item.promoted}`).join('\n');
+  return items.map(item => `${item.candidate_id} | ${item.source_run_id} | ${item.candidate_type} | stored:${item.status} | current:${item.current_status} | reviews:${item.review_count || 0} | reviewable:${item.reviewable} | terminal:${item.terminal} | promoted:${item.promoted}`).join('\n');
 }
 
 function formatMemoryReviews(items) {
   if (items.length === 0) {
     return 'No memory reviews found.';
   }
-  return items.map(item => `${item.review_id} | ${item.candidate_id} | ${item.review_status} | ${item.review_source} | ${item.reviewed_at}`).join('\n');
+  return items.map(item => `${item.review_id} | ${item.candidate_id} | ${item.review_status} | current:${item.current_candidate_status} | superseded:${item.superseded} | ${item.review_source} | ${item.reviewed_at}`).join('\n');
 }
 
 function buildReviewInput(args) {
