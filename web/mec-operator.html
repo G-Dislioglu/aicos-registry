@@ -920,6 +920,12 @@
         const caseText = item.case_description ? ` | ${item.case_description}` : '';
         return `Refutes ${item.refutes_candidate_id}${caseText}`;
       }
+      if (item.candidate_type === 'curiosity_candidate' && item.domain) {
+        const blindSpot = item.blind_spot_score !== null && item.blind_spot_score !== undefined
+          ? ` | blind spot ${item.blind_spot_score}`
+          : '';
+        return `Domain ${item.domain}${blindSpot}`;
+      }
       if (item.mechanism) {
         return item.mechanism;
       }
@@ -1093,6 +1099,13 @@
           renderDetailCard('Case description', payload.case_description || '-'),
           renderDetailCard('Resolution', payload.resolution || '-'),
           renderDetailCard('Impact on candidate', payload.impact_on_candidate || '-')
+        ];
+      }
+      if (payload.candidate_type === 'curiosity_candidate') {
+        return [
+          renderDetailCard('Open question', payload.open_question || '-'),
+          renderDetailCard('Domain', payload.domain || '-'),
+          renderDetailCard('Blind spot score', payload.blind_spot_score !== null && payload.blind_spot_score !== undefined ? String(payload.blind_spot_score) : '-')
         ];
       }
       return [];

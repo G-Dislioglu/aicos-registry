@@ -321,6 +321,21 @@ function buildUiScriptHarness() {
       created_at: '2026-03-08T18:02:00.000Z',
       updated_at: '2026-03-08T18:02:00.000Z',
       freshness_state: 'fresh'
+    },
+    {
+      id: 'candidate-curiosity',
+      candidate_type: 'curiosity_candidate',
+      principle: 'Curiosity candidate',
+      open_question: 'Where does the transfer boundary stop holding?',
+      mechanism: 'Curiosity mechanism',
+      domain: 'mec_ui_harness',
+      blind_spot_score: 0.5,
+      source_event_ids: ['event-beta'],
+      source_card_ids: [],
+      status: 'proposal_only',
+      created_at: '2026-03-08T18:03:00.000Z',
+      updated_at: '2026-03-08T18:03:00.000Z',
+      freshness_state: 'fresh'
     }
   ];
   const candidateDetails = {
@@ -348,6 +363,17 @@ function buildUiScriptHarness() {
       case_description: 'Counterexample detail',
       resolution: 'Keep local',
       impact_on_candidate: 'narrows_scope',
+      distillation_mode: 'manual',
+      candidate_boundary: {
+        registry_mutation: false,
+        auto_resolve: false
+      }
+    },
+    'candidate-curiosity': {
+      ...candidateList[3],
+      open_question: 'Where does the transfer boundary stop holding?',
+      domain: 'mec_ui_harness',
+      blind_spot_score: 0.5,
       distillation_mode: 'manual',
       candidate_boundary: {
         registry_mutation: false,
@@ -423,6 +449,7 @@ async function verifyEmbeddedUiWriteSemantics() {
   context.renderCandidateList();
   assert(candidateListEl.innerHTML.includes('Linked target candidate-invariant'), 'Expected boundary candidate list row to expose linked target context');
   assert(candidateListEl.innerHTML.includes('Refutes candidate-invariant | Counterexample detail'), 'Expected counterexample candidate list row to expose refuted target context');
+  assert(candidateListEl.innerHTML.includes('Domain mec_ui_harness | blind spot 0.5'), 'Expected curiosity candidate list row to expose domain and blind spot context');
 
   sourceEventIdsEl.value = 'event-alpha';
   context.appendSourceEventId('event-alpha');
@@ -498,6 +525,28 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(detailSummaryEl.innerHTML.includes('Case description'), 'Expected counterexample detail to expose case description');
   detailLinkageEl.querySelector('.detail-use-refute').click();
   assert(refutesCandidateIdEl.value === 'candidate-invariant', 'Expected detail refuted-target carryover to replace refutes_candidate_id');
+
+  context.renderDetail({
+    id: 'candidate-curiosity',
+    candidate_type: 'curiosity_candidate',
+    principle: 'Curiosity candidate',
+    mechanism: 'Curiosity mechanism',
+    open_question: 'Where does the transfer boundary stop holding?',
+    domain: 'mec_ui_harness',
+    blind_spot_score: 0.5,
+    source_event_ids: ['event-beta'],
+    source_card_ids: [],
+    created_at: '2026-03-08T18:03:00.000Z',
+    updated_at: '2026-03-08T18:03:00.000Z',
+    distillation_mode: 'manual',
+    freshness_state: 'fresh',
+    candidate_boundary: {
+      registry_mutation: false,
+      auto_resolve: false
+    }
+  });
+  assert(detailSummaryEl.innerHTML.includes('Open question'), 'Expected curiosity detail to expose open question');
+  assert(detailSummaryEl.innerHTML.includes('Blind spot score'), 'Expected curiosity detail to expose blind spot score');
 
   linkedCandidateIdEl.value = 'old-linked-result';
   refutesCandidateIdEl.value = 'old-refuted-result';
@@ -629,12 +678,27 @@ async function main() {
     assert(counterexampleResponse.json && counterexampleResponse.json.candidate && counterexampleResponse.json.candidate.id, 'Expected created counterexample candidate id');
     assert(counterexampleResponse.json.candidate.refutes_candidate_id === candidateResponse.json.candidate.id, 'Expected counterexample create response to preserve refutes_candidate_id');
 
+    const curiosityResponse = await request('POST', `http://127.0.0.1:${port}/arena/mec-candidates`, {
+      candidate_type: 'curiosity_candidate',
+      principle: 'Stable local UI smoke curiosity',
+      mechanism: 'Curiosity path remains readable without new semantics in the operator shell',
+      open_question: 'Where does the current phase-2 transfer boundary stop holding?',
+      domain: 'mec_ui_phase2',
+      blind_spot_score: 0.6,
+      source_event_ids: [eventResponse.json.event.id],
+      distillation_mode: 'manual'
+    });
+    assert(curiosityResponse.statusCode === 201, 'Expected curiosity candidate creation to return 201');
+    assert(curiosityResponse.json && curiosityResponse.json.candidate && curiosityResponse.json.candidate.id, 'Expected created curiosity candidate id');
+    assert(curiosityResponse.json.candidate.open_question === 'Where does the current phase-2 transfer boundary stop holding?', 'Expected curiosity create response to preserve open_question');
+
     const listResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-candidates`);
     assert(listResponse.statusCode === 200, 'Expected candidate list to return 200');
-    assert(listResponse.json && Array.isArray(listResponse.json.items) && listResponse.json.items.length === 4, 'Expected invariant, linked boundary, explicit boundary, and counterexample in list');
+    assert(listResponse.json && Array.isArray(listResponse.json.items) && listResponse.json.items.length === 5, 'Expected invariant, linked boundary, explicit boundary, counterexample, and curiosity in list');
     assert(listResponse.json.items.every(item => item.freshness_state === 'fresh'), 'Expected candidate list freshness_state values to be fresh');
     assert(listResponse.json.items.some(item => item.id === boundaryResponse.json.candidate.id && item.linked_candidate_id === candidateResponse.json.candidate.id), 'Expected candidate list to expose explicit boundary linkage');
     assert(listResponse.json.items.some(item => item.id === counterexampleResponse.json.candidate.id && item.refutes_candidate_id === candidateResponse.json.candidate.id && item.case_description), 'Expected candidate list to expose counterexample refuted target and case description');
+    assert(listResponse.json.items.some(item => item.id === curiosityResponse.json.candidate.id && item.domain === 'mec_ui_phase2' && item.open_question), 'Expected candidate list to expose curiosity domain and open question');
 
     const detailResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-candidates/${candidateResponse.json.candidate.id}`);
     assert(detailResponse.statusCode === 200, 'Expected candidate detail to return 200');
@@ -650,6 +714,12 @@ async function main() {
     assert(counterexampleDetailResponse.statusCode === 200, 'Expected counterexample candidate detail to return 200');
     assert(counterexampleDetailResponse.json && counterexampleDetailResponse.json.refutes_candidate_id === candidateResponse.json.candidate.id, 'Expected counterexample detail to preserve refutes_candidate_id');
     assert(counterexampleDetailResponse.json && counterexampleDetailResponse.json.case_description === 'Clean reproduction still fails after the supposed fix path.', 'Expected counterexample detail to preserve case_description');
+
+    const curiosityDetailResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-candidates/${curiosityResponse.json.candidate.id}`);
+    assert(curiosityDetailResponse.statusCode === 200, 'Expected curiosity candidate detail to return 200');
+    assert(curiosityDetailResponse.json && curiosityDetailResponse.json.domain === 'mec_ui_phase2', 'Expected curiosity detail to preserve domain');
+    assert(curiosityDetailResponse.json && curiosityDetailResponse.json.open_question === 'Where does the current phase-2 transfer boundary stop holding?', 'Expected curiosity detail to preserve open_question');
+    assert(curiosityDetailResponse.json && curiosityDetailResponse.json.candidate_boundary.auto_resolve === false, 'Expected curiosity detail to preserve no-auto-resolve boundary');
 
     await verifyEmbeddedUiWriteSemantics();
 
