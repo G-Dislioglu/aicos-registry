@@ -1,0 +1,1617 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MEC Operator Shell</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1020;
+      --panel: #121a31;
+      --panel-2: #182341;
+      --text: #e8eefc;
+      --muted: #9fb0d9;
+      --line: #2b3960;
+      --accent: #7aa2ff;
+      --accent-2: #67d0c2;
+      --warn: #ffcc66;
+      --bad: #ff7a7a;
+      --good: #7fe0a1;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, sans-serif;
+      background: linear-gradient(180deg, #0b1020 0%, #0f1730 100%);
+      color: var(--text);
+    }
+
+    a {
+      color: var(--accent);
+    }
+
+    button,
+    select,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    .page {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      background: rgba(18, 26, 49, 0.9);
+      border-radius: 18px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .hero p,
+    .hero ul {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+    }
+
+    .pill.warn {
+      border-color: rgba(255, 204, 102, 0.5);
+      color: var(--warn);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .stack {
+      display: grid;
+      gap: 20px;
+    }
+
+    .panel {
+      background: rgba(18, 26, 49, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+    }
+
+    .panel h2,
+    .panel h3 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+
+    .panel-sub {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      background: var(--panel-2);
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 22px;
+      margin-bottom: 4px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .toolbar input {
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .toolbar select {
+      min-width: 160px;
+    }
+
+    .toolbar button,
+    .form-actions button {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #24417a 0%, #1e315d 100%);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    .toolbar button.secondary,
+    .form-actions button.secondary {
+      background: var(--panel-2);
+      color: var(--text);
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      background: #0c1327;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+
+    textarea {
+      min-height: 96px;
+      resize: vertical;
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+      max-height: 720px;
+      overflow: auto;
+    }
+
+    .candidate-row,
+    .pair-card,
+    .event-row {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      background: var(--panel-2);
+    }
+
+    .candidate-row {
+      cursor: pointer;
+    }
+
+    .candidate-row.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(122, 162, 255, 0.35) inset;
+    }
+
+    .row-top,
+    .row-meta,
+    .pair-top {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .row-top {
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .row-title {
+      font-weight: 700;
+    }
+
+    .tiny {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #111a35;
+      font-size: 12px;
+    }
+
+    .badge.linked {
+      border-color: rgba(103, 208, 194, 0.5);
+      color: var(--accent-2);
+    }
+
+    .badge.warn {
+      border-color: rgba(255, 204, 102, 0.5);
+      color: var(--warn);
+    }
+
+    .badge.good {
+      border-color: rgba(127, 224, 161, 0.45);
+      color: var(--good);
+    }
+
+    .json-view {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #0c1327;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      max-height: 560px;
+      overflow: auto;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 14px 0;
+    }
+
+    .detail-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      background: var(--panel-2);
+      display: grid;
+      gap: 8px;
+    }
+
+    .detail-card strong {
+      font-size: 13px;
+    }
+
+    .detail-card span,
+    .helper-text {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .pair-reading-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .pair-reading-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      background: var(--panel-2);
+      display: grid;
+      gap: 8px;
+    }
+
+    .pair-reading-note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .compact-list {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .mini-button {
+      border: 1px solid var(--line);
+      background: #0f1832;
+      color: var(--text);
+      padding: 7px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .field-inline-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .field-hint {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .field-safety {
+      margin-top: 8px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      background: #0f1832;
+      display: grid;
+      gap: 6px;
+    }
+
+    .field-safety.warn {
+      border-color: rgba(255, 204, 102, 0.5);
+    }
+
+    .source-readback-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .source-readback-item {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      background: #0f1832;
+      display: grid;
+      gap: 6px;
+    }
+
+    .source-readback-item.warn {
+      border-color: rgba(255, 204, 102, 0.5);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .field label {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .message {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      font-size: 14px;
+    }
+
+    .message.error {
+      border-color: rgba(255, 122, 122, 0.45);
+      color: #ffd5d5;
+      background: rgba(118, 28, 28, 0.28);
+    }
+
+    .message.ok {
+      border-color: rgba(127, 224, 161, 0.45);
+      color: #d8ffdf;
+      background: rgba(28, 88, 48, 0.26);
+    }
+
+    .result-actions {
+      margin-top: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .empty {
+      color: var(--muted);
+      border: 1px dashed var(--line);
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .section-toggle {
+      display: none;
+    }
+
+    .section-toggle.active {
+      display: grid;
+    }
+
+    @media (max-width: 1120px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .summary-grid,
+      .form-grid,
+      .detail-grid,
+      .pair-reading-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <h1>MEC Operator Shell</h1>
+      <p>Runtime-only inspection and working surface for MEC Phase 2 candidates.</p>
+      <div class="pill-row">
+        <span class="pill">runtime-only</span>
+        <span class="pill">operator tool</span>
+        <span class="pill warn">not final product UI</span>
+        <span class="pill warn">status = runtime status only</span>
+      </div>
+    </section>
+
+    <div class="layout">
+      <div class="stack">
+        <section class="panel">
+          <h2>Candidate List</h2>
+          <div class="panel-sub">Flat object list with explicit pair hints. Counts stay cautious.</div>
+          <div id="summary" class="summary-grid"></div>
+          <div class="toolbar">
+            <input id="candidate-search" type="search" placeholder="Search by id, type, principle, mechanism or linked id">
+            <select id="candidate-type-filter">
+              <option value="">all types</option>
+              <option value="invariant_candidate">invariant_candidate</option>
+              <option value="boundary_candidate">boundary_candidate</option>
+              <option value="counterexample_candidate">counterexample_candidate</option>
+              <option value="curiosity_candidate">curiosity_candidate</option>
+            </select>
+            <select id="candidate-status-filter">
+              <option value="">all statuses</option>
+              <option value="proposal_only">proposal_only</option>
+              <option value="challenged">challenged</option>
+              <option value="needs_more_evidence">needs_more_evidence</option>
+              <option value="local_only">local_only</option>
+              <option value="reconsolidation_pending">reconsolidation_pending</option>
+              <option value="runtime_accepted">runtime_accepted</option>
+              <option value="runtime_rejected">runtime_rejected</option>
+              <option value="superseded">superseded</option>
+            </select>
+            <select id="candidate-link-filter">
+              <option value="">all linkage</option>
+              <option value="paired">paired only</option>
+              <option value="standalone">standalone only</option>
+            </select>
+            <button id="clear-filters-button" class="secondary" type="button">Clear</button>
+            <button id="refresh-button" type="button">Refresh</button>
+          </div>
+          <div id="candidate-list" class="list"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Linkage / Pair View</h2>
+          <div class="panel-sub">Linked invariant/boundary cases are shown together without hiding that they are still two stored objects.</div>
+          <div id="pair-list" class="list"></div>
+        </section>
+      </div>
+
+      <div class="stack">
+        <section class="panel">
+          <h2>Candidate Detail</h2>
+          <div class="panel-sub">Raw runtime detail. No review, export or canon meaning is implied.</div>
+          <div id="detail-meta" class="pill-row"></div>
+          <div id="detail-summary" class="detail-grid"></div>
+          <h3>Pair relationship</h3>
+          <div class="panel-sub">Paired reading, not forced merging. Two runtime objects can belong to one linked case.</div>
+          <div id="detail-pair" class="compact-list"></div>
+          <div id="detail-linkage" class="compact-list"></div>
+          <pre id="candidate-detail" class="json-view">Select a candidate from the list.</pre>
+        </section>
+
+        <section class="panel">
+          <h2>Create Candidate</h2>
+          <div class="panel-sub">Only MEC Phase 2 create fields. New candidates remain runtime-only and proposal-only.</div>
+          <div id="create-requirements" class="helper-text">Invariant candidates require at least one source event, two fails_when entries and one edge case.</div>
+          <form id="create-form">
+            <div class="form-grid">
+              <div class="field">
+                <label for="candidate-type">Candidate type</label>
+                <select id="candidate-type" name="candidate_type">
+                  <option value="invariant_candidate">invariant_candidate</option>
+                  <option value="boundary_candidate">boundary_candidate</option>
+                  <option value="counterexample_candidate">counterexample_candidate</option>
+                  <option value="curiosity_candidate">curiosity_candidate</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="distillation-mode">Distillation mode</label>
+                <select id="distillation-mode" name="distillation_mode">
+                  <option value="manual">manual</option>
+                  <option value="semi_manual">semi_manual</option>
+                </select>
+              </div>
+              <div class="field full">
+                <label for="principle">Principle</label>
+                <input id="principle" name="principle" type="text" placeholder="Short claim or principle">
+              </div>
+              <div class="field full">
+                <label for="mechanism">Mechanism</label>
+                <textarea id="mechanism" name="mechanism" placeholder="Why this candidate exists or how it works"></textarea>
+              </div>
+              <div class="field full">
+                <label for="source-event-ids">Source event ids</label>
+                <textarea id="source-event-ids" name="source_event_ids" placeholder="One event id per line"></textarea>
+                <div class="field-hint">Use the event buttons below to append runtime event ids into this field.</div>
+                <div id="source-event-readback" class="source-readback-list"></div>
+              </div>
+              <div class="field full">
+                <label for="source-card-ids">Source card ids</label>
+                <textarea id="source-card-ids" name="source_card_ids" placeholder="Optional: one card id per line"></textarea>
+              </div>
+
+              <div id="invariant-fields" class="section-toggle active field-group full">
+                <div class="form-grid">
+                  <div class="field full">
+                    <label for="fails-when">Fails when</label>
+                    <textarea id="fails-when" name="fails_when" placeholder="For invariant creation: at least two lines"></textarea>
+                  </div>
+                  <div class="field full">
+                    <label for="edge-cases">Edge cases</label>
+                    <textarea id="edge-cases" name="edge_cases" placeholder="At least one line"></textarea>
+                  </div>
+                  <div class="field">
+                    <label for="severity">Severity</label>
+                    <select id="severity" name="severity">
+                      <option value="medium">medium</option>
+                      <option value="low">low</option>
+                      <option value="high">high</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div id="boundary-fields" class="section-toggle full">
+                <div class="form-grid">
+                  <div class="field full">
+                    <label for="linked-candidate-id">Linked candidate id</label>
+                    <input id="linked-candidate-id" name="linked_candidate_id" type="text" placeholder="Required for boundary_candidate">
+                    <div class="field-inline-actions">
+                      <button id="use-selected-linked-button" class="mini-button" type="button">Use selected candidate</button>
+                    </div>
+                    <div id="linked-target-state" class="field-safety"></div>
+                  </div>
+                  <div class="field full">
+                    <label for="boundary-fails-when">Fails when</label>
+                    <textarea id="boundary-fails-when" name="boundary_fails_when" placeholder="At least one line"></textarea>
+                  </div>
+                  <div class="field full">
+                    <label for="boundary-edge-cases">Edge cases</label>
+                    <textarea id="boundary-edge-cases" name="boundary_edge_cases" placeholder="Optional lines"></textarea>
+                  </div>
+                  <div class="field">
+                    <label for="boundary-severity">Severity</label>
+                    <select id="boundary-severity" name="boundary_severity">
+                      <option value="medium">medium</option>
+                      <option value="low">low</option>
+                      <option value="high">high</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div id="counterexample-fields" class="section-toggle full">
+                <div class="form-grid">
+                  <div class="field full">
+                    <label for="refutes-candidate-id">Refutes candidate id</label>
+                    <input id="refutes-candidate-id" name="refutes_candidate_id" type="text" placeholder="Required for counterexample_candidate">
+                    <div class="field-inline-actions">
+                      <button id="use-selected-refute-button" class="mini-button" type="button">Use selected candidate</button>
+                    </div>
+                    <div id="refute-target-state" class="field-safety"></div>
+                  </div>
+                  <div class="field full">
+                    <label for="case-description">Case description</label>
+                    <textarea id="case-description" name="case_description" placeholder="Required"></textarea>
+                  </div>
+                  <div class="field full">
+                    <label for="resolution">Resolution</label>
+                    <textarea id="resolution" name="resolution" placeholder="Optional"></textarea>
+                  </div>
+                  <div class="field full">
+                    <label for="impact-on-candidate">Impact on candidate</label>
+                    <input id="impact-on-candidate" name="impact_on_candidate" type="text" placeholder="Optional: e.g. narrows_scope">
+                  </div>
+                </div>
+              </div>
+
+              <div id="curiosity-fields" class="section-toggle full">
+                <div class="form-grid">
+                  <div class="field full">
+                    <label for="open-question">Open question</label>
+                    <textarea id="open-question" name="open_question" placeholder="Required for curiosity_candidate"></textarea>
+                  </div>
+                  <div class="field">
+                    <label for="domain">Domain</label>
+                    <input id="domain" name="domain" type="text" placeholder="Required">
+                  </div>
+                  <div class="field">
+                    <label for="blind-spot-score">Blind spot score</label>
+                    <input id="blind-spot-score" name="blind_spot_score" type="number" min="0" max="1" step="0.1" value="0.5">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit">Create runtime candidate</button>
+              <button id="reset-button" class="secondary" type="reset">Reset</button>
+            </div>
+          </form>
+          <div id="form-message"></div>
+          <div id="form-result-actions" class="result-actions"></div>
+        </section>
+
+        <section class="panel">
+          <h3>Available Events</h3>
+          <div class="panel-sub">Use these runtime event ids in candidate creation.</div>
+          <div id="event-list" class="list"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      candidates: [],
+      events: [],
+      selectedCandidateId: null,
+      query: '',
+      typeFilter: '',
+      statusFilter: '',
+      linkFilter: ''
+    };
+
+    const candidateListEl = document.getElementById('candidate-list');
+    const candidateDetailEl = document.getElementById('candidate-detail');
+    const detailMetaEl = document.getElementById('detail-meta');
+    const detailSummaryEl = document.getElementById('detail-summary');
+    const detailPairEl = document.getElementById('detail-pair');
+    const detailLinkageEl = document.getElementById('detail-linkage');
+    const summaryEl = document.getElementById('summary');
+    const pairListEl = document.getElementById('pair-list');
+    const eventListEl = document.getElementById('event-list');
+    const candidateTypeEl = document.getElementById('candidate-type');
+    const formEl = document.getElementById('create-form');
+    const formMessageEl = document.getElementById('form-message');
+    const formResultActionsEl = document.getElementById('form-result-actions');
+    const createSubmitButtonEl = formEl.querySelector('button[type="submit"]');
+    const searchEl = document.getElementById('candidate-search');
+    const typeFilterEl = document.getElementById('candidate-type-filter');
+    const statusFilterEl = document.getElementById('candidate-status-filter');
+    const linkFilterEl = document.getElementById('candidate-link-filter');
+    const createRequirementsEl = document.getElementById('create-requirements');
+    const sourceEventIdsEl = document.getElementById('source-event-ids');
+    const sourceEventReadbackEl = document.getElementById('source-event-readback');
+    const linkedCandidateIdEl = document.getElementById('linked-candidate-id');
+    const refutesCandidateIdEl = document.getElementById('refutes-candidate-id');
+    const linkedTargetStateEl = document.getElementById('linked-target-state');
+    const refuteTargetStateEl = document.getElementById('refute-target-state');
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatDate(value) {
+      if (!value) {
+        return '-';
+      }
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+    }
+
+    function isLinkedObject(item) {
+      return Boolean(item && (item.linked_boundary_candidate_id || item.linked_candidate_id));
+    }
+
+    function appendSourceEventId(eventId) {
+      const values = new Set(splitLines(sourceEventIdsEl.value));
+      values.add(eventId);
+      sourceEventIdsEl.value = Array.from(values).join('\n');
+      updateSourceEventReadback();
+      showMessage('ok', `Source event id added to create form: ${eventId}.`);
+    }
+
+    function appendVisibleDetailSourceEventId(eventId) {
+      const currentValue = String(sourceEventIdsEl.value || '').trim();
+      sourceEventIdsEl.value = currentValue ? `${currentValue}\n${eventId}` : eventId;
+      updateSourceEventReadback();
+      showMessage('ok', `Source event id added to create form: ${eventId}.`);
+    }
+
+    function setCreateLinkedTargetId(candidateId, sourceLabel) {
+      const normalizedId = String(candidateId || '').trim();
+      if (!normalizedId) {
+        return;
+      }
+      linkedCandidateIdEl.value = normalizedId;
+      updateCreateTargetSafety();
+      showMessage('ok', `Linked candidate id set to ${normalizedId}${sourceLabel ? ` from ${sourceLabel}` : ''}.`);
+    }
+
+    function setCreateRefutedTargetId(candidateId, sourceLabel) {
+      const normalizedId = String(candidateId || '').trim();
+      if (!normalizedId) {
+        return;
+      }
+      refutesCandidateIdEl.value = normalizedId;
+      updateCreateTargetSafety();
+      showMessage('ok', `Refutes candidate id set to ${normalizedId}${sourceLabel ? ` from ${sourceLabel}` : ''}.`);
+    }
+
+    function splitLines(value) {
+      return String(value || '')
+        .split(/\r?\n/)
+        .map(item => item.trim())
+        .filter(Boolean);
+    }
+
+    async function fetchJson(url, options) {
+      const response = await fetch(url, options);
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.message || data.error || 'Request failed');
+      }
+      return data;
+    }
+
+    function matchesCandidateFilters(item) {
+      const query = state.query.trim().toLowerCase();
+      if (state.typeFilter && item.candidate_type !== state.typeFilter) {
+        return false;
+      }
+      if (state.statusFilter && item.status !== state.statusFilter) {
+        return false;
+      }
+      if (state.linkFilter === 'paired' && !isLinkedObject(item)) {
+        return false;
+      }
+      if (state.linkFilter === 'standalone' && isLinkedObject(item)) {
+        return false;
+      }
+      if (!query) {
+        return true;
+      }
+      const haystack = [
+        item.id,
+        item.candidate_type,
+        item.principle,
+        item.mechanism,
+        item.linked_candidate_id,
+        item.linked_boundary_candidate_id,
+        ...(item.source_event_ids || []),
+        ...(item.source_card_ids || [])
+      ].filter(Boolean).join(' ').toLowerCase();
+      return haystack.includes(query);
+    }
+
+    function getFilteredCandidates() {
+      return state.candidates.filter(matchesCandidateFilters);
+    }
+
+    function buildPairMap(candidates) {
+      const byId = new Map(candidates.map(item => [item.id, item]));
+      return candidates
+        .filter(item => item.candidate_type === 'invariant_candidate' && item.linked_boundary_candidate_id)
+        .map(invariant => ({
+          invariant,
+          boundary: byId.get(invariant.linked_boundary_candidate_id) || null
+        }));
+    }
+
+    function getCandidateById(candidateId) {
+      return state.candidates.find(item => item.id === candidateId) || null;
+    }
+
+    function getEventById(eventId) {
+      return state.events.find(item => item.id === eventId) || null;
+    }
+
+    function getPairRoleLabel(item) {
+      if (!item) {
+        return 'missing';
+      }
+      if (item.candidate_type === 'invariant_candidate') {
+        return 'invariant';
+      }
+      if (item.candidate_type === 'boundary_candidate') {
+        return 'boundary';
+      }
+      return item.candidate_type || 'untyped';
+    }
+
+    function getPairedCandidateId(item) {
+      if (!item) {
+        return '';
+      }
+      if (item.candidate_type === 'invariant_candidate') {
+        return item.linked_boundary_candidate_id || '';
+      }
+      if (item.candidate_type === 'boundary_candidate') {
+        return item.linked_candidate_id || '';
+      }
+      return '';
+    }
+
+    function getCandidateListLinkBadge(item) {
+      if (item && item.candidate_type === 'invariant_candidate' && item.linked_boundary_candidate_id) {
+        return `<span class="badge linked">linked invariant</span>`;
+      }
+      if (item && item.candidate_type === 'boundary_candidate' && item.linked_candidate_id) {
+        return `<span class="badge linked">linked boundary</span>`;
+      }
+      return '<span class="badge">standalone</span>';
+    }
+
+    function getCompactCounterpartIdHint(item) {
+      const counterpartId = item && (item.linked_boundary_candidate_id || item.linked_candidate_id)
+        ? String(item.linked_boundary_candidate_id || item.linked_candidate_id)
+        : '';
+      if (!counterpartId) {
+        return '';
+      }
+      const compactId = counterpartId.length <= 12 ? counterpartId : counterpartId.slice(-12);
+      return ` | cp:${escapeHtml(compactId)}`;
+    }
+
+    function renderPairReadingCard(item, roleLabel, title, note, actionLabel, actionCandidateId) {
+      return `
+        <div class="pair-reading-card">
+          <div class="row-top">
+            <strong>${escapeHtml(title)}</strong>
+            <span class="badge good">${escapeHtml(roleLabel)}</span>
+          </div>
+          <div class="pair-reading-note">${escapeHtml(note)}</div>
+          <div class="row-meta">
+            <span class="badge">type ${escapeHtml(item && item.candidate_type ? item.candidate_type : '-')}</span>
+            <span class="badge">freshness ${escapeHtml(item && item.freshness_state ? item.freshness_state : '-')}</span>
+            <span class="badge">status ${escapeHtml(item && item.status ? item.status : '-')}</span>
+          </div>
+          <div>${escapeHtml(item ? formatCandidateTitle(item) : 'Linked runtime object not loaded.')}</div>
+          <div class="tiny">${escapeHtml(item && item.id ? item.id : actionCandidateId || '-')}</div>
+          ${actionCandidateId ? `<div class="action-row"><button class="mini-button pair-detail-open" type="button" data-candidate-id="${escapeHtml(actionCandidateId)}">${escapeHtml(actionLabel)}</button></div>` : ''}
+        </div>
+      `;
+    }
+
+    function describeCandidateTarget(item) {
+      if (!item) {
+        return '-';
+      }
+      return `${formatCandidateTitle(item)} | ${item.candidate_type || '-'} | ${item.status || '-'} | ${item.id}`;
+    }
+
+    function summarizeEventLabel(event) {
+      const text = String(event && event.summary ? event.summary : event && event.id ? event.id : '-').trim();
+      if (text.length <= 96) {
+        return text;
+      }
+      return `${text.slice(0, 93)}...`;
+    }
+
+    function updateSourceEventReadback() {
+      const sourceEventIds = splitLines(sourceEventIdsEl.value);
+      if (sourceEventIds.length === 0) {
+        sourceEventReadbackEl.innerHTML = '<div class="field-safety"><strong>Resolved source events</strong><span>No source event ids set.</span></div>';
+        return;
+      }
+
+      sourceEventReadbackEl.innerHTML = [
+        '<div class="field-safety"><strong>Resolved source events</strong><span>Current runtime event references from the create form.</span></div>',
+        ...sourceEventIds.map(eventId => {
+          const event = getEventById(eventId);
+          if (!event) {
+            return `
+              <div class="source-readback-item warn">
+                <div class="row-meta">
+                  <span class="badge warn">unresolved</span>
+                  <span class="badge">${escapeHtml(eventId)}</span>
+                </div>
+                <div class="tiny">Runtime event id is not present in the current event list.</div>
+              </div>
+            `;
+          }
+          return `
+            <div class="source-readback-item">
+              <div class="row-meta">
+                <span class="badge">${escapeHtml(event.event_type || '-')}</span>
+                <span class="badge">${escapeHtml(event.id)}</span>
+              </div>
+              <div>${escapeHtml(summarizeEventLabel(event))}</div>
+            </div>
+          `;
+        })
+      ].join('');
+    }
+
+    function renderTargetState(element, config) {
+      const { roleLabel, targetId, targetItem, selectedItem, required } = config;
+      if (!element) {
+        return;
+      }
+      const normalizedId = String(targetId || '').trim();
+      const needsTarget = Boolean(required);
+      const hasTarget = Boolean(normalizedId);
+      const warnClass = (!hasTarget && needsTarget) || (hasTarget && !targetItem) ? ' warn' : '';
+      let body = '';
+      if (!hasTarget) {
+        body = needsTarget
+          ? `<strong>${escapeHtml(roleLabel)} required</strong><span>No target id set yet. Select a candidate first or enter a runtime candidate id.</span>${selectedItem ? `<div class="tiny">Current selection: ${escapeHtml(describeCandidateTarget(selectedItem))}</div>` : '<div class="tiny">No candidate is currently selected in the operator shell.</div>'}`
+          : `<strong>${escapeHtml(roleLabel)}</strong><span>No target id set.</span>`;
+      } else if (!targetItem) {
+        body = `<strong>${escapeHtml(roleLabel)}</strong><span>Target id is set but not present in the current runtime candidate list.</span><div class="tiny">${escapeHtml(normalizedId)}</div>`;
+      } else {
+        body = `<strong>${escapeHtml(roleLabel)}</strong><span>${escapeHtml(targetItem.candidate_type || '-')} | ${escapeHtml(targetItem.status || '-')}</span><div>${escapeHtml(formatCandidateTitle(targetItem))}</div><div class="tiny">${escapeHtml(targetItem.id)}</div>`;
+      }
+      element.className = `field-safety${warnClass}`;
+      element.innerHTML = body;
+    }
+
+    function updateCreateTargetSafety() {
+      const selectedType = candidateTypeEl.value;
+      const selectedItem = getCandidateById(state.selectedCandidateId);
+      const linkedTargetId = linkedCandidateIdEl ? linkedCandidateIdEl.value.trim() : '';
+      const refutedTargetId = refutesCandidateIdEl ? refutesCandidateIdEl.value.trim() : '';
+      const linkedTargetItem = getCandidateById(linkedTargetId);
+      const refutedTargetItem = getCandidateById(refutedTargetId);
+
+      renderTargetState(linkedTargetStateEl, {
+        roleLabel: 'Linked target',
+        targetId: linkedTargetId,
+        targetItem: linkedTargetItem,
+        selectedItem,
+        required: selectedType === 'boundary_candidate'
+      });
+
+      renderTargetState(refuteTargetStateEl, {
+        roleLabel: 'Refuted target',
+        targetId: refutedTargetId,
+        targetItem: refutedTargetItem,
+        selectedItem,
+        required: selectedType === 'counterexample_candidate'
+      });
+
+      const missingRequiredTarget = (selectedType === 'boundary_candidate' && !linkedTargetId)
+        || (selectedType === 'counterexample_candidate' && !refutedTargetId);
+      createSubmitButtonEl.disabled = missingRequiredTarget;
+    }
+
+    function renderSummary(candidates) {
+      const visibleObjects = candidates.length;
+      const storedObjects = state.candidates.length;
+      const pairCases = buildPairMap(state.candidates).length;
+      const standaloneVisibleObjects = candidates.filter(item => {
+        const isInvariantWithBoundary = item.candidate_type === 'invariant_candidate' && item.linked_boundary_candidate_id;
+        const isLinkedBoundary = item.candidate_type === 'boundary_candidate' && item.linked_candidate_id;
+        return !isInvariantWithBoundary && !isLinkedBoundary;
+      }).length;
+      const runtimeOnly = candidates.filter(item => item.status === 'proposal_only').length;
+
+      summaryEl.innerHTML = [
+        ['Visible objects', visibleObjects, 'Current filter result'],
+        ['Stored objects', storedObjects, 'All flat runtime objects'],
+        ['Linked cases', pairCases, 'Invariant + boundary pairs'],
+        ['Standalone visible', standaloneVisibleObjects, 'Visible objects outside linked pairs'],
+        ['Proposal-only visible', runtimeOnly, 'Runtime status only']
+      ].map(([label, value, hint]) => `
+        <div class="metric">
+          <strong>${value}</strong>
+          <span>${label}</span>
+          <div class="tiny">${hint}</div>
+        </div>
+      `).join('');
+    }
+
+    function formatCandidateTitle(item) {
+      return item.principle || item.open_question || item.id;
+    }
+
+    function renderDetailCard(label, value) {
+      return `
+        <div class="detail-card">
+          <strong>${escapeHtml(label)}</strong>
+          <span>${escapeHtml(value)}</span>
+        </div>
+      `;
+    }
+
+    function renderSourceEventDetailCard(sourceEventIds) {
+      if (!Array.isArray(sourceEventIds) || sourceEventIds.length === 0) {
+        return renderDetailCard('Source event ids', '-');
+      }
+      return `
+        <div class="detail-card">
+          <strong>Source event ids</strong>
+          <div style="display:grid; gap:8px;">
+            ${sourceEventIds.map(eventId => `
+              <div class="action-row">
+                <span>${escapeHtml(eventId)}</span>
+                <button class="mini-button detail-event-add" type="button" data-event-id="${escapeHtml(eventId)}">Add event id</button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDetailLinkageCard(label, candidateId, actions) {
+      return `
+        <div class="detail-card">
+          <strong>${escapeHtml(label)}</strong>
+          <div class="action-row">
+            <span>${escapeHtml(candidateId)}</span>
+            ${actions.map(action => `<button class="mini-button ${escapeHtml(action.className)}" type="button" data-candidate-id="${escapeHtml(candidateId)}">${escapeHtml(action.label)}</button>`).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDetail(payload) {
+      const sourceCards = (payload.source_card_ids || []).join(', ') || '-';
+      const boundaryFlags = payload.candidate_boundary
+        ? Object.entries(payload.candidate_boundary).map(([key, value]) => `${key}: ${value}`).join(', ')
+        : '-';
+      detailSummaryEl.innerHTML = [
+        renderDetailCard('Primary text', payload.principle || payload.open_question || payload.case_description || payload.id),
+        renderDetailCard('Mechanism', payload.mechanism || '-'),
+        renderDetailCard('Freshness', payload.freshness_state || '-'),
+        renderSourceEventDetailCard(payload.source_event_ids || []),
+        renderDetailCard('Source card ids', sourceCards),
+        renderDetailCard('Created at', formatDate(payload.created_at)),
+        renderDetailCard('Updated at', formatDate(payload.updated_at)),
+        renderDetailCard('Distillation mode', payload.distillation_mode || '-'),
+        renderDetailCard('Boundary flags', boundaryFlags)
+      ].join('');
+      detailSummaryEl.querySelectorAll('.detail-event-add').forEach(node => {
+        node.addEventListener('click', () => appendVisibleDetailSourceEventId(node.dataset.eventId));
+      });
+
+      const pairedCandidateId = getPairedCandidateId(payload);
+      const pairedCandidate = getCandidateById(pairedCandidateId);
+      const isPairReadable = payload.candidate_type === 'invariant_candidate' || payload.candidate_type === 'boundary_candidate';
+      if (!isPairReadable || !pairedCandidateId) {
+        detailPairEl.innerHTML = '<div class="empty">No invariant/boundary pair relationship on this candidate.</div>';
+      } else {
+        const currentRole = getPairRoleLabel(payload);
+        const pairedRole = pairedCandidate ? getPairRoleLabel(pairedCandidate) : (payload.candidate_type === 'invariant_candidate' ? 'boundary' : 'invariant');
+        const relationNote = payload.candidate_type === 'invariant_candidate'
+          ? 'This invariant stays a separate runtime object and points to a linked boundary candidate for paired reading.'
+          : 'This boundary stays a separate runtime object and points back to a linked invariant candidate for paired reading.';
+        detailPairEl.innerHTML = `
+          <div class="detail-card">
+            <strong>Linked case reading</strong>
+            <span>${escapeHtml(relationNote)}</span>
+            <div class="pair-reading-grid">
+              ${renderPairReadingCard(payload, currentRole, 'Current detail object', 'You are reading one runtime object inside a linked case.', '', '')}
+              ${renderPairReadingCard(pairedCandidate, pairedRole, 'Linked runtime object', 'Open the paired object to compare roles without merging them.', pairedCandidate ? `Open linked ${pairedRole}` : 'Open linked object', pairedCandidateId)}
+            </div>
+          </div>
+        `;
+        detailPairEl.querySelectorAll('.pair-detail-open').forEach(node => {
+          node.addEventListener('click', () => selectCandidate(node.dataset.candidateId));
+        });
+      }
+
+      const linkageCards = [];
+      if (payload.linked_boundary_candidate_id) {
+        linkageCards.push(renderDetailLinkageCard('Linked boundary candidate', payload.linked_boundary_candidate_id, [
+          { className: 'detail-open', label: 'Open' }
+        ]));
+      }
+      if (payload.linked_candidate_id) {
+        linkageCards.push(renderDetailLinkageCard('Linked target candidate', payload.linked_candidate_id, [
+          { className: 'detail-open', label: 'Open' },
+          { className: 'detail-use-linked', label: 'Use as linked target' }
+        ]));
+      }
+      if (payload.refutes_candidate_id) {
+        linkageCards.push(renderDetailLinkageCard('Refuted target candidate', payload.refutes_candidate_id, [
+          { className: 'detail-open', label: 'Open' },
+          { className: 'detail-use-refute', label: 'Use as refuted target' }
+        ]));
+      }
+      if (linkageCards.length === 0) {
+        detailLinkageEl.innerHTML = '<div class="empty">No direct linkage fields on this candidate.</div>';
+      } else {
+        detailLinkageEl.innerHTML = linkageCards.join('');
+        detailLinkageEl.querySelectorAll('.detail-open').forEach(node => {
+          node.addEventListener('click', () => selectCandidate(node.dataset.candidateId));
+        });
+        detailLinkageEl.querySelectorAll('.detail-use-linked').forEach(node => {
+          node.addEventListener('click', () => setCreateLinkedTargetId(node.dataset.candidateId, 'candidate detail'));
+        });
+        detailLinkageEl.querySelectorAll('.detail-use-refute').forEach(node => {
+          node.addEventListener('click', () => setCreateRefutedTargetId(node.dataset.candidateId, 'candidate detail'));
+        });
+      }
+      candidateDetailEl.textContent = JSON.stringify(payload, null, 2);
+    }
+
+    function renderCandidateList() {
+      const items = getFilteredCandidates()
+        .sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
+
+      renderSummary(items);
+
+      if (items.length === 0) {
+        candidateListEl.innerHTML = '<div class="empty">No MEC candidates found for the current filter.</div>';
+        return;
+      }
+
+      candidateListEl.innerHTML = items.map(item => {
+        const linkedBadge = getCandidateListLinkBadge(item);
+        const counterpartHint = getCompactCounterpartIdHint(item);
+        const active = state.selectedCandidateId === item.id ? 'active' : '';
+        return `
+          <article class="candidate-row ${active}" data-candidate-id="${item.id}">
+            <div class="row-top">
+              <div class="row-title">${formatCandidateTitle(item)}</div>
+              <span class="badge warn">runtime status: ${item.status || 'proposal_only'}</span>
+            </div>
+            <div class="row-meta">
+              <span class="badge">${item.candidate_type}</span>
+              <span class="badge">freshness ${item.freshness_state || '-'}</span>
+              ${linkedBadge}
+              <span class="badge">events ${(item.source_event_ids || []).length}</span>
+              <span class="badge">cards ${(item.source_card_ids || []).length}</span>
+            </div>
+            <div class="tiny">${item.id}${counterpartHint}</div>
+          </article>
+        `;
+      }).join('');
+
+      candidateListEl.querySelectorAll('[data-candidate-id]').forEach(node => {
+        node.addEventListener('click', () => selectCandidate(node.dataset.candidateId));
+      });
+    }
+
+    function renderPairView() {
+      const pairs = buildPairMap(state.candidates).filter(({ invariant, boundary }) => matchesCandidateFilters(invariant) || (boundary && matchesCandidateFilters(boundary)));
+      if (pairs.length === 0) {
+        pairListEl.innerHTML = '<div class="empty">No linked invariant/boundary cases found yet.</div>';
+        return;
+      }
+
+      pairListEl.innerHTML = pairs.map(({ invariant, boundary }) => `
+        <article class="pair-card">
+          <div class="pair-top">
+            <span class="badge good">linked case</span>
+            <span class="badge">invariant ${invariant.id}</span>
+            <span class="badge">boundary ${boundary ? boundary.id : 'missing'}</span>
+          </div>
+          <div style="margin-top:10px; display:grid; gap:10px;">
+            <div class="pair-reading-note">One linked case, two separately stored runtime objects. Read them together without forcing a merge.</div>
+            <div class="pair-reading-grid">
+              ${renderPairReadingCard(invariant, 'invariant', 'Invariant object', 'Principle-side object for the linked case.', 'Open invariant', invariant.id)}
+              ${boundary
+                ? renderPairReadingCard(boundary, 'boundary', 'Boundary object', 'Failure-boundary object linked to the invariant.', 'Open boundary', boundary.id)
+                : renderPairReadingCard(null, 'boundary', 'Boundary object', 'Linked boundary object is missing from the current runtime set.', '', '')}
+            </div>
+          </div>
+        </article>
+      `).join('');
+
+      pairListEl.querySelectorAll('.pair-detail-open').forEach(node => {
+        node.addEventListener('click', () => selectCandidate(node.dataset.candidateId));
+      });
+    }
+
+    function renderEvents() {
+      if (state.events.length === 0) {
+        eventListEl.innerHTML = '<div class="empty">No MEC events found. Candidate creation that requires event ids will fail until runtime events exist.</div>';
+        return;
+      }
+
+      eventListEl.innerHTML = state.events.map(event => `
+        <article class="event-row">
+          <div class="row-top">
+            <div class="row-title">${event.summary || event.id}</div>
+            <span class="badge">${event.status}</span>
+          </div>
+          <div class="row-meta">
+            <span class="badge">${event.event_type}</span>
+            <span class="badge">${event.domain}</span>
+            <span class="badge">freshness ${event.freshness_state || '-'}</span>
+            <span class="badge">priority ${event.priority_score}</span>
+          </div>
+          <div class="field-inline-actions">
+            <button class="mini-button event-add" type="button" data-event-id="${event.id}">Add event id</button>
+          </div>
+          <div class="tiny">${event.id}</div>
+        </article>
+      `).join('');
+
+      eventListEl.querySelectorAll('.event-add').forEach(node => {
+        node.addEventListener('click', () => appendSourceEventId(node.dataset.eventId));
+      });
+    }
+
+    async function selectCandidate(candidateId) {
+      state.selectedCandidateId = candidateId;
+      renderCandidateList();
+      candidateDetailEl.textContent = 'Loading candidate detail...';
+      detailMetaEl.innerHTML = '';
+      detailSummaryEl.innerHTML = '';
+      detailPairEl.innerHTML = '';
+      detailLinkageEl.innerHTML = '';
+      try {
+        const payload = await fetchJson(`/arena/mec-candidates/${encodeURIComponent(candidateId)}`);
+        const linkedId = payload.linked_boundary_candidate_id || payload.linked_candidate_id;
+        detailMetaEl.innerHTML = [
+          `<span class="pill">${payload.candidate_type}</span>`,
+          `<span class="pill warn">runtime status: ${payload.status}</span>`,
+          `<span class="pill">freshness: ${payload.freshness_state || '-'}</span>`,
+          `<span class="pill">runtime-only</span>`,
+          linkedId ? `<span class="pill">linked: ${linkedId}</span>` : ''
+        ].join('');
+        renderDetail(payload);
+        updateCreateTargetSafety();
+      } catch (error) {
+        candidateDetailEl.textContent = error.message;
+        updateCreateTargetSafety();
+      }
+    }
+
+    function showMessage(type, text) {
+      formMessageEl.className = `message ${type}`;
+      formMessageEl.textContent = text;
+    }
+
+    function clearResultActions() {
+      formResultActionsEl.innerHTML = '';
+    }
+
+    function renderCreateResultActions(result) {
+      const createdCandidateId = result && result.candidate && result.candidate.id ? result.candidate.id : '';
+      const createdCandidateType = result && result.candidate && result.candidate.candidate_type
+        ? result.candidate.candidate_type
+        : '';
+      const linkedBoundaryId = result && result.linked_boundary_candidate && result.linked_boundary_candidate.id
+        ? result.linked_boundary_candidate.id
+        : '';
+      const linkedTargetId = createdCandidateType === 'boundary_candidate' && result && result.candidate && result.candidate.linked_candidate_id
+        ? result.candidate.linked_candidate_id
+        : '';
+      const refutedTargetId = createdCandidateType === 'counterexample_candidate' && result && result.candidate && result.candidate.refutes_candidate_id
+        ? result.candidate.refutes_candidate_id
+        : '';
+      if (!createdCandidateId) {
+        clearResultActions();
+        return;
+      }
+      formResultActionsEl.innerHTML = `
+        <div class="detail-card">
+          <strong>Create result actions</strong>
+          <span>Open the concretely returned runtime objects from this create result or carry returned ids forward into the current create form.</span>
+          <div class="action-row">
+            <button class="mini-button create-result-open" type="button" data-candidate-id="${escapeHtml(createdCandidateId)}">Open created candidate</button>
+            ${linkedBoundaryId ? `<button class="mini-button create-result-open" type="button" data-candidate-id="${escapeHtml(linkedBoundaryId)}">Open linked boundary</button>` : ''}
+            ${linkedTargetId ? `<button class="mini-button create-result-open" type="button" data-candidate-id="${escapeHtml(linkedTargetId)}">Open linked target</button>` : ''}
+            ${refutedTargetId ? `<button class="mini-button create-result-open" type="button" data-candidate-id="${escapeHtml(refutedTargetId)}">Open refuted target</button>` : ''}
+          </div>
+          <div class="action-row">
+            <button class="mini-button create-result-use-linked" type="button" data-candidate-id="${escapeHtml(createdCandidateId)}" data-candidate-type="${escapeHtml(createdCandidateType)}">Use created as linked target</button>
+            <button class="mini-button create-result-use-refute" type="button" data-candidate-id="${escapeHtml(createdCandidateId)}" data-candidate-type="${escapeHtml(createdCandidateType)}">Use created as refuted target</button>
+          </div>
+        </div>
+      `;
+      formResultActionsEl.querySelectorAll('.create-result-open').forEach(node => {
+        node.addEventListener('click', () => selectCandidate(node.dataset.candidateId));
+      });
+      formResultActionsEl.querySelectorAll('.create-result-use-linked').forEach(node => {
+        node.addEventListener('click', () => setCreateLinkedTargetId(node.dataset.candidateId, 'create result'));
+      });
+      formResultActionsEl.querySelectorAll('.create-result-use-refute').forEach(node => {
+        node.addEventListener('click', () => setCreateRefutedTargetId(node.dataset.candidateId, 'create result'));
+      });
+    }
+
+    function clearMessage() {
+      formMessageEl.className = '';
+      formMessageEl.textContent = '';
+    }
+
+    function updateTypeSections() {
+      const selected = candidateTypeEl.value;
+      const ids = ['invariant-fields', 'boundary-fields', 'counterexample-fields', 'curiosity-fields'];
+      ids.forEach(id => document.getElementById(id).classList.remove('active'));
+      createRequirementsEl.textContent = 'Select a candidate type to see the minimum MEC Phase 2 create requirements.';
+      if (selected === 'invariant_candidate') {
+        document.getElementById('invariant-fields').classList.add('active');
+        createRequirementsEl.textContent = 'Invariant candidates require principle, mechanism, at least one source event, two fails_when entries and one edge case. A linked boundary will be created automatically.';
+      }
+      if (selected === 'boundary_candidate') {
+        document.getElementById('boundary-fields').classList.add('active');
+        createRequirementsEl.textContent = 'Boundary candidates require linked_candidate_id and at least one fails_when entry.';
+      }
+      if (selected === 'counterexample_candidate') {
+        document.getElementById('counterexample-fields').classList.add('active');
+        createRequirementsEl.textContent = 'Counterexample candidates require refutes_candidate_id and case_description.';
+      }
+      if (selected === 'curiosity_candidate') {
+        document.getElementById('curiosity-fields').classList.add('active');
+        createRequirementsEl.textContent = 'Curiosity candidates require open_question and domain.';
+      }
+      updateCreateTargetSafety();
+    }
+
+    function validateCreatePayload(payload) {
+      const errors = [];
+      if (payload.candidate_type === 'invariant_candidate') {
+        if (!payload.principle) {
+          errors.push('principle is required for invariant_candidate');
+        }
+        if (!payload.mechanism) {
+          errors.push('mechanism is required for invariant_candidate');
+        }
+        if ((payload.source_event_ids || []).length < 1) {
+          errors.push('at least one source event id is required for invariant_candidate');
+        }
+        if ((payload.fails_when || []).length < 2) {
+          errors.push('at least two fails_when entries are required for invariant_candidate');
+        }
+        if ((payload.edge_cases || []).length < 1) {
+          errors.push('at least one edge_case entry is required for invariant_candidate');
+        }
+      }
+      if (payload.candidate_type === 'boundary_candidate') {
+        if (!payload.linked_candidate_id) {
+          errors.push('linked_candidate_id is required for boundary_candidate');
+        }
+        if ((payload.fails_when || []).length < 1) {
+          errors.push('at least one fails_when entry is required for boundary_candidate');
+        }
+      }
+      if (payload.candidate_type === 'counterexample_candidate') {
+        if (!payload.refutes_candidate_id) {
+          errors.push('refutes_candidate_id is required for counterexample_candidate');
+        }
+        if (!payload.case_description) {
+          errors.push('case_description is required for counterexample_candidate');
+        }
+      }
+      if (payload.candidate_type === 'curiosity_candidate') {
+        if (!payload.open_question) {
+          errors.push('open_question is required for curiosity_candidate');
+        }
+        if (!payload.domain) {
+          errors.push('domain is required for curiosity_candidate');
+        }
+      }
+      return errors;
+    }
+
+    function buildCreatePayload() {
+      const type = candidateTypeEl.value;
+      const payload = {
+        candidate_type: type,
+        principle: document.getElementById('principle').value.trim(),
+        mechanism: document.getElementById('mechanism').value.trim(),
+        source_event_ids: splitLines(document.getElementById('source-event-ids').value),
+        source_card_ids: splitLines(document.getElementById('source-card-ids').value),
+        distillation_mode: document.getElementById('distillation-mode').value,
+        status: 'proposal_only'
+      };
+
+      if (type === 'invariant_candidate') {
+        payload.fails_when = splitLines(document.getElementById('fails-when').value);
+        payload.edge_cases = splitLines(document.getElementById('edge-cases').value);
+        payload.severity = document.getElementById('severity').value;
+      }
+
+      if (type === 'boundary_candidate') {
+        payload.linked_candidate_id = document.getElementById('linked-candidate-id').value.trim();
+        payload.fails_when = splitLines(document.getElementById('boundary-fails-when').value);
+        payload.edge_cases = splitLines(document.getElementById('boundary-edge-cases').value);
+        payload.severity = document.getElementById('boundary-severity').value;
+      }
+
+      if (type === 'counterexample_candidate') {
+        payload.refutes_candidate_id = document.getElementById('refutes-candidate-id').value.trim();
+        payload.case_description = document.getElementById('case-description').value.trim();
+        payload.resolution = document.getElementById('resolution').value.trim();
+        payload.impact_on_candidate = document.getElementById('impact-on-candidate').value.trim();
+      }
+
+      if (type === 'curiosity_candidate') {
+        payload.open_question = document.getElementById('open-question').value.trim();
+        payload.domain = document.getElementById('domain').value.trim();
+        payload.blind_spot_score = Number(document.getElementById('blind-spot-score').value || 0);
+      }
+
+      return payload;
+    }
+
+    async function refreshAll() {
+      const [candidatePayload, eventPayload] = await Promise.all([
+        fetchJson('/arena/mec-candidates'),
+        fetchJson('/arena/events')
+      ]);
+      state.candidates = candidatePayload.items || [];
+      state.events = eventPayload.items || [];
+      renderCandidateList();
+      renderPairView();
+      renderEvents();
+      if (state.selectedCandidateId && state.candidates.some(item => item.id === state.selectedCandidateId)) {
+        await selectCandidate(state.selectedCandidateId);
+      } else if (state.candidates[0]) {
+        await selectCandidate(state.candidates[0].id);
+      } else {
+        state.selectedCandidateId = null;
+        candidateDetailEl.textContent = 'No candidate selected.';
+        detailMetaEl.innerHTML = '';
+        detailPairEl.innerHTML = '';
+      }
+      updateSourceEventReadback();
+      updateCreateTargetSafety();
+    }
+
+    document.getElementById('refresh-button').addEventListener('click', () => {
+      refreshAll().catch(error => {
+        candidateDetailEl.textContent = error.message;
+      });
+    });
+
+    searchEl.addEventListener('input', event => {
+      state.query = event.target.value;
+      renderCandidateList();
+      renderPairView();
+    });
+
+    typeFilterEl.addEventListener('change', event => {
+      state.typeFilter = event.target.value;
+      renderCandidateList();
+      renderPairView();
+    });
+
+    statusFilterEl.addEventListener('change', event => {
+      state.statusFilter = event.target.value;
+      renderCandidateList();
+      renderPairView();
+    });
+
+    linkFilterEl.addEventListener('change', event => {
+      state.linkFilter = event.target.value;
+      renderCandidateList();
+      renderPairView();
+    });
+
+    document.getElementById('clear-filters-button').addEventListener('click', () => {
+      state.query = '';
+      state.typeFilter = '';
+      state.statusFilter = '';
+      state.linkFilter = '';
+      searchEl.value = '';
+      typeFilterEl.value = '';
+      statusFilterEl.value = '';
+      linkFilterEl.value = '';
+      renderCandidateList();
+      renderPairView();
+    });
+
+    candidateTypeEl.addEventListener('change', updateTypeSections);
+
+    document.getElementById('use-selected-linked-button').addEventListener('click', () => {
+      if (!state.selectedCandidateId) {
+        showMessage('error', 'Select a candidate first before using this shortcut.');
+        return;
+      }
+      setCreateLinkedTargetId(state.selectedCandidateId, 'current selection');
+    });
+
+    document.getElementById('use-selected-refute-button').addEventListener('click', () => {
+      if (!state.selectedCandidateId) {
+        showMessage('error', 'Select a candidate first before using this shortcut.');
+        return;
+      }
+      setCreateRefutedTargetId(state.selectedCandidateId, 'current selection');
+    });
+
+    linkedCandidateIdEl.addEventListener('input', updateCreateTargetSafety);
+    refutesCandidateIdEl.addEventListener('input', updateCreateTargetSafety);
+    sourceEventIdsEl.addEventListener('input', updateSourceEventReadback);
+
+    formEl.addEventListener('submit', async event => {
+      event.preventDefault();
+      clearMessage();
+      clearResultActions();
+      const payload = buildCreatePayload();
+      const validationErrors = validateCreatePayload(payload);
+      if (validationErrors.length > 0) {
+        showMessage('error', validationErrors.join(' | '));
+        return;
+      }
+      try {
+        const result = await fetchJson('/arena/mec-candidates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        formEl.reset();
+        candidateTypeEl.value = payload.candidate_type;
+        updateTypeSections();
+        showMessage('ok', `Created runtime candidate ${result.candidate.id}${result.linked_boundary_candidate ? ` with linked boundary ${result.linked_boundary_candidate.id}` : ''}.`);
+        renderCreateResultActions(result);
+        await refreshAll();
+      } catch (error) {
+        clearResultActions();
+        showMessage('error', error.message);
+      }
+    });
+
+    document.getElementById('reset-button').addEventListener('click', () => {
+      setTimeout(() => {
+        clearMessage();
+        clearResultActions();
+        updateTypeSections();
+        updateSourceEventReadback();
+        updateCreateTargetSafety();
+      }, 0);
+    });
+
+    updateTypeSections();
+    updateSourceEventReadback();
+    updateCreateTargetSafety();
+    refreshAll().catch(error => {
+      candidateDetailEl.textContent = error.message;
+      candidateListEl.innerHTML = `<div class="empty">${error.message}</div>`;
+      eventListEl.innerHTML = `<div class="empty">${error.message}</div>`;
+    });
+  </script>
+</body>
+</html>
