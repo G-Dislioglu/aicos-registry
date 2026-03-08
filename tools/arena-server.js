@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+const fs = require('fs');
 const http = require('http');
 const path = require('path');
 const { URL } = require('url');
@@ -34,9 +35,16 @@ const {
   listProfiles
 } = require('./model-control-lib');
 
+const MEC_OPERATOR_UI_PATH = path.join(__dirname, '..', 'web', 'mec-operator.html');
+
 function sendJson(res, statusCode, payload) {
   res.writeHead(statusCode, { 'Content-Type': 'application/json; charset=utf-8' });
   res.end(JSON.stringify(payload, null, 2));
+}
+
+function sendHtml(res, statusCode, filePath) {
+  res.writeHead(statusCode, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(fs.readFileSync(filePath, 'utf-8'));
 }
 
 function sendMethodNotAllowed(res, method) {
@@ -84,6 +92,11 @@ async function handleRequest(req, res, options = {}) {
   const memoryReviewOutputDir = options.memoryReviewOutputDir || process.env.ARENA_MEMORY_REVIEW_DIR || DEFAULT_MEMORY_REVIEWS_DIR;
   const requestUrl = new URL(req.url, 'http://127.0.0.1');
   const pathname = requestUrl.pathname;
+
+  if ((pathname === '/' || pathname === '/arena/mec-operator' || pathname === '/arena/mec-operator/') && req.method === 'GET') {
+    sendHtml(res, 200, MEC_OPERATOR_UI_PATH);
+    return;
+  }
 
   if (pathname === '/arena/health' && req.method === 'GET') {
     sendJson(res, 200, {

@@ -185,14 +185,14 @@ function formatEvents(items) {
   if (items.length === 0) {
     return 'No MEC events found.';
   }
-  return items.map(item => `${item.id} | ${item.event_type} | ${item.domain} | priority:${item.priority_score} | ttl:${item.ttl_days} | ${item.status}`).join('\n');
+  return items.map(item => `${item.id} | ${item.event_type} | ${item.domain} | freshness:${item.freshness_state || '-'} | priority:${item.priority_score} | ttl:${item.ttl_days} | ${item.status}`).join('\n');
 }
 
 function formatMecCandidates(items) {
   if (items.length === 0) {
     return 'No MEC candidates found.';
   }
-  return items.map(item => `${item.id} | ${item.candidate_type} | ${item.status} | events:${(item.source_event_ids || []).length} | cards:${(item.source_card_ids || []).length} | linked:${item.linked_boundary_candidate_id || item.linked_candidate_id || '-'} | ${item.created_at}`).join('\n');
+  return items.map(item => `${item.id} | ${item.candidate_type} | ${item.status} | freshness:${item.freshness_state || '-'} | events:${(item.source_event_ids || []).length} | cards:${(item.source_card_ids || []).length} | linked:${item.linked_boundary_candidate_id || item.linked_candidate_id || '-'} | ${item.created_at}`).join('\n');
 }
 
 function formatMemoryCandidates(items) {

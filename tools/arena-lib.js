@@ -52,12 +52,85 @@ const DEFAULT_AUDIT_DIR = path.join(ROOT_DIR, 'runtime', 'audit-records');
 const DEFAULT_MEMORY_CANDIDATES_DIR = path.join(ROOT_DIR, 'runtime', 'memory-candidates');
 const DEFAULT_EXPORT_REVIEWS_DIR = path.join(ROOT_DIR, 'runtime', 'export-reviews');
 const DEFAULT_MEMORY_REVIEWS_DIR = path.join(ROOT_DIR, 'runtime', 'memory-reviews');
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 function toArray(value) {
   if (!value) {
     return [];
   }
   return Array.isArray(value) ? value.filter(Boolean) : [value].filter(Boolean);
+}
+
+function parseTimestamp(value) {
+  if (!value) {
+    return null;
+  }
+  const timestamp = new Date(value).getTime();
+  return Number.isNaN(timestamp) ? null : timestamp;
+}
+
+function deriveEventFreshnessState(payload, now = Date.now()) {
+  const createdAt = parseTimestamp(payload && payload.created_at);
+  const expiresAt = parseTimestamp(payload && payload.expires_at);
+  if (expiresAt !== null && now >= expiresAt) {
+    return 'expired';
+  }
+  if (createdAt === null) {
+    return 'stale';
+  }
+  if (expiresAt !== null && expiresAt > createdAt) {
+    const ratio = (now - createdAt) / (expiresAt - createdAt);
+    if (ratio <= 0.34) {
+      return 'fresh';
+    }
+    if (ratio <= 0.8) {
+      return 'aging';
+    }
+    return 'stale';
+  }
+  const ageDays = (now - createdAt) / MS_PER_DAY;
+  if (ageDays <= 1) {
+    return 'fresh';
+  }
+  if (ageDays <= 7) {
+    return 'aging';
+  }
+  return 'stale';
+}
+
+function deriveCandidateFreshnessState(payload, now = Date.now()) {
+  const referenceAt = parseTimestamp(payload && (payload.updated_at || payload.created_at));
+  if (referenceAt === null) {
+    return 'stale';
+  }
+  const ageDays = (now - referenceAt) / MS_PER_DAY;
+  if (ageDays <= 7) {
+    return 'fresh';
+  }
+  if (ageDays <= 30) {
+    return 'aging';
+  }
+  return 'stale';
+}
+
+function enrichMecEventFreshness(payload) {
+  if (!payload) {
+    return payload;
+  }
+  return {
+    ...payload,
+    freshness_state: deriveEventFreshnessState(payload)
+  };
+}
+
+function enrichMecCandidateFreshness(payload) {
+  if (!payload) {
+    return payload;
+  }
+  return {
+    ...payload,
+    freshness_state: deriveCandidateFreshnessState(payload)
+  };
 }
 
 function createRunId() {
@@ -393,12 +466,12 @@ function createMecEvent(eventInput = {}, options = {}) {
 
 function listMecEvents(options = {}) {
   const eventOutputDir = options.eventOutputDir || process.env.MEC_EVENT_DIR || DEFAULT_EVENTS_DIR;
-  return listEvents({ eventOutputDir });
+  return listEvents({ eventOutputDir }).map(item => enrichMecEventFreshness(item));
 }
 
 function readMecEvent(eventId, options = {}) {
   const eventOutputDir = options.eventOutputDir || process.env.MEC_EVENT_DIR || DEFAULT_EVENTS_DIR;
-  return getEvent(eventId, { eventOutputDir });
+  return enrichMecEventFreshness(getEvent(eventId, { eventOutputDir }));
 }
 
 function createMecCandidateRecord(candidateInput = {}, options = {}) {
@@ -409,12 +482,12 @@ function createMecCandidateRecord(candidateInput = {}, options = {}) {
 
 function listMecCandidates(options = {}) {
   const candidateOutputDir = options.candidateOutputDir || process.env.MEC_CANDIDATE_DIR || DEFAULT_CANDIDATES_DIR;
-  return listCandidates({ candidateOutputDir });
+  return listCandidates({ candidateOutputDir }).map(item => enrichMecCandidateFreshness(item));
 }
 
 function readMecCandidate(candidateId, options = {}) {
   const candidateOutputDir = options.candidateOutputDir || process.env.MEC_CANDIDATE_DIR || DEFAULT_CANDIDATES_DIR;
-  return getCandidate(candidateId, { candidateOutputDir });
+  return enrichMecCandidateFreshness(getCandidate(candidateId, { candidateOutputDir }));
 }
 
 function listMemoryReviewPayloads(options = {}) {
