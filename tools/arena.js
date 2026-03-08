@@ -1,17 +1,21 @@
 #!/usr/bin/env node
 const {
   DEFAULT_AUDIT_DIR,
+  DEFAULT_CANDIDATES_DIR,
   DEFAULT_EVENTS_DIR,
   DEFAULT_MEMORY_CANDIDATES_DIR,
   DEFAULT_MEMORY_REVIEWS_DIR,
   DEFAULT_RUNS_DIR,
+  createMecCandidateRecord,
   createMecEvent,
   executeArenaRun,
+  listMecCandidates,
   listArenaRuns,
   listMecEvents,
   listMemoryCandidates,
   listMemoryReviews,
   listReviewableCandidates,
+  readMecCandidate,
   readMecEvent,
   readArenaRun,
   readAuditRecord,
@@ -56,6 +60,9 @@ function printUsage() {
   console.log('  node tools/arena.js create-event --event-type TYPE --domain DOMAIN --summary TEXT --source-ref REF --trace-ref REF [--confidence LEVEL] [--privacy-class CLASS] [--ttl-days DAYS] [--priority-score VALUE] [--salience SIGNAL] [--event-status STATUS] [--event-dir DIR] [--json]');
   console.log('  node tools/arena.js list-events [--event-dir DIR] [--json]');
   console.log('  node tools/arena.js get-event <event_id> [--event-dir DIR] [--json]');
+  console.log('  node tools/arena.js create-mec-candidate --candidate-type TYPE [--principle TEXT] [--mechanism TEXT] [--source-event-id ID] [--source-card-id ID] [--scope SCOPE] [--locality LOCALITY] [--applies-when TEXT] [--proof-ref REF] [--proof-state STATE] [--gate-state STATE] [--distillation-mode MODE] [--linked-candidate-id ID] [--refutes-candidate-id ID] [--open-question TEXT] [--domain DOMAIN] [--case-description TEXT] [--resolution TEXT] [--impact-on-candidate TEXT] [--blind-spot-score VALUE] [--severity LEVEL] [--boundary-fails-when TEXT] [--boundary-edge-case TEXT] [--candidate-status STATUS] [--candidate-dir DIR] [--event-dir DIR] [--json]');
+  console.log('  node tools/arena.js list-mec-candidates [--candidate-dir DIR] [--json]');
+  console.log('  node tools/arena.js get-mec-candidate <candidate_id> [--candidate-dir DIR] [--json]');
   console.log('  node tools/arena.js list-runs [--output-dir DIR] [--json]');
   console.log('  node tools/arena.js get-run <run_id> [--output-dir DIR] [--json]');
   console.log('  node tools/arena.js get-audit <run_id> [--audit-dir DIR] [--json]');
@@ -92,6 +99,35 @@ function buildRunInput(args) {
     memory_notes: args['memory-note'],
     evidence_topic: args['evidence-topic'],
     requested_sources: args['requested-source']
+  };
+}
+
+function buildMecCandidateInput(args) {
+  return {
+    candidate_type: args['candidate-type'],
+    principle: args.principle,
+    mechanism: args.mechanism,
+    source_event_ids: args['source-event-id'],
+    source_card_ids: args['source-card-id'],
+    scope: args.scope,
+    locality: args.locality,
+    applies_when: args['applies-when'],
+    proof_ref: args['proof-ref'],
+    proof_state: args['proof-state'],
+    gate_state: args['gate-state'],
+    distillation_mode: args['distillation-mode'],
+    linked_candidate_id: args['linked-candidate-id'],
+    refutes_candidate_id: args['refutes-candidate-id'],
+    open_question: args['open-question'],
+    domain: args.domain,
+    case_description: args['case-description'],
+    resolution: args.resolution,
+    impact_on_candidate: args['impact-on-candidate'],
+    blind_spot_score: args['blind-spot-score'],
+    severity: args.severity,
+    fails_when: args['boundary-fails-when'],
+    edge_cases: args['boundary-edge-case'],
+    status: args['candidate-status']
   };
 }
 
@@ -145,6 +181,13 @@ function formatEvents(items) {
   return items.map(item => `${item.id} | ${item.event_type} | ${item.domain} | priority:${item.priority_score} | ttl:${item.ttl_days} | ${item.status}`).join('\n');
 }
 
+function formatMecCandidates(items) {
+  if (items.length === 0) {
+    return 'No MEC candidates found.';
+  }
+  return items.map(item => `${item.id} | ${item.candidate_type} | ${item.status} | events:${(item.source_event_ids || []).length} | cards:${(item.source_card_ids || []).length} | linked:${item.linked_boundary_candidate_id || item.linked_candidate_id || '-'} | ${item.created_at}`).join('\n');
+}
+
 function formatMemoryCandidates(items) {
   if (items.length === 0) {
     return 'No memory candidates found.';
@@ -175,6 +218,7 @@ function main() {
   const command = args._[0];
   const outputDir = args['output-dir'] || DEFAULT_RUNS_DIR;
   const auditDir = args['audit-dir'] || DEFAULT_AUDIT_DIR;
+  const candidateDir = args['candidate-dir'] || DEFAULT_CANDIDATES_DIR;
   const eventDir = args['event-dir'] || DEFAULT_EVENTS_DIR;
   const memoryDir = args['memory-dir'] || DEFAULT_MEMORY_CANDIDATES_DIR;
   const memoryReviewDir = args['memory-review-dir'] || DEFAULT_MEMORY_REVIEWS_DIR;
@@ -210,6 +254,38 @@ function main() {
     const payload = readMecEvent(eventId, { eventOutputDir: eventDir });
     if (!payload) {
       console.error(`MEC event not found: ${eventId}`);
+      process.exit(1);
+    }
+    output(payload, true);
+    return;
+  }
+
+  if (command === 'create-mec-candidate') {
+    try {
+      const result = createMecCandidateRecord(buildMecCandidateInput(args), { candidateOutputDir: candidateDir, eventOutputDir: eventDir });
+      output(args.json ? result : JSON.stringify(result, null, 2), args.json);
+    } catch (error) {
+      console.error(error.message);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (command === 'list-mec-candidates') {
+    const items = listMecCandidates({ candidateOutputDir: candidateDir });
+    output(args.json ? items : formatMecCandidates(items), args.json);
+    return;
+  }
+
+  if (command === 'get-mec-candidate') {
+    const candidateId = args._[1];
+    if (!candidateId) {
+      printUsage();
+      process.exit(1);
+    }
+    const payload = readMecCandidate(candidateId, { candidateOutputDir: candidateDir });
+    if (!payload) {
+      console.error(`MEC candidate not found: ${candidateId}`);
       process.exit(1);
     }
     output(payload, true);

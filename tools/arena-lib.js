@@ -31,6 +31,12 @@ const {
   getEvent,
   listEvents
 } = require('./mec-event-lib');
+const {
+  DEFAULT_CANDIDATES_DIR,
+  createMecCandidate,
+  getCandidate,
+  listCandidates
+} = require('./mec-candidate-lib');
 
 const ROOT_DIR = path.join(__dirname, '..');
 const DEFAULT_RUNS_DIR = path.join(ROOT_DIR, 'runtime', 'arena-runs');
@@ -386,6 +392,22 @@ function readMecEvent(eventId, options = {}) {
   return getEvent(eventId, { eventOutputDir });
 }
 
+function createMecCandidateRecord(candidateInput = {}, options = {}) {
+  const candidateOutputDir = options.candidateOutputDir || process.env.MEC_CANDIDATE_DIR || DEFAULT_CANDIDATES_DIR;
+  const eventOutputDir = options.eventOutputDir || process.env.MEC_EVENT_DIR || DEFAULT_EVENTS_DIR;
+  return createMecCandidate(candidateInput, { candidateOutputDir, eventOutputDir });
+}
+
+function listMecCandidates(options = {}) {
+  const candidateOutputDir = options.candidateOutputDir || process.env.MEC_CANDIDATE_DIR || DEFAULT_CANDIDATES_DIR;
+  return listCandidates({ candidateOutputDir });
+}
+
+function readMecCandidate(candidateId, options = {}) {
+  const candidateOutputDir = options.candidateOutputDir || process.env.MEC_CANDIDATE_DIR || DEFAULT_CANDIDATES_DIR;
+  return getCandidate(candidateId, { candidateOutputDir });
+}
+
 function listMemoryReviewPayloads(options = {}) {
   const memoryReviewOutputDir = options.memoryReviewOutputDir || process.env.ARENA_MEMORY_REVIEW_DIR || DEFAULT_MEMORY_REVIEWS_DIR;
   if (!fs.existsSync(memoryReviewOutputDir)) {
@@ -681,18 +703,22 @@ function reviewMemoryCandidate(candidateId, reviewInput = {}, options = {}) {
 
 module.exports = {
   DEFAULT_AUDIT_DIR,
+  DEFAULT_CANDIDATES_DIR,
   DEFAULT_EVENTS_DIR,
   DEFAULT_MEMORY_CANDIDATES_DIR,
   DEFAULT_MEMORY_REVIEWS_DIR,
   DEFAULT_RUNS_DIR,
+  createMecCandidateRecord,
   createMecEvent,
   createArenaRunPacket,
   executeArenaRun,
+  listMecCandidates,
   listMecEvents,
   listArenaRuns,
   listMemoryCandidates,
   listMemoryReviews,
   listReviewableCandidates,
+  readMecCandidate,
   readMecEvent,
   readArenaRun,
   readAuditRecord,

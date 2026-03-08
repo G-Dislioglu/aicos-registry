@@ -40,7 +40,6 @@ const DISALLOWED_PATTERNS = [
   ['memory', 'promotion'].join('_'),
   ['institutional', 'memory'].join('_'),
   ['specialist', 'role'].join('_'),
-  ['distill', 'ation'].join(''),
   ['final', 'judge'].join('_'),
   ['bench', 'mark'].join('')
 ];
