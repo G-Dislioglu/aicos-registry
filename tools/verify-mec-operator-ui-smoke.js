@@ -211,6 +211,10 @@ function buildUiScriptHarness() {
     'desk-navigation',
     'detail-overview',
     'detail-summary',
+    'detail-explanation',
+    'detail-evidence',
+    'detail-history',
+    'detail-related',
     'review-actions',
     'review-message',
     'review-rationale',
@@ -471,6 +475,36 @@ function buildUiScriptHarness() {
     }
   };
 
+  function buildHarnessRelatedCandidates(rawCandidate, reviewSummary) {
+    const sourceEventIds = new Set(Array.isArray(rawCandidate && rawCandidate.source_event_ids) ? rawCandidate.source_event_ids : []);
+    return candidateList
+      .filter(item => item.id !== rawCandidate.id)
+      .filter(item => {
+        if (item.id === rawCandidate.linked_candidate_id || item.id === rawCandidate.linked_boundary_candidate_id || item.id === rawCandidate.refutes_candidate_id) {
+          return true;
+        }
+        return Array.isArray(item.source_event_ids) && item.source_event_ids.some(eventId => sourceEventIds.has(eventId));
+      })
+      .map(item => ({
+        candidate_id: item.id,
+        title: item.principle || item.open_question || item.case_description || item.id,
+        candidate_type: item.candidate_type,
+        status: item.status,
+        freshness_state: item.freshness_state,
+        current_review_state: item.current_review_state || 'proposal_only',
+        reviewable: Boolean(item.review_summary ? item.review_summary.reviewable : true),
+        terminal: Boolean(item.review_summary ? item.review_summary.terminal : false),
+        relation_signals: [
+          item.id === rawCandidate.linked_candidate_id || item.id === rawCandidate.linked_boundary_candidate_id || item.id === rawCandidate.refutes_candidate_id ? 'explicit_linkage' : null,
+          Array.isArray(item.source_event_ids) && item.source_event_ids.some(eventId => sourceEventIds.has(eventId)) ? `shared_source_event:${item.source_event_ids.filter(eventId => sourceEventIds.has(eventId)).join(',')}` : null
+        ].filter(Boolean),
+        shared_source_event_count: Array.isArray(item.source_event_ids) ? item.source_event_ids.filter(eventId => sourceEventIds.has(eventId)).length : 0,
+        shared_source_card_count: 0,
+        explicit_linkage: item.id === rawCandidate.linked_candidate_id || item.id === rawCandidate.linked_boundary_candidate_id || item.id === rawCandidate.refutes_candidate_id
+      }))
+      .slice(0, 6);
+  }
+
   function toWorkspaceItem(rawCandidate) {
     const reviewSummary = rawCandidate && rawCandidate.review_summary ? rawCandidate.review_summary : {
       review_count: 0,
@@ -480,6 +514,89 @@ function buildUiScriptHarness() {
       latest_reviewed_at: null
     };
     const rawReviewRecords = Array.isArray(rawCandidate && rawCandidate.raw_review_records) ? rawCandidate.raw_review_records.map(record => ({ ...record })) : [];
+    const unresolvedRuntimeReferences = Array.isArray(rawCandidate && rawCandidate.unresolved_runtime_references) ? rawCandidate.unresolved_runtime_references.map(item => ({ ...item })) : [];
+    const relatedCandidates = Array.isArray(rawCandidate && rawCandidate.related_candidate_context) ? rawCandidate.related_candidate_context.map(item => ({ ...item })) : buildHarnessRelatedCandidates(rawCandidate, reviewSummary);
+    const latestReview = rawReviewRecords.length > 0 ? rawReviewRecords[rawReviewRecords.length - 1] : null;
+    const evidenceContext = rawCandidate && rawCandidate.evidence_context ? rawCandidate.evidence_context : {
+      integrity_state: unresolvedRuntimeReferences.length > 0 ? 'degraded' : ((rawCandidate.source_event_ids || []).length > 0 ? 'intact' : 'minimal'),
+      attention_required: unresolvedRuntimeReferences.length > 0,
+      total_reference_count: (rawCandidate.source_event_ids || []).length + (rawCandidate.source_card_ids || []).length + [rawCandidate.linked_candidate_id, rawCandidate.linked_boundary_candidate_id, rawCandidate.refutes_candidate_id].filter(Boolean).length,
+      resolved_reference_count: ((rawCandidate.source_event_ids || []).length + (rawCandidate.source_card_ids || []).length + [rawCandidate.linked_candidate_id, rawCandidate.linked_boundary_candidate_id, rawCandidate.refutes_candidate_id].filter(Boolean).length) - unresolvedRuntimeReferences.length,
+      unresolved_reference_count: unresolvedRuntimeReferences.length,
+      source_event_count: (rawCandidate.source_event_ids || []).length,
+      resolved_source_event_count: (rawCandidate.source_event_ids || []).length,
+      unresolved_source_event_count: 0,
+      source_event_context: (rawCandidate.source_event_ids || []).map(eventId => ({
+        event_id: eventId,
+        resolved: events.some(event => event.id === eventId),
+        summary: (events.find(event => event.id === eventId) || {}).summary || null,
+        event_type: (events.find(event => event.id === eventId) || {}).event_type || null,
+        status: (events.find(event => event.id === eventId) || {}).status || null
+      })),
+      source_card_count: (rawCandidate.source_card_ids || []).length,
+      related_candidate_count: [rawCandidate.linked_candidate_id, rawCandidate.linked_boundary_candidate_id, rawCandidate.refutes_candidate_id].filter(Boolean).length,
+      resolved_related_candidate_count: [rawCandidate.linked_candidate_id, rawCandidate.linked_boundary_candidate_id, rawCandidate.refutes_candidate_id].filter(candidateId => candidateList.some(candidate => candidate.id === candidateId)).length,
+      unresolved_related_candidate_count: [rawCandidate.linked_candidate_id, rawCandidate.linked_boundary_candidate_id, rawCandidate.refutes_candidate_id].filter(candidateId => candidateId && !candidateList.some(candidate => candidate.id === candidateId)).length,
+      pair_role: rawCandidate.candidate_type === 'invariant_candidate' ? 'invariant' : (rawCandidate.candidate_type === 'boundary_candidate' ? 'boundary' : null),
+      pair_counterpart_id: rawCandidate.candidate_type === 'invariant_candidate' ? (rawCandidate.linked_boundary_candidate_id || null) : (rawCandidate.candidate_type === 'boundary_candidate' ? (rawCandidate.linked_candidate_id || null) : null),
+      pair_integrity: rawCandidate.candidate_type === 'invariant_candidate'
+        ? (rawCandidate.linked_boundary_candidate_id ? (candidateList.some(candidate => candidate.id === rawCandidate.linked_boundary_candidate_id) ? 'resolved' : 'unresolved') : 'not_applicable')
+        : rawCandidate.candidate_type === 'boundary_candidate'
+          ? (rawCandidate.linked_candidate_id ? (candidateList.some(candidate => candidate.id === rawCandidate.linked_candidate_id) ? 'resolved' : 'unresolved') : 'not_applicable')
+          : 'not_applicable',
+      reference_signals: unresolvedRuntimeReferences.map(item => ({
+        reference_kind: item.reference_kind,
+        reference_id: item.reference_id,
+        risk_code: item.risk_code,
+        label: item.label
+      })),
+      evidence_summary: unresolvedRuntimeReferences.length > 0
+        ? `Reference integrity is degraded by ${unresolvedRuntimeReferences.length} unresolved runtime reference(s).`
+        : ((rawCandidate.source_event_ids || []).length > 0 || [rawCandidate.linked_candidate_id, rawCandidate.linked_boundary_candidate_id, rawCandidate.refutes_candidate_id].filter(Boolean).length > 0)
+          ? `Reference integrity is intact across ${((rawCandidate.source_event_ids || []).length + [rawCandidate.linked_candidate_id, rawCandidate.linked_boundary_candidate_id, rawCandidate.refutes_candidate_id].filter(Boolean).length)} visible linkage signal(s).`
+          : 'Only minimal lineage signals are available on this workspace item.'
+    };
+    const reviewHistoryContext = rawCandidate && rawCandidate.review_history_context ? rawCandidate.review_history_context : {
+      total_review_count: rawReviewRecords.length,
+      valid_review_count: rawReviewRecords.length,
+      invalid_review_count: 0,
+      latest_review_outcome: latestReview ? latestReview.review_outcome : null,
+      latest_reviewed_at: latestReview ? latestReview.reviewed_at : null,
+      latest_review_source: latestReview ? latestReview.review_source || null : null,
+      history_state: rawReviewRecords.length < 1 ? 'awaiting_first_review' : (Boolean(reviewSummary.terminal) ? 'terminal_history' : 'active_history'),
+      history_summary: rawReviewRecords.length < 1
+        ? 'No raw review records exist yet.'
+        : (Boolean(reviewSummary.terminal)
+          ? `History is terminal at ${reviewSummary.current_state || 'proposal_only'} after ${rawReviewRecords.length} review record(s).`
+          : `History remains reviewable with ${rawReviewRecords.length} review record(s).`),
+      recent_reviews: rawReviewRecords.slice(-3).reverse().map(record => ({
+        review_id: record.review_id,
+        review_outcome: record.review_outcome,
+        reviewed_at: record.reviewed_at,
+        review_source: record.review_source || null,
+        reviewer_mode: record.reviewer_mode || null
+      }))
+    };
+    const stateExplanation = rawCandidate && rawCandidate.state_explanation ? rawCandidate.state_explanation : {
+      current_state: reviewSummary.current_state || 'proposal_only',
+      reviewable: Boolean(reviewSummary.reviewable),
+      terminal: Boolean(reviewSummary.terminal),
+      blocked_reason: reviewSummary.reviewable ? null : `terminal review state: ${reviewSummary.current_state || 'proposal_only'}`,
+      unresolved_reference_count: unresolvedRuntimeReferences.length,
+      related_candidate_count: relatedCandidates.length,
+      explanation_lines: [
+        Boolean(reviewSummary.reviewable)
+          ? `Current derived state ${reviewSummary.current_state || 'proposal_only'} remains reviewable, so minimal outcomes stay available.`
+          : `Current derived state ${reviewSummary.current_state || 'proposal_only'} is terminal, so no further review outcomes are available.`,
+        unresolvedRuntimeReferences.length > 0
+          ? `${unresolvedRuntimeReferences.length} unresolved runtime reference(s) are still visible in the workspace context.`
+          : ((rawCandidate.source_event_ids || []).length > 0 ? 'Visible linkage and source references currently resolve without runtime gaps.' : 'Only minimal linkage evidence is available on this workspace item.'),
+        rawReviewRecords.length > 0
+          ? `Review history currently contains ${rawReviewRecords.length} raw review record(s).`
+          : 'No raw review history exists yet, so this desk view is still anchored on the raw candidate artifact only.'
+      ],
+      missing_visible_prerequisites: unresolvedRuntimeReferences.map(item => item.label)
+    };
     return {
       workspace_kind: 'mec_review_workspace',
       workspace_version: 'phase3c-mec-review-workspace/v1',
@@ -487,8 +604,8 @@ function buildUiScriptHarness() {
       candidate_id: rawCandidate.id,
       title: rawCandidate.principle || rawCandidate.open_question || rawCandidate.case_description || rawCandidate.id,
       latest_review_outcome: reviewSummary.review_count > 0 ? reviewSummary.current_state : null,
-      unresolved_runtime_references: [],
-      unresolved_runtime_reference_count: 0,
+      unresolved_runtime_references: unresolvedRuntimeReferences,
+      unresolved_runtime_reference_count: unresolvedRuntimeReferences.length,
       reviewable: Boolean(reviewSummary.reviewable),
       terminal: Boolean(reviewSummary.terminal),
       control_readiness: {
@@ -498,9 +615,13 @@ function buildUiScriptHarness() {
         can_stabilize: Boolean(reviewSummary.reviewable),
         can_reject: Boolean(reviewSummary.reviewable),
         blocked_reason: reviewSummary.reviewable ? null : `terminal review state: ${reviewSummary.current_state || 'proposal_only'}`,
-        attention_required: false,
-        unresolved_runtime_reference_count: 0
+        attention_required: unresolvedRuntimeReferences.length > 0,
+        unresolved_runtime_reference_count: unresolvedRuntimeReferences.length
       },
+      evidence_context: evidenceContext,
+      review_history_context: reviewHistoryContext,
+      related_candidate_context: relatedCandidates,
+      state_explanation: stateExplanation,
       source_linkage: {
         source_event_ids: rawCandidate.source_event_ids || [],
         source_event_count: (rawCandidate.source_event_ids || []).length,
@@ -719,6 +840,10 @@ async function verifyEmbeddedUiWriteSemantics() {
   const deskNavigationEl = elements.get('desk-navigation');
   const detailOverviewEl = elements.get('detail-overview');
   const detailSummaryEl = elements.get('detail-summary');
+  const detailExplanationEl = elements.get('detail-explanation');
+  const detailEvidenceEl = elements.get('detail-evidence');
+  const detailHistoryEl = elements.get('detail-history');
+  const detailRelatedEl = elements.get('detail-related');
   const detailMetaEl = elements.get('detail-meta');
   const detailLinkageEl = elements.get('detail-linkage');
   const rawReviewRecordsEl = elements.get('raw-review-records');
@@ -886,32 +1011,7 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(elements.get('candidate-detail').textContent.includes('Referenced runtime candidate is not available: missing-candidate'), 'Expected missing candidate detail fetches to explain the unavailable runtime candidate');
 
   await context.selectCandidate('candidate-curiosity');
-  context.renderDetail({
-    id: 'candidate-curiosity',
-    candidate_type: 'curiosity_candidate',
-    principle: 'Curiosity candidate',
-    mechanism: 'Curiosity mechanism',
-    open_question: 'Where does the transfer boundary stop holding?',
-    domain: 'mec_ui_harness',
-    blind_spot_score: 0.5,
-    source_event_ids: ['event-beta'],
-    source_card_ids: [],
-    created_at: '2026-03-08T18:03:00.000Z',
-    updated_at: '2026-03-08T18:03:00.000Z',
-    distillation_mode: 'manual',
-    freshness_state: 'fresh',
-    current_review_state: 'proposal_only',
-    review_summary: {
-      review_count: 0,
-      reviewable: true,
-      terminal: false
-    },
-    candidate_boundary: {
-      registry_mutation: false,
-      auto_resolve: false
-    },
-    raw_review_records: []
-  });
+  context.renderDetail(context.getCandidateById('candidate-curiosity'));
   vm.runInContext(`state.selectedCandidateId = 'candidate-curiosity';`, context);
   context.renderDeskNavigation();
   assert(detailOverviewEl.innerHTML.includes('Desk queue facet'), 'Expected desk detail to render selected queue context');
@@ -920,6 +1020,13 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(detailSummaryEl.innerHTML.includes('Derived review state'), 'Expected detail rendering to expose derived review state cards');
   assert(detailSummaryEl.innerHTML.includes('Workspace kind'), 'Expected detail rendering to expose canonical workspace cards');
   assert(detailSummaryEl.innerHTML.includes('Last review outcome'), 'Expected detail rendering to expose last review outcome');
+  assert(detailExplanationEl.innerHTML.includes('Why this state'), 'Expected desk detail to render a signal-based state explanation');
+  assert(detailExplanationEl.innerHTML.includes('No raw review history exists yet'), 'Expected state explanation to describe the lack of existing review history');
+  assert(detailEvidenceEl.innerHTML.includes('Evidence summary'), 'Expected desk detail to render evidence summary');
+  assert(detailEvidenceEl.innerHTML.includes('Source event context'), 'Expected desk detail to render source event context');
+  assert(detailHistoryEl.innerHTML.includes('History summary'), 'Expected desk detail to render compressed history summary');
+  assert(detailHistoryEl.innerHTML.includes('No recent review direction is available'), 'Expected history panel to explain missing review direction when no raw review exists');
+  assert(detailRelatedEl.innerHTML.includes('Open related'), 'Expected related candidate context to expose open-related actions');
   assert(rawReviewRecordsEl.innerHTML.includes('No raw review records stored yet for this workspace item.'), 'Expected desk detail to render an empty raw review record state');
   assert(deskNavigationEl.innerHTML.includes('Reproducible desk state'), 'Expected desk detail to render queue navigation and reproducible state');
 
@@ -947,6 +1054,8 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(context.getCandidateById('candidate-curiosity').status === 'proposal_only', 'Expected review action to preserve raw runtime status in the embedded harness');
   assert(context.getCandidateById('candidate-curiosity').current_review_state === 'stabilize', 'Expected review action to update derived stabilize state in the embedded harness');
   assert(elements.get('raw-review-records').innerHTML.includes('Raw review record 1'), 'Expected desk detail to expose the newly written raw review record');
+  assert(elements.get('detail-history').innerHTML.includes('terminal_history') || elements.get('detail-history').innerHTML.includes('History is terminal at stabilize after 1 review record(s).'), 'Expected desk detail to compress the new review history after a runtime review write');
+  assert(elements.get('detail-explanation').innerHTML.includes('Current derived state stabilize is terminal') || elements.get('detail-explanation').innerHTML.includes('Current derived state stabilize is terminal, so no further review outcomes are available.'), 'Expected desk detail explanation to update after the runtime review write');
   assert(String(context.location.search).includes('candidate=candidate-curiosity'), 'Expected selected candidate to be mirrored into desk URL state');
 
   context.renderReviewActions({
@@ -1024,6 +1133,10 @@ async function main() {
     assert(page.text.includes('Review Desk Detail'), 'Expected review desk detail section');
     assert(page.text.includes('Desk context'), 'Expected desk context section');
     assert(page.text.includes('Derived review state'), 'Expected derived review state section');
+    assert(page.text.includes('Why this state'), 'Expected why-this-state section');
+    assert(page.text.includes('Evidence / lineage context'), 'Expected evidence and lineage section');
+    assert(page.text.includes('Review history context'), 'Expected review history section');
+    assert(page.text.includes('Related candidate context'), 'Expected related candidate context section');
     assert(page.text.includes('Raw review records'), 'Expected raw review record section');
     assert(page.text.includes('Raw candidate artifact'), 'Expected raw candidate artifact section');
     assert(page.text.includes('Pair relationship'), 'Expected pair relationship detail block');
@@ -1050,6 +1163,10 @@ async function main() {
     assert(page.text.includes('freshness'), 'Expected freshness signal visibility in UI');
     assert(page.text.includes('Review actions'), 'Expected review action section in UI');
     assert(page.text.includes('Actions stay inside the desk'), 'Expected review desk action framing in UI');
+    assert(page.text.includes('signal-based explanation of why this workspace item is reviewable, terminal or blocked'), 'Expected explicit explanation-layer framing in UI');
+    assert(page.text.includes('Readable condensation of existing linkage, reference availability and integrity signals'), 'Expected evidence-layer framing in UI');
+    assert(page.text.includes('Compressed reading over raw review records'), 'Expected history-compression framing in UI');
+    assert(page.text.includes('Neighboring candidates derived from existing linkage and shared-source signals only'), 'Expected related-candidate framing in UI');
     assert(page.text.includes('all review states'), 'Expected review-state filter in UI');
     assert(page.text.includes('sort: review state'), 'Expected review-state sort option in UI');
     assert(page.text.includes('stabilize'), 'Expected stabilize action label in UI');

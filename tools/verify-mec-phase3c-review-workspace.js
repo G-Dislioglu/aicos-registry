@@ -163,6 +163,12 @@ function verifyRuntimeWorkspace() {
   assert(boundaryWorkspace.unresolved_runtime_reference_count >= 2, 'Expected boundary workspace item to surface unresolved linked-candidate and source-event risks');
   assert(boundaryWorkspace.control_readiness.reviewable === true, 'Expected unresolved boundary workspace item to stay minimally reviewable');
   assert(boundaryWorkspace.control_readiness.available_outcomes.includes('stabilize') && boundaryWorkspace.control_readiness.available_outcomes.includes('reject'), 'Expected reviewable workspace item to expose minimal outcomes');
+  assert(boundaryWorkspace.evidence_context && boundaryWorkspace.evidence_context.integrity_state === 'degraded', 'Expected unresolved boundary workspace item to expose degraded evidence integrity');
+  assert(Array.isArray(boundaryWorkspace.evidence_context.reference_signals) && boundaryWorkspace.evidence_context.reference_signals.length >= 2, 'Expected unresolved boundary workspace item to expose reference risk signals');
+  assert(boundaryWorkspace.state_explanation && Array.isArray(boundaryWorkspace.state_explanation.missing_visible_prerequisites) && boundaryWorkspace.state_explanation.missing_visible_prerequisites.length >= 2, 'Expected unresolved boundary workspace item to explain missing visible prerequisites');
+  assert(boundaryWorkspace.review_history_context && boundaryWorkspace.review_history_context.history_state === 'awaiting_first_review', 'Expected unresolved boundary workspace item to expose pre-review history state');
+  assert(Array.isArray(boundaryWorkspace.related_candidate_context) && boundaryWorkspace.related_candidate_context.length >= 1, 'Expected unresolved boundary workspace item to expose related candidate context additively');
+  assert(boundaryWorkspace.state_explanation && boundaryWorkspace.state_explanation.terminal === false, 'Expected unresolved boundary workspace item to expose derived why-this-state explanation');
 
   const curiosityWorkspace = readMecReviewWorkspace(curiosity.candidate.id, {
     candidateOutputDir: tempCandidateDir,
@@ -175,6 +181,11 @@ function verifyRuntimeWorkspace() {
   assert(curiosityWorkspace.raw_candidate_artifact && curiosityWorkspace.raw_candidate_artifact.status === 'proposal_only', 'Expected raw candidate artifact to remain proposal-origin inside workspace');
   assert(curiosityWorkspace.control_readiness.terminal === true, 'Expected rejected workspace item to be terminal');
   assert(Array.isArray(curiosityWorkspace.control_readiness.available_outcomes) && curiosityWorkspace.control_readiness.available_outcomes.length === 0, 'Expected terminal workspace item to expose no further outcomes');
+  assert(curiosityWorkspace.review_history_context && curiosityWorkspace.review_history_context.history_state === 'terminal_history', 'Expected terminal workspace item to expose compressed terminal review history');
+  assert(Array.isArray(curiosityWorkspace.review_history_context.recent_reviews) && curiosityWorkspace.review_history_context.recent_reviews.length === 1, 'Expected terminal workspace item to expose recent review direction');
+  assert(Array.isArray(curiosityWorkspace.raw_review_records) && curiosityWorkspace.raw_review_records.length === 1, 'Expected terminal workspace item to keep separate raw review records available');
+  assert(Array.isArray(curiosityWorkspace.related_candidate_context), 'Expected terminal workspace item to expose related candidate context additively');
+  assert(curiosityWorkspace.state_explanation && curiosityWorkspace.state_explanation.terminal === true, 'Expected terminal workspace item to expose derived why-this-state explanation');
 
   const registryAfter = snapshotRegistry();
   assert(JSON.stringify(registryBefore) === JSON.stringify(registryAfter), 'Registry files changed during Phase 3C runtime workspace verification');

@@ -691,18 +691,216 @@ function buildMecWorkspaceControlReadiness(reviewSummary, unresolvedReferences =
   };
 }
 
+function buildMecWorkspaceEvidenceContext(payload, sourceLinkage = {}, unresolvedReferences = [], candidateMap = new Map(), eventMap = new Map()) {
+  const relatedCandidateIds = Array.isArray(sourceLinkage.related_candidate_ids) ? sourceLinkage.related_candidate_ids : [];
+  const sourceEventIds = Array.isArray(sourceLinkage.source_event_ids) ? sourceLinkage.source_event_ids : [];
+  const sourceCardIds = Array.isArray(sourceLinkage.source_card_ids) ? sourceLinkage.source_card_ids : [];
+  const resolvedRelatedCandidateIds = Array.isArray(sourceLinkage.resolved_related_candidate_ids) ? sourceLinkage.resolved_related_candidate_ids : [];
+  const unresolvedRelatedCandidateIds = Array.isArray(sourceLinkage.unresolved_related_candidate_ids) ? sourceLinkage.unresolved_related_candidate_ids : [];
+  const resolvedSourceEventIds = Array.isArray(sourceLinkage.resolved_source_event_ids) ? sourceLinkage.resolved_source_event_ids : [];
+  const unresolvedSourceEventIds = Array.isArray(sourceLinkage.unresolved_source_event_ids) ? sourceLinkage.unresolved_source_event_ids : [];
+  const pairCounterpartId = sourceLinkage.pair_counterpart_id || null;
+  const pairResolved = Boolean(pairCounterpartId && candidateMap.has(pairCounterpartId));
+  const totalReferenceCount = relatedCandidateIds.length + sourceEventIds.length + sourceCardIds.length;
+  const unresolvedReferenceCount = unresolvedReferences.length;
+  return {
+    integrity_state: unresolvedReferenceCount > 0 ? 'degraded' : (totalReferenceCount > 0 ? 'intact' : 'minimal'),
+    attention_required: unresolvedReferenceCount > 0,
+    total_reference_count: totalReferenceCount,
+    resolved_reference_count: totalReferenceCount - unresolvedReferenceCount,
+    unresolved_reference_count: unresolvedReferenceCount,
+    source_event_count: sourceEventIds.length,
+    resolved_source_event_count: resolvedSourceEventIds.length,
+    unresolved_source_event_count: unresolvedSourceEventIds.length,
+    source_event_context: sourceEventIds.map(eventId => {
+      const event = eventMap.get(eventId) || null;
+      return {
+        event_id: eventId,
+        resolved: Boolean(event),
+        summary: event ? event.summary || null : null,
+        event_type: event ? event.event_type || null : null,
+        status: event ? event.status || null : null
+      };
+    }),
+    source_card_count: sourceCardIds.length,
+    related_candidate_count: relatedCandidateIds.length,
+    resolved_related_candidate_count: resolvedRelatedCandidateIds.length,
+    unresolved_related_candidate_count: unresolvedRelatedCandidateIds.length,
+    pair_role: sourceLinkage.pair_role || null,
+    pair_counterpart_id: pairCounterpartId,
+    pair_integrity: pairCounterpartId ? (pairResolved ? 'resolved' : 'unresolved') : 'not_applicable',
+    reference_signals: unresolvedReferences.map(item => ({
+      reference_kind: item.reference_kind,
+      reference_id: item.reference_id,
+      risk_code: item.risk_code,
+      label: item.label
+    })),
+    evidence_summary: unresolvedReferenceCount > 0
+      ? `Reference integrity is degraded by ${unresolvedReferenceCount} unresolved runtime reference(s).`
+      : totalReferenceCount > 0
+        ? `Reference integrity is intact across ${totalReferenceCount} visible linkage signal(s).`
+        : `Only minimal lineage signals are available on this workspace item.`
+  };
+}
+
+function buildMecWorkspaceReviewHistoryContext(reviewSummary, latestReview, reviewRecords = []) {
+  const recentHistory = Array.isArray(reviewSummary && reviewSummary.outcome_history)
+    ? reviewSummary.outcome_history.slice(-3).reverse()
+    : [];
+  const validReviewCount = Number(reviewSummary && reviewSummary.valid_review_count || 0);
+  const invalidReviewCount = Number(reviewSummary && reviewSummary.invalid_review_count || 0);
+  const totalReviewCount = Number(reviewSummary && reviewSummary.review_count || 0);
+  const terminal = Boolean(reviewSummary && reviewSummary.terminal);
+  const currentState = reviewSummary && reviewSummary.current_state ? reviewSummary.current_state : 'proposal_only';
+  return {
+    total_review_count: totalReviewCount,
+    valid_review_count: validReviewCount,
+    invalid_review_count: invalidReviewCount,
+    latest_review_outcome: latestReview ? latestReview.review_outcome : null,
+    latest_reviewed_at: latestReview ? latestReview.reviewed_at : null,
+    latest_review_source: latestReview ? latestReview.review_source || null : null,
+    history_state: totalReviewCount < 1
+      ? 'awaiting_first_review'
+      : terminal
+        ? 'terminal_history'
+        : 'active_history',
+    history_summary: totalReviewCount < 1
+      ? 'No raw review records exist yet.'
+      : terminal
+        ? `History is terminal at ${currentState} after ${totalReviewCount} review record(s).`
+        : `History remains reviewable with ${totalReviewCount} review record(s).`,
+    recent_reviews: recentHistory.map(item => {
+      const fullRecord = reviewRecords.find(record => record.review_id === item.review_id) || null;
+      return {
+        review_id: item.review_id,
+        review_outcome: item.review_outcome,
+        reviewed_at: item.reviewed_at,
+        review_source: fullRecord ? fullRecord.review_source || null : null,
+        reviewer_mode: fullRecord ? fullRecord.reviewer_mode || null : null
+      };
+    })
+  };
+}
+
+function buildMecWorkspaceRelatedCandidates(payload, candidateMap = new Map(), reviewMap = new Map()) {
+  const sourceEventIds = new Set(Array.isArray(payload && payload.source_event_ids) ? payload.source_event_ids.filter(Boolean) : []);
+  const sourceCardIds = new Set(Array.isArray(payload && payload.source_card_ids) ? payload.source_card_ids.filter(Boolean) : []);
+  const explicitRelatedIds = new Set([
+    payload && payload.linked_candidate_id ? payload.linked_candidate_id : null,
+    payload && payload.linked_boundary_candidate_id ? payload.linked_boundary_candidate_id : null,
+    payload && payload.refutes_candidate_id ? payload.refutes_candidate_id : null
+  ].filter(Boolean));
+  const related = [];
+  for (const [candidateId, candidate] of candidateMap.entries()) {
+    if (!candidate || candidateId === (payload && payload.id)) {
+      continue;
+    }
+    const relationSignals = [];
+    if (explicitRelatedIds.has(candidateId)) {
+      relationSignals.push('explicit_linkage');
+    }
+    const sharedEventIds = Array.isArray(candidate.source_event_ids)
+      ? candidate.source_event_ids.filter(eventId => sourceEventIds.has(eventId))
+      : [];
+    if (sharedEventIds.length > 0) {
+      relationSignals.push(`shared_source_event:${sharedEventIds.join(',')}`);
+    }
+    const sharedCardIds = Array.isArray(candidate.source_card_ids)
+      ? candidate.source_card_ids.filter(cardId => sourceCardIds.has(cardId))
+      : [];
+    if (sharedCardIds.length > 0) {
+      relationSignals.push(`shared_source_card:${sharedCardIds.join(',')}`);
+    }
+    if (relationSignals.length === 0) {
+      continue;
+    }
+    const reviewSummary = buildMecReviewSummary(reviewMap.get(candidateId) || []);
+    related.push({
+      candidate_id: candidateId,
+      title: buildMecWorkspaceTitle(candidate),
+      candidate_type: candidate.candidate_type || null,
+      status: candidate.status || null,
+      freshness_state: candidate.freshness_state || null,
+      current_review_state: reviewSummary.current_state,
+      reviewable: reviewSummary.reviewable,
+      terminal: reviewSummary.terminal,
+      relation_signals: relationSignals,
+      shared_source_event_count: sharedEventIds.length,
+      shared_source_card_count: sharedCardIds.length,
+      explicit_linkage: explicitRelatedIds.has(candidateId)
+    });
+  }
+  return related.sort((left, right) => {
+    const explicitRank = Number(Boolean(right.explicit_linkage)) - Number(Boolean(left.explicit_linkage));
+    if (explicitRank !== 0) {
+      return explicitRank;
+    }
+    const eventRank = right.shared_source_event_count - left.shared_source_event_count;
+    if (eventRank !== 0) {
+      return eventRank;
+    }
+    const cardRank = right.shared_source_card_count - left.shared_source_card_count;
+    if (cardRank !== 0) {
+      return cardRank;
+    }
+    return String(left.candidate_id).localeCompare(String(right.candidate_id));
+  }).slice(0, 6);
+}
+
+function buildMecWorkspaceStateExplanation(reviewSummary, controlReadiness, unresolvedReferences = [], sourceLinkage = {}, reviewHistoryContext = null, relatedCandidates = []) {
+  const currentState = reviewSummary && reviewSummary.current_state ? reviewSummary.current_state : 'proposal_only';
+  const reviewable = Boolean(reviewSummary && reviewSummary.reviewable);
+  const terminal = Boolean(reviewSummary && reviewSummary.terminal);
+  const explanationLines = [];
+  if (reviewable) {
+    explanationLines.push(`Current derived state ${currentState} remains reviewable, so minimal outcomes stay available.`);
+  } else {
+    explanationLines.push(`Current derived state ${currentState} is terminal, so no further review outcomes are available.`);
+  }
+  if (unresolvedReferences.length > 0) {
+    explanationLines.push(`${unresolvedReferences.length} unresolved runtime reference(s) are still visible in the workspace context.`);
+  } else if ((sourceLinkage.related_candidate_ids || []).length > 0 || (sourceLinkage.source_event_ids || []).length > 0) {
+    explanationLines.push('Visible linkage and source references currently resolve without runtime gaps.');
+  } else {
+    explanationLines.push('Only minimal linkage evidence is available on this workspace item.');
+  }
+  if (reviewHistoryContext && reviewHistoryContext.total_review_count > 0) {
+    explanationLines.push(`Review history currently contains ${reviewHistoryContext.total_review_count} raw review record(s).`);
+  } else {
+    explanationLines.push('No raw review history exists yet, so this desk view is still anchored on the raw candidate artifact only.');
+  }
+  if (relatedCandidates.length > 0) {
+    explanationLines.push(`${relatedCandidates.length} related candidate context item(s) are visible from existing linkage or shared-source signals.`);
+  }
+  return {
+    current_state: currentState,
+    reviewable,
+    terminal,
+    blocked_reason: controlReadiness && controlReadiness.blocked_reason ? controlReadiness.blocked_reason : null,
+    unresolved_reference_count: unresolvedReferences.length,
+    related_candidate_count: relatedCandidates.length,
+    explanation_lines: explanationLines,
+    missing_visible_prerequisites: unresolvedReferences.map(item => item.label)
+  };
+}
+
 function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) {
   if (!payload) {
     return null;
   }
   const candidateMap = context.candidateMap || new Map();
   const eventMap = context.eventMap || new Map();
+  const reviewMap = context.reviewMap || new Map();
   const freshnessPayload = enrichMecCandidateFreshness(payload);
   const reviewSummary = buildMecReviewSummary(reviewRecords);
   const latestReview = getLatestMecReviewRecord(reviewRecords);
   const sourceLinkage = buildMecWorkspaceSourceLinkage(payload, candidateMap, eventMap);
   const unresolvedRuntimeReferences = buildMecWorkspaceUnresolvedReferences(payload, sourceLinkage, candidateMap, eventMap);
   const controlReadiness = buildMecWorkspaceControlReadiness(reviewSummary, unresolvedRuntimeReferences);
+  const evidenceContext = buildMecWorkspaceEvidenceContext(payload, sourceLinkage, unresolvedRuntimeReferences, candidateMap, eventMap);
+  const reviewHistoryContext = buildMecWorkspaceReviewHistoryContext(reviewSummary, latestReview, reviewRecords);
+  const relatedCandidates = buildMecWorkspaceRelatedCandidates(payload, candidateMap, reviewMap);
+  const stateExplanation = buildMecWorkspaceStateExplanation(reviewSummary, controlReadiness, unresolvedRuntimeReferences, sourceLinkage, reviewHistoryContext, relatedCandidates);
   return {
     workspace_kind: 'mec_review_workspace',
     workspace_version: 'phase3c-mec-review-workspace/v1',
@@ -735,6 +933,10 @@ function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) 
     reviewable: reviewSummary.reviewable,
     terminal: reviewSummary.terminal,
     control_readiness: controlReadiness,
+    evidence_context: evidenceContext,
+    review_history_context: reviewHistoryContext,
+    related_candidate_context: relatedCandidates,
+    state_explanation: stateExplanation,
     workspace_summary: {
       review_count: reviewSummary.review_count,
       latest_review_outcome: latestReview ? latestReview.review_outcome : null,
@@ -754,7 +956,7 @@ function listMecReviewWorkspace(options = {}) {
   const candidateMap = new Map(rawCandidates.map(item => [item.id, item]));
   const eventMap = getMecEventMap(options);
   const reviewMap = getMecReviewRecordsByCandidate(options);
-  return rawCandidates.map(item => buildMecReviewWorkspaceItem(item, reviewMap.get(item.id) || [], { candidateMap, eventMap }));
+  return rawCandidates.map(item => buildMecReviewWorkspaceItem(item, reviewMap.get(item.id) || [], { candidateMap, eventMap, reviewMap }));
 }
 
 function readMecReviewWorkspace(candidateId, options = {}) {
@@ -767,7 +969,7 @@ function readMecReviewWorkspace(candidateId, options = {}) {
   const candidateMap = new Map(rawCandidates.map(item => [item.id, item]));
   const eventMap = getMecEventMap(options);
   const reviewMap = getMecReviewRecordsByCandidate(options);
-  return buildMecReviewWorkspaceItem(payload, reviewMap.get(candidateId) || [], { candidateMap, eventMap });
+  return buildMecReviewWorkspaceItem(payload, reviewMap.get(candidateId) || [], { candidateMap, eventMap, reviewMap });
 }
 
 function enrichMemoryCandidate(payload, reviewRecords = [], exportReviewRecords = []) {
