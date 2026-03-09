@@ -217,6 +217,7 @@ function buildUiScriptHarness() {
     'detail-related',
     'detail-focus',
     'detail-compare',
+    'detail-delta',
     'review-actions',
     'review-message',
     'review-rationale',
@@ -577,6 +578,99 @@ function buildUiScriptHarness() {
     };
   }
 
+  function buildHarnessDeltaContext(rawCandidate, reviewSummary, latestReview, unresolvedRuntimeReferences, evidenceContext, reviewHistoryContext, focusContext, compareContext) {
+    const latestReviewedAt = latestReview ? latestReview.reviewed_at : (reviewHistoryContext ? reviewHistoryContext.latest_reviewed_at : null);
+    const createdAt = rawCandidate && rawCandidate.created_at ? rawCandidate.created_at : null;
+    const updatedAt = rawCandidate && rawCandidate.updated_at ? rawCandidate.updated_at : createdAt;
+    const anchorKind = latestReviewedAt ? 'latest_review' : (createdAt ? 'candidate_created' : 'workspace_visible_now');
+    const changedSinceAnchor = Boolean(latestReviewedAt && updatedAt && Date.parse(updatedAt) > Date.parse(latestReviewedAt));
+    const unresolvedCount = unresolvedRuntimeReferences.length;
+    const totalReviewCount = Number(reviewHistoryContext && reviewHistoryContext.total_review_count || 0);
+    const reviewable = Boolean(reviewSummary && reviewSummary.reviewable);
+    const terminal = Boolean(reviewSummary && reviewSummary.terminal);
+    const compareReady = Boolean(compareContext && compareContext.compare_ready);
+    let movementBucket = 'no_material_delta_visible';
+    if (!latestReviewedAt) {
+      movementBucket = unresolvedCount > 0 || compareReady ? 'first_read_attention' : 'first_read_baseline';
+    } else if (changedSinceAnchor && reviewable && unresolvedCount > 0) {
+      movementBucket = 'post_review_change_attention';
+    } else if (changedSinceAnchor && reviewable) {
+      movementBucket = 'post_review_change_reviewable';
+    } else if (changedSinceAnchor && terminal) {
+      movementBucket = 'post_review_change_terminal';
+    } else if (reviewable && unresolvedCount > 0) {
+      movementBucket = 'anchored_attention_without_visible_change';
+    } else if (terminal) {
+      movementBucket = 'terminal_without_visible_change';
+    }
+    const whyNow = !latestReviewedAt
+      ? (unresolvedCount > 0
+        ? 'A first review is still pending and unresolved runtime references remain visible.'
+        : compareReady
+          ? 'A first review is still pending and comparable neighboring workspace objects are already visible.'
+          : 'A first review is still pending, so the next read establishes the initial decision anchor.')
+      : changedSinceAnchor && unresolvedCount > 0
+        ? 'The raw candidate artifact changed after the latest review anchor and visible reference gaps are still present now.'
+        : changedSinceAnchor && compareReady
+          ? 'The raw candidate artifact changed after the latest review anchor and the current desk can contrast it against comparable neighbors.'
+          : changedSinceAnchor && reviewable
+            ? 'The raw candidate artifact changed after the latest review anchor while the workspace still permits a minimal review write.'
+            : reviewable && unresolvedCount > 0
+              ? 'Even without a newer raw candidate update, unresolved runtime references still keep the current review posture open.'
+              : null;
+    const whyNotNow = whyNow
+      ? null
+      : terminal
+        ? 'No material post-anchor movement is visible, and the latest terminal decision still matches the currently visible workspace signals.'
+        : latestReviewedAt
+          ? 'No material post-anchor movement is visible beyond the current workspace baseline.'
+          : 'No prior review anchor exists yet, but the visible workspace signals do not currently indicate stronger decision movement.';
+    return {
+      anchor_kind: anchorKind,
+      anchor_at: latestReviewedAt || createdAt || updatedAt || null,
+      current_updated_at: updatedAt,
+      changed_since_anchor: changedSinceAnchor,
+      movement_bucket: movementBucket,
+      change_categories: {
+        review_anchor: latestReviewedAt ? 'review_anchor_present' : 'no_review_anchor',
+        update_timing: changedSinceAnchor ? 'updated_after_anchor' : 'no_visible_update_after_anchor',
+        unresolved_gap: unresolvedCount > 0 ? (changedSinceAnchor ? 'unresolved_gap_visible_after_anchor' : 'unresolved_gap_still_visible') : 'no_unresolved_gap_visible',
+        readiness: terminal ? (changedSinceAnchor ? 'terminal_after_anchor' : 'terminal_unchanged') : reviewable ? (changedSinceAnchor ? 'reviewable_after_anchor' : 'reviewable_unchanged') : 'not_reviewable',
+        evidence: evidenceContext && evidenceContext.total_reference_count > 0 ? (changedSinceAnchor ? 'lineage_visible_after_anchor' : 'lineage_stable') : 'minimal_lineage',
+        review_history: totalReviewCount < 1 ? 'no_review_history_yet' : (totalReviewCount === 1 ? 'single_review_anchor' : 'extended_review_history')
+      },
+      delta_signals: [
+        `anchor:${anchorKind}`,
+        changedSinceAnchor ? 'updated_after_anchor' : 'no_visible_update_after_anchor',
+        unresolvedCount > 0 ? `unresolved_reference_count:${unresolvedCount}` : 'unresolved_reference_count:0',
+        `integrity:${evidenceContext && evidenceContext.integrity_state ? evidenceContext.integrity_state : 'minimal'}`,
+        `focus:${focusContext && focusContext.focus_bucket ? focusContext.focus_bucket : 'single_item_context'}`,
+        compareReady ? 'compare_ready_now' : null,
+        totalReviewCount > 0 ? `review_records:${totalReviewCount}` : 'review_records:0'
+      ].filter(Boolean),
+      delta_summary: movementBucket === 'first_read_attention'
+        ? 'No prior review anchor exists yet, and the currently visible workspace signals already justify a first focused read.'
+        : movementBucket === 'first_read_baseline'
+          ? 'No prior review anchor exists yet, and the current workspace view mostly establishes the first decision baseline.'
+          : movementBucket === 'post_review_change_attention'
+            ? 'The candidate artifact moved after the latest review anchor while visible runtime gaps still remain.'
+            : movementBucket === 'post_review_change_reviewable'
+              ? 'The candidate artifact moved after the latest review anchor and remains reviewable under the current workspace signals.'
+              : movementBucket === 'post_review_change_terminal'
+                ? 'The candidate artifact moved after a terminal review anchor, so the current read should be checked against that prior decision.'
+                : movementBucket === 'anchored_attention_without_visible_change'
+                  ? 'No new post-review movement is visible, but unresolved runtime references still keep this item attention-bearing.'
+                  : movementBucket === 'terminal_without_visible_change'
+                    ? 'No new post-review movement is visible and the current terminal read still matches the latest visible decision anchor.'
+                    : 'No material change signal is currently visible beyond the existing review anchor.',
+      why_now: whyNow,
+      why_not_now: whyNotNow,
+      review_attention_now: Boolean(whyNow),
+      stable_since_anchor: Boolean(latestReviewedAt && !changedSinceAnchor && unresolvedCount < 1),
+      compare_delta_ready: Boolean(compareReady && (changedSinceAnchor || !latestReviewedAt))
+    };
+  }
+
   function toWorkspaceItem(rawCandidate) {
     const reviewSummary = rawCandidate && rawCandidate.review_summary ? rawCandidate.review_summary : {
       review_count: 0,
@@ -675,6 +769,9 @@ function buildUiScriptHarness() {
     const compareContext = rawCandidate && rawCandidate.compare_context
       ? rawCandidate.compare_context
       : buildHarnessCompareContext(rawCandidate, reviewSummary, relatedCandidates, evidenceContext, reviewHistoryContext);
+    const deltaContext = rawCandidate && rawCandidate.delta_context
+      ? rawCandidate.delta_context
+      : buildHarnessDeltaContext(rawCandidate, reviewSummary, latestReview, unresolvedRuntimeReferences, evidenceContext, reviewHistoryContext, focusContext, compareContext);
     return {
       workspace_kind: 'mec_review_workspace',
       workspace_version: 'phase3c-mec-review-workspace/v1',
@@ -701,6 +798,7 @@ function buildUiScriptHarness() {
       related_candidate_context: relatedCandidates,
       focus_context: focusContext,
       compare_context: compareContext,
+      delta_context: deltaContext,
       state_explanation: stateExplanation,
       source_linkage: {
         source_event_ids: rawCandidate.source_event_ids || [],
@@ -928,6 +1026,7 @@ async function verifyEmbeddedUiWriteSemantics() {
   const detailLinkageEl = elements.get('detail-linkage');
   const detailFocusEl = elements.get('detail-focus');
   const detailCompareEl = elements.get('detail-compare');
+  const detailDeltaEl = elements.get('detail-delta');
   const rawReviewRecordsEl = elements.get('raw-review-records');
   const deskStatusEl = elements.get('desk-status');
   const facetListEl = elements.get('facet-list');
@@ -947,10 +1046,10 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(deskStatusEl.innerHTML.includes('Desk facet'), 'Expected desk status strip to render current workspace scope');
   assert(facetListEl.innerHTML.includes('Reviewable now'), 'Expected desk facet entrypoints to render');
   assert(deskQueueEl.innerHTML.includes('Active desk queue'), 'Expected desk queue summary to render');
-  assert(candidateListEl.innerHTML.includes('Focus: compare now') || candidateListEl.innerHTML.includes('Ready for first review'), 'Expected candidate list to render grouped desk sections');
-  assert(candidateListEl.innerHTML.includes('Linked target candidate-invariant'), 'Expected boundary candidate list row to expose linked target context');
-  assert(candidateListEl.innerHTML.includes('Refutes candidate-invariant | Counterexample detail'), 'Expected counterexample candidate list row to expose refuted target context');
-  assert(candidateListEl.innerHTML.includes('Domain mec_ui_harness | blind spot 0.5'), 'Expected curiosity candidate list row to expose domain and blind spot context');
+  assert(candidateListEl.innerHTML.includes('Change: review movement now') || candidateListEl.innerHTML.includes('Change: stable since anchor') || candidateListEl.innerHTML.includes('Focus: compare now') || candidateListEl.innerHTML.includes('Ready for first review'), 'Expected candidate list to render grouped desk sections');
+  assert(candidateListEl.innerHTML.includes('Linked target candidate-invariant') || candidateListEl.innerHTML.includes('A first review is still pending and unresolved runtime references remain visible.') || candidateListEl.innerHTML.includes('A first review is still pending and comparable neighboring workspace objects are already visible.'), 'Expected boundary candidate list row to expose linked-target or delta-aware context');
+  assert(candidateListEl.innerHTML.includes('Refutes candidate-invariant | Counterexample detail') || candidateListEl.innerHTML.includes('A first review is still pending and comparable neighboring workspace objects are already visible.'), 'Expected counterexample candidate list row to expose refuted-target or delta-aware context');
+  assert(candidateListEl.innerHTML.includes('Domain mec_ui_harness | blind spot 0.5') || candidateListEl.innerHTML.includes('A first review is still pending, so the next read establishes the initial decision anchor.') || candidateListEl.innerHTML.includes('A first review is still pending and comparable neighboring workspace objects are already visible.'), 'Expected curiosity candidate list row to expose domain/blind-spot or delta-aware context');
   assert(candidateListEl.innerHTML.includes('review proposal_only'), 'Expected candidate list rows to expose derived review state badge');
   assert(candidateListEl.innerHTML.includes('records 0'), 'Expected candidate list rows to expose raw review record count badge');
 
@@ -1114,6 +1213,9 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(detailFocusEl.innerHTML.includes('Focus signals'), 'Expected desk detail to render focus signals');
   assert(detailCompareEl.innerHTML.includes('Compare summary'), 'Expected desk detail to render compare summary');
   assert(detailCompareEl.innerHTML.includes('Compare candidates'), 'Expected desk detail to render compare candidates');
+  assert(detailDeltaEl.innerHTML.includes('Delta summary'), 'Expected desk detail to render delta summary');
+  assert(detailDeltaEl.innerHTML.includes('Why now / why not now'), 'Expected desk detail to render why-now/why-not-now readability');
+  assert(detailDeltaEl.innerHTML.includes('Change categories'), 'Expected desk detail to render change categories');
   assert(rawReviewRecordsEl.innerHTML.includes('No raw review records stored yet for this workspace item.'), 'Expected desk detail to render an empty raw review record state');
   assert(deskNavigationEl.innerHTML.includes('Reproducible desk state'), 'Expected desk detail to render queue navigation and reproducible state');
   assert(deskNavigationEl.innerHTML.includes('Compare state'), 'Expected desk detail to render compare navigation state');
@@ -1235,6 +1337,7 @@ async function main() {
     assert(page.text.includes('Related candidate context'), 'Expected related candidate context section');
     assert(page.text.includes('Focus context'), 'Expected focus context section');
     assert(page.text.includes('Compare context'), 'Expected compare context section');
+    assert(page.text.includes('Delta / change context'), 'Expected delta context section');
     assert(page.text.includes('Raw review records'), 'Expected raw review record section');
     assert(page.text.includes('Raw candidate artifact'), 'Expected raw candidate artifact section');
     assert(page.text.includes('Pair relationship'), 'Expected pair relationship detail block');
@@ -1267,6 +1370,7 @@ async function main() {
     assert(page.text.includes('Neighboring candidates derived from existing linkage and shared-source signals only'), 'Expected related-candidate framing in UI');
     assert(page.text.includes('Signal-based focus framing that condenses real review tension'), 'Expected focus framing in UI');
     assert(page.text.includes('Quick-compare surface over existing linkage, source overlap, review-state and history signals'), 'Expected compare framing in UI');
+    assert(page.text.includes('Signal-based change awareness over review anchors, visible runtime movement and why-now / why-not-now readability'), 'Expected delta/change-awareness framing in UI');
     assert(page.text.includes('all review states'), 'Expected review-state filter in UI');
     assert(page.text.includes('sort: review state'), 'Expected review-state sort option in UI');
     assert(page.text.includes('stabilize'), 'Expected stabilize action label in UI');

@@ -172,6 +172,9 @@ function verifyRuntimeWorkspace() {
   assert(boundaryWorkspace.focus_context && Array.isArray(boundaryWorkspace.focus_context.focus_signals) && boundaryWorkspace.focus_context.focus_signals.length >= 1, 'Expected unresolved boundary workspace item to expose additive focus signals');
   assert(boundaryWorkspace.compare_context && boundaryWorkspace.compare_context.compare_ready === true, 'Expected unresolved boundary workspace item to remain compare-ready from visible pair or related signals');
   assert(boundaryWorkspace.compare_context && Array.isArray(boundaryWorkspace.compare_context.compare_candidates) && boundaryWorkspace.compare_context.compare_candidates.length >= 1, 'Expected unresolved boundary workspace item to expose additive compare candidates');
+  assert(boundaryWorkspace.delta_context && boundaryWorkspace.delta_context.movement_bucket === 'first_read_attention', 'Expected unresolved boundary workspace item to derive a first-read attention delta bucket from visible signals');
+  assert(boundaryWorkspace.delta_context && typeof boundaryWorkspace.delta_context.why_now === 'string' && boundaryWorkspace.delta_context.why_now.length > 0, 'Expected unresolved boundary workspace item to expose additive why-now readability');
+  assert(boundaryWorkspace.delta_context && Array.isArray(boundaryWorkspace.delta_context.delta_signals) && boundaryWorkspace.delta_context.delta_signals.length >= 1, 'Expected unresolved boundary workspace item to expose additive delta signals');
   assert(boundaryWorkspace.state_explanation && boundaryWorkspace.state_explanation.terminal === false, 'Expected unresolved boundary workspace item to expose derived why-this-state explanation');
 
   const curiosityWorkspace = readMecReviewWorkspace(curiosity.candidate.id, {
@@ -193,6 +196,9 @@ function verifyRuntimeWorkspace() {
   assert(curiosityWorkspace.focus_context && ['recent_terminal_decision', 'terminal_reference_gap'].includes(curiosityWorkspace.focus_context.focus_bucket), 'Expected terminal workspace item to derive a terminal-history or terminal-reference-gap focus bucket from visible signals');
   assert(curiosityWorkspace.compare_context && typeof curiosityWorkspace.compare_context.compare_summary === 'string', 'Expected terminal workspace item to expose an additive compare summary');
   assert(curiosityWorkspace.compare_context && Array.isArray(curiosityWorkspace.compare_context.compare_candidates), 'Expected terminal workspace item to expose additive compare candidates even when none are present');
+  assert(curiosityWorkspace.delta_context && ['post_review_change_terminal', 'terminal_without_visible_change'].includes(curiosityWorkspace.delta_context.movement_bucket), 'Expected terminal workspace item to derive a terminal-aware delta bucket from visible signals');
+  assert(curiosityWorkspace.delta_context && typeof curiosityWorkspace.delta_context.why_not_now === 'string' && curiosityWorkspace.delta_context.why_not_now.length > 0, 'Expected terminal workspace item to expose additive why-not-now readability when no active why-now signal remains');
+  assert(curiosityWorkspace.delta_context && typeof curiosityWorkspace.delta_context.delta_summary === 'string', 'Expected terminal workspace item to expose additive delta summary');
   assert(curiosityWorkspace.state_explanation && curiosityWorkspace.state_explanation.terminal === true, 'Expected terminal workspace item to expose derived why-this-state explanation');
 
   const registryAfter = snapshotRegistry();
@@ -259,6 +265,7 @@ function verifyCliWorkspace() {
   assert(listedWorkspace[0].current_review_state === 'stabilize', 'Expected CLI workspace list item to expose stabilize state');
   assert(listedWorkspace[0].focus_context && typeof listedWorkspace[0].focus_context.focus_bucket === 'string', 'Expected CLI workspace list item to expose Phase 3F focus context');
   assert(listedWorkspace[0].compare_context && typeof listedWorkspace[0].compare_context.compare_ready === 'boolean', 'Expected CLI workspace list item to expose Phase 3F compare context');
+  assert(listedWorkspace[0].delta_context && typeof listedWorkspace[0].delta_context.movement_bucket === 'string', 'Expected CLI workspace list item to expose Phase 3G delta context');
 
   const loadedWorkspace = JSON.parse(runCli([
     path.join('tools', 'arena.js'),
@@ -273,6 +280,8 @@ function verifyCliWorkspace() {
   assert(loadedWorkspace.raw_candidate_artifact && loadedWorkspace.raw_candidate_artifact.status === 'proposal_only', 'Expected CLI workspace detail to preserve raw proposal-origin artifact');
   assert(loadedWorkspace.focus_context && typeof loadedWorkspace.focus_context.focus_summary === 'string', 'Expected CLI workspace detail to expose focus summary');
   assert(loadedWorkspace.compare_context && Array.isArray(loadedWorkspace.compare_context.compare_candidates), 'Expected CLI workspace detail to expose compare candidates');
+  assert(loadedWorkspace.delta_context && typeof loadedWorkspace.delta_context.delta_summary === 'string', 'Expected CLI workspace detail to expose delta summary');
+  assert(loadedWorkspace.delta_context && ('why_now' in loadedWorkspace.delta_context) && ('why_not_now' in loadedWorkspace.delta_context), 'Expected CLI workspace detail to expose why-now/why-not-now delta readability');
 }
 
 async function verifyHttpWorkspace() {
@@ -367,6 +376,7 @@ async function verifyHttpWorkspace() {
     assert(workspaceListPayload.items[0].current_review_state === 'reject', 'Expected HTTP workspace list item current review state');
     assert(workspaceListPayload.items[0].focus_context && typeof workspaceListPayload.items[0].focus_context.focus_bucket === 'string', 'Expected HTTP workspace list item to expose focus context');
     assert(workspaceListPayload.items[0].compare_context && typeof workspaceListPayload.items[0].compare_context.compare_ready === 'boolean', 'Expected HTTP workspace list item to expose compare context');
+    assert(workspaceListPayload.items[0].delta_context && typeof workspaceListPayload.items[0].delta_context.movement_bucket === 'string', 'Expected HTTP workspace list item to expose delta context');
 
     const workspaceDetailResponse = await fetch(`http://127.0.0.1:${port}/arena/mec-review-workspace/${createdCandidate.candidate.id}`);
     assert(workspaceDetailResponse.ok, 'Expected GET /arena/mec-review-workspace/:id to return 200');
@@ -376,6 +386,8 @@ async function verifyHttpWorkspace() {
     assert(workspaceDetailPayload.raw_candidate_artifact && workspaceDetailPayload.raw_candidate_artifact.status === 'proposal_only', 'Expected HTTP workspace detail raw artifact to remain proposal-origin');
     assert(workspaceDetailPayload.focus_context && typeof workspaceDetailPayload.focus_context.focus_summary === 'string', 'Expected HTTP workspace detail to expose focus summary');
     assert(workspaceDetailPayload.compare_context && Array.isArray(workspaceDetailPayload.compare_context.compare_candidates), 'Expected HTTP workspace detail to expose compare candidates');
+    assert(workspaceDetailPayload.delta_context && typeof workspaceDetailPayload.delta_context.delta_summary === 'string', 'Expected HTTP workspace detail to expose delta summary');
+    assert(workspaceDetailPayload.delta_context && ('why_now' in workspaceDetailPayload.delta_context) && ('why_not_now' in workspaceDetailPayload.delta_context), 'Expected HTTP workspace detail to expose why-now/why-not-now delta readability');
   } finally {
     serverProcess.kill();
   }

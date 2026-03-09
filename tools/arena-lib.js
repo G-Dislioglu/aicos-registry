@@ -590,6 +590,14 @@ function buildMecReviewSummary(reviewRecords = []) {
   return deriveMecCandidateReviewState(reviewRecords);
 }
 
+function parseMecWorkspaceTimestamp(value) {
+  if (!value) {
+    return null;
+  }
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
 function buildMecWorkspaceTitle(payload) {
   if (!payload) {
     return '-';
@@ -1040,6 +1048,123 @@ function buildMecWorkspaceCompareContext(payload, candidateMap = new Map(), even
   };
 }
 
+function buildMecWorkspaceDeltaContext(payload, reviewSummary, latestReview, unresolvedReferences = [], sourceLinkage = {}, evidenceContext = null, reviewHistoryContext = null, controlReadiness = null, focusContext = null, compareContext = null) {
+  const latestReviewedAt = latestReview && latestReview.reviewed_at ? latestReview.reviewed_at : (reviewHistoryContext && reviewHistoryContext.latest_reviewed_at ? reviewHistoryContext.latest_reviewed_at : null);
+  const createdAt = payload && payload.created_at ? payload.created_at : null;
+  const updatedAt = payload && payload.updated_at ? payload.updated_at : createdAt;
+  const anchorKind = latestReviewedAt ? 'latest_review' : (createdAt ? 'candidate_created' : 'workspace_visible_now');
+  const anchorAt = latestReviewedAt || createdAt || updatedAt || null;
+  const anchorTimestamp = parseMecWorkspaceTimestamp(anchorAt);
+  const updatedTimestamp = parseMecWorkspaceTimestamp(updatedAt);
+  const changedSinceAnchor = Boolean(anchorTimestamp !== null && updatedTimestamp !== null && updatedTimestamp > anchorTimestamp);
+  const unresolvedCount = Array.isArray(unresolvedReferences) ? unresolvedReferences.length : 0;
+  const totalReviewCount = Number(reviewHistoryContext && reviewHistoryContext.total_review_count || reviewSummary && reviewSummary.review_count || 0);
+  const reviewable = Boolean(controlReadiness && controlReadiness.reviewable);
+  const terminal = Boolean(controlReadiness && controlReadiness.terminal);
+  const compareReady = Boolean(compareContext && compareContext.compare_ready);
+  const focusBucket = focusContext && focusContext.focus_bucket ? focusContext.focus_bucket : 'single_item_context';
+  const integrityState = evidenceContext && evidenceContext.integrity_state ? evidenceContext.integrity_state : 'minimal';
+  const relatedCandidateCount = Number(compareContext && compareContext.related_candidate_count || 0);
+  const totalReferenceCount = Number(evidenceContext && evidenceContext.total_reference_count || 0);
+  let movementBucket = 'no_material_delta_visible';
+  if (!latestReviewedAt) {
+    movementBucket = unresolvedCount > 0 || compareReady ? 'first_read_attention' : 'first_read_baseline';
+  } else if (changedSinceAnchor && reviewable && unresolvedCount > 0) {
+    movementBucket = 'post_review_change_attention';
+  } else if (changedSinceAnchor && reviewable) {
+    movementBucket = 'post_review_change_reviewable';
+  } else if (changedSinceAnchor && terminal) {
+    movementBucket = 'post_review_change_terminal';
+  } else if (reviewable && unresolvedCount > 0) {
+    movementBucket = 'anchored_attention_without_visible_change';
+  } else if (terminal) {
+    movementBucket = 'terminal_without_visible_change';
+  }
+  const changeCategories = {
+    review_anchor: latestReviewedAt ? 'review_anchor_present' : 'no_review_anchor',
+    update_timing: anchorAt ? (changedSinceAnchor ? 'updated_after_anchor' : 'no_visible_update_after_anchor') : 'no_time_anchor',
+    unresolved_gap: unresolvedCount > 0
+      ? (changedSinceAnchor ? 'unresolved_gap_visible_after_anchor' : 'unresolved_gap_still_visible')
+      : (changedSinceAnchor ? 'no_unresolved_gap_visible_after_anchor' : 'no_unresolved_gap_visible'),
+    readiness: terminal
+      ? (changedSinceAnchor ? 'terminal_after_anchor' : 'terminal_unchanged')
+      : reviewable
+        ? (changedSinceAnchor ? 'reviewable_after_anchor' : 'reviewable_unchanged')
+        : 'not_reviewable',
+    evidence: totalReferenceCount > 0
+      ? (changedSinceAnchor ? 'lineage_visible_after_anchor' : 'lineage_stable')
+      : 'minimal_lineage',
+    review_history: totalReviewCount < 1
+      ? 'no_review_history_yet'
+      : totalReviewCount === 1
+        ? 'single_review_anchor'
+        : 'extended_review_history'
+  };
+  const deltaSignals = [
+    `anchor:${anchorKind}`,
+    latestReviewedAt ? 'latest_review_anchor_present' : 'no_latest_review_anchor',
+    changedSinceAnchor ? 'updated_after_anchor' : 'no_visible_update_after_anchor',
+    unresolvedCount > 0 ? `unresolved_reference_count:${unresolvedCount}` : 'unresolved_reference_count:0',
+    `integrity:${integrityState}`,
+    `focus:${focusBucket}`,
+    compareReady ? 'compare_ready_now' : null,
+    relatedCandidateCount > 0 ? `related_candidates:${relatedCandidateCount}` : null,
+    totalReviewCount > 0 ? `review_records:${totalReviewCount}` : 'review_records:0'
+  ].filter(Boolean);
+  const deltaSummary = movementBucket === 'first_read_attention'
+    ? 'No prior review anchor exists yet, and the currently visible workspace signals already justify a first focused read.'
+    : movementBucket === 'first_read_baseline'
+      ? 'No prior review anchor exists yet, and the current workspace view mostly establishes the first decision baseline.'
+      : movementBucket === 'post_review_change_attention'
+        ? 'The candidate artifact moved after the latest review anchor while visible runtime gaps still remain.'
+        : movementBucket === 'post_review_change_reviewable'
+          ? 'The candidate artifact moved after the latest review anchor and remains reviewable under the current workspace signals.'
+          : movementBucket === 'post_review_change_terminal'
+            ? 'The candidate artifact moved after a terminal review anchor, so the current read should be checked against that prior decision.'
+            : movementBucket === 'anchored_attention_without_visible_change'
+              ? 'No new post-review movement is visible, but unresolved runtime references still keep this item attention-bearing.'
+              : movementBucket === 'terminal_without_visible_change'
+                ? 'No new post-review movement is visible and the current terminal read still matches the latest visible decision anchor.'
+                : 'No material change signal is currently visible beyond the existing review anchor.';
+  const whyNow = !latestReviewedAt
+    ? (unresolvedCount > 0
+      ? 'A first review is still pending and unresolved runtime references remain visible.'
+      : compareReady
+        ? 'A first review is still pending and comparable neighboring workspace objects are already visible.'
+        : 'A first review is still pending, so the next read establishes the initial decision anchor.')
+    : changedSinceAnchor && unresolvedCount > 0
+      ? 'The raw candidate artifact changed after the latest review anchor and visible reference gaps are still present now.'
+      : changedSinceAnchor && compareReady
+        ? 'The raw candidate artifact changed after the latest review anchor and the current desk can contrast it against comparable neighbors.'
+        : changedSinceAnchor && reviewable
+          ? 'The raw candidate artifact changed after the latest review anchor while the workspace still permits a minimal review write.'
+          : reviewable && unresolvedCount > 0
+            ? 'Even without a newer raw candidate update, unresolved runtime references still keep the current review posture open.'
+            : null;
+  const whyNotNow = whyNow
+    ? null
+    : terminal
+      ? 'No material post-anchor movement is visible, and the latest terminal decision still matches the currently visible workspace signals.'
+      : latestReviewedAt
+        ? 'No material post-anchor movement is visible beyond the current workspace baseline.'
+        : 'No prior review anchor exists yet, but the visible workspace signals do not currently indicate stronger decision movement.';
+  return {
+    anchor_kind: anchorKind,
+    anchor_at: anchorAt,
+    current_updated_at: updatedAt,
+    changed_since_anchor: changedSinceAnchor,
+    movement_bucket: movementBucket,
+    change_categories: changeCategories,
+    delta_signals: deltaSignals,
+    delta_summary: deltaSummary,
+    why_now: whyNow,
+    why_not_now: whyNotNow,
+    review_attention_now: Boolean(whyNow),
+    stable_since_anchor: Boolean(latestReviewedAt && !changedSinceAnchor && unresolvedCount < 1),
+    compare_delta_ready: Boolean(compareReady && (changedSinceAnchor || !latestReviewedAt))
+  };
+}
+
 function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) {
   if (!payload) {
     return null;
@@ -1059,6 +1184,7 @@ function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) 
   const stateExplanation = buildMecWorkspaceStateExplanation(reviewSummary, controlReadiness, unresolvedRuntimeReferences, sourceLinkage, reviewHistoryContext, relatedCandidates);
   const focusContext = buildMecWorkspaceFocusContext(reviewSummary, controlReadiness, unresolvedRuntimeReferences, evidenceContext, reviewHistoryContext, relatedCandidates, sourceLinkage);
   const compareContext = buildMecWorkspaceCompareContext(payload, candidateMap, eventMap, reviewMap, sourceLinkage, relatedCandidates);
+  const deltaContext = buildMecWorkspaceDeltaContext(payload, reviewSummary, latestReview, unresolvedRuntimeReferences, sourceLinkage, evidenceContext, reviewHistoryContext, controlReadiness, focusContext, compareContext);
   return {
     workspace_kind: 'mec_review_workspace',
     workspace_version: 'phase3c-mec-review-workspace/v1',
@@ -1097,12 +1223,14 @@ function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) 
     state_explanation: stateExplanation,
     focus_context: focusContext,
     compare_context: compareContext,
+    delta_context: deltaContext,
     workspace_summary: {
       review_count: reviewSummary.review_count,
       latest_review_outcome: latestReview ? latestReview.review_outcome : null,
       linked_relevance: sourceLinkage.related_candidate_ids.length > 0,
       unresolved_runtime_reference_count: unresolvedRuntimeReferences.length,
-      attention_required: controlReadiness.attention_required
+      attention_required: controlReadiness.attention_required,
+      delta_attention: deltaContext.review_attention_now
     },
     raw_review_records: reviewRecords.map(record => ({ ...record })),
     raw_candidate_artifact: payload,

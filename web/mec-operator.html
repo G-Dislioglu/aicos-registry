@@ -675,6 +675,9 @@
           <h3>Compare context</h3>
           <div class="panel-sub">Quick-compare surface over existing linkage, source overlap, review-state and history signals without inventing a ranking ontology.</div>
           <div id="detail-compare" class="compact-list"></div>
+          <h3>Delta / change context</h3>
+          <div class="panel-sub">Signal-based change awareness over review anchors, visible runtime movement and why-now / why-not-now readability from the canonical workspace only.</div>
+          <div id="detail-delta" class="compact-list"></div>
           <h3>Review actions</h3>
           <div class="panel-sub">Minimal runtime review controls only. Actions stay inside the desk, write separate review records, and keep the raw candidate artifact proposal-origin.</div>
           <div class="field full">
@@ -873,6 +876,7 @@
     const detailRelatedEl = document.getElementById('detail-related');
     const detailFocusEl = document.getElementById('detail-focus');
     const detailCompareEl = document.getElementById('detail-compare');
+    const detailDeltaEl = document.getElementById('detail-delta');
     const reviewActionsEl = document.getElementById('review-actions');
     const reviewMessageEl = document.getElementById('review-message');
     const reviewRationaleEl = document.getElementById('review-rationale');
@@ -1030,6 +1034,10 @@
 
     function getCompareContext(item) {
       return item && item.compare_context ? item.compare_context : null;
+    }
+
+    function getDeltaContext(item) {
+      return item && item.delta_context ? item.delta_context : null;
     }
 
     function getLastReviewOutcome(item) {
@@ -1238,6 +1246,18 @@
 
     function getDeskSections(items) {
       const sections = [
+        {
+          key: 'change_now',
+          label: 'Change: review movement now',
+          hint: 'Workspace items whose visible signals suggest a fresh read is justified now',
+          matcher: item => item && item.delta_context && item.delta_context.review_attention_now === true
+        },
+        {
+          key: 'change_stable',
+          label: 'Change: stable since anchor',
+          hint: 'Workspace items whose visible review anchor still matches the current workspace read',
+          matcher: item => item && item.delta_context && item.delta_context.stable_since_anchor === true
+        },
         {
           key: 'focus_reference_tension',
           label: 'Focus: reference tension',
@@ -1585,6 +1605,12 @@
     function getCandidateListContext(item) {
       if (!item) {
         return '';
+      }
+      if (item.delta_context && item.delta_context.why_now) {
+        return item.delta_context.why_now;
+      }
+      if (item.delta_context && item.delta_context.why_not_now) {
+        return item.delta_context.why_not_now;
       }
       if (item.unresolved_runtime_reference_count) {
         return `Unresolved runtime references ${item.unresolved_runtime_reference_count}`;
@@ -2128,6 +2154,47 @@
       });
     }
 
+    function renderDeltaContext(payload) {
+      const delta = getDeltaContext(payload);
+      if (!delta) {
+        detailDeltaEl.innerHTML = '<div class="empty">No derived delta or change-awareness context is available for this workspace item.</div>';
+        return;
+      }
+      detailDeltaEl.innerHTML = `
+        <div class="detail-card">
+          <strong>Delta summary</strong>
+          <span>${escapeHtml(delta.delta_summary || '-')}</span>
+          <div class="row-meta">
+            <span class="badge">${escapeHtml(delta.movement_bucket || '-')}</span>
+            <span class="badge">anchor ${escapeHtml(delta.anchor_kind || '-')}</span>
+            <span class="badge">changed ${escapeHtml(delta.changed_since_anchor ? 'yes' : 'no')}</span>
+            <span class="badge">compare ${escapeHtml(delta.compare_delta_ready ? 'delta-ready' : 'steady')}</span>
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Why now / why not now</strong>
+          <div style="display:grid; gap:8px; margin-top:4px;">
+            <div class="tiny">${escapeHtml(delta.why_now || 'No stronger why-now signal is currently visible.')}</div>
+            <div class="tiny">${escapeHtml(delta.why_not_now || 'A why-not-now explanation is not active because visible change signals already justify renewed attention.')}</div>
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Change categories</strong>
+          <div style="display:grid; gap:6px; margin-top:4px;">
+            ${Object.entries(delta.change_categories || {}).map(([key, value]) => `<div class="tiny">${escapeHtml(key)} | ${escapeHtml(String(value))}</div>`).join('') || '<div class="tiny">No change categories are available.</div>'}
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Delta signals</strong>
+          <div style="display:grid; gap:6px; margin-top:4px;">
+            ${(Array.isArray(delta.delta_signals) && delta.delta_signals.length > 0)
+              ? delta.delta_signals.map(signal => `<div class="tiny">${escapeHtml(signal)}</div>`).join('')
+              : '<div class="tiny">No delta signals are currently visible.</div>'}
+          </div>
+        </div>
+      `;
+    }
+
     function clearReviewMessage() {
       reviewMessageEl.className = '';
       reviewMessageEl.textContent = '';
@@ -2270,6 +2337,7 @@
       renderRelatedCandidateContext(payload);
       renderFocusContext(payload);
       renderCompareContext(payload);
+      renderDeltaContext(payload);
       renderRawReviewRecords(payload);
       candidateDetailEl.textContent = JSON.stringify(rawCandidate, null, 2);
     }
@@ -2407,6 +2475,7 @@
       detailRelatedEl.innerHTML = '<div class="empty">Loading related candidate context...</div>';
       detailFocusEl.innerHTML = '<div class="empty">Loading focus context...</div>';
       detailCompareEl.innerHTML = '<div class="empty">Loading compare context...</div>';
+      detailDeltaEl.innerHTML = '<div class="empty">Loading delta context...</div>';
       reviewActionsEl.innerHTML = '<div class="empty">Loading review controls...</div>';
       clearReviewMessage();
       detailPairEl.innerHTML = '';
@@ -2444,6 +2513,7 @@
           detailRelatedEl.innerHTML = '<div class="empty">Related candidate context is unavailable because the workspace detail could not be loaded.</div>';
           detailFocusEl.innerHTML = '<div class="empty">Focus context is unavailable because the workspace detail could not be loaded.</div>';
           detailCompareEl.innerHTML = '<div class="empty">Compare context is unavailable because the workspace detail could not be loaded.</div>';
+          detailDeltaEl.innerHTML = '<div class="empty">Delta context is unavailable because the workspace detail could not be loaded.</div>';
           detailLinkageEl.innerHTML = `
             <div class="detail-card">
               <strong>Reference unavailable</strong>
@@ -2462,6 +2532,7 @@
           detailRelatedEl.innerHTML = '<div class="empty">Related candidate context failed to load.</div>';
           detailFocusEl.innerHTML = '<div class="empty">Focus context failed to load.</div>';
           detailCompareEl.innerHTML = '<div class="empty">Compare context failed to load.</div>';
+          detailDeltaEl.innerHTML = '<div class="empty">Delta context failed to load.</div>';
           rawReviewRecordsEl.innerHTML = '<div class="empty">Raw review records failed to load.</div>';
           reviewActionsEl.innerHTML = '<div class="empty">Review controls failed to load.</div>';
           candidateDetailEl.textContent = error.message;
@@ -2715,6 +2786,7 @@
           detailRelatedEl.innerHTML = '<div class="empty">No related candidate context loaded.</div>';
           detailFocusEl.innerHTML = '<div class="empty">No focus context loaded.</div>';
           detailCompareEl.innerHTML = '<div class="empty">No compare context loaded.</div>';
+          detailDeltaEl.innerHTML = '<div class="empty">No delta context loaded.</div>';
           reviewActionsEl.innerHTML = '<div class="empty">Select a candidate to review.</div>';
           rawReviewRecordsEl.innerHTML = '<div class="empty">No raw review records available.</div>';
           clearReviewMessage();
