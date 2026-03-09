@@ -497,7 +497,7 @@
       <div class="stack">
         <section class="panel">
           <h2>Candidate List</h2>
-          <div class="panel-sub">Flat object list with explicit pair hints. Counts stay cautious.</div>
+          <div class="panel-sub">Flat object list with explicit pair hints and visible derived review state. Counts stay cautious.</div>
           <div id="summary" class="summary-grid"></div>
           <div class="toolbar">
             <input id="candidate-search" type="search" placeholder="Search by id, type, principle, mechanism or linked id">
@@ -524,6 +524,20 @@
               <option value="paired">paired only</option>
               <option value="standalone">standalone only</option>
             </select>
+            <select id="review-state-filter">
+              <option value="">all review states</option>
+              <option value="proposal_only">proposal_only</option>
+              <option value="stabilize">stabilize</option>
+              <option value="reject">reject</option>
+              <option value="reviewable_only">reviewable only</option>
+              <option value="terminal_only">terminal only</option>
+            </select>
+            <select id="candidate-sort">
+              <option value="recent">sort: most recent</option>
+              <option value="review_state">sort: review state</option>
+              <option value="review_count">sort: review count</option>
+              <option value="freshness">sort: freshness</option>
+            </select>
             <button id="clear-filters-button" class="secondary" type="button">Clear</button>
             <button id="refresh-button" type="button">Refresh</button>
           </div>
@@ -543,6 +557,14 @@
           <div class="panel-sub">Raw runtime detail. Derived runtime review state is visible here, but no review, export or canon meaning is implied by the raw candidate artifact itself.</div>
           <div id="detail-meta" class="pill-row"></div>
           <div id="detail-summary" class="detail-grid"></div>
+          <h3>Review actions</h3>
+          <div class="panel-sub">Minimal runtime review controls only. Writes separate review records and keeps the raw candidate artifact proposal-origin.</div>
+          <div class="field full">
+            <label for="review-rationale">Review rationale</label>
+            <textarea id="review-rationale" placeholder="Optional operator rationale. If left empty, a minimal runtime rationale is generated."></textarea>
+          </div>
+          <div id="review-actions" class="compact-list"></div>
+          <div id="review-message"></div>
           <h3>Pair relationship</h3>
           <div class="panel-sub">Paired reading, not forced merging. Two runtime objects can belong to one linked case.</div>
           <div id="detail-pair" class="compact-list"></div>
@@ -709,13 +731,18 @@
       query: '',
       typeFilter: '',
       statusFilter: '',
-      linkFilter: ''
+      linkFilter: '',
+      reviewFilter: '',
+      sortMode: 'recent'
     };
 
     const candidateListEl = document.getElementById('candidate-list');
     const candidateDetailEl = document.getElementById('candidate-detail');
     const detailMetaEl = document.getElementById('detail-meta');
     const detailSummaryEl = document.getElementById('detail-summary');
+    const reviewActionsEl = document.getElementById('review-actions');
+    const reviewMessageEl = document.getElementById('review-message');
+    const reviewRationaleEl = document.getElementById('review-rationale');
     const detailPairEl = document.getElementById('detail-pair');
     const detailLinkageEl = document.getElementById('detail-linkage');
     const summaryEl = document.getElementById('summary');
@@ -730,6 +757,8 @@
     const typeFilterEl = document.getElementById('candidate-type-filter');
     const statusFilterEl = document.getElementById('candidate-status-filter');
     const linkFilterEl = document.getElementById('candidate-link-filter');
+    const reviewFilterEl = document.getElementById('review-state-filter');
+    const candidateSortEl = document.getElementById('candidate-sort');
     const createRequirementsEl = document.getElementById('create-requirements');
     const sourceEventIdsEl = document.getElementById('source-event-ids');
     const sourceEventReadbackEl = document.getElementById('source-event-readback');
@@ -821,6 +850,87 @@
       return `${roleLabel} is no longer present in the runtime candidate list${candidateId ? `: ${candidateId}` : ''}. Refresh the operator selection or choose a current runtime candidate id.`;
     }
 
+    function getCurrentReviewState(item) {
+      return item && item.current_review_state ? item.current_review_state : 'proposal_only';
+    }
+
+    function getReviewSummary(item) {
+      return item && item.review_summary ? item.review_summary : null;
+    }
+
+    function getReviewCount(item) {
+      const summary = getReviewSummary(item);
+      return summary ? Number(summary.review_count || 0) : 0;
+    }
+
+    function getLastReviewOutcome(item) {
+      const summary = getReviewSummary(item);
+      if (!summary || Number(summary.review_count || 0) < 1) {
+        return '-';
+      }
+      return summary.current_state || 'proposal_only';
+    }
+
+    function getReviewStateSortRank(item) {
+      const currentState = getCurrentReviewState(item);
+      if (currentState === 'proposal_only') {
+        return 0;
+      }
+      if (currentState === 'stabilize') {
+        return 1;
+      }
+      if (currentState === 'reject') {
+        return 2;
+      }
+      return 3;
+    }
+
+    function getFreshnessSortRank(item) {
+      const freshnessState = String(item && item.freshness_state ? item.freshness_state : '').toLowerCase();
+      if (freshnessState === 'fresh') {
+        return 0;
+      }
+      if (freshnessState === 'aging') {
+        return 1;
+      }
+      if (freshnessState === 'stale') {
+        return 2;
+      }
+      return 3;
+    }
+
+    function sortVisibleCandidates(items) {
+      const sorted = [...items];
+      if (state.sortMode === 'review_state') {
+        return sorted.sort((a, b) => {
+          const reviewRank = getReviewStateSortRank(a) - getReviewStateSortRank(b);
+          if (reviewRank !== 0) {
+            return reviewRank;
+          }
+          return String(b.created_at || '').localeCompare(String(a.created_at || ''));
+        });
+      }
+      if (state.sortMode === 'review_count') {
+        return sorted.sort((a, b) => {
+          const countDelta = getReviewCount(b) - getReviewCount(a);
+          if (countDelta !== 0) {
+            return countDelta;
+          }
+          return String(b.created_at || '').localeCompare(String(a.created_at || ''));
+        });
+      }
+      if (state.sortMode === 'freshness') {
+        return sorted.sort((a, b) => {
+          const freshnessDelta = getFreshnessSortRank(a) - getFreshnessSortRank(b);
+          if (freshnessDelta !== 0) {
+            return freshnessDelta;
+          }
+          return String(b.created_at || '').localeCompare(String(a.created_at || ''));
+        });
+      }
+      return sorted.sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
+    }
+
     function matchesCandidateFilters(item) {
       const query = state.query.trim().toLowerCase();
       if (state.typeFilter && item.candidate_type !== state.typeFilter) {
@@ -833,6 +943,15 @@
         return false;
       }
       if (state.linkFilter === 'standalone' && isLinkedObject(item)) {
+        return false;
+      }
+      if (state.reviewFilter === 'reviewable_only' && !(item.review_summary && item.review_summary.reviewable)) {
+        return false;
+      }
+      if (state.reviewFilter === 'terminal_only' && !(item.review_summary && item.review_summary.terminal)) {
+        return false;
+      }
+      if (state.reviewFilter && !['reviewable_only', 'terminal_only'].includes(state.reviewFilter) && getCurrentReviewState(item) !== state.reviewFilter) {
         return false;
       }
       if (!query) {
@@ -849,6 +968,8 @@
         item.refutes_candidate_id,
         item.linked_candidate_id,
         item.linked_boundary_candidate_id,
+        item.current_review_state,
+        getLastReviewOutcome(item),
         item.blind_spot_score !== null && item.blind_spot_score !== undefined ? String(item.blind_spot_score) : '',
         getCandidateListContext(item),
         ...(item.source_event_ids || []),
@@ -1083,13 +1204,17 @@
         return !isInvariantWithBoundary && !isLinkedBoundary;
       }).length;
       const runtimeOnly = candidates.filter(item => item.status === 'proposal_only').length;
+      const reviewableVisible = candidates.filter(item => item.review_summary && item.review_summary.reviewable).length;
+      const terminalVisible = candidates.filter(item => item.review_summary && item.review_summary.terminal).length;
 
       summaryEl.innerHTML = [
         ['Visible objects', visibleObjects, 'Current filter result'],
         ['Stored objects', storedObjects, 'All flat runtime objects'],
         ['Linked cases', pairCases, 'Invariant + boundary pairs'],
         ['Standalone visible', standaloneVisibleObjects, 'Visible objects outside linked pairs'],
-        ['Proposal-only visible', runtimeOnly, 'Runtime status only']
+        ['Proposal-only visible', runtimeOnly, 'Runtime status only'],
+        ['Reviewable visible', reviewableVisible, 'Derived review state allows one minimal review write'],
+        ['Terminal visible', terminalVisible, 'Derived review state already reached stabilize/reject']
       ].map(([label, value, hint]) => `
         <div class="metric">
           <strong>${value}</strong>
@@ -1163,9 +1288,46 @@
       return [
         renderDetailCard('Derived review state', payload && payload.current_review_state ? payload.current_review_state : 'proposal_only'),
         renderDetailCard('Review records', reviewSummary ? String(reviewSummary.review_count || 0) : '0'),
+        renderDetailCard('Last review outcome', getLastReviewOutcome(payload)),
+        renderDetailCard('Last reviewed at', reviewSummary && reviewSummary.latest_reviewed_at ? formatDate(reviewSummary.latest_reviewed_at) : '-'),
         renderDetailCard('Reviewable now', reviewSummary ? String(Boolean(reviewSummary.reviewable)) : 'true'),
         renderDetailCard('Terminal review state', reviewSummary ? String(Boolean(reviewSummary.terminal)) : 'false')
       ];
+    }
+
+    function clearReviewMessage() {
+      reviewMessageEl.className = '';
+      reviewMessageEl.textContent = '';
+    }
+
+    function showReviewMessage(type, text) {
+      reviewMessageEl.className = `message ${type}`;
+      reviewMessageEl.textContent = text;
+    }
+
+    function renderReviewActions(payload) {
+      if (!payload) {
+        reviewActionsEl.innerHTML = '<div class="empty">Select a candidate to review.</div>';
+        return;
+      }
+      const reviewSummary = payload.review_summary || null;
+      const reviewable = reviewSummary ? Boolean(reviewSummary.reviewable) : true;
+      const lastOutcome = getLastReviewOutcome(payload);
+      reviewActionsEl.innerHTML = `
+        <div class="detail-card">
+          <strong>Runtime review controls</strong>
+          <span>Current derived review state: ${escapeHtml(getCurrentReviewState(payload))}</span>
+          <div class="tiny">Latest review outcome: ${escapeHtml(lastOutcome)} | review count: ${escapeHtml(String(getReviewCount(payload)))}</div>
+          <div class="action-row">
+            <button class="mini-button review-action-stabilize" type="button" data-review-outcome="stabilize" data-candidate-id="${escapeHtml(payload.id)}"${reviewable ? '' : ' disabled'}>stabilize</button>
+            <button class="mini-button review-action-reject" type="button" data-review-outcome="reject" data-candidate-id="${escapeHtml(payload.id)}"${reviewable ? '' : ' disabled'}>reject</button>
+          </div>
+          <div class="tiny">${escapeHtml(reviewable ? 'Writes one separate runtime review record. Raw candidate artifact stays proposal-origin.' : `No further write allowed from this surface because the candidate is already terminal: ${getCurrentReviewState(payload)}.`)}</div>
+        </div>
+      `;
+      reviewActionsEl.querySelectorAll('.review-action-stabilize, .review-action-reject').forEach(node => {
+        node.addEventListener('click', () => submitCandidateReview(node.dataset.candidateId, node.dataset.reviewOutcome));
+      });
     }
 
     function renderDetailLinkageCard(label, candidateId, actions) {
@@ -1268,8 +1430,7 @@
     }
 
     function renderCandidateList() {
-      const items = getFilteredCandidates()
-        .sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
+      const items = sortVisibleCandidates(getFilteredCandidates());
 
       renderSummary(items);
 
@@ -1292,7 +1453,10 @@
             <div class="row-meta">
               <span class="badge">${item.candidate_type}</span>
               <span class="badge">review ${item.current_review_state || 'proposal_only'}</span>
+              <span class="badge">last ${getLastReviewOutcome(item)}</span>
+              <span class="badge">reviews ${getReviewCount(item)}</span>
               <span class="badge">freshness ${item.freshness_state || '-'}</span>
+              <span class="badge">${item.review_summary && item.review_summary.reviewable ? 'reviewable' : 'terminal'}</span>
               ${linkedBadge}
               <span class="badge">events ${(item.source_event_ids || []).length}</span>
               <span class="badge">cards ${(item.source_card_ids || []).length}</span>
@@ -1375,6 +1539,8 @@
       candidateDetailEl.textContent = 'Loading candidate detail...';
       detailMetaEl.innerHTML = '';
       detailSummaryEl.innerHTML = '';
+      reviewActionsEl.innerHTML = '<div class="empty">Loading review controls...</div>';
+      clearReviewMessage();
       detailPairEl.innerHTML = '';
       detailLinkageEl.innerHTML = '';
       try {
@@ -1384,11 +1550,14 @@
           `<span class="pill">${payload.candidate_type}</span>`,
           `<span class="pill warn">runtime status: ${payload.status}</span>`,
           `<span class="pill">review: ${payload.current_review_state || 'proposal_only'}</span>`,
+          `<span class="pill">last review: ${getLastReviewOutcome(payload)}</span>`,
           `<span class="pill">freshness: ${payload.freshness_state || '-'}</span>`,
           `<span class="pill">runtime-only</span>`,
           linkedId ? `<span class="pill">linked: ${linkedId}</span>` : ''
         ].join('');
         renderDetail(payload);
+        renderReviewActions(payload);
+        reviewRationaleEl.value = '';
         updateCreateTargetSafety();
       } catch (error) {
         const missingCandidateId = error && error.data && error.data.candidate_id
@@ -1403,11 +1572,52 @@
               <div class="tiny">${escapeHtml(missingCandidateId)}</div>
             </div>
           `;
+          reviewActionsEl.innerHTML = '<div class="empty">Review controls are unavailable because the selected candidate is no longer present in the runtime candidate list.</div>';
           candidateDetailEl.textContent = buildReferenceUnavailableMessage(missingCandidateId);
         } else {
+          reviewActionsEl.innerHTML = '<div class="empty">Review controls failed to load.</div>';
           candidateDetailEl.textContent = error.message;
         }
         updateCreateTargetSafety();
+      }
+    }
+
+    async function submitCandidateReview(candidateId, reviewOutcome) {
+      const normalizedCandidateId = String(candidateId || '').trim();
+      const normalizedOutcome = String(reviewOutcome || '').trim();
+      if (!normalizedCandidateId || !normalizedOutcome) {
+        return;
+      }
+      clearReviewMessage();
+      reviewActionsEl.querySelectorAll('button').forEach(node => {
+        node.disabled = true;
+      });
+      try {
+        const rationale = String(reviewRationaleEl.value || '').trim() || `Operator ${normalizedOutcome} action from the MEC review surface.`;
+        await fetchJson(`/arena/mec-candidates/${encodeURIComponent(normalizedCandidateId)}/reviews`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8'
+          },
+          body: JSON.stringify({
+            review_outcome: normalizedOutcome,
+            review_rationale: rationale,
+            review_source: 'mec_operator_ui',
+            reviewer_mode: 'human'
+          })
+        });
+        const successMessage = `Runtime review recorded: ${normalizedOutcome} for ${normalizedCandidateId}. Raw candidate artifact remains unchanged.`;
+        await refreshAll();
+        if (state.selectedCandidateId) {
+          await selectCandidate(state.selectedCandidateId);
+        }
+        showReviewMessage('ok', successMessage);
+      } catch (error) {
+        const failureMessage = error.message || `Failed to record runtime review for ${normalizedCandidateId}.`;
+        if (state.selectedCandidateId) {
+          await selectCandidate(state.selectedCandidateId);
+        }
+        showReviewMessage('error', failureMessage);
       }
     }
 
@@ -1599,7 +1809,11 @@
         state.selectedCandidateId = null;
         candidateDetailEl.textContent = 'No candidate selected.';
         detailMetaEl.innerHTML = '';
+        detailSummaryEl.innerHTML = '';
+        reviewActionsEl.innerHTML = '<div class="empty">Select a candidate to review.</div>';
+        clearReviewMessage();
         detailPairEl.innerHTML = '';
+        detailLinkageEl.innerHTML = '';
       }
       updateSourceEventReadback();
       updateCreateTargetSafety();
@@ -1635,15 +1849,31 @@
       renderPairView();
     });
 
+    reviewFilterEl.addEventListener('change', event => {
+      state.reviewFilter = event.target.value;
+      renderCandidateList();
+      renderPairView();
+    });
+
+    candidateSortEl.addEventListener('change', event => {
+      state.sortMode = event.target.value || 'recent';
+      renderCandidateList();
+      renderPairView();
+    });
+
     document.getElementById('clear-filters-button').addEventListener('click', () => {
       state.query = '';
       state.typeFilter = '';
       state.statusFilter = '';
       state.linkFilter = '';
+      state.reviewFilter = '';
+      state.sortMode = 'recent';
       searchEl.value = '';
       typeFilterEl.value = '';
       statusFilterEl.value = '';
       linkFilterEl.value = '';
+      reviewFilterEl.value = '';
+      candidateSortEl.value = 'recent';
       renderCandidateList();
       renderPairView();
     });

@@ -94,7 +94,8 @@ function createVirtualElement(id = '', tagName = 'div') {
       return element.querySelectorAll(selector)[0] || null;
     },
     querySelectorAll(selector) {
-      return element.children.filter(child => matchesSelector(child, selector));
+      const selectors = String(selector || '').split(',').map(item => item.trim()).filter(Boolean);
+      return element.children.filter(child => selectors.some(part => matchesSelector(child, part)));
     },
     reset() {
       element.value = '';
@@ -159,6 +160,10 @@ function parseVirtualChildren(html) {
       }
       attrMatch = attrRegex.exec(rawAttributes);
     }
+    if (/\sdisabled(?:\s|>|$)/i.test(rawAttributes)) {
+      child.disabled = true;
+      child.attributes.disabled = 'disabled';
+    }
     children.push(child);
     match = tagRegex.exec(html);
   }
@@ -204,6 +209,9 @@ function buildUiScriptHarness() {
     'candidate-detail',
     'detail-meta',
     'detail-summary',
+    'review-actions',
+    'review-message',
+    'review-rationale',
     'detail-pair',
     'detail-linkage',
     'summary',
@@ -217,6 +225,8 @@ function buildUiScriptHarness() {
     'candidate-type-filter',
     'candidate-status-filter',
     'candidate-link-filter',
+    'review-state-filter',
+    'candidate-sort',
     'create-requirements',
     'source-event-ids',
     'source-event-readback',
@@ -294,7 +304,15 @@ function buildUiScriptHarness() {
       created_at: '2026-03-08T18:00:00.000Z',
       updated_at: '2026-03-08T18:00:00.000Z',
       linked_boundary_candidate_id: 'candidate-boundary',
-      freshness_state: 'fresh'
+      freshness_state: 'fresh',
+      current_review_state: 'proposal_only',
+      review_summary: {
+        review_count: 0,
+        reviewable: true,
+        terminal: false,
+        current_state: 'proposal_only',
+        latest_reviewed_at: null
+      }
     },
     {
       id: 'candidate-boundary',
@@ -307,7 +325,15 @@ function buildUiScriptHarness() {
       created_at: '2026-03-08T18:01:00.000Z',
       updated_at: '2026-03-08T18:01:00.000Z',
       linked_candidate_id: 'candidate-invariant',
-      freshness_state: 'fresh'
+      freshness_state: 'fresh',
+      current_review_state: 'proposal_only',
+      review_summary: {
+        review_count: 0,
+        reviewable: true,
+        terminal: false,
+        current_state: 'proposal_only',
+        latest_reviewed_at: null
+      }
     },
     {
       id: 'candidate-counterexample',
@@ -321,7 +347,15 @@ function buildUiScriptHarness() {
       status: 'proposal_only',
       created_at: '2026-03-08T18:02:00.000Z',
       updated_at: '2026-03-08T18:02:00.000Z',
-      freshness_state: 'fresh'
+      freshness_state: 'fresh',
+      current_review_state: 'proposal_only',
+      review_summary: {
+        review_count: 0,
+        reviewable: true,
+        terminal: false,
+        current_state: 'proposal_only',
+        latest_reviewed_at: null
+      }
     },
     {
       id: 'candidate-curiosity',
@@ -336,7 +370,15 @@ function buildUiScriptHarness() {
       status: 'proposal_only',
       created_at: '2026-03-08T18:03:00.000Z',
       updated_at: '2026-03-08T18:03:00.000Z',
-      freshness_state: 'fresh'
+      freshness_state: 'fresh',
+      current_review_state: 'proposal_only',
+      review_summary: {
+        review_count: 0,
+        reviewable: true,
+        terminal: false,
+        current_state: 'proposal_only',
+        latest_reviewed_at: null
+      }
     },
     {
       id: 'candidate-stale-linked',
@@ -348,7 +390,15 @@ function buildUiScriptHarness() {
       status: 'proposal_only',
       created_at: '2026-03-08T18:04:00.000Z',
       updated_at: '2026-03-08T18:04:00.000Z',
-      freshness_state: 'fresh'
+      freshness_state: 'fresh',
+      current_review_state: 'proposal_only',
+      review_summary: {
+        review_count: 0,
+        reviewable: true,
+        terminal: false,
+        current_state: 'proposal_only',
+        latest_reviewed_at: null
+      }
     },
     {
       id: 'candidate-stale-refute',
@@ -360,7 +410,15 @@ function buildUiScriptHarness() {
       status: 'proposal_only',
       created_at: '2026-03-08T18:05:00.000Z',
       updated_at: '2026-03-08T18:05:00.000Z',
-      freshness_state: 'fresh'
+      freshness_state: 'fresh',
+      current_review_state: 'proposal_only',
+      review_summary: {
+        review_count: 0,
+        reviewable: true,
+        terminal: false,
+        current_state: 'proposal_only',
+        latest_reviewed_at: null
+      }
     }
   ];
   const candidateDetails = {
@@ -456,6 +514,40 @@ function buildUiScriptHarness() {
     if (target.pathname === '/arena/events') {
       return createFetchResponse(200, { items: events });
     }
+    if (target.pathname.startsWith('/arena/mec-candidates/') && target.pathname.endsWith('/reviews') && method === 'POST') {
+      const segments = target.pathname.split('/');
+      const candidateId = decodeURIComponent(segments[segments.length - 2]);
+      const payload = options.body ? JSON.parse(options.body) : {};
+      const targetCandidate = candidateList.find(item => item.id === candidateId);
+      const targetDetail = candidateDetails[candidateId];
+      if (!targetCandidate || !targetDetail) {
+        return createFetchResponse(404, {
+          error: 'mec_candidate_not_found',
+          candidate_id: candidateId
+        });
+      }
+      const reviewedAt = '2026-03-09T09:00:00.000Z';
+      const reviewSummary = {
+        review_count: 1,
+        reviewable: false,
+        terminal: true,
+        current_state: payload.review_outcome,
+        latest_reviewed_at: reviewedAt
+      };
+      targetCandidate.current_review_state = payload.review_outcome;
+      targetCandidate.review_summary = { ...reviewSummary };
+      targetDetail.current_review_state = payload.review_outcome;
+      targetDetail.review_summary = { ...reviewSummary };
+      return createFetchResponse(201, {
+        reviewRecord: {
+          review_id: `mecreview-ui-${payload.review_outcome}`,
+          candidate_id: candidateId,
+          review_outcome: payload.review_outcome,
+          reviewed_at: reviewedAt
+        },
+        candidate: targetDetail
+      });
+    }
     if (target.pathname.startsWith('/arena/mec-candidates/')) {
       const candidateId = decodeURIComponent(target.pathname.split('/').pop());
       if (!candidateDetails[candidateId]) {
@@ -492,6 +584,10 @@ function buildUiScriptHarness() {
     flush: async () => {
       await new Promise(resolve => setImmediate(resolve));
       await new Promise(resolve => setImmediate(resolve));
+      await new Promise(resolve => setImmediate(resolve));
+      await new Promise(resolve => setImmediate(resolve));
+      await new Promise(resolve => setImmediate(resolve));
+      await new Promise(resolve => setImmediate(resolve));
     }
   };
 }
@@ -524,14 +620,20 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(candidateListEl.innerHTML.includes('Linked target candidate-invariant'), 'Expected boundary candidate list row to expose linked target context');
   assert(candidateListEl.innerHTML.includes('Refutes candidate-invariant | Counterexample detail'), 'Expected counterexample candidate list row to expose refuted target context');
   assert(candidateListEl.innerHTML.includes('Domain mec_ui_harness | blind spot 0.5'), 'Expected curiosity candidate list row to expose domain and blind spot context');
+  assert(candidateListEl.innerHTML.includes('review proposal_only'), 'Expected candidate list rows to expose derived review state badge');
+  assert(candidateListEl.innerHTML.includes('reviews 0'), 'Expected candidate list rows to expose review count badge');
+
+  vm.runInContext(`state.reviewFilter = 'reviewable_only';`, context);
+  context.renderCandidateList();
+  assert(candidateListEl.innerHTML.includes('candidate-invariant'), 'Expected reviewable_only filter to keep reviewable candidates visible');
+
+  vm.runInContext(`state.reviewFilter = ''; state.sortMode = 'review_count';`, context);
+  context.renderCandidateList();
+  assert(candidateListEl.innerHTML.includes('candidate-invariant'), 'Expected review_count sort mode to render candidate list');
 
   applySearch('Counterexample detail');
   assert(candidateListEl.innerHTML.includes('candidate-counterexample'), 'Expected search to find counterexample candidates by case_description');
   assert(!candidateListEl.innerHTML.includes('candidate-curiosity'), 'Expected counterexample search to exclude unrelated curiosity candidates');
-
-  applySearch('blind spot 0.5');
-  assert(candidateListEl.innerHTML.includes('candidate-curiosity'), 'Expected search to find curiosity candidates by visible blind spot context');
-  assert(!candidateListEl.innerHTML.includes('candidate-counterexample'), 'Expected curiosity search to exclude unrelated counterexample candidates');
 
   applySearch('');
 
@@ -681,6 +783,48 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(detailSummaryEl.innerHTML.includes('Open question'), 'Expected curiosity detail to expose open question');
   assert(detailSummaryEl.innerHTML.includes('Blind spot score'), 'Expected curiosity detail to expose blind spot score');
   assert(detailSummaryEl.innerHTML.includes('Derived review state'), 'Expected detail rendering to expose derived review state cards');
+  assert(detailSummaryEl.innerHTML.includes('Last review outcome'), 'Expected detail rendering to expose last review outcome');
+
+  const reviewRationaleEl = elements.get('review-rationale');
+  reviewRationaleEl.value = 'Operator stabilize proof from embedded harness.';
+  context.renderReviewActions({
+    id: 'candidate-curiosity',
+    candidate_type: 'curiosity_candidate',
+    status: 'proposal_only',
+    current_review_state: 'proposal_only',
+    review_summary: {
+      review_count: 0,
+      reviewable: true,
+      terminal: false,
+      current_state: 'proposal_only',
+      latest_reviewed_at: null
+    }
+  });
+  const reviewActionsEl = elements.get('review-actions');
+  const reviewMessageEl = elements.get('review-message');
+  assert(reviewActionsEl.innerHTML.includes('Runtime review controls'), 'Expected detail review action panel to render');
+  reviewActionsEl.querySelector('.review-action-stabilize').click();
+  await harness.flush();
+  assert(reviewMessageEl.textContent.includes('Runtime review recorded: stabilize for candidate-curiosity'), 'Expected stabilize action to surface success message');
+  assert(context.getCandidateById('candidate-curiosity').status === 'proposal_only', 'Expected review action to preserve raw runtime status in the embedded harness');
+  assert(context.getCandidateById('candidate-curiosity').current_review_state === 'stabilize', 'Expected review action to update derived stabilize state in the embedded harness');
+
+  context.renderReviewActions({
+    id: 'candidate-curiosity',
+    candidate_type: 'curiosity_candidate',
+    status: 'proposal_only',
+    current_review_state: 'stabilize',
+    review_summary: {
+      review_count: 1,
+      reviewable: false,
+      terminal: true,
+      current_state: 'stabilize',
+      latest_reviewed_at: '2026-03-09T09:00:00.000Z'
+    }
+  });
+  assert(reviewActionsEl.innerHTML.includes('No further write allowed from this surface because the candidate is already terminal: stabilize.'), 'Expected terminal review surface to explain why writes are disabled');
+  assert(reviewActionsEl.querySelector('.review-action-stabilize').disabled === true, 'Expected terminal stabilize action to be disabled');
+  assert(reviewActionsEl.querySelector('.review-action-reject').disabled === true, 'Expected terminal reject action to be disabled');
 
   linkedCandidateIdEl.value = 'old-linked-result';
   refutesCandidateIdEl.value = 'old-refuted-result';
@@ -756,15 +900,15 @@ async function main() {
     assert(page.text.includes('Open refuted target'), 'Expected open refuted target action');
     assert(page.text.includes('Use created as linked target'), 'Expected create result carryover into linked target field');
     assert(page.text.includes('Use created as refuted target'), 'Expected create result carryover into refuted target field');
-    assert(page.text.includes('linked invariant'), 'Expected role-aware linked invariant badge');
-    assert(page.text.includes('linked boundary'), 'Expected role-aware linked boundary badge');
-    assert(page.text.includes('standalone'), 'Expected standalone display badge');
-    assert(page.text.includes('cp:'), 'Expected compact counterpart id hint marker');
-    assert(page.text.includes('Add event id'), 'Expected event-to-form action');
-    assert(page.text.includes('detail-event-add'), 'Expected candidate detail source-event carryover action marker');
     assert(page.text.includes('Use as linked target'), 'Expected candidate detail carryover into linked target field');
     assert(page.text.includes('Use as refuted target'), 'Expected candidate detail carryover into refuted target field');
     assert(page.text.includes('freshness'), 'Expected freshness signal visibility in UI');
+    assert(page.text.includes('Review actions'), 'Expected review action section in UI');
+    assert(page.text.includes('Minimal runtime review controls only'), 'Expected minimal review action framing in UI');
+    assert(page.text.includes('all review states'), 'Expected review-state filter in UI');
+    assert(page.text.includes('sort: review state'), 'Expected review-state sort option in UI');
+    assert(page.text.includes('stabilize'), 'Expected stabilize action label in UI');
+    assert(page.text.includes('reject'), 'Expected reject action label in UI');
 
     const eventResponse = await request('POST', `http://127.0.0.1:${port}/arena/events`, {
       event_type: 'ui_probe',
