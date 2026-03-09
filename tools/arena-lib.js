@@ -1687,6 +1687,276 @@ function buildMecWorkspaceChallengeContext(payload, latestReview = null, sourceL
    };
  }
 
+ function buildMecChallengeDossierLineSignature(candidate) {
+  const challengeBasis = candidate && candidate.challenge_basis && typeof candidate.challenge_basis === 'object'
+    ? candidate.challenge_basis
+    : null;
+  const bucket = challengeBasis && challengeBasis.contradiction_pressure_bucket
+    ? challengeBasis.contradiction_pressure_bucket
+    : 'not_visible';
+  const flags = Array.isArray(challengeBasis && challengeBasis.challenge_flags)
+    ? Array.from(new Set(challengeBasis.challenge_flags.map(item => String(item || '').trim()).filter(Boolean))).sort().join('|')
+    : '';
+  const summarySeed = String((challengeBasis && challengeBasis.challenge_summary) || (candidate && candidate.mechanism) || (candidate && candidate.case_description) || 'no_summary')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 8)
+    .join('_') || 'no_summary';
+  return `${bucket}::${flags || `summary:${summarySeed}`}`;
+ }
+
+ function buildMecChallengeDossierLineLabel(candidate) {
+  const challengeBasis = candidate && candidate.challenge_basis && typeof candidate.challenge_basis === 'object'
+    ? candidate.challenge_basis
+    : null;
+  return (challengeBasis && challengeBasis.challenge_summary)
+    || (candidate && candidate.case_description)
+    || buildMecWorkspaceTitle(candidate)
+    || 'Visible challenge line';
+ }
+
+ function deriveMecChallengeDossierBucket(counterexampleCount, distinctLineCount, reinforcingLineCount, qualifiedLineCount, coverageGapCount, challengePresent) {
+  if (counterexampleCount < 1) {
+    return challengePresent ? 'pressure_without_counterexample_coverage' : 'no_visible_challenge_dossier';
+  }
+  if (distinctLineCount >= 2 && reinforcingLineCount >= 1) {
+    return coverageGapCount > 0 || qualifiedLineCount > 0
+      ? 'multi_line_reinforced_with_open_gaps'
+      : 'multi_line_reinforced_coverage';
+  }
+  if (distinctLineCount >= 2) {
+    return coverageGapCount > 0 || qualifiedLineCount > 0
+      ? 'multi_line_mixed_with_open_gaps'
+      : 'multi_line_mixed_coverage';
+  }
+  if (reinforcingLineCount >= 1) {
+    return coverageGapCount > 0 || qualifiedLineCount > 0
+      ? 'single_line_reinforced_with_open_gaps'
+      : 'single_line_reinforced_coverage';
+  }
+  return coverageGapCount > 0 || qualifiedLineCount > 0
+    ? 'single_line_qualified_coverage'
+    : 'single_line_visible_coverage';
+ }
+
+ function buildMecWorkspaceChallengeDossierContext(payload, reviewSummary = null, latestReview = null, sourceLinkage = {}, unresolvedReferences = [], evidenceContext = null, reviewHistoryContext = null, relatedCandidates = [], deltaContext = null, contradictionContext = null, decisionPacketContext = null, challengeContext = null, refutationContext = null, reviewTraceContext = null, candidateMap = new Map(), reviewMap = new Map()) {
+   const candidateId = payload && payload.id ? payload.id : null;
+   const candidateType = payload && payload.candidate_type ? payload.candidate_type : null;
+   const refutesCandidateId = sourceLinkage && sourceLinkage.refutes_candidate_id ? sourceLinkage.refutes_candidate_id : null;
+   const visibleCounterexamples = [];
+   for (const candidate of candidateMap.values()) {
+     if (!candidate || candidate.candidate_type !== 'counterexample_candidate') {
+       continue;
+     }
+     const targetCandidateId = candidate.refutes_candidate_id || null;
+     if (targetCandidateId !== candidateId && targetCandidateId !== refutesCandidateId) {
+       continue;
+     }
+     const counterexampleReviewSummary = buildMecReviewSummary(reviewMap.get(candidate.id) || []);
+     const challengeBasis = candidate.challenge_basis && typeof candidate.challenge_basis === 'object'
+       ? candidate.challenge_basis
+       : null;
+     const qualifierCount = Number((candidate.refutation_context && Array.isArray(candidate.refutation_context.open_qualifiers)
+       ? candidate.refutation_context.open_qualifiers.length
+       : 0));
+     visibleCounterexamples.push({
+       candidate_id: candidate.id,
+       title: buildMecWorkspaceTitle(candidate),
+       status: candidate.status || null,
+       current_review_state: counterexampleReviewSummary.current_state,
+       reviewable: counterexampleReviewSummary.reviewable,
+       terminal: counterexampleReviewSummary.terminal,
+       challenge_basis_summary: challengeBasis && challengeBasis.challenge_summary ? challengeBasis.challenge_summary : null,
+       challenge_basis_bucket: challengeBasis && challengeBasis.contradiction_pressure_bucket ? challengeBasis.contradiction_pressure_bucket : 'not_visible',
+       challenge_basis_flags: Array.isArray(challengeBasis && challengeBasis.challenge_flags) ? challengeBasis.challenge_flags.slice(0, 6) : [],
+       line_signature: buildMecChallengeDossierLineSignature(candidate),
+       line_label: buildMecChallengeDossierLineLabel(candidate),
+       open_qualifier_count: qualifierCount,
+       created_at: candidate.created_at || null,
+       updated_at: candidate.updated_at || null
+     });
+   }
+   visibleCounterexamples.sort((left, right) => parseMecWorkspaceTimestamp(right.updated_at || right.created_at) - parseMecWorkspaceTimestamp(left.updated_at || left.created_at));
+
+   const primaryCandidateId = candidateType === 'counterexample_candidate'
+     ? refutesCandidateId
+     : candidateId;
+   const primaryCandidate = primaryCandidateId ? candidateMap.get(primaryCandidateId) || null : null;
+   const primaryReviewSummary = primaryCandidateId
+     ? (primaryCandidateId === candidateId ? reviewSummary : buildMecReviewSummary(reviewMap.get(primaryCandidateId) || []))
+     : null;
+   const lineMap = new Map();
+   for (const counterexample of visibleCounterexamples) {
+     const signature = counterexample.line_signature;
+     if (!lineMap.has(signature)) {
+       lineMap.set(signature, {
+         line_signature: signature,
+         line_label: counterexample.line_label,
+         challenge_basis_bucket: counterexample.challenge_basis_bucket,
+         challenge_basis_flags: Array.from(new Set(counterexample.challenge_basis_flags || [])),
+         counterexample_ids: [],
+         counterexample_titles: [],
+         contribution_count: 0,
+         open_qualifier_count: 0
+       });
+     }
+     const line = lineMap.get(signature);
+     line.counterexample_ids.push(counterexample.candidate_id);
+     line.counterexample_titles.push(counterexample.title || counterexample.candidate_id);
+     line.contribution_count += 1;
+     line.open_qualifier_count += Number(counterexample.open_qualifier_count || 0);
+   }
+   const challengeLines = Array.from(lineMap.values()).map(line => {
+     const contributionPosture = line.contribution_count >= 2
+       ? (line.open_qualifier_count > 0 ? 'reinforced_but_qualified_line' : 'reinforced_visible_line')
+       : line.open_qualifier_count > 0
+         ? 'qualified_visible_line'
+         : 'distinct_visible_line';
+     return {
+       ...line,
+       contribution_posture: contributionPosture,
+       counterexample_ids: line.counterexample_ids.slice(0, 4),
+       counterexample_titles: line.counterexample_titles.slice(0, 4)
+     };
+   }).sort((left, right) => {
+     const countRank = right.contribution_count - left.contribution_count;
+     if (countRank !== 0) {
+       return countRank;
+     }
+     return String(left.line_label).localeCompare(String(right.line_label));
+   });
+
+   const reinforcingLineCount = challengeLines.filter(line => line.contribution_count >= 2).length;
+   const qualifiedLineCount = challengeLines.filter(line => line.open_qualifier_count > 0).length;
+   const coverageGaps = [];
+   if (challengeContext && challengeContext.challenge_present && visibleCounterexamples.length < 1 && Array.isArray(challengeContext.challenge_signals) && challengeContext.challenge_signals.length > 0) {
+     coverageGaps.push('Visible challenge pressure is present, but no stored proposal-only counterexample currently contributes to dossier coverage.');
+   }
+   if (Array.isArray(unresolvedReferences) && unresolvedReferences.length > 0) {
+     coverageGaps.push(...unresolvedReferences.map(item => item.label).slice(0, 4));
+   }
+   if (decisionPacketContext && Array.isArray(decisionPacketContext.missing_signals)) {
+     coverageGaps.push(...decisionPacketContext.missing_signals.slice(0, 3));
+   }
+   if (qualifiedLineCount > 0) {
+     coverageGaps.push('Some visible challenge lines remain qualified by open visible gaps or unresolved references.');
+   }
+   const dedupedCoverageGaps = Array.from(new Set(coverageGaps)).slice(0, 6);
+   const challengePostureBucket = deriveMecChallengeDossierBucket(visibleCounterexamples.length, challengeLines.length, reinforcingLineCount, qualifiedLineCount, dedupedCoverageGaps.length, Boolean(challengeContext && challengeContext.challenge_present));
+   const postureFlags = [];
+   if (reinforcingLineCount > 0) {
+     postureFlags.push('repeated_visible_basis');
+   }
+   if (challengeLines.length >= 2) {
+     postureFlags.push('distinct_visible_lines');
+   }
+   if (dedupedCoverageGaps.length > 0) {
+     postureFlags.push('open_visible_gaps');
+   }
+   if (visibleCounterexamples.length > 0) {
+     postureFlags.push('counterexample_coverage_visible');
+   }
+
+   if (candidateType === 'counterexample_candidate') {
+    const lineSignature = buildMecChallengeDossierLineSignature(payload);
+    const lineEntry = challengeLines.find(item => Array.isArray(item.counterexample_ids) && item.counterexample_ids.includes(candidateId))
+      || challengeLines.find(item => item.line_signature === lineSignature)
+      || null;
+    const contributionPosture = lineEntry
+      ? lineEntry.contribution_posture
+      : (Array.isArray(refutationContext && refutationContext.open_qualifiers) && refutationContext.open_qualifiers.length > 0
+        ? 'qualified_visible_line'
+        : 'distinct_visible_line');
+     return {
+       dossier_present: Boolean(primaryCandidateId),
+       dossier_role: 'counterexample_contribution',
+       dossier_summary: primaryCandidateId
+         ? `This proposal-only counterexample contributes one visible challenge line into the current primary-candidate dossier for ${primaryCandidateId}.`
+         : 'This proposal-only counterexample does not currently have a visible primary-candidate dossier anchor in runtime.',
+       primary_candidate_id: primaryCandidateId,
+       primary_candidate_title: primaryCandidate ? buildMecWorkspaceTitle(primaryCandidate) : null,
+       primary_candidate_current_review_state: primaryReviewSummary ? primaryReviewSummary.current_state : null,
+       challenge_posture_bucket: challengePostureBucket,
+       dossier_posture_flags: postureFlags,
+       visible_counterexample_count: visibleCounterexamples.length,
+       distinct_challenge_line_count: challengeLines.length,
+       reinforcing_line_count: reinforcingLineCount,
+       open_coverage_gap_count: dedupedCoverageGaps.length,
+       contribution_line_signature: lineSignature,
+       contribution_line_label: buildMecChallengeDossierLineLabel(payload),
+       contribution_posture: contributionPosture,
+       contribution_summary: contributionPosture === 'reinforced_visible_line' || contributionPosture === 'reinforced_but_qualified_line'
+         ? 'This counterexample reinforces a visible challenge line already present in the current primary-candidate dossier.'
+         : contributionPosture === 'qualified_visible_line'
+           ? 'This counterexample adds a visible challenge line, but the current dossier still shows open qualifiers around that contribution.'
+           : 'This counterexample adds a distinct visible challenge line into the current primary-candidate dossier.',
+       coverage_gaps: dedupedCoverageGaps,
+       challenge_lines: challengeLines.slice(0, 4),
+       challenge_dossier_surface_version: 'phase4c-mec-challenge-dossier-context/v1'
+     };
+   }
+
+   if (visibleCounterexamples.length > 0 || (challengeContext && challengeContext.challenge_present)) {
+     const dossierSummary = visibleCounterexamples.length < 1
+       ? 'Visible challenge pressure exists for this primary candidate, but stored counterexample coverage is not yet present in the canonical dossier.'
+       : challengeLines.length >= 2 && reinforcingLineCount >= 1
+         ? 'This primary candidate currently carries multiple visible challenge lines, including at least one reinforced line, inside the canonical dossier.'
+         : challengeLines.length >= 2
+           ? 'This primary candidate currently carries multiple distinct visible challenge lines inside the canonical dossier.'
+           : reinforcingLineCount >= 1
+             ? 'This primary candidate currently carries one visible challenge line reinforced by more than one proposal-only counterexample.'
+             : 'This primary candidate currently carries one visible challenge line inside the canonical dossier.';
+     return {
+       dossier_present: true,
+       dossier_role: 'primary_candidate_challenge_dossier',
+       dossier_summary: dossierSummary,
+       primary_candidate_id: candidateId,
+       primary_candidate_title: buildMecWorkspaceTitle(payload),
+       primary_candidate_current_review_state: reviewSummary ? reviewSummary.current_state : null,
+       primary_candidate_reviewable: reviewSummary ? Boolean(reviewSummary.reviewable) : false,
+       primary_candidate_terminal: reviewSummary ? Boolean(reviewSummary.terminal) : false,
+       latest_primary_review_outcome: latestReview ? latestReview.review_outcome || null : null,
+       challenge_posture_bucket: challengePostureBucket,
+       dossier_posture_flags: postureFlags,
+       visible_counterexample_count: visibleCounterexamples.length,
+       distinct_challenge_line_count: challengeLines.length,
+       reinforcing_line_count: reinforcingLineCount,
+       qualified_line_count: qualifiedLineCount,
+       repeated_basis_count: reinforcingLineCount,
+       challenge_lines: challengeLines.slice(0, 6),
+       coverage_gaps: dedupedCoverageGaps,
+       coverage_gap_count: dedupedCoverageGaps.length,
+       challenge_dossier_surface_version: 'phase4c-mec-challenge-dossier-context/v1'
+     };
+   }
+
+   return {
+     dossier_present: false,
+     dossier_role: 'not_applicable',
+     dossier_summary: 'No compact primary-candidate challenge dossier is currently visible for this workspace item.',
+     primary_candidate_id: primaryCandidateId,
+     primary_candidate_title: primaryCandidate ? buildMecWorkspaceTitle(primaryCandidate) : null,
+     primary_candidate_current_review_state: primaryReviewSummary ? primaryReviewSummary.current_state : null,
+     primary_candidate_reviewable: primaryReviewSummary ? Boolean(primaryReviewSummary.reviewable) : false,
+     primary_candidate_terminal: primaryReviewSummary ? Boolean(primaryReviewSummary.terminal) : false,
+     latest_primary_review_outcome: latestReview ? latestReview.review_outcome || null : null,
+     challenge_posture_bucket: deriveMecChallengeDossierBucket(0, 0, 0, 0, 0, Boolean(challengeContext && challengeContext.challenge_present)),
+     dossier_posture_flags: [],
+     visible_counterexample_count: 0,
+     distinct_challenge_line_count: 0,
+     reinforcing_line_count: 0,
+     qualified_line_count: 0,
+     repeated_basis_count: 0,
+     challenge_lines: [],
+     coverage_gaps: [],
+     coverage_gap_count: 0,
+     challenge_dossier_surface_version: 'phase4c-mec-challenge-dossier-context/v1'
+   };
+ }
+
  function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) {
   if (!payload) {
     return null;
@@ -1712,6 +1982,7 @@ function buildMecWorkspaceChallengeContext(payload, latestReview = null, sourceL
   const reviewTraceContext = buildMecWorkspaceReviewTraceContext(latestReview, reviewSummary, decisionPacketContext, contradictionContext, deltaContext);
   const challengeContext = buildMecWorkspaceChallengeContext(payload, latestReview, sourceLinkage, unresolvedRuntimeReferences, evidenceContext, reviewHistoryContext, relatedCandidates, deltaContext, contradictionContext, decisionPacketContext, reviewTraceContext, candidateMap);
   const refutationContext = buildMecWorkspaceRefutationContext(payload, reviewSummary, latestReview, sourceLinkage, unresolvedRuntimeReferences, evidenceContext, reviewHistoryContext, relatedCandidates, deltaContext, contradictionContext, decisionPacketContext, challengeContext, reviewTraceContext, candidateMap, reviewMap);
+  const challengeDossierContext = buildMecWorkspaceChallengeDossierContext(payload, reviewSummary, latestReview, sourceLinkage, unresolvedRuntimeReferences, evidenceContext, reviewHistoryContext, relatedCandidates, deltaContext, contradictionContext, decisionPacketContext, challengeContext, refutationContext, reviewTraceContext, candidateMap, reviewMap);
   return {
     workspace_kind: 'mec_review_workspace',
     workspace_version: 'phase3c-mec-review-workspace/v1',
@@ -1758,6 +2029,7 @@ function buildMecWorkspaceChallengeContext(payload, latestReview = null, sourceL
     decision_packet_context: decisionPacketContext,
     challenge_context: challengeContext,
     refutation_context: refutationContext,
+    challenge_dossier_context: challengeDossierContext,
     review_trace_context: reviewTraceContext,
     workspace_summary: {
       review_count: reviewSummary.review_count,
@@ -1772,6 +2044,10 @@ function buildMecWorkspaceChallengeContext(payload, latestReview = null, sourceL
       refutation_present: refutationContext.refutation_present,
       refutation_role: refutationContext.refutation_role,
       visible_refutation_count: Number(refutationContext.visible_counterexample_count || refutationContext.visible_sibling_counterexample_count || 0),
+      challenge_dossier_present: challengeDossierContext.dossier_present,
+      challenge_dossier_role: challengeDossierContext.dossier_role,
+      challenge_posture_bucket: challengeDossierContext.challenge_posture_bucket,
+      challenge_line_count: Number(challengeDossierContext.distinct_challenge_line_count || 0),
       trace_present: reviewTraceContext.trace_present
     },
     raw_review_records: reviewRecords.map(record => ({ ...record })),

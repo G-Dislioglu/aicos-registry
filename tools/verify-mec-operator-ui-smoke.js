@@ -223,6 +223,7 @@ function buildUiScriptHarness() {
     'detail-challenge',
     'challenge-message',
     'detail-refutation',
+    'detail-challenge-dossier',
     'detail-trace',
     'review-actions',
     'review-message',
@@ -1082,6 +1083,219 @@ function buildUiScriptHarness() {
     };
   }
 
+  function buildHarnessChallengeDossierLineSignature(rawCandidate) {
+    const challengeBasis = rawCandidate && rawCandidate.challenge_basis && typeof rawCandidate.challenge_basis === 'object'
+      ? rawCandidate.challenge_basis
+      : null;
+    const bucket = challengeBasis && challengeBasis.contradiction_pressure_bucket
+      ? challengeBasis.contradiction_pressure_bucket
+      : 'not_visible';
+    const flags = Array.isArray(challengeBasis && challengeBasis.challenge_flags)
+      ? Array.from(new Set(challengeBasis.challenge_flags.map(item => String(item || '').trim()).filter(Boolean))).sort().join('|')
+      : '';
+    const summarySeed = String((challengeBasis && challengeBasis.challenge_summary) || rawCandidate.mechanism || rawCandidate.case_description || 'no_summary')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 8)
+      .join('_') || 'no_summary';
+    return `${bucket}::${flags || `summary:${summarySeed}`}`;
+  }
+
+  function buildHarnessChallengeDossierLineLabel(rawCandidate) {
+    return rawCandidate && rawCandidate.challenge_basis && rawCandidate.challenge_basis.challenge_summary
+      ? rawCandidate.challenge_basis.challenge_summary
+      : (rawCandidate.case_description || rawCandidate.principle || rawCandidate.id || 'Visible challenge line');
+  }
+
+  function deriveHarnessChallengeDossierBucket(counterexampleCount, distinctLineCount, reinforcingLineCount, qualifiedLineCount, coverageGapCount, challengePresent) {
+    if (counterexampleCount < 1) {
+      return challengePresent ? 'pressure_without_counterexample_coverage' : 'no_visible_challenge_dossier';
+    }
+    if (distinctLineCount >= 2 && reinforcingLineCount >= 1) {
+      return coverageGapCount > 0 || qualifiedLineCount > 0
+        ? 'multi_line_reinforced_with_open_gaps'
+        : 'multi_line_reinforced_coverage';
+    }
+    if (distinctLineCount >= 2) {
+      return coverageGapCount > 0 || qualifiedLineCount > 0
+        ? 'multi_line_mixed_with_open_gaps'
+        : 'multi_line_mixed_coverage';
+    }
+    if (reinforcingLineCount >= 1) {
+      return coverageGapCount > 0 || qualifiedLineCount > 0
+        ? 'single_line_reinforced_with_open_gaps'
+        : 'single_line_reinforced_coverage';
+    }
+    return coverageGapCount > 0 || qualifiedLineCount > 0
+      ? 'single_line_qualified_coverage'
+      : 'single_line_visible_coverage';
+  }
+
+  function buildHarnessChallengeDossierContext(rawCandidate, reviewSummary, latestReview, unresolvedRuntimeReferences, decisionPacketContext, challengeContext, refutationContext) {
+    const candidateId = rawCandidate && rawCandidate.id ? rawCandidate.id : null;
+    const candidateType = rawCandidate && rawCandidate.candidate_type ? rawCandidate.candidate_type : null;
+    const refutesCandidateId = rawCandidate && rawCandidate.refutes_candidate_id ? rawCandidate.refutes_candidate_id : null;
+    const visibleCounterexamples = candidateList
+      .filter(item => item.candidate_type === 'counterexample_candidate')
+      .filter(item => {
+        const targetId = item.refutes_candidate_id || null;
+        return targetId === candidateId || targetId === refutesCandidateId;
+      })
+      .map(item => ({
+        candidate_id: item.id,
+        title: item.principle || item.case_description || item.id,
+        status: item.status || 'proposal_only',
+        current_review_state: item.current_review_state || 'proposal_only',
+        challenge_basis_bucket: item.challenge_basis && item.challenge_basis.contradiction_pressure_bucket
+          ? item.challenge_basis.contradiction_pressure_bucket
+          : 'not_visible',
+        challenge_basis_flags: Array.isArray(item.challenge_basis && item.challenge_basis.challenge_flags) ? item.challenge_basis.challenge_flags.slice(0, 6) : [],
+        line_signature: buildHarnessChallengeDossierLineSignature(item),
+        line_label: buildHarnessChallengeDossierLineLabel(item),
+        open_qualifier_count: Array.isArray(item.refutation_context && item.refutation_context.open_qualifiers) ? item.refutation_context.open_qualifiers.length : 0
+      }));
+    const lineMap = new Map();
+    for (const counterexample of visibleCounterexamples) {
+      if (!lineMap.has(counterexample.line_signature)) {
+        lineMap.set(counterexample.line_signature, {
+          line_signature: counterexample.line_signature,
+          line_label: counterexample.line_label,
+          challenge_basis_bucket: counterexample.challenge_basis_bucket,
+          challenge_basis_flags: Array.from(new Set(counterexample.challenge_basis_flags || [])),
+          counterexample_ids: [],
+          contribution_count: 0,
+          open_qualifier_count: 0
+        });
+      }
+      const line = lineMap.get(counterexample.line_signature);
+      line.counterexample_ids.push(counterexample.candidate_id);
+      line.contribution_count += 1;
+      line.open_qualifier_count += Number(counterexample.open_qualifier_count || 0);
+    }
+    const challengeLines = Array.from(lineMap.values()).map(line => ({
+      ...line,
+      contribution_posture: line.contribution_count >= 2
+        ? (line.open_qualifier_count > 0 ? 'reinforced_but_qualified_line' : 'reinforced_visible_line')
+        : line.open_qualifier_count > 0
+          ? 'qualified_visible_line'
+          : 'distinct_visible_line'
+    }));
+    const reinforcingLineCount = challengeLines.filter(line => line.contribution_count >= 2).length;
+    const qualifiedLineCount = challengeLines.filter(line => line.open_qualifier_count > 0).length;
+    const coverageGaps = [];
+    if (challengeContext && challengeContext.challenge_present && visibleCounterexamples.length < 1 && Array.isArray(challengeContext.challenge_signals) && challengeContext.challenge_signals.length > 0) {
+      coverageGaps.push('Visible challenge pressure is present, but no stored proposal-only counterexample currently contributes to dossier coverage.');
+    }
+    if (Array.isArray(unresolvedRuntimeReferences) && unresolvedRuntimeReferences.length > 0) {
+      coverageGaps.push(...unresolvedRuntimeReferences.map(item => item.label).slice(0, 4));
+    }
+    if (decisionPacketContext && Array.isArray(decisionPacketContext.missing_signals)) {
+      coverageGaps.push(...decisionPacketContext.missing_signals.slice(0, 3));
+    }
+    if (qualifiedLineCount > 0) {
+      coverageGaps.push('Some visible challenge lines remain qualified by open visible gaps or unresolved references.');
+    }
+    const dedupedCoverageGaps = Array.from(new Set(coverageGaps)).slice(0, 6);
+    const postureFlags = [];
+    if (reinforcingLineCount > 0) {
+      postureFlags.push('repeated_visible_basis');
+    }
+    if (challengeLines.length >= 2) {
+      postureFlags.push('distinct_visible_lines');
+    }
+    if (dedupedCoverageGaps.length > 0) {
+      postureFlags.push('open_visible_gaps');
+    }
+    if (visibleCounterexamples.length > 0) {
+      postureFlags.push('counterexample_coverage_visible');
+    }
+    const challengePostureBucket = deriveHarnessChallengeDossierBucket(visibleCounterexamples.length, challengeLines.length, reinforcingLineCount, qualifiedLineCount, dedupedCoverageGaps.length, Boolean(challengeContext && challengeContext.challenge_present));
+    if (candidateType === 'counterexample_candidate') {
+      const contributionLineSignature = buildHarnessChallengeDossierLineSignature(rawCandidate);
+      const contributionLine = challengeLines.find(line => Array.isArray(line.counterexample_ids) && line.counterexample_ids.includes(candidateId))
+        || challengeLines.find(line => line.line_signature === contributionLineSignature)
+        || null;
+      return {
+        dossier_present: Boolean(refutesCandidateId),
+        dossier_role: 'counterexample_contribution',
+        dossier_summary: refutesCandidateId
+          ? `This proposal-only counterexample contributes one visible challenge line into the current primary-candidate dossier for ${refutesCandidateId}.`
+          : 'This proposal-only counterexample does not currently have a visible primary-candidate dossier anchor in runtime.',
+        primary_candidate_id: refutesCandidateId,
+        primary_candidate_title: candidateList.find(item => item.id === refutesCandidateId)?.principle || refutesCandidateId || null,
+        primary_candidate_current_review_state: refutationContext ? refutationContext.primary_candidate_current_review_state || null : null,
+        challenge_posture_bucket: challengePostureBucket,
+        dossier_posture_flags: postureFlags,
+        visible_counterexample_count: visibleCounterexamples.length,
+        distinct_challenge_line_count: challengeLines.length,
+        reinforcing_line_count: reinforcingLineCount,
+        open_coverage_gap_count: dedupedCoverageGaps.length,
+        contribution_line_signature: contributionLineSignature,
+        contribution_line_label: buildHarnessChallengeDossierLineLabel(rawCandidate),
+        contribution_posture: contributionLine ? contributionLine.contribution_posture : 'distinct_visible_line',
+        contribution_summary: contributionLine && contributionLine.contribution_posture === 'reinforced_visible_line'
+          ? 'This counterexample reinforces a visible challenge line already present in the current primary-candidate dossier.'
+          : 'This counterexample adds a distinct visible challenge line into the current primary-candidate dossier.',
+        coverage_gaps: dedupedCoverageGaps,
+        challenge_lines: challengeLines.slice(0, 4),
+        challenge_dossier_surface_version: 'phase4c-mec-challenge-dossier-context/v1'
+      };
+    }
+    if (visibleCounterexamples.length > 0 || (challengeContext && challengeContext.challenge_present)) {
+      return {
+        dossier_present: true,
+        dossier_role: 'primary_candidate_challenge_dossier',
+        dossier_summary: visibleCounterexamples.length > 1
+          ? 'This primary candidate currently carries multiple visible challenge lines inside the canonical dossier.'
+          : visibleCounterexamples.length === 1
+            ? 'This primary candidate currently carries one visible challenge line inside the canonical dossier.'
+            : 'Visible challenge pressure exists for this primary candidate, but stored counterexample coverage is not yet present in the canonical dossier.',
+        primary_candidate_id: candidateId,
+        primary_candidate_title: rawCandidate.principle || rawCandidate.open_question || rawCandidate.case_description || rawCandidate.id,
+        primary_candidate_current_review_state: reviewSummary ? reviewSummary.current_state : null,
+        primary_candidate_reviewable: reviewSummary ? Boolean(reviewSummary.reviewable) : false,
+        primary_candidate_terminal: reviewSummary ? Boolean(reviewSummary.terminal) : false,
+        latest_primary_review_outcome: latestReview ? latestReview.review_outcome || null : null,
+        challenge_posture_bucket: challengePostureBucket,
+        dossier_posture_flags: postureFlags,
+        visible_counterexample_count: visibleCounterexamples.length,
+        distinct_challenge_line_count: challengeLines.length,
+        reinforcing_line_count: reinforcingLineCount,
+        qualified_line_count: qualifiedLineCount,
+        repeated_basis_count: reinforcingLineCount,
+        challenge_lines: challengeLines.slice(0, 6),
+        coverage_gaps: dedupedCoverageGaps,
+        coverage_gap_count: dedupedCoverageGaps.length,
+        challenge_dossier_surface_version: 'phase4c-mec-challenge-dossier-context/v1'
+      };
+    }
+    return {
+      dossier_present: false,
+      dossier_role: 'not_applicable',
+      dossier_summary: 'No compact primary-candidate challenge dossier is currently visible for this workspace item.',
+      primary_candidate_id: refutesCandidateId || candidateId,
+      primary_candidate_title: rawCandidate.principle || rawCandidate.open_question || rawCandidate.case_description || rawCandidate.id,
+      primary_candidate_current_review_state: reviewSummary ? reviewSummary.current_state : null,
+      primary_candidate_reviewable: reviewSummary ? Boolean(reviewSummary.reviewable) : false,
+      primary_candidate_terminal: reviewSummary ? Boolean(reviewSummary.terminal) : false,
+      latest_primary_review_outcome: latestReview ? latestReview.review_outcome || null : null,
+      challenge_posture_bucket: deriveHarnessChallengeDossierBucket(0, 0, 0, 0, 0, Boolean(challengeContext && challengeContext.challenge_present)),
+      dossier_posture_flags: [],
+      visible_counterexample_count: 0,
+      distinct_challenge_line_count: 0,
+      reinforcing_line_count: 0,
+      qualified_line_count: 0,
+      repeated_basis_count: 0,
+      challenge_lines: [],
+      coverage_gaps: [],
+      coverage_gap_count: 0,
+      challenge_dossier_surface_version: 'phase4c-mec-challenge-dossier-context/v1'
+    };
+  }
+
   function toWorkspaceItem(rawCandidate) {
     const reviewSummary = rawCandidate && rawCandidate.review_summary ? rawCandidate.review_summary : {
       review_count: 0,
@@ -1198,6 +1412,9 @@ function buildUiScriptHarness() {
     const refutationContext = rawCandidate && rawCandidate.refutation_context
       ? rawCandidate.refutation_context
       : buildHarnessRefutationContext(rawCandidate, reviewSummary, latestReview, unresolvedRuntimeReferences, decisionPacketContext, challengeContext, reviewTraceContext);
+    const challengeDossierContext = rawCandidate && rawCandidate.challenge_dossier_context
+      ? rawCandidate.challenge_dossier_context
+      : buildHarnessChallengeDossierContext(rawCandidate, reviewSummary, latestReview, unresolvedRuntimeReferences, decisionPacketContext, challengeContext, refutationContext);
     return {
       workspace_kind: 'mec_review_workspace',
       workspace_version: 'phase3c-mec-review-workspace/v1',
@@ -1229,6 +1446,7 @@ function buildUiScriptHarness() {
       decision_packet_context: decisionPacketContext,
       challenge_context: challengeContext,
       refutation_context: refutationContext,
+      challenge_dossier_context: challengeDossierContext,
       review_trace_context: reviewTraceContext,
       state_explanation: stateExplanation,
       workspace_summary: {
@@ -1242,6 +1460,10 @@ function buildUiScriptHarness() {
         challenge_pressure_bucket: challengeContext.contradiction_pressure_bucket,
         refutation_present: refutationContext.refutation_present,
         refutation_role: refutationContext.refutation_role,
+        challenge_dossier_present: challengeDossierContext.dossier_present,
+        challenge_dossier_role: challengeDossierContext.dossier_role,
+        challenge_posture_bucket: challengeDossierContext.challenge_posture_bucket,
+        challenge_line_count: challengeDossierContext.distinct_challenge_line_count,
         trace_present: reviewTraceContext.trace_present,
         pair_role: rawCandidate.candidate_type === 'invariant_candidate'
           ? 'invariant'
@@ -1572,6 +1794,7 @@ async function verifyEmbeddedUiWriteSemantics() {
   const detailContradictionEl = elements.get('detail-contradiction');
   const detailChallengeEl = elements.get('detail-challenge');
   const detailRefutationEl = elements.get('detail-refutation');
+  const detailChallengeDossierEl = elements.get('detail-challenge-dossier');
   const detailTraceEl = elements.get('detail-trace');
   const challengeMessageEl = elements.get('challenge-message');
   const rawReviewRecordsEl = elements.get('raw-review-records');
@@ -1772,6 +1995,8 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(detailChallengeEl.innerHTML.includes('Manual counterexample proposal'), 'Expected desk detail to render the manual counterexample proposal path');
   assert(detailRefutationEl.innerHTML.includes('Refutation summary'), 'Expected desk detail to render the new refutation summary surface');
   assert(detailRefutationEl.innerHTML.includes('Visible counterexample posture'), 'Expected desk detail to render visible counterexample posture from the canonical workspace');
+  assert(detailChallengeDossierEl.innerHTML.includes('Challenge dossier summary'), 'Expected desk detail to render the new challenge dossier summary surface');
+  assert(detailChallengeDossierEl.innerHTML.includes('Challenge lines'), 'Expected desk detail to render compact challenge lines from the canonical dossier surface');
   assert(detailTraceEl.innerHTML.includes('Review action trace'), 'Expected desk detail to render review trace surface');
   assert(detailTraceEl.innerHTML.includes('No review action has been written yet') || detailTraceEl.innerHTML.includes('no action rationale trace'), 'Expected desk detail to explain missing review trace before any write');
   assert(rawReviewRecordsEl.innerHTML.includes('No raw review records stored yet for this workspace item.'), 'Expected desk detail to render an empty raw review record state');
@@ -1791,10 +2016,12 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(createdHarnessCounterexample && createdHarnessCounterexample.raw_candidate_artifact && createdHarnessCounterexample.raw_candidate_artifact.challenge_origin && createdHarnessCounterexample.raw_candidate_artifact.challenge_origin.manual_challenge === true, 'Expected manual challenge path to preserve explicit proposal-only challenge origin metadata');
   assert(context.getCandidateById('candidate-invariant').challenge_context && context.getCandidateById('candidate-invariant').challenge_context.existing_counterexample_count >= 2, 'Expected selected primary candidate challenge context to refresh after manual counterexample creation');
   assert(context.getCandidateById('candidate-invariant').refutation_context && context.getCandidateById('candidate-invariant').refutation_context.visible_counterexample_count >= 2, 'Expected selected primary candidate refutation context to refresh after manual counterexample creation');
+  assert(context.getCandidateById('candidate-invariant').challenge_dossier_context && context.getCandidateById('candidate-invariant').challenge_dossier_context.visible_counterexample_count >= 2, 'Expected selected primary candidate challenge dossier context to refresh after manual counterexample creation');
 
   await context.selectCandidate('candidate-counterexample');
   assert(detailRefutationEl.innerHTML.includes('Open primary candidate'), 'Expected counterexample detail to expose a direct open-primary action in refutation context');
   assert(detailRefutationEl.innerHTML.includes('Challenge basis carry-through'), 'Expected counterexample detail to expose challenge-basis carry-through in refutation context');
+  assert(detailChallengeDossierEl.innerHTML.includes('counterexample_contribution') || detailChallengeDossierEl.innerHTML.includes('contributes one visible challenge line'), 'Expected counterexample detail to expose contribution readability in challenge dossier context');
 
   await context.selectCandidate('candidate-curiosity');
 
@@ -1924,8 +2151,10 @@ async function main() {
     assert(page.text.includes('Contradiction context'), 'Expected contradiction context section');
     assert(page.text.includes('Challenge context'), 'Expected challenge context section');
     assert(page.text.includes('Refutation context'), 'Expected refutation context section');
+    assert(page.text.includes('Challenge dossier context'), 'Expected challenge dossier context section');
     assert(page.text.includes('Single-candidate challenge reading from the canonical workspace only'), 'Expected Phase 4A challenge framing in UI');
     assert(page.text.includes('Read-first counterexample and refuted-primary readability from the canonical workspace only'), 'Expected Phase 4B refutation framing in UI');
+    assert(page.text.includes('Primary-candidate-centered challenge posture over already visible counterexample relations from the canonical workspace only'), 'Expected Phase 4C challenge dossier framing in UI');
     assert(page.text.includes('Raw review records'), 'Expected raw review record section');
     assert(page.text.includes('Raw candidate artifact'), 'Expected raw candidate artifact section');
     assert(page.text.includes('Pair relationship'), 'Expected pair relationship detail block');
@@ -2065,6 +2294,7 @@ async function main() {
     assert(detailResponse.json && detailResponse.json.raw_candidate_artifact && detailResponse.json.raw_candidate_artifact.status === 'proposal_only', 'Expected workspace detail to preserve the raw proposal-origin artifact separately');
     assert(detailResponse.json && detailResponse.json.challenge_context && detailResponse.json.challenge_context.manual_counterexample_allowed === true, 'Expected invariant workspace detail to expose the locked manual Phase 4A challenge path');
     assert(detailResponse.json && detailResponse.json.refutation_context && detailResponse.json.refutation_context.refutation_role === 'refuted_primary_candidate', 'Expected invariant workspace detail to expose additive Phase 4B refutation context');
+    assert(detailResponse.json && detailResponse.json.challenge_dossier_context && detailResponse.json.challenge_dossier_context.dossier_role === 'primary_candidate_challenge_dossier', 'Expected invariant workspace detail to expose additive Phase 4C challenge dossier context');
 
     const manualChallengeResponse = await request('POST', `http://127.0.0.1:${port}/arena/mec-candidates/${candidateResponse.json.candidate.id}/challenge-counterexamples`, {
       case_description: 'Manual HTTP challenge shows a contradicting runtime case against the selected invariant.',
@@ -2109,6 +2339,7 @@ async function main() {
     assert(reviewedDetailResponse.json && reviewedDetailResponse.json.raw_candidate_artifact && reviewedDetailResponse.json.raw_candidate_artifact.status === 'proposal_only', 'Expected reviewed workspace detail to keep raw candidate artifact proposal-origin');
     assert(reviewedDetailResponse.json && reviewedDetailResponse.json.challenge_context && reviewedDetailResponse.json.challenge_context.existing_counterexample_count >= 2, 'Expected reviewed workspace detail to reflect stored counterexample posture after manual challenge creation');
     assert(reviewedDetailResponse.json && reviewedDetailResponse.json.refutation_context && reviewedDetailResponse.json.refutation_context.visible_counterexample_count >= 2, 'Expected reviewed workspace detail to expose visible counterexample posture through Phase 4B refutation context');
+    assert(reviewedDetailResponse.json && reviewedDetailResponse.json.challenge_dossier_context && reviewedDetailResponse.json.challenge_dossier_context.visible_counterexample_count >= 2, 'Expected reviewed workspace detail to expose visible counterexample coverage through Phase 4C challenge dossier context');
     assert(reviewedDetailResponse.json && reviewedDetailResponse.json.review_trace_context && reviewedDetailResponse.json.review_trace_context.trace_present === true, 'Expected reviewed workspace detail to expose post-decision review trace context');
     assert(reviewedDetailResponse.json && Array.isArray(reviewedDetailResponse.json.review_trace_context.support_at_write), 'Expected reviewed workspace detail to expose write-time support signals');
     assert(reviewedDetailResponse.json && Array.isArray(reviewedDetailResponse.json.raw_review_records) && reviewedDetailResponse.json.raw_review_records[0] && reviewedDetailResponse.json.raw_review_records[0].rationale_snapshot, 'Expected reviewed workspace detail to keep the raw rationale snapshot on the review record');
@@ -2124,6 +2355,7 @@ async function main() {
     assert(counterexampleDetailResponse.json && counterexampleDetailResponse.json.case_description === 'Clean reproduction still fails after the supposed fix path.', 'Expected counterexample detail to preserve case_description');
     assert(counterexampleDetailResponse.json && counterexampleDetailResponse.json.refutation_context && counterexampleDetailResponse.json.refutation_context.refutation_role === 'counterexample_candidate', 'Expected counterexample detail to expose additive Phase 4B refutation role');
     assert(counterexampleDetailResponse.json && counterexampleDetailResponse.json.refutation_context && counterexampleDetailResponse.json.refutation_context.primary_candidate_id === candidateResponse.json.candidate.id, 'Expected counterexample detail to expose the refuted primary candidate inside refutation context');
+    assert(counterexampleDetailResponse.json && counterexampleDetailResponse.json.challenge_dossier_context && counterexampleDetailResponse.json.challenge_dossier_context.dossier_role === 'counterexample_contribution', 'Expected counterexample detail to expose additive Phase 4C contribution role inside challenge dossier context');
 
     const curiosityDetailResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-review-workspace/${curiosityResponse.json.candidate.id}`);
     assert(curiosityDetailResponse.statusCode === 200, 'Expected curiosity workspace detail to return 200');

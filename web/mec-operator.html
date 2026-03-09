@@ -691,6 +691,9 @@
           <h3>Refutation context</h3>
           <div class="panel-sub">Read-first counterexample and refuted-primary readability from the canonical workspace only. This surface stays inspectable and does not introduce any new write path.</div>
           <div id="detail-refutation" class="compact-list"></div>
+          <h3>Challenge dossier context</h3>
+          <div class="panel-sub">Primary-candidate-centered challenge posture over already visible counterexample relations from the canonical workspace only. Coverage stays compact, inspectable, and non-recommendatory.</div>
+          <div id="detail-challenge-dossier" class="compact-list"></div>
           <h3>Review action trace</h3>
           <div class="panel-sub">Compact trace showing which visible decision, contradiction and delta signals were present when the latest review write was recorded.</div>
           <div id="detail-trace" class="compact-list"></div>
@@ -898,6 +901,7 @@
     const detailChallengeEl = document.getElementById('detail-challenge');
     const challengeMessageEl = document.getElementById('challenge-message');
     const detailRefutationEl = document.getElementById('detail-refutation');
+    const detailChallengeDossierEl = document.getElementById('detail-challenge-dossier');
     const detailTraceEl = document.getElementById('detail-trace');
     const reviewActionsEl = document.getElementById('review-actions');
     const reviewMessageEl = document.getElementById('review-message');
@@ -1072,6 +1076,10 @@
 
     function getRefutationContext(item) {
       return item && item.refutation_context ? item.refutation_context : null;
+    }
+
+    function getChallengeDossierContext(item) {
+      return item && item.challenge_dossier_context ? item.challenge_dossier_context : null;
     }
 
     function getDecisionPacketContext(item) {
@@ -2499,6 +2507,82 @@
       });
     }
 
+    function renderChallengeDossierContext(payload) {
+      const dossier = getChallengeDossierContext(payload);
+      if (!dossier) {
+        detailChallengeDossierEl.innerHTML = '<div class="empty">No challenge dossier context is available for this workspace item.</div>';
+        return;
+      }
+      const challengeLines = Array.isArray(dossier.challenge_lines) ? dossier.challenge_lines : [];
+      const coverageGaps = Array.isArray(dossier.coverage_gaps) ? dossier.coverage_gaps : [];
+      const postureFlags = Array.isArray(dossier.dossier_posture_flags) ? dossier.dossier_posture_flags : [];
+      detailChallengeDossierEl.innerHTML = `
+        <div class="detail-card">
+          <strong>Challenge dossier summary</strong>
+          <span>${escapeHtml(dossier.dossier_summary || '-')}</span>
+          <div class="row-meta">
+            <span class="badge">${escapeHtml(dossier.dossier_role || 'not_applicable')}</span>
+            <span class="badge">${escapeHtml(dossier.challenge_posture_bucket || 'not_visible')}</span>
+            <span class="badge">counterexamples ${escapeHtml(String(dossier.visible_counterexample_count || 0))}</span>
+            <span class="badge">lines ${escapeHtml(String(dossier.distinct_challenge_line_count || 0))}</span>
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Coverage posture</strong>
+          <div style="display:grid; gap:6px; margin-top:4px;">
+            <div class="tiny">primary candidate | ${escapeHtml(dossier.primary_candidate_title || dossier.primary_candidate_id || 'not_visible')}</div>
+            <div class="tiny">review posture | ${escapeHtml(dossier.primary_candidate_current_review_state || 'not_visible')} | ${escapeHtml(dossier.primary_candidate_terminal ? 'terminal' : (dossier.primary_candidate_reviewable ? 'reviewable' : 'not_visible'))}</div>
+            <div class="tiny">reinforcing lines | ${escapeHtml(String(dossier.reinforcing_line_count || 0))}</div>
+            <div class="tiny">coverage gaps | ${escapeHtml(String(dossier.coverage_gap_count || dossier.open_coverage_gap_count || 0))}</div>
+            ${postureFlags.length > 0
+              ? postureFlags.map(flag => `<div class="tiny">flag | ${escapeHtml(flag)}</div>`).join('')
+              : '<div class="tiny">No explicit dossier posture flags are currently visible.</div>'}
+          </div>
+          ${dossier.primary_candidate_id ? `<div class="action-row" style="margin-top:10px;"><button class="mini-button dossier-open-primary" type="button" data-candidate-id="${escapeHtml(dossier.primary_candidate_id)}">Open primary candidate</button></div>` : ''}
+        </div>
+        <div class="detail-card">
+          <strong>Challenge lines</strong>
+          <div style="display:grid; gap:8px; margin-top:4px;">
+            ${challengeLines.length > 0
+              ? challengeLines.map(line => `
+                <div style="display:grid; gap:6px; border:1px solid var(--line); border-radius:12px; padding:10px;">
+                  <div class="row-top">
+                    <strong>${escapeHtml(line.line_label || line.contribution_line_label || line.line_signature || 'visible challenge line')}</strong>
+                    <span class="badge">${escapeHtml(line.contribution_posture || line.contribution_posture || 'visible_line')}</span>
+                  </div>
+                  <div class="tiny">basis ${escapeHtml(line.challenge_basis_bucket || 'not_visible')} | count ${escapeHtml(String(line.contribution_count || 1))} | qualifiers ${escapeHtml(String(line.open_qualifier_count || 0))}</div>
+                  <div style="display:grid; gap:6px; margin-top:4px;">
+                    ${Array.isArray(line.challenge_basis_flags) && line.challenge_basis_flags.length > 0
+                      ? line.challenge_basis_flags.map(flag => `<div class="tiny">flag | ${escapeHtml(flag)}</div>`).join('')
+                      : '<div class="tiny">No explicit line flags are currently visible.</div>'}
+                  </div>
+                  <div class="action-row">
+                    ${Array.isArray(line.counterexample_ids)
+                      ? line.counterexample_ids.map(candidateId => `<button class="mini-button dossier-open-counterexample" type="button" data-candidate-id="${escapeHtml(candidateId)}">Open ${escapeHtml(candidateId)}</button>`).join('')
+                      : ''}
+                  </div>
+                </div>
+              `).join('')
+              : '<div class="tiny">No compact challenge lines are currently visible for this workspace item.</div>'}
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Coverage gaps</strong>
+          <div style="display:grid; gap:6px; margin-top:4px;">
+            ${coverageGaps.length > 0
+              ? coverageGaps.map(gap => `<div class="tiny">gap | ${escapeHtml(gap)}</div>`).join('')
+              : '<div class="tiny">No stronger visible coverage gap is currently exposed.</div>'}
+          </div>
+        </div>
+      `;
+      detailChallengeDossierEl.querySelectorAll('.dossier-open-counterexample').forEach(node => {
+        node.addEventListener('click', () => selectCandidate(node.dataset.candidateId));
+      });
+      detailChallengeDossierEl.querySelectorAll('.dossier-open-primary').forEach(node => {
+        node.addEventListener('click', () => selectCandidate(node.dataset.candidateId));
+      });
+    }
+
     function renderReviewTraceContext(payload) {
       const trace = getReviewTraceContext(payload);
       if (!trace) {
@@ -2736,6 +2820,7 @@
       renderContradictionContext(payload);
       renderChallengeContext(payload);
       renderRefutationContext(payload);
+      renderChallengeDossierContext(payload);
       renderReviewTraceContext(payload);
       renderRawReviewRecords(payload);
       candidateDetailEl.textContent = JSON.stringify(rawCandidate, null, 2);
@@ -2879,6 +2964,7 @@
       detailContradictionEl.innerHTML = '<div class="empty">Loading contradiction context...</div>';
       detailChallengeEl.innerHTML = '<div class="empty">Loading challenge context...</div>';
       detailRefutationEl.innerHTML = '<div class="empty">Loading refutation context...</div>';
+      detailChallengeDossierEl.innerHTML = '<div class="empty">Loading challenge dossier context...</div>';
       detailTraceEl.innerHTML = '<div class="empty">Loading review trace...</div>';
       reviewActionsEl.innerHTML = '<div class="empty">Loading review controls...</div>';
       clearReviewMessage();
