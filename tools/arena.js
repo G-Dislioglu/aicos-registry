@@ -212,7 +212,7 @@ function formatMecReviewWorkspace(items) {
   if (items.length === 0) {
     return 'No MEC review workspace items found.';
   }
-  return items.map(item => `${item.workspace_id} | ${item.candidate_type} | review:${item.current_review_state} | latest:${item.latest_review_outcome || '-'} | reviews:${item.review_summary ? item.review_summary.review_count : 0} | reviewable:${item.reviewable} | terminal:${item.terminal} | unresolved:${item.unresolved_runtime_reference_count || 0} | freshness:${item.freshness_state || '-'} | controls:${item.control_readiness && item.control_readiness.available_outcomes ? item.control_readiness.available_outcomes.join(',') || '-' : '-'} | ${item.title}`).join('\n');
+  return items.map(item => `${item.workspace_id} | ${item.candidate_type} | review:${item.current_review_state} | latest:${item.latest_review_outcome || '-'} | reviews:${item.review_summary ? item.review_summary.review_count : 0} | reviewable:${item.reviewable} | terminal:${item.terminal} | unresolved:${item.unresolved_runtime_reference_count || 0} | freshness:${item.freshness_state || '-'} | refutation:${item.workspace_summary && item.workspace_summary.refutation_role ? item.workspace_summary.refutation_role : 'not_applicable'} | visible-refutations:${item.workspace_summary && item.workspace_summary.visible_refutation_count !== undefined ? item.workspace_summary.visible_refutation_count : 0} | controls:${item.control_readiness && item.control_readiness.available_outcomes ? item.control_readiness.available_outcomes.join(',') || '-' : '-'} | ${item.title}`).join('\n');
 }
 
 function formatMecReviews(items) {

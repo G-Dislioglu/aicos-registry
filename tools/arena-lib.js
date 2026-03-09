@@ -1520,7 +1520,174 @@ function buildMecWorkspaceChallengeContext(payload, latestReview = null, sourceL
   };
 }
 
-function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) {
+ function buildMecWorkspaceRefutationContext(payload, reviewSummary = null, latestReview = null, sourceLinkage = {}, unresolvedReferences = [], evidenceContext = null, reviewHistoryContext = null, relatedCandidates = [], deltaContext = null, contradictionContext = null, decisionPacketContext = null, challengeContext = null, reviewTraceContext = null, candidateMap = new Map(), reviewMap = new Map()) {
+   const candidateId = payload && payload.id ? payload.id : null;
+   const candidateType = payload && payload.candidate_type ? payload.candidate_type : null;
+   const refutesCandidateId = sourceLinkage && sourceLinkage.refutes_candidate_id ? sourceLinkage.refutes_candidate_id : null;
+   const challengeBasis = payload && payload.challenge_basis && typeof payload.challenge_basis === 'object'
+     ? payload.challenge_basis
+     : null;
+   const visibleCounterexamples = [];
+   for (const candidate of candidateMap.values()) {
+     if (!candidate || candidate.candidate_type !== 'counterexample_candidate') {
+       continue;
+     }
+     const targetCandidateId = candidate.refutes_candidate_id || null;
+     if (targetCandidateId !== candidateId && targetCandidateId !== refutesCandidateId) {
+       continue;
+     }
+     const counterexampleReviewSummary = buildMecReviewSummary(reviewMap.get(candidate.id) || []);
+     visibleCounterexamples.push({
+       candidate_id: candidate.id,
+       title: buildMecWorkspaceTitle(candidate),
+       status: candidate.status || null,
+       current_review_state: counterexampleReviewSummary.current_state,
+       reviewable: counterexampleReviewSummary.reviewable,
+       terminal: counterexampleReviewSummary.terminal,
+       contradiction_pressure_bucket: candidate.challenge_basis && candidate.challenge_basis.contradiction_pressure_bucket
+         ? candidate.challenge_basis.contradiction_pressure_bucket
+         : null,
+       challenge_summary: candidate.challenge_basis && candidate.challenge_basis.challenge_summary
+         ? candidate.challenge_basis.challenge_summary
+         : null,
+       created_at: candidate.created_at || null,
+       updated_at: candidate.updated_at || null
+     });
+   }
+   visibleCounterexamples.sort((left, right) => parseMecWorkspaceTimestamp(right.updated_at || right.created_at) - parseMecWorkspaceTimestamp(left.updated_at || left.created_at));
+
+   const primaryCandidateId = candidateType === 'counterexample_candidate'
+     ? refutesCandidateId
+     : candidateId;
+   const primaryCandidate = primaryCandidateId ? candidateMap.get(primaryCandidateId) || null : null;
+   const primaryReviewSummary = primaryCandidateId
+     ? (primaryCandidateId === candidateId ? reviewSummary : buildMecReviewSummary(reviewMap.get(primaryCandidateId) || []))
+     : null;
+   const siblingCounterexamples = candidateType === 'counterexample_candidate'
+     ? visibleCounterexamples.filter(item => item.candidate_id !== candidateId)
+     : visibleCounterexamples;
+   const supportSignals = [];
+   const qualifyingSignals = [];
+   const openQualifiers = [];
+
+   if (candidateType === 'counterexample_candidate' && primaryCandidateId) {
+     supportSignals.push(`This proposal-only counterexample explicitly refutes visible primary candidate ${primaryCandidateId}.`);
+   }
+   if (candidateType === 'counterexample_candidate' && challengeBasis && challengeBasis.challenge_summary) {
+     supportSignals.push(challengeBasis.challenge_summary);
+   }
+   if (candidateType !== 'counterexample_candidate' && visibleCounterexamples.length > 0) {
+     supportSignals.push(`${visibleCounterexamples.length} proposal-only counterexample candidate(s) already refute this primary candidate in the visible workspace.`);
+   }
+   if (candidateType !== 'counterexample_candidate' && challengeContext && challengeContext.existing_counterexample_count > 0) {
+     supportSignals.push('Current challenge posture already records visible stored counterexample pressure against this primary candidate.');
+   }
+   if (primaryReviewSummary && primaryReviewSummary.current_state) {
+     qualifyingSignals.push(`Primary candidate currently reads as ${primaryReviewSummary.current_state} in the canonical workspace.`);
+   }
+   if (candidateType === 'counterexample_candidate' && reviewTraceContext && reviewTraceContext.trace_present) {
+     qualifyingSignals.push('A review trace is already visible in the canonical workspace for this counterexample or its current desk read.');
+   }
+   if (challengeBasis && Array.isArray(challengeBasis.stabilizing_signals)) {
+     qualifyingSignals.push(...challengeBasis.stabilizing_signals.slice(0, 3));
+   }
+   if (challengeContext && Array.isArray(challengeContext.stabilizing_signals)) {
+     qualifyingSignals.push(...challengeContext.stabilizing_signals.slice(0, 3));
+   }
+   if (Array.isArray(unresolvedReferences) && unresolvedReferences.length > 0) {
+     openQualifiers.push(...unresolvedReferences.map(item => item.label).slice(0, 4));
+   }
+   if (candidateType === 'counterexample_candidate' && !primaryCandidate) {
+     openQualifiers.push('The refuted primary candidate is not visible in the current runtime candidate set.');
+   }
+   if (decisionPacketContext && Array.isArray(decisionPacketContext.missing_signals)) {
+     openQualifiers.push(...decisionPacketContext.missing_signals.slice(0, 2));
+   }
+   if (challengeBasis && challengeBasis.why_not_now) {
+     openQualifiers.push(challengeBasis.why_not_now);
+   }
+
+   const dedupedSupportSignals = Array.from(new Set(supportSignals)).slice(0, 5);
+   const dedupedQualifyingSignals = Array.from(new Set(qualifyingSignals)).slice(0, 5);
+   const dedupedOpenQualifiers = Array.from(new Set(openQualifiers)).slice(0, 5);
+
+   if (candidateType === 'counterexample_candidate') {
+     const refutationSummary = primaryCandidate
+       ? 'This proposal-only counterexample is canonically readable as a visible refutation object against the currently visible primary candidate.'
+       : 'This proposal-only counterexample remains readable as a refutation object, but its refuted primary candidate is not currently visible in runtime.';
+     return {
+       refutation_present: true,
+       refutation_role: 'counterexample_candidate',
+       refutation_summary: refutationSummary,
+       relation_summary: primaryCandidate
+         ? `Refutes primary candidate ${primaryCandidateId} while keeping the refutation read separate from any review write.`
+         : `Refutes primary candidate ${primaryCandidateId || 'unknown'}, but the primary candidate is not currently visible in runtime.`,
+       primary_candidate_id: primaryCandidateId,
+       primary_candidate_title: primaryCandidate ? buildMecWorkspaceTitle(primaryCandidate) : null,
+       primary_candidate_current_review_state: primaryReviewSummary ? primaryReviewSummary.current_state : null,
+       primary_candidate_reviewable: primaryReviewSummary ? Boolean(primaryReviewSummary.reviewable) : false,
+       primary_candidate_terminal: primaryReviewSummary ? Boolean(primaryReviewSummary.terminal) : false,
+       latest_primary_review_outcome: primaryReviewSummary ? primaryReviewSummary.latest_review_outcome || null : null,
+       visible_sibling_counterexample_count: siblingCounterexamples.length,
+       visible_sibling_counterexamples: siblingCounterexamples.slice(0, 4),
+       challenge_basis_summary: challengeBasis && challengeBasis.challenge_summary ? challengeBasis.challenge_summary : (payload && payload.mechanism ? payload.mechanism : null),
+       challenge_basis_bucket: challengeBasis && challengeBasis.contradiction_pressure_bucket ? challengeBasis.contradiction_pressure_bucket : null,
+       challenge_basis_flags: Array.isArray(challengeBasis && challengeBasis.challenge_flags) ? challengeBasis.challenge_flags.slice(0, 6) : [],
+       support_signals: dedupedSupportSignals,
+       qualifying_signals: dedupedQualifyingSignals,
+       open_qualifiers: dedupedOpenQualifiers,
+       refutation_surface_version: 'phase4b-mec-refutation-context/v1'
+     };
+   }
+
+   if (visibleCounterexamples.length > 0) {
+     return {
+       refutation_present: true,
+       refutation_role: 'refuted_primary_candidate',
+       refutation_summary: `${visibleCounterexamples.length} visible proposal-only counterexample candidate(s) currently refute this primary candidate in the canonical workspace.`,
+       relation_summary: 'The canonical workspace now keeps the visible refutation posture readable without introducing a new write path or recommendation layer.',
+       primary_candidate_id: candidateId,
+       primary_candidate_title: buildMecWorkspaceTitle(payload),
+       primary_candidate_current_review_state: reviewSummary ? reviewSummary.current_state : null,
+       primary_candidate_reviewable: reviewSummary ? Boolean(reviewSummary.reviewable) : false,
+       primary_candidate_terminal: reviewSummary ? Boolean(reviewSummary.terminal) : false,
+       latest_primary_review_outcome: latestReview ? latestReview.review_outcome || null : null,
+       visible_counterexample_count: visibleCounterexamples.length,
+       visible_counterexamples: visibleCounterexamples.slice(0, 4),
+       challenge_basis_summary: challengeContext && challengeContext.challenge_summary ? challengeContext.challenge_summary : null,
+       challenge_basis_bucket: challengeContext && challengeContext.contradiction_pressure_bucket ? challengeContext.contradiction_pressure_bucket : null,
+       challenge_basis_flags: Array.isArray(challengeContext && challengeContext.challenge_flags) ? challengeContext.challenge_flags.slice(0, 6) : [],
+       support_signals: dedupedSupportSignals,
+       qualifying_signals: dedupedQualifyingSignals,
+       open_qualifiers: dedupedOpenQualifiers,
+       refutation_surface_version: 'phase4b-mec-refutation-context/v1'
+     };
+   }
+
+   return {
+     refutation_present: false,
+     refutation_role: 'not_applicable',
+     refutation_summary: 'No explicit refutation relation is currently visible for this workspace item.',
+     relation_summary: 'No proposal-only counterexample relation is currently visible in the canonical workspace for this item.',
+     primary_candidate_id: primaryCandidateId,
+     primary_candidate_title: primaryCandidate ? buildMecWorkspaceTitle(primaryCandidate) : null,
+     primary_candidate_current_review_state: primaryReviewSummary ? primaryReviewSummary.current_state : null,
+     primary_candidate_reviewable: primaryReviewSummary ? Boolean(primaryReviewSummary.reviewable) : false,
+     primary_candidate_terminal: primaryReviewSummary ? Boolean(primaryReviewSummary.terminal) : false,
+     latest_primary_review_outcome: latestReview ? latestReview.review_outcome || null : null,
+     visible_counterexample_count: 0,
+     visible_counterexamples: [],
+     challenge_basis_summary: null,
+     challenge_basis_bucket: null,
+     challenge_basis_flags: [],
+     support_signals: [],
+     qualifying_signals: [],
+     open_qualifiers: dedupedOpenQualifiers,
+     refutation_surface_version: 'phase4b-mec-refutation-context/v1'
+   };
+ }
+
+ function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) {
   if (!payload) {
     return null;
   }
@@ -1544,6 +1711,7 @@ function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) 
   const decisionPacketContext = buildMecWorkspaceDecisionPacketContext(reviewSummary, latestReview, controlReadiness, unresolvedRuntimeReferences, sourceLinkage, evidenceContext, reviewHistoryContext, relatedCandidates, stateExplanation, focusContext, compareContext, deltaContext, contradictionContext);
   const reviewTraceContext = buildMecWorkspaceReviewTraceContext(latestReview, reviewSummary, decisionPacketContext, contradictionContext, deltaContext);
   const challengeContext = buildMecWorkspaceChallengeContext(payload, latestReview, sourceLinkage, unresolvedRuntimeReferences, evidenceContext, reviewHistoryContext, relatedCandidates, deltaContext, contradictionContext, decisionPacketContext, reviewTraceContext, candidateMap);
+  const refutationContext = buildMecWorkspaceRefutationContext(payload, reviewSummary, latestReview, sourceLinkage, unresolvedRuntimeReferences, evidenceContext, reviewHistoryContext, relatedCandidates, deltaContext, contradictionContext, decisionPacketContext, challengeContext, reviewTraceContext, candidateMap, reviewMap);
   return {
     workspace_kind: 'mec_review_workspace',
     workspace_version: 'phase3c-mec-review-workspace/v1',
@@ -1589,6 +1757,7 @@ function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) 
     contradiction_context: contradictionContext,
     decision_packet_context: decisionPacketContext,
     challenge_context: challengeContext,
+    refutation_context: refutationContext,
     review_trace_context: reviewTraceContext,
     workspace_summary: {
       review_count: reviewSummary.review_count,
@@ -1600,6 +1769,9 @@ function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) 
       decision_readiness: decisionPacketContext.decision_readiness,
       contradiction_present: contradictionContext.contradiction_present,
       challenge_pressure_bucket: challengeContext.contradiction_pressure_bucket,
+      refutation_present: refutationContext.refutation_present,
+      refutation_role: refutationContext.refutation_role,
+      visible_refutation_count: Number(refutationContext.visible_counterexample_count || refutationContext.visible_sibling_counterexample_count || 0),
       trace_present: reviewTraceContext.trace_present
     },
     raw_review_records: reviewRecords.map(record => ({ ...record })),

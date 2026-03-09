@@ -688,6 +688,9 @@
           <div class="panel-sub">Single-candidate challenge reading from the canonical workspace only. Contradiction pressure stays compact, readable and non-recommendatory.</div>
           <div id="detail-challenge" class="compact-list"></div>
           <div id="challenge-message"></div>
+          <h3>Refutation context</h3>
+          <div class="panel-sub">Read-first counterexample and refuted-primary readability from the canonical workspace only. This surface stays inspectable and does not introduce any new write path.</div>
+          <div id="detail-refutation" class="compact-list"></div>
           <h3>Review action trace</h3>
           <div class="panel-sub">Compact trace showing which visible decision, contradiction and delta signals were present when the latest review write was recorded.</div>
           <div id="detail-trace" class="compact-list"></div>
@@ -894,6 +897,7 @@
     const detailContradictionEl = document.getElementById('detail-contradiction');
     const detailChallengeEl = document.getElementById('detail-challenge');
     const challengeMessageEl = document.getElementById('challenge-message');
+    const detailRefutationEl = document.getElementById('detail-refutation');
     const detailTraceEl = document.getElementById('detail-trace');
     const reviewActionsEl = document.getElementById('review-actions');
     const reviewMessageEl = document.getElementById('review-message');
@@ -1064,6 +1068,10 @@
 
     function getChallengeContext(item) {
       return item && item.challenge_context ? item.challenge_context : null;
+    }
+
+    function getRefutationContext(item) {
+      return item && item.refutation_context ? item.refutation_context : null;
     }
 
     function getDecisionPacketContext(item) {
@@ -2406,6 +2414,91 @@
       });
     }
 
+    function renderRefutationContext(payload) {
+      const refutation = getRefutationContext(payload);
+      if (!refutation) {
+        detailRefutationEl.innerHTML = '<div class="empty">No refutation context is available for this workspace item.</div>';
+        return;
+      }
+      const visibleCounterexamples = Array.isArray(refutation.visible_counterexamples)
+        ? refutation.visible_counterexamples
+        : (Array.isArray(refutation.visible_sibling_counterexamples) ? refutation.visible_sibling_counterexamples : []);
+      const supportSignals = Array.isArray(refutation.support_signals) ? refutation.support_signals : [];
+      const qualifyingSignals = Array.isArray(refutation.qualifying_signals) ? refutation.qualifying_signals : [];
+      const openQualifiers = Array.isArray(refutation.open_qualifiers) ? refutation.open_qualifiers : [];
+      const basisFlags = Array.isArray(refutation.challenge_basis_flags) ? refutation.challenge_basis_flags : [];
+      detailRefutationEl.innerHTML = `
+        <div class="detail-card">
+          <strong>Refutation summary</strong>
+          <span>${escapeHtml(refutation.refutation_summary || '-')}</span>
+          <div class="row-meta">
+            <span class="badge">${escapeHtml(refutation.refutation_role || 'not_applicable')}</span>
+            <span class="badge">basis ${escapeHtml(refutation.challenge_basis_bucket || 'not_visible')}</span>
+            <span class="badge">visible ${escapeHtml(String(refutation.visible_counterexample_count || refutation.visible_sibling_counterexample_count || 0))}</span>
+            <span class="badge">primary ${escapeHtml(refutation.primary_candidate_current_review_state || '-')}</span>
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Relation readability</strong>
+          <span>${escapeHtml(refutation.relation_summary || '-')}</span>
+          <div style="display:grid; gap:6px; margin-top:8px;">
+            <div class="tiny">primary candidate | ${escapeHtml(refutation.primary_candidate_title || refutation.primary_candidate_id || 'not_visible')}</div>
+            <div class="tiny">review posture | ${escapeHtml(refutation.primary_candidate_current_review_state || 'not_visible')} | ${escapeHtml(refutation.primary_candidate_terminal ? 'terminal' : (refutation.primary_candidate_reviewable ? 'reviewable' : 'not_visible'))}</div>
+            <div class="tiny">latest primary outcome | ${escapeHtml(refutation.latest_primary_review_outcome || 'not_written')}</div>
+          </div>
+          ${refutation.primary_candidate_id ? `<div class="action-row" style="margin-top:10px;"><button class="mini-button refutation-open-primary" type="button" data-candidate-id="${escapeHtml(refutation.primary_candidate_id)}">Open primary candidate</button></div>` : ''}
+        </div>
+        <div class="detail-card">
+          <strong>Challenge basis carry-through</strong>
+          <div style="display:grid; gap:6px; margin-top:4px;">
+            <div class="tiny">summary | ${escapeHtml(refutation.challenge_basis_summary || 'No stronger challenge-basis summary is currently visible.')}</div>
+            ${basisFlags.length > 0
+              ? basisFlags.map(flag => `<div class="tiny">flag | ${escapeHtml(flag)}</div>`).join('')
+              : '<div class="tiny">No explicit challenge-basis flags are currently visible.</div>'}
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Visible counterexample posture</strong>
+          <div style="display:grid; gap:8px; margin-top:4px;">
+            ${visibleCounterexamples.length > 0
+              ? visibleCounterexamples.map(item => `
+                <div style="display:grid; gap:6px; border:1px solid var(--line); border-radius:12px; padding:10px;">
+                  <div class="row-top">
+                    <strong>${escapeHtml(item.title || item.candidate_id)}</strong>
+                    <span class="badge">${escapeHtml(item.current_review_state || 'proposal_only')}</span>
+                  </div>
+                  <div class="tiny">${escapeHtml(item.candidate_id)} | stored ${escapeHtml(item.status || 'proposal_only')} | basis ${escapeHtml(item.contradiction_pressure_bucket || 'not_visible')}</div>
+                  <div class="action-row">
+                    <button class="mini-button refutation-open-counterexample" type="button" data-candidate-id="${escapeHtml(item.candidate_id)}">Open counterexample</button>
+                  </div>
+                </div>
+              `).join('')
+              : '<div class="tiny">No visible counterexample posture is currently available for this workspace item.</div>'}
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Signals and qualifiers</strong>
+          <div style="display:grid; gap:6px; margin-top:4px;">
+            ${supportSignals.length > 0
+              ? supportSignals.map(signal => `<div class="tiny">support | ${escapeHtml(signal)}</div>`).join('')
+              : '<div class="tiny">No stronger refutation support signal is currently visible.</div>'}
+            ${qualifyingSignals.length > 0
+              ? qualifyingSignals.map(signal => `<div class="tiny">qualifier | ${escapeHtml(signal)}</div>`).join('')
+              : '<div class="tiny">No stronger qualifying signal is currently visible.</div>'}
+            ${openQualifiers.length > 0
+              ? openQualifiers.map(signal => `<div class="tiny">open | ${escapeHtml(signal)}</div>`).join('')
+              : '<div class="tiny">No stronger open qualifier is currently visible.</div>'}
+          </div>
+        </div>
+      `;
+      detailRefutationEl.querySelectorAll('.refutation-open-counterexample').forEach(node => {
+        node.addEventListener('click', () => selectCandidate(node.dataset.candidateId));
+      });
+      detailRefutationEl.querySelectorAll('.refutation-open-primary').forEach(node => {
+        node.addEventListener('click', () => selectCandidate(node.dataset.candidateId));
+      });
+    }
+
     function renderReviewTraceContext(payload) {
       const trace = getReviewTraceContext(payload);
       if (!trace) {
@@ -2642,6 +2735,7 @@
       renderDecisionPacketContext(payload);
       renderContradictionContext(payload);
       renderChallengeContext(payload);
+      renderRefutationContext(payload);
       renderReviewTraceContext(payload);
       renderRawReviewRecords(payload);
       candidateDetailEl.textContent = JSON.stringify(rawCandidate, null, 2);
@@ -2784,6 +2878,7 @@
       detailDecisionEl.innerHTML = '<div class="empty">Loading decision packet...</div>';
       detailContradictionEl.innerHTML = '<div class="empty">Loading contradiction context...</div>';
       detailChallengeEl.innerHTML = '<div class="empty">Loading challenge context...</div>';
+      detailRefutationEl.innerHTML = '<div class="empty">Loading refutation context...</div>';
       detailTraceEl.innerHTML = '<div class="empty">Loading review trace...</div>';
       reviewActionsEl.innerHTML = '<div class="empty">Loading review controls...</div>';
       clearReviewMessage();
