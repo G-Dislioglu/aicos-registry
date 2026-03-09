@@ -215,6 +215,8 @@ function buildUiScriptHarness() {
     'detail-evidence',
     'detail-history',
     'detail-related',
+    'detail-focus',
+    'detail-compare',
     'review-actions',
     'review-message',
     'review-rationale',
@@ -505,6 +507,76 @@ function buildUiScriptHarness() {
       .slice(0, 6);
   }
 
+  function buildHarnessFocusContext(rawCandidate, reviewSummary, unresolvedRuntimeReferences, reviewHistoryContext, evidenceContext, relatedCandidates) {
+    const pairCounterpartId = evidenceContext && evidenceContext.pair_counterpart_id ? evidenceContext.pair_counterpart_id : null;
+    const compareReady = Boolean(pairCounterpartId) || relatedCandidates.length > 0;
+    const focusBucket = Boolean(reviewSummary.terminal)
+      ? (unresolvedRuntimeReferences.length > 0 ? 'terminal_reference_gap' : 'recent_terminal_decision')
+      : unresolvedRuntimeReferences.length > 0
+        ? 'reviewable_reference_tension'
+        : pairCounterpartId
+          ? 'linked_pair_review'
+          : relatedCandidates.length > 0
+            ? 'comparative_review_zone'
+            : reviewHistoryContext && reviewHistoryContext.total_review_count > 0
+              ? 'history_carry_forward'
+              : 'single_item_review';
+    const focusSignals = [
+      unresolvedRuntimeReferences.length > 0 ? `${unresolvedRuntimeReferences.length} unresolved runtime reference(s)` : null,
+      pairCounterpartId ? `linked pair counterpart ${pairCounterpartId}` : null,
+      relatedCandidates.length > 0 ? `${relatedCandidates.length} related candidate(s)` : null,
+      reviewHistoryContext && reviewHistoryContext.total_review_count > 0 ? `${reviewHistoryContext.total_review_count} prior review(s)` : null,
+      evidenceContext && evidenceContext.integrity_state ? `integrity ${evidenceContext.integrity_state}` : null
+    ].filter(Boolean);
+    const focusSummary = focusBucket === 'reviewable_reference_tension'
+      ? `Focus this item because ${unresolvedRuntimeReferences.length} unresolved runtime reference(s) still shape a reviewable decision.`
+      : focusBucket === 'linked_pair_review'
+        ? `Focus this linked pair because the workspace exposes a directly comparable counterpart.`
+        : focusBucket === 'comparative_review_zone'
+          ? `Focus this item in comparison because neighboring workspace objects share visible linkage signals.`
+          : focusBucket === 'recent_terminal_decision'
+            ? 'Focus here only as terminal history context remains relevant to nearby workspace reads.'
+            : focusBucket === 'terminal_reference_gap'
+              ? 'Focus here because terminal history and unresolved visible references still coexist.'
+              : focusBucket === 'history_carry_forward'
+                ? 'Focus this item because existing review history still carries forward into the current read.'
+                : 'Focus remains local because the workspace currently exposes no stronger comparative tension.';
+    return {
+      focus_bucket: focusBucket,
+      compare_ready: compareReady,
+      focus_summary: focusSummary,
+      focus_signals: focusSignals
+    };
+  }
+
+  function buildHarnessCompareContext(rawCandidate, reviewSummary, relatedCandidates, evidenceContext, reviewHistoryContext) {
+    const pairCounterpartId = evidenceContext && evidenceContext.pair_counterpart_id ? evidenceContext.pair_counterpart_id : null;
+    const compareCandidates = relatedCandidates.map(item => ({
+      candidate_id: item.candidate_id,
+      title: item.title,
+      candidate_type: item.candidate_type,
+      current_review_state: item.current_review_state || 'proposal_only',
+      reviewable: Boolean(item.reviewable),
+      terminal: Boolean(item.terminal),
+      unresolved_runtime_reference_count: item.explicit_linkage ? 0 : 0,
+      history_state: reviewHistoryContext && reviewHistoryContext.total_review_count > 0 ? reviewHistoryContext.history_state : 'awaiting_first_review',
+      compare_signals: [
+        ...(Array.isArray(item.relation_signals) ? item.relation_signals : []),
+        item.candidate_id === pairCounterpartId ? 'pair_counterpart' : null,
+        reviewSummary && reviewSummary.current_state ? `selected_state:${reviewSummary.current_state}` : null
+      ].filter(Boolean)
+    }));
+    return {
+      compare_ready: Boolean(pairCounterpartId) || compareCandidates.length > 0,
+      pair_counterpart_id: pairCounterpartId,
+      related_candidate_count: relatedCandidates.length,
+      compare_summary: compareCandidates.length > 0
+        ? `Compare against ${compareCandidates.length} signal-adjacent workspace item(s) without leaving the desk.`
+        : 'No compare candidate is currently derivable from the visible workspace signals.',
+      compare_candidates: compareCandidates
+    };
+  }
+
   function toWorkspaceItem(rawCandidate) {
     const reviewSummary = rawCandidate && rawCandidate.review_summary ? rawCandidate.review_summary : {
       review_count: 0,
@@ -597,6 +669,12 @@ function buildUiScriptHarness() {
       ],
       missing_visible_prerequisites: unresolvedRuntimeReferences.map(item => item.label)
     };
+    const focusContext = rawCandidate && rawCandidate.focus_context
+      ? rawCandidate.focus_context
+      : buildHarnessFocusContext(rawCandidate, reviewSummary, unresolvedRuntimeReferences, reviewHistoryContext, evidenceContext, relatedCandidates);
+    const compareContext = rawCandidate && rawCandidate.compare_context
+      ? rawCandidate.compare_context
+      : buildHarnessCompareContext(rawCandidate, reviewSummary, relatedCandidates, evidenceContext, reviewHistoryContext);
     return {
       workspace_kind: 'mec_review_workspace',
       workspace_version: 'phase3c-mec-review-workspace/v1',
@@ -621,6 +699,8 @@ function buildUiScriptHarness() {
       evidence_context: evidenceContext,
       review_history_context: reviewHistoryContext,
       related_candidate_context: relatedCandidates,
+      focus_context: focusContext,
+      compare_context: compareContext,
       state_explanation: stateExplanation,
       source_linkage: {
         source_event_ids: rawCandidate.source_event_ids || [],
@@ -846,6 +926,8 @@ async function verifyEmbeddedUiWriteSemantics() {
   const detailRelatedEl = elements.get('detail-related');
   const detailMetaEl = elements.get('detail-meta');
   const detailLinkageEl = elements.get('detail-linkage');
+  const detailFocusEl = elements.get('detail-focus');
+  const detailCompareEl = elements.get('detail-compare');
   const rawReviewRecordsEl = elements.get('raw-review-records');
   const deskStatusEl = elements.get('desk-status');
   const facetListEl = elements.get('facet-list');
@@ -865,7 +947,7 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(deskStatusEl.innerHTML.includes('Desk facet'), 'Expected desk status strip to render current workspace scope');
   assert(facetListEl.innerHTML.includes('Reviewable now'), 'Expected desk facet entrypoints to render');
   assert(deskQueueEl.innerHTML.includes('Active desk queue'), 'Expected desk queue summary to render');
-  assert(candidateListEl.innerHTML.includes('Ready for first review'), 'Expected candidate list to render grouped desk sections');
+  assert(candidateListEl.innerHTML.includes('Focus: compare now') || candidateListEl.innerHTML.includes('Ready for first review'), 'Expected candidate list to render grouped desk sections');
   assert(candidateListEl.innerHTML.includes('Linked target candidate-invariant'), 'Expected boundary candidate list row to expose linked target context');
   assert(candidateListEl.innerHTML.includes('Refutes candidate-invariant | Counterexample detail'), 'Expected counterexample candidate list row to expose refuted target context');
   assert(candidateListEl.innerHTML.includes('Domain mec_ui_harness | blind spot 0.5'), 'Expected curiosity candidate list row to expose domain and blind spot context');
@@ -1027,8 +1109,22 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(detailHistoryEl.innerHTML.includes('History summary'), 'Expected desk detail to render compressed history summary');
   assert(detailHistoryEl.innerHTML.includes('No recent review direction is available'), 'Expected history panel to explain missing review direction when no raw review exists');
   assert(detailRelatedEl.innerHTML.includes('Open related'), 'Expected related candidate context to expose open-related actions');
+  assert(detailRelatedEl.innerHTML.includes('Compare'), 'Expected related candidate context to expose compare actions');
+  assert(detailFocusEl.innerHTML.includes('Focus summary'), 'Expected desk detail to render focus summary');
+  assert(detailFocusEl.innerHTML.includes('Focus signals'), 'Expected desk detail to render focus signals');
+  assert(detailCompareEl.innerHTML.includes('Compare summary'), 'Expected desk detail to render compare summary');
+  assert(detailCompareEl.innerHTML.includes('Compare candidates'), 'Expected desk detail to render compare candidates');
   assert(rawReviewRecordsEl.innerHTML.includes('No raw review records stored yet for this workspace item.'), 'Expected desk detail to render an empty raw review record state');
   assert(deskNavigationEl.innerHTML.includes('Reproducible desk state'), 'Expected desk detail to render queue navigation and reproducible state');
+  assert(deskNavigationEl.innerHTML.includes('Compare state'), 'Expected desk detail to render compare navigation state');
+
+  context.setCompareCandidate('candidate-counterexample');
+  assert(detailCompareEl.innerHTML.includes('Active quick compare'), 'Expected compare panel to render an active quick compare block');
+  assert(detailCompareEl.innerHTML.includes('candidate-counterexample'), 'Expected compare panel to render the selected compare target');
+  assert(String(context.location.search).includes('compare=candidate-counterexample'), 'Expected compare target to be mirrored into desk URL state');
+
+  context.setCompareCandidate('');
+  assert(!String(context.location.search).includes('compare='), 'Expected clearing compare target to remove compare state from desk URL');
 
   const reviewRationaleEl = elements.get('review-rationale');
   reviewRationaleEl.value = 'Operator stabilize proof from embedded harness.';
@@ -1137,6 +1233,8 @@ async function main() {
     assert(page.text.includes('Evidence / lineage context'), 'Expected evidence and lineage section');
     assert(page.text.includes('Review history context'), 'Expected review history section');
     assert(page.text.includes('Related candidate context'), 'Expected related candidate context section');
+    assert(page.text.includes('Focus context'), 'Expected focus context section');
+    assert(page.text.includes('Compare context'), 'Expected compare context section');
     assert(page.text.includes('Raw review records'), 'Expected raw review record section');
     assert(page.text.includes('Raw candidate artifact'), 'Expected raw candidate artifact section');
     assert(page.text.includes('Pair relationship'), 'Expected pair relationship detail block');
@@ -1167,6 +1265,8 @@ async function main() {
     assert(page.text.includes('Readable condensation of existing linkage, reference availability and integrity signals'), 'Expected evidence-layer framing in UI');
     assert(page.text.includes('Compressed reading over raw review records'), 'Expected history-compression framing in UI');
     assert(page.text.includes('Neighboring candidates derived from existing linkage and shared-source signals only'), 'Expected related-candidate framing in UI');
+    assert(page.text.includes('Signal-based focus framing that condenses real review tension'), 'Expected focus framing in UI');
+    assert(page.text.includes('Quick-compare surface over existing linkage, source overlap, review-state and history signals'), 'Expected compare framing in UI');
     assert(page.text.includes('all review states'), 'Expected review-state filter in UI');
     assert(page.text.includes('sort: review state'), 'Expected review-state sort option in UI');
     assert(page.text.includes('stabilize'), 'Expected stabilize action label in UI');

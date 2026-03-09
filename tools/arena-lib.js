@@ -884,6 +884,162 @@ function buildMecWorkspaceStateExplanation(reviewSummary, controlReadiness, unre
   };
 }
 
+function buildMecWorkspaceFocusContext(reviewSummary, controlReadiness, unresolvedReferences = [], evidenceContext = null, reviewHistoryContext = null, relatedCandidates = [], sourceLinkage = {}) {
+  const reviewable = Boolean(reviewSummary && reviewSummary.reviewable);
+  const terminal = Boolean(reviewSummary && reviewSummary.terminal);
+  const unresolvedCount = unresolvedReferences.length;
+  const relatedCount = Array.isArray(relatedCandidates) ? relatedCandidates.length : 0;
+  const pairCounterpartId = sourceLinkage && sourceLinkage.pair_counterpart_id ? sourceLinkage.pair_counterpart_id : null;
+  const historyState = reviewHistoryContext && reviewHistoryContext.history_state ? reviewHistoryContext.history_state : 'awaiting_first_review';
+  let focusBucket = 'single_item_context';
+  if (reviewable && unresolvedCount > 0) {
+    focusBucket = 'reviewable_reference_tension';
+  } else if (pairCounterpartId) {
+    focusBucket = 'linked_pair_review';
+  } else if (reviewable && relatedCount > 0) {
+    focusBucket = 'comparative_review_zone';
+  } else if (reviewable && historyState === 'active_history') {
+    focusBucket = 'history_carry_forward';
+  } else if (terminal && unresolvedCount > 0) {
+    focusBucket = 'terminal_reference_gap';
+  } else if (terminal && historyState === 'terminal_history') {
+    focusBucket = 'recent_terminal_decision';
+  }
+  const focusSignals = [
+    reviewable ? 'reviewable_now' : 'not_reviewable',
+    terminal ? 'terminal_state' : 'non_terminal_state',
+    unresolvedCount > 0 ? `unresolved_reference_count:${unresolvedCount}` : null,
+    pairCounterpartId ? 'paired_workspace_case' : null,
+    relatedCount > 0 ? `related_candidates:${relatedCount}` : null,
+    evidenceContext && evidenceContext.integrity_state ? `integrity:${evidenceContext.integrity_state}` : null,
+    historyState ? `history:${historyState}` : null
+  ].filter(Boolean);
+  const focusSummary = focusBucket === 'reviewable_reference_tension'
+    ? `Reviewable now, but visible runtime references still need attention.`
+    : focusBucket === 'linked_pair_review'
+      ? `This workspace item belongs to a linked pair and is best reviewed in comparison with its counterpart.`
+      : focusBucket === 'comparative_review_zone'
+        ? `This workspace item sits in a comparative zone with related candidates sharing existing linkage or source signals.`
+        : focusBucket === 'history_carry_forward'
+          ? `This workspace item remains reviewable while already carrying visible review history.`
+          : focusBucket === 'terminal_reference_gap'
+            ? `This workspace item is terminal, but visible reference gaps still shape its review context.`
+            : focusBucket === 'recent_terminal_decision'
+              ? `This workspace item is terminal and best read against its recent decision history.`
+              : `This workspace item currently reads as a mostly standalone review context.`;
+  return {
+    focus_bucket: focusBucket,
+    focus_signals: focusSignals,
+    focus_summary: focusSummary,
+    compare_ready: Boolean(pairCounterpartId || relatedCount > 0)
+  };
+}
+
+function buildMecWorkspaceCompareContext(payload, candidateMap = new Map(), eventMap = new Map(), reviewMap = new Map(), sourceLinkage = {}, relatedCandidates = []) {
+  const currentSourceEvents = new Set(Array.isArray(payload && payload.source_event_ids) ? payload.source_event_ids.filter(Boolean) : []);
+  const currentSourceCards = new Set(Array.isArray(payload && payload.source_card_ids) ? payload.source_card_ids.filter(Boolean) : []);
+  const currentExplicitRelatedIds = new Set(Array.isArray(sourceLinkage && sourceLinkage.related_candidate_ids) ? sourceLinkage.related_candidate_ids : []);
+  const currentPairCounterpartId = sourceLinkage && sourceLinkage.pair_counterpart_id ? sourceLinkage.pair_counterpart_id : null;
+  const currentReviewSummary = buildMecReviewSummary(reviewMap.get(payload.id) || []);
+  const currentHistoryState = currentReviewSummary.review_count < 1
+    ? 'awaiting_first_review'
+    : currentReviewSummary.terminal
+      ? 'terminal_history'
+      : 'active_history';
+  const currentUnresolved = buildMecWorkspaceUnresolvedReferences(payload, sourceLinkage, candidateMap, eventMap);
+  const compareCandidates = [];
+  for (const [candidateId, candidate] of candidateMap.entries()) {
+    if (!candidate || candidateId === payload.id) {
+      continue;
+    }
+    const candidateSourceLinkage = buildMecWorkspaceSourceLinkage(candidate, candidateMap, eventMap);
+    const candidateReviewSummary = buildMecReviewSummary(reviewMap.get(candidateId) || []);
+    const candidateHistoryState = candidateReviewSummary.review_count < 1
+      ? 'awaiting_first_review'
+      : candidateReviewSummary.terminal
+        ? 'terminal_history'
+        : 'active_history';
+    const candidateUnresolved = buildMecWorkspaceUnresolvedReferences(candidate, candidateSourceLinkage, candidateMap, eventMap);
+    const compareSignals = [];
+    if (currentExplicitRelatedIds.has(candidateId)) {
+      compareSignals.push('explicit_linkage');
+    }
+    if (currentPairCounterpartId && currentPairCounterpartId === candidateId) {
+      compareSignals.push('pair_counterpart');
+    }
+    const sharedSourceEvents = Array.isArray(candidate.source_event_ids)
+      ? candidate.source_event_ids.filter(eventId => currentSourceEvents.has(eventId))
+      : [];
+    if (sharedSourceEvents.length > 0) {
+      compareSignals.push(`shared_source_event:${sharedSourceEvents.join(',')}`);
+    }
+    const sharedSourceCards = Array.isArray(candidate.source_card_ids)
+      ? candidate.source_card_ids.filter(cardId => currentSourceCards.has(cardId))
+      : [];
+    if (sharedSourceCards.length > 0) {
+      compareSignals.push(`shared_source_card:${sharedSourceCards.join(',')}`);
+    }
+    if (candidateReviewSummary.reviewable === currentReviewSummary.reviewable) {
+      compareSignals.push(`same_reviewable:${candidateReviewSummary.reviewable ? 'yes' : 'no'}`);
+    }
+    if (candidateReviewSummary.current_state === currentReviewSummary.current_state) {
+      compareSignals.push(`same_review_state:${candidateReviewSummary.current_state}`);
+    }
+    if (candidateHistoryState === currentHistoryState) {
+      compareSignals.push(`same_history_state:${candidateHistoryState}`);
+    }
+    if (candidateUnresolved.length > 0 && currentUnresolved.length > 0) {
+      compareSignals.push(`shared_reference_tension:${Math.min(candidateUnresolved.length, currentUnresolved.length)}`);
+    }
+    if (compareSignals.length === 0) {
+      continue;
+    }
+    compareCandidates.push({
+      candidate_id: candidateId,
+      title: buildMecWorkspaceTitle(candidate),
+      candidate_type: candidate.candidate_type || null,
+      current_review_state: candidateReviewSummary.current_state,
+      reviewable: candidateReviewSummary.reviewable,
+      terminal: candidateReviewSummary.terminal,
+      unresolved_runtime_reference_count: candidateUnresolved.length,
+      history_state: candidateHistoryState,
+      compare_signals: compareSignals,
+      explicit_linkage: currentExplicitRelatedIds.has(candidateId),
+      pair_counterpart: currentPairCounterpartId === candidateId,
+      shared_source_event_count: sharedSourceEvents.length,
+      shared_source_card_count: sharedSourceCards.length
+    });
+  }
+  compareCandidates.sort((left, right) => {
+    const pairRank = Number(Boolean(right.pair_counterpart)) - Number(Boolean(left.pair_counterpart));
+    if (pairRank !== 0) {
+      return pairRank;
+    }
+    const explicitRank = Number(Boolean(right.explicit_linkage)) - Number(Boolean(left.explicit_linkage));
+    if (explicitRank !== 0) {
+      return explicitRank;
+    }
+    const eventRank = right.shared_source_event_count - left.shared_source_event_count;
+    if (eventRank !== 0) {
+      return eventRank;
+    }
+    const cardRank = right.shared_source_card_count - left.shared_source_card_count;
+    if (cardRank !== 0) {
+      return cardRank;
+    }
+    return String(left.candidate_id).localeCompare(String(right.candidate_id));
+  });
+  return {
+    compare_summary: compareCandidates.length > 0
+      ? `Compare against ${compareCandidates.length} workspace item(s) sharing explicit linkage, source overlap, review-state, history, or visible tension signals.`
+      : `No comparative workspace context is currently derivable from existing signals.`,
+    compare_candidates: compareCandidates.slice(0, 6),
+    compare_ready: compareCandidates.length > 0,
+    pair_counterpart_id: currentPairCounterpartId,
+    related_candidate_count: Array.isArray(relatedCandidates) ? relatedCandidates.length : 0
+  };
+}
+
 function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) {
   if (!payload) {
     return null;
@@ -901,6 +1057,8 @@ function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) 
   const reviewHistoryContext = buildMecWorkspaceReviewHistoryContext(reviewSummary, latestReview, reviewRecords);
   const relatedCandidates = buildMecWorkspaceRelatedCandidates(payload, candidateMap, reviewMap);
   const stateExplanation = buildMecWorkspaceStateExplanation(reviewSummary, controlReadiness, unresolvedRuntimeReferences, sourceLinkage, reviewHistoryContext, relatedCandidates);
+  const focusContext = buildMecWorkspaceFocusContext(reviewSummary, controlReadiness, unresolvedRuntimeReferences, evidenceContext, reviewHistoryContext, relatedCandidates, sourceLinkage);
+  const compareContext = buildMecWorkspaceCompareContext(payload, candidateMap, eventMap, reviewMap, sourceLinkage, relatedCandidates);
   return {
     workspace_kind: 'mec_review_workspace',
     workspace_version: 'phase3c-mec-review-workspace/v1',
@@ -937,6 +1095,8 @@ function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) 
     review_history_context: reviewHistoryContext,
     related_candidate_context: relatedCandidates,
     state_explanation: stateExplanation,
+    focus_context: focusContext,
+    compare_context: compareContext,
     workspace_summary: {
       review_count: reviewSummary.review_count,
       latest_review_outcome: latestReview ? latestReview.review_outcome : null,

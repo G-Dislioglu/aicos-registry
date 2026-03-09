@@ -168,6 +168,10 @@ function verifyRuntimeWorkspace() {
   assert(boundaryWorkspace.state_explanation && Array.isArray(boundaryWorkspace.state_explanation.missing_visible_prerequisites) && boundaryWorkspace.state_explanation.missing_visible_prerequisites.length >= 2, 'Expected unresolved boundary workspace item to explain missing visible prerequisites');
   assert(boundaryWorkspace.review_history_context && boundaryWorkspace.review_history_context.history_state === 'awaiting_first_review', 'Expected unresolved boundary workspace item to expose pre-review history state');
   assert(Array.isArray(boundaryWorkspace.related_candidate_context) && boundaryWorkspace.related_candidate_context.length >= 1, 'Expected unresolved boundary workspace item to expose related candidate context additively');
+  assert(boundaryWorkspace.focus_context && boundaryWorkspace.focus_context.focus_bucket === 'reviewable_reference_tension', 'Expected unresolved boundary workspace item to derive a focus bucket from visible reference tension');
+  assert(boundaryWorkspace.focus_context && Array.isArray(boundaryWorkspace.focus_context.focus_signals) && boundaryWorkspace.focus_context.focus_signals.length >= 1, 'Expected unresolved boundary workspace item to expose additive focus signals');
+  assert(boundaryWorkspace.compare_context && boundaryWorkspace.compare_context.compare_ready === true, 'Expected unresolved boundary workspace item to remain compare-ready from visible pair or related signals');
+  assert(boundaryWorkspace.compare_context && Array.isArray(boundaryWorkspace.compare_context.compare_candidates) && boundaryWorkspace.compare_context.compare_candidates.length >= 1, 'Expected unresolved boundary workspace item to expose additive compare candidates');
   assert(boundaryWorkspace.state_explanation && boundaryWorkspace.state_explanation.terminal === false, 'Expected unresolved boundary workspace item to expose derived why-this-state explanation');
 
   const curiosityWorkspace = readMecReviewWorkspace(curiosity.candidate.id, {
@@ -185,6 +189,10 @@ function verifyRuntimeWorkspace() {
   assert(Array.isArray(curiosityWorkspace.review_history_context.recent_reviews) && curiosityWorkspace.review_history_context.recent_reviews.length === 1, 'Expected terminal workspace item to expose recent review direction');
   assert(Array.isArray(curiosityWorkspace.raw_review_records) && curiosityWorkspace.raw_review_records.length === 1, 'Expected terminal workspace item to keep separate raw review records available');
   assert(Array.isArray(curiosityWorkspace.related_candidate_context), 'Expected terminal workspace item to expose related candidate context additively');
+  assert(curiosityWorkspace.focus_context && typeof curiosityWorkspace.focus_context.focus_summary === 'string' && curiosityWorkspace.focus_context.focus_summary.length > 0, 'Expected terminal workspace item to expose an additive focus summary');
+  assert(curiosityWorkspace.focus_context && ['recent_terminal_decision', 'terminal_reference_gap'].includes(curiosityWorkspace.focus_context.focus_bucket), 'Expected terminal workspace item to derive a terminal-history or terminal-reference-gap focus bucket from visible signals');
+  assert(curiosityWorkspace.compare_context && typeof curiosityWorkspace.compare_context.compare_summary === 'string', 'Expected terminal workspace item to expose an additive compare summary');
+  assert(curiosityWorkspace.compare_context && Array.isArray(curiosityWorkspace.compare_context.compare_candidates), 'Expected terminal workspace item to expose additive compare candidates even when none are present');
   assert(curiosityWorkspace.state_explanation && curiosityWorkspace.state_explanation.terminal === true, 'Expected terminal workspace item to expose derived why-this-state explanation');
 
   const registryAfter = snapshotRegistry();
@@ -249,6 +257,8 @@ function verifyCliWorkspace() {
   assert(Array.isArray(listedWorkspace) && listedWorkspace.length === 1, 'Expected CLI workspace list to return one item');
   assert(listedWorkspace[0].workspace_kind === 'mec_review_workspace', 'Expected CLI workspace list item to expose canonical workspace kind');
   assert(listedWorkspace[0].current_review_state === 'stabilize', 'Expected CLI workspace list item to expose stabilize state');
+  assert(listedWorkspace[0].focus_context && typeof listedWorkspace[0].focus_context.focus_bucket === 'string', 'Expected CLI workspace list item to expose Phase 3F focus context');
+  assert(listedWorkspace[0].compare_context && typeof listedWorkspace[0].compare_context.compare_ready === 'boolean', 'Expected CLI workspace list item to expose Phase 3F compare context');
 
   const loadedWorkspace = JSON.parse(runCli([
     path.join('tools', 'arena.js'),
@@ -261,6 +271,8 @@ function verifyCliWorkspace() {
   ]));
   assert(loadedWorkspace.latest_review_outcome === 'stabilize', 'Expected CLI workspace detail to expose latest stabilize outcome');
   assert(loadedWorkspace.raw_candidate_artifact && loadedWorkspace.raw_candidate_artifact.status === 'proposal_only', 'Expected CLI workspace detail to preserve raw proposal-origin artifact');
+  assert(loadedWorkspace.focus_context && typeof loadedWorkspace.focus_context.focus_summary === 'string', 'Expected CLI workspace detail to expose focus summary');
+  assert(loadedWorkspace.compare_context && Array.isArray(loadedWorkspace.compare_context.compare_candidates), 'Expected CLI workspace detail to expose compare candidates');
 }
 
 async function verifyHttpWorkspace() {
@@ -353,6 +365,8 @@ async function verifyHttpWorkspace() {
     assert(Array.isArray(workspaceListPayload.items) && workspaceListPayload.items.length === 1, 'Expected one workspace item over HTTP');
     assert(workspaceListPayload.items[0].workspace_kind === 'mec_review_workspace', 'Expected HTTP workspace list item kind');
     assert(workspaceListPayload.items[0].current_review_state === 'reject', 'Expected HTTP workspace list item current review state');
+    assert(workspaceListPayload.items[0].focus_context && typeof workspaceListPayload.items[0].focus_context.focus_bucket === 'string', 'Expected HTTP workspace list item to expose focus context');
+    assert(workspaceListPayload.items[0].compare_context && typeof workspaceListPayload.items[0].compare_context.compare_ready === 'boolean', 'Expected HTTP workspace list item to expose compare context');
 
     const workspaceDetailResponse = await fetch(`http://127.0.0.1:${port}/arena/mec-review-workspace/${createdCandidate.candidate.id}`);
     assert(workspaceDetailResponse.ok, 'Expected GET /arena/mec-review-workspace/:id to return 200');
@@ -360,6 +374,8 @@ async function verifyHttpWorkspace() {
     assert(workspaceDetailPayload.latest_review_outcome === 'reject', 'Expected HTTP workspace detail latest review outcome');
     assert(workspaceDetailPayload.review_summary.review_count === 1, 'Expected HTTP workspace detail review count');
     assert(workspaceDetailPayload.raw_candidate_artifact && workspaceDetailPayload.raw_candidate_artifact.status === 'proposal_only', 'Expected HTTP workspace detail raw artifact to remain proposal-origin');
+    assert(workspaceDetailPayload.focus_context && typeof workspaceDetailPayload.focus_context.focus_summary === 'string', 'Expected HTTP workspace detail to expose focus summary');
+    assert(workspaceDetailPayload.compare_context && Array.isArray(workspaceDetailPayload.compare_context.compare_candidates), 'Expected HTTP workspace detail to expose compare candidates');
   } finally {
     serverProcess.kill();
   }
