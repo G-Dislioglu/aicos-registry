@@ -12,6 +12,7 @@ const {
   DEFAULT_MEMORY_CANDIDATES_DIR,
   DEFAULT_MEMORY_REVIEWS_DIR,
   DEFAULT_RUNS_DIR,
+  createMecChallengeCounterexample,
   createExportReviewForCandidate,
   createMecCandidateRecord,
   createMecEvent,
@@ -200,6 +201,28 @@ async function handleRequest(req, res, options = {}) {
         error: error.code || 'invalid_mec_review_request',
         message: error.message,
         candidate_id: candidateId
+      });
+    }
+    return;
+  }
+
+  if (pathname.startsWith('/arena/mec-candidates/') && pathname.endsWith('/challenge-counterexamples') && req.method === 'POST') {
+    const candidateId = decodeURIComponent(pathname.slice('/arena/mec-candidates/'.length, -'/challenge-counterexamples'.length));
+    try {
+      const payload = await readRequestBody(req);
+      const result = createMecChallengeCounterexample(candidateId, payload, { candidateOutputDir, eventOutputDir, mecReviewOutputDir });
+      sendJson(res, 201, result);
+    } catch (error) {
+      const statusCode = error.code === 'mec_candidate_not_found'
+        ? 404
+        : error.code === 'mec_candidate_not_challengeable'
+          ? 409
+          : 400;
+      sendJson(res, statusCode, {
+        error: error.code || 'invalid_mec_challenge_request',
+        message: error.message,
+        candidate_id: candidateId,
+        blockers: error.blockers || []
       });
     }
     return;

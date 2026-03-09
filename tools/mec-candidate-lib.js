@@ -94,6 +94,12 @@ function normalizeCandidateInput(input = {}) {
     severity: normalizeEnum(input.severity, SEVERITY_LEVELS, 'medium'),
     fails_when: toArray(input.fails_when || input.failsWhen),
     edge_cases: toArray(input.edge_cases || input.edgeCases),
+    challenge_origin: input.challenge_origin && typeof input.challenge_origin === 'object'
+      ? { ...input.challenge_origin }
+      : null,
+    challenge_basis: input.challenge_basis && typeof input.challenge_basis === 'object'
+      ? { ...input.challenge_basis }
+      : null,
     metrics: {
       compression_gain: input.metrics && input.metrics.compression_gain !== undefined ? input.metrics.compression_gain : input.compression_gain || null,
       boundary_sharpness: input.metrics && input.metrics.boundary_sharpness !== undefined ? input.metrics.boundary_sharpness : input.boundary_sharpness || null,
@@ -305,6 +311,8 @@ function buildCounterexampleCandidate(candidate, options = {}) {
     created_at: candidate.created_at,
     updated_at: candidate.updated_at,
     distillation_mode: candidate.distillation_mode,
+    challenge_origin: candidate.challenge_origin,
+    challenge_basis: candidate.challenge_basis,
     source_refs: buildSourceRefs(candidate.source_event_ids, candidate.source_card_ids, options),
     candidate_boundary: {
       runtime_only: true,

@@ -8,6 +8,7 @@ const {
   DEFAULT_MEMORY_CANDIDATES_DIR,
   DEFAULT_MEMORY_REVIEWS_DIR,
   DEFAULT_RUNS_DIR,
+  createMecChallengeCounterexample,
   createExportReviewForCandidate,
   createMecCandidateRecord,
   createMecEvent,
@@ -71,6 +72,7 @@ function printUsage() {
   console.log('  node tools/arena.js list-events [--event-dir DIR] [--json]');
   console.log('  node tools/arena.js get-event <event_id> [--event-dir DIR] [--json]');
   console.log('  node tools/arena.js create-mec-candidate --candidate-type TYPE [--principle TEXT] [--mechanism TEXT] [--source-event-id ID] [--source-card-id ID] [--scope SCOPE] [--locality LOCALITY] [--applies-when TEXT] [--proof-ref REF] [--proof-state STATE] [--gate-state STATE] [--distillation-mode MODE] [--linked-candidate-id ID] [--refutes-candidate-id ID] [--open-question TEXT] [--domain DOMAIN] [--case-description TEXT] [--resolution TEXT] [--impact-on-candidate TEXT] [--blind-spot-score VALUE] [--severity LEVEL] [--boundary-fails-when TEXT] [--boundary-edge-case TEXT] [--candidate-status STATUS] [--candidate-dir DIR] [--event-dir DIR] [--json]');
+  console.log('  node tools/arena.js challenge-mec-candidate <candidate_id> --case-description TEXT [--principle TEXT] [--mechanism TEXT] [--resolution TEXT] [--impact-on-candidate TEXT] [--source-event-id ID] [--source-card-id ID] [--review-source SOURCE] [--candidate-dir DIR] [--event-dir DIR] [--mec-review-dir DIR] [--json]');
   console.log('  node tools/arena.js list-mec-candidates [--candidate-dir DIR] [--mec-review-dir DIR] [--event-dir DIR] [--json]');
   console.log('  node tools/arena.js get-mec-candidate <candidate_id> [--candidate-dir DIR] [--mec-review-dir DIR] [--event-dir DIR] [--json]');
   console.log('  node tools/arena.js list-mec-review-workspace [--candidate-dir DIR] [--mec-review-dir DIR] [--event-dir DIR] [--json]');
@@ -263,6 +265,19 @@ function buildMecReviewInput(args) {
   };
 }
 
+function buildMecChallengeInput(args) {
+  return {
+    principle: args.principle,
+    mechanism: args.mechanism,
+    case_description: args['case-description'],
+    resolution: args.resolution,
+    impact_on_candidate: args['impact-on-candidate'],
+    source_event_ids: args['source-event-id'],
+    source_card_ids: args['source-card-id'],
+    challenge_source: args['review-source']
+  };
+}
+
 function buildExportReviewInput(args) {
   return {
     export_review_rationale: args['export-review-rationale'],
@@ -326,6 +341,22 @@ function main() {
   if (command === 'create-mec-candidate') {
     try {
       const result = createMecCandidateRecord(buildMecCandidateInput(args), { candidateOutputDir: candidateDir, eventOutputDir: eventDir });
+      output(args.json ? result : JSON.stringify(result, null, 2), args.json);
+    } catch (error) {
+      console.error(error.message);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (command === 'challenge-mec-candidate') {
+    const candidateId = args._[1];
+    if (!candidateId) {
+      printUsage();
+      process.exit(1);
+    }
+    try {
+      const result = createMecChallengeCounterexample(candidateId, buildMecChallengeInput(args), { candidateOutputDir: candidateDir, eventOutputDir: eventDir, mecReviewOutputDir: mecReviewDir });
       output(args.json ? result : JSON.stringify(result, null, 2), args.json);
     } catch (error) {
       console.error(error.message);

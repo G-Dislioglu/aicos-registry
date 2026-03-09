@@ -220,6 +220,8 @@ function buildUiScriptHarness() {
     'detail-delta',
     'detail-decision',
     'detail-contradiction',
+    'detail-challenge',
+    'challenge-message',
     'detail-trace',
     'review-actions',
     'review-message',
@@ -845,6 +847,96 @@ function buildUiScriptHarness() {
     };
   }
 
+  function buildHarnessChallengeContext(rawCandidate, latestReview, evidenceContext, reviewHistoryContext, relatedCandidates, deltaContext, contradictionContext, decisionPacketContext, reviewTraceContext) {
+    const existingCounterexamples = candidateList
+      .filter(item => item.id !== rawCandidate.id)
+      .filter(item => item.candidate_type === 'counterexample_candidate' && item.refutes_candidate_id === rawCandidate.id)
+      .map(item => ({
+        candidate_id: item.id,
+        title: item.principle || item.case_description || item.id,
+        status: item.status || 'proposal_only',
+        created_at: item.created_at || null,
+        updated_at: item.updated_at || null
+      }));
+    const contradictionSignals = Array.isArray(contradictionContext && contradictionContext.contradiction_signals)
+      ? contradictionContext.contradiction_signals
+      : [];
+    const challengeable = rawCandidate.candidate_type === 'invariant_candidate';
+    const challengeSignals = [];
+    const stabilizingSignals = [];
+    const challengeFlags = [];
+    if (contradictionSignals.length > 0) {
+      challengeSignals.push('Visible contradiction signals already press against a clean current read.');
+      challengeFlags.push('contradiction_visible_now');
+    }
+    if (evidenceContext && evidenceContext.integrity_state === 'degraded') {
+      challengeSignals.push('Current evidence integrity is degraded, so challenge pressure remains readable.');
+      challengeFlags.push('reference_gap_visible');
+    }
+    if (existingCounterexamples.length > 0) {
+      challengeSignals.push(`${existingCounterexamples.length} existing counterexample candidate(s) already refute this primary candidate.`);
+      challengeFlags.push('counterexample_history_present');
+    }
+    if (deltaContext && deltaContext.review_attention_now) {
+      challengeSignals.push('Current delta context still marks the item as attention-bearing now.');
+      challengeFlags.push('delta_attention_visible');
+    }
+    if (decisionPacketContext && Array.isArray(decisionPacketContext.missing_signals) && decisionPacketContext.missing_signals.length > 0) {
+      challengeSignals.push('Decision packet still exposes missing or open gaps around this candidate.');
+      challengeFlags.push('decision_gaps_visible');
+    }
+    if (reviewTraceContext && reviewTraceContext.trace_present && reviewTraceContext.decision_readiness_at_write === 'decision_fragile') {
+      challengeSignals.push('The latest visible review write was recorded from a decision-fragile read.');
+      challengeFlags.push('fragile_write_anchor');
+    }
+    if (evidenceContext && evidenceContext.pair_integrity === 'resolved') {
+      stabilizingSignals.push('A paired boundary candidate is visibly resolved in the current workspace.');
+    }
+    if (evidenceContext && evidenceContext.integrity_state === 'intact') {
+      stabilizingSignals.push('Current visible linkage and evidence integrity read as intact.');
+    }
+    if (existingCounterexamples.length < 1) {
+      stabilizingSignals.push('No stored counterexample currently refutes this primary candidate.');
+    }
+    if (latestReview && latestReview.review_outcome === 'stabilize' && contradictionSignals.length < 1 && !(deltaContext && deltaContext.review_attention_now)) {
+      stabilizingSignals.push('The latest visible review stabilized the candidate and no stronger current contradiction signal is visible now.');
+    }
+    const contradictionPressureBucket = !challengeable
+      ? 'not_applicable'
+      : challengeSignals.length >= 4
+        ? 'high_visible_pressure'
+        : challengeSignals.length >= 2
+          ? 'moderate_visible_pressure'
+          : 'low_visible_pressure';
+    const blockers = challengeable ? [] : [`Phase 4A manual challenge is locked to visible invariant candidates only, not ${rawCandidate.candidate_type || 'unknown'} objects.`];
+    return {
+      challenge_present: challengeable,
+      challenge_summary: !challengeable
+        ? 'This workspace item is outside the locked Phase 4A single-candidate manual challenge slice.'
+        : contradictionPressureBucket === 'high_visible_pressure'
+          ? 'Current workspace signals show high visible contradiction pressure, so an explicit manual counterexample proposal is readable now.'
+          : contradictionPressureBucket === 'moderate_visible_pressure'
+            ? 'Current workspace signals show moderate visible contradiction pressure, so a manual counterexample proposal is plausible without becoming automatic.'
+            : 'Current workspace signals show only low visible contradiction pressure, so challenge remains available but lightly grounded.',
+      contradiction_pressure_bucket: contradictionPressureBucket,
+      challenge_signals: challengeSignals,
+      stabilizing_signals: stabilizingSignals,
+      challenge_flags: challengeFlags,
+      existing_counterexample_count: existingCounterexamples.length,
+      existing_counterexamples: existingCounterexamples,
+      boundary_candidate_id: evidenceContext && evidenceContext.pair_counterpart_id ? evidenceContext.pair_counterpart_id : null,
+      boundary_integrity: evidenceContext && evidenceContext.pair_integrity ? evidenceContext.pair_integrity : 'not_applicable',
+      latest_review_outcome: latestReview ? latestReview.review_outcome || null : null,
+      latest_review_trace_present: Boolean(reviewTraceContext && reviewTraceContext.trace_present),
+      review_history_count: Number(reviewHistoryContext && reviewHistoryContext.total_review_count || 0),
+      manual_counterexample_allowed: blockers.length < 1,
+      manual_counterexample_blockers: blockers,
+      selected_primary_candidate_id: rawCandidate.id,
+      selected_primary_candidate_type: rawCandidate.candidate_type || null,
+      challenge_surface_version: 'phase4a-mec-challenge-context/v1'
+    };
+  }
+
   function toWorkspaceItem(rawCandidate) {
     const reviewSummary = rawCandidate && rawCandidate.review_summary ? rawCandidate.review_summary : {
       review_count: 0,
@@ -955,6 +1047,9 @@ function buildUiScriptHarness() {
     const reviewTraceContext = rawCandidate && rawCandidate.review_trace_context
       ? rawCandidate.review_trace_context
       : buildHarnessReviewTraceContext(rawCandidate, latestReview, decisionPacketContext, contradictionContext, deltaContext);
+    const challengeContext = rawCandidate && rawCandidate.challenge_context
+      ? rawCandidate.challenge_context
+      : buildHarnessChallengeContext(rawCandidate, latestReview, evidenceContext, reviewHistoryContext, relatedCandidates, deltaContext, contradictionContext, decisionPacketContext, reviewTraceContext);
     return {
       workspace_kind: 'mec_review_workspace',
       workspace_version: 'phase3c-mec-review-workspace/v1',
@@ -984,6 +1079,7 @@ function buildUiScriptHarness() {
       delta_context: deltaContext,
       contradiction_context: contradictionContext,
       decision_packet_context: decisionPacketContext,
+      challenge_context: challengeContext,
       review_trace_context: reviewTraceContext,
       state_explanation: stateExplanation,
       workspace_summary: {
@@ -994,6 +1090,7 @@ function buildUiScriptHarness() {
         delta_attention: Boolean(deltaContext && deltaContext.review_attention_now),
         decision_readiness: decisionPacketContext.decision_readiness,
         contradiction_present: contradictionContext.contradiction_present,
+        challenge_pressure_bucket: challengeContext.contradiction_pressure_bucket,
         trace_present: reviewTraceContext.trace_present,
         pair_role: rawCandidate.candidate_type === 'invariant_candidate'
           ? 'invariant'
@@ -1012,12 +1109,28 @@ function buildUiScriptHarness() {
     };
   }
 
-  for (let index = 0; index < candidateList.length; index += 1) {
-    candidateList[index] = toWorkspaceItem(candidateList[index]);
+  function rebuildHarnessWorkspaceState() {
+    for (let index = 0; index < candidateList.length; index += 1) {
+      const current = candidateList[index];
+      candidateList[index] = toWorkspaceItem({
+        ...(current.raw_candidate_artifact || current),
+        current_review_state: current.current_review_state,
+        review_summary: current.review_summary,
+        raw_review_records: current.raw_review_records
+      });
+    }
+    Object.keys(candidateDetails).forEach(candidateId => {
+      const current = candidateDetails[candidateId];
+      candidateDetails[candidateId] = toWorkspaceItem({
+        ...(current.raw_candidate_artifact || current),
+        current_review_state: current.current_review_state,
+        review_summary: current.review_summary,
+        raw_review_records: current.raw_review_records
+      });
+    });
   }
-  Object.keys(candidateDetails).forEach(candidateId => {
-    candidateDetails[candidateId] = toWorkspaceItem(candidateDetails[candidateId]);
-  });
+
+  rebuildHarnessWorkspaceState();
 
   const document = {
     getElementById(id) {
@@ -1135,9 +1248,95 @@ function buildUiScriptHarness() {
       });
       candidateList[targetCandidateIndex] = nextCandidate;
       candidateDetails[candidateId] = nextDetail;
+      rebuildHarnessWorkspaceState();
       return createFetchResponse(201, {
         reviewRecord,
-        candidate: nextDetail
+        candidate: candidateDetails[candidateId]
+      });
+    }
+    if (target.pathname.startsWith('/arena/mec-candidates/') && target.pathname.endsWith('/challenge-counterexamples') && method === 'POST') {
+      const segments = target.pathname.split('/');
+      const candidateId = decodeURIComponent(segments[segments.length - 2]);
+      const payload = options.body ? JSON.parse(options.body) : {};
+      const targetCandidate = candidateDetails[candidateId];
+      if (!targetCandidate) {
+        return createFetchResponse(404, {
+          error: 'mec_candidate_not_found',
+          candidate_id: candidateId
+        });
+      }
+      if (targetCandidate.candidate_type !== 'invariant_candidate') {
+        return createFetchResponse(409, {
+          error: 'mec_candidate_not_challengeable',
+          candidate_id: candidateId,
+          blockers: [`Phase 4A manual challenge is locked to visible invariant candidates only, not ${targetCandidate.candidate_type || 'unknown'} objects.`]
+        });
+      }
+      if (!payload.case_description) {
+        return createFetchResponse(400, {
+          error: 'missing_manual_challenge_case_description',
+          candidate_id: candidateId
+        });
+      }
+      const createdAt = '2026-03-09T10:30:00.000Z';
+      const counterexampleId = `candidate-manual-counterexample-${candidateList.filter(item => item.candidate_type === 'counterexample_candidate').length + 1}`;
+      const rawCounterexample = {
+        id: counterexampleId,
+        candidate_type: 'counterexample_candidate',
+        principle: payload.principle || `Counterexample against ${targetCandidate.title || candidateId}`,
+        mechanism: payload.mechanism || 'Manual challenge proposal from the MEC review desk harness.',
+        refutes_candidate_id: candidateId,
+        case_description: payload.case_description,
+        resolution: payload.resolution || '',
+        impact_on_candidate: payload.impact_on_candidate || 'challenge_bucket:moderate_visible_pressure',
+        source_event_ids: Array.isArray(targetCandidate.raw_candidate_artifact && targetCandidate.raw_candidate_artifact.source_event_ids)
+          ? targetCandidate.raw_candidate_artifact.source_event_ids.slice(0, 4)
+          : [],
+        source_card_ids: Array.isArray(targetCandidate.raw_candidate_artifact && targetCandidate.raw_candidate_artifact.source_card_ids)
+          ? targetCandidate.raw_candidate_artifact.source_card_ids.slice(0, 4)
+          : [],
+        status: 'proposal_only',
+        created_at: createdAt,
+        updated_at: createdAt,
+        distillation_mode: 'manual',
+        challenge_origin: {
+          source_surface: payload.challenge_source || 'mec_operator_ui_phase4a',
+          manual_challenge: true,
+          selected_primary_candidate_id: candidateId,
+          selected_primary_candidate_type: targetCandidate.candidate_type,
+          selected_workspace_kind: 'mec_review_workspace'
+        },
+        challenge_basis: {
+          contradiction_pressure_bucket: targetCandidate.challenge_context ? targetCandidate.challenge_context.contradiction_pressure_bucket : 'low_visible_pressure',
+          challenge_flags: targetCandidate.challenge_context ? targetCandidate.challenge_context.challenge_flags || [] : [],
+          challenge_summary: targetCandidate.challenge_context ? targetCandidate.challenge_context.challenge_summary || null : null,
+          challenge_signals: targetCandidate.challenge_context ? targetCandidate.challenge_context.challenge_signals || [] : [],
+          stabilizing_signals: targetCandidate.challenge_context ? targetCandidate.challenge_context.stabilizing_signals || [] : [],
+          existing_counterexample_ids: targetCandidate.challenge_context && Array.isArray(targetCandidate.challenge_context.existing_counterexamples)
+            ? targetCandidate.challenge_context.existing_counterexamples.map(item => item.candidate_id)
+            : [],
+          boundary_candidate_id: targetCandidate.challenge_context ? targetCandidate.challenge_context.boundary_candidate_id || null : null,
+          boundary_integrity: targetCandidate.challenge_context ? targetCandidate.challenge_context.boundary_integrity || null : null,
+          latest_review_outcome: targetCandidate.challenge_context ? targetCandidate.challenge_context.latest_review_outcome || null : null,
+          latest_review_trace_present: Boolean(targetCandidate.challenge_context && targetCandidate.challenge_context.latest_review_trace_present),
+          why_now: targetCandidate.delta_context ? targetCandidate.delta_context.why_now || null : null,
+          why_not_now: targetCandidate.delta_context ? targetCandidate.delta_context.why_not_now || null : null
+        },
+        candidate_boundary: {
+          runtime_only: true,
+          proposal_only: true,
+          registry_mutation: false,
+          canon_exported: false,
+          review_integrated: false
+        }
+      };
+      candidateList.push(toWorkspaceItem(rawCounterexample));
+      candidateDetails[counterexampleId] = toWorkspaceItem(rawCounterexample);
+      rebuildHarnessWorkspaceState();
+      return createFetchResponse(201, {
+        candidate: candidateDetails[counterexampleId],
+        primary_candidate_id: candidateId,
+        challenge_context: candidateDetails[candidateId].challenge_context
       });
     }
     if (target.pathname.startsWith('/arena/mec-candidates/')) {
@@ -1220,7 +1419,9 @@ async function verifyEmbeddedUiWriteSemantics() {
   const detailDeltaEl = elements.get('detail-delta');
   const detailDecisionEl = elements.get('detail-decision');
   const detailContradictionEl = elements.get('detail-contradiction');
+  const detailChallengeEl = elements.get('detail-challenge');
   const detailTraceEl = elements.get('detail-trace');
+  const challengeMessageEl = elements.get('challenge-message');
   const rawReviewRecordsEl = elements.get('raw-review-records');
   const deskStatusEl = elements.get('desk-status');
   const facetListEl = elements.get('facet-list');
@@ -1415,11 +1616,28 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(detailDecisionEl.innerHTML.includes('Friction signals'), 'Expected desk detail to render friction signals');
   assert(detailContradictionEl.innerHTML.includes('Contradiction summary'), 'Expected desk detail to render contradiction summary');
   assert(detailContradictionEl.innerHTML.includes('Contradiction signals'), 'Expected desk detail to render contradiction signals');
+  assert(detailChallengeEl.innerHTML.includes('Challenge summary'), 'Expected desk detail to render challenge summary');
+  assert(detailChallengeEl.innerHTML.includes('Manual counterexample proposal'), 'Expected desk detail to render the manual counterexample proposal path');
   assert(detailTraceEl.innerHTML.includes('Review action trace'), 'Expected desk detail to render review trace surface');
   assert(detailTraceEl.innerHTML.includes('No review action has been written yet') || detailTraceEl.innerHTML.includes('no action rationale trace'), 'Expected desk detail to explain missing review trace before any write');
   assert(rawReviewRecordsEl.innerHTML.includes('No raw review records stored yet for this workspace item.'), 'Expected desk detail to render an empty raw review record state');
   assert(deskNavigationEl.innerHTML.includes('Reproducible desk state'), 'Expected desk detail to render queue navigation and reproducible state');
   assert(deskNavigationEl.innerHTML.includes('Compare state'), 'Expected desk detail to render compare navigation state');
+
+  await context.selectCandidate('candidate-invariant');
+  const challengeCaseDescriptionEl = detailChallengeEl.querySelector('.challenge-case-description');
+  assert(challengeCaseDescriptionEl, 'Expected challenge surface to render a manual case description field for an invariant candidate');
+  challengeCaseDescriptionEl.value = 'Manual harness challenge contradicts the invariant under a still-visible runtime edge case.';
+  detailChallengeEl.querySelector('.challenge-impact').value = 'narrows_scope';
+  detailChallengeEl.querySelector('.challenge-create').click();
+  await harness.flush();
+  assert(challengeMessageEl.textContent.includes('Proposal-only counterexample created:'), 'Expected manual challenge create path to surface a success message');
+  const createdHarnessCounterexample = context.getCandidateById('candidate-manual-counterexample-2');
+  assert(createdHarnessCounterexample && createdHarnessCounterexample.refutes_candidate_id === 'candidate-invariant', 'Expected manual challenge path to create a counterexample tied to the selected primary candidate');
+  assert(createdHarnessCounterexample && createdHarnessCounterexample.raw_candidate_artifact && createdHarnessCounterexample.raw_candidate_artifact.challenge_origin && createdHarnessCounterexample.raw_candidate_artifact.challenge_origin.manual_challenge === true, 'Expected manual challenge path to preserve explicit proposal-only challenge origin metadata');
+  assert(context.getCandidateById('candidate-invariant').challenge_context && context.getCandidateById('candidate-invariant').challenge_context.existing_counterexample_count >= 2, 'Expected selected primary candidate challenge context to refresh after manual counterexample creation');
+
+  await context.selectCandidate('candidate-curiosity');
 
   context.setCompareCandidate('candidate-counterexample');
   assert(detailCompareEl.innerHTML.includes('Active quick compare'), 'Expected compare panel to render an active quick compare block');
@@ -1545,6 +1763,8 @@ async function main() {
     assert(page.text.includes('Delta / change context'), 'Expected delta context section');
     assert(page.text.includes('Decision packet'), 'Expected decision packet section');
     assert(page.text.includes('Contradiction context'), 'Expected contradiction context section');
+    assert(page.text.includes('Challenge context'), 'Expected challenge context section');
+    assert(page.text.includes('Single-candidate challenge reading from the canonical workspace only'), 'Expected Phase 4A challenge framing in UI');
     assert(page.text.includes('Raw review records'), 'Expected raw review record section');
     assert(page.text.includes('Raw candidate artifact'), 'Expected raw candidate artifact section');
     assert(page.text.includes('Pair relationship'), 'Expected pair relationship detail block');
@@ -1682,6 +1902,18 @@ async function main() {
     assert(detailResponse.json && detailResponse.json.linked_boundary_candidate_id === candidateResponse.json.linked_boundary_candidate.id, 'Expected detail to preserve linked boundary id');
     assert(detailResponse.json && detailResponse.json.freshness_state === 'fresh', 'Expected candidate detail freshness_state to be fresh');
     assert(detailResponse.json && detailResponse.json.raw_candidate_artifact && detailResponse.json.raw_candidate_artifact.status === 'proposal_only', 'Expected workspace detail to preserve the raw proposal-origin artifact separately');
+    assert(detailResponse.json && detailResponse.json.challenge_context && detailResponse.json.challenge_context.manual_counterexample_allowed === true, 'Expected invariant workspace detail to expose the locked manual Phase 4A challenge path');
+
+    const manualChallengeResponse = await request('POST', `http://127.0.0.1:${port}/arena/mec-candidates/${candidateResponse.json.candidate.id}/challenge-counterexamples`, {
+      case_description: 'Manual HTTP challenge shows a contradicting runtime case against the selected invariant.',
+      resolution: 'Keep proposal-only and attach a counterexample candidate.',
+      impact_on_candidate: 'narrows_scope',
+      challenge_source: 'mec_ui_http_phase4a'
+    });
+    assert(manualChallengeResponse.statusCode === 201, 'Expected manual challenge counterexample creation to return 201');
+    assert(manualChallengeResponse.json && manualChallengeResponse.json.candidate && manualChallengeResponse.json.candidate.refutes_candidate_id === candidateResponse.json.candidate.id, 'Expected manual challenge create response to preserve the selected primary candidate linkage');
+    assert(manualChallengeResponse.json && manualChallengeResponse.json.candidate && manualChallengeResponse.json.candidate.status === 'proposal_only', 'Expected manual challenge create response to stay proposal-only');
+    assert(manualChallengeResponse.json && manualChallengeResponse.json.candidate && manualChallengeResponse.json.candidate.challenge_origin && manualChallengeResponse.json.candidate.challenge_origin.manual_challenge === true, 'Expected manual challenge create response to preserve explicit challenge origin metadata');
 
     const reviewCreateResponse = await request('POST', `http://127.0.0.1:${port}/arena/mec-candidates/${candidateResponse.json.candidate.id}/reviews`, {
       review_outcome: 'stabilize',
@@ -1713,6 +1945,7 @@ async function main() {
     assert(reviewedDetailResponse.json && reviewedDetailResponse.json.current_review_state === 'stabilize', 'Expected candidate detail to expose derived stabilize review state');
     assert(reviewedDetailResponse.json && reviewedDetailResponse.json.review_summary && reviewedDetailResponse.json.review_summary.review_count === 1, 'Expected candidate detail to expose review record count');
     assert(reviewedDetailResponse.json && reviewedDetailResponse.json.raw_candidate_artifact && reviewedDetailResponse.json.raw_candidate_artifact.status === 'proposal_only', 'Expected reviewed workspace detail to keep raw candidate artifact proposal-origin');
+    assert(reviewedDetailResponse.json && reviewedDetailResponse.json.challenge_context && reviewedDetailResponse.json.challenge_context.existing_counterexample_count >= 2, 'Expected reviewed workspace detail to reflect stored counterexample posture after manual challenge creation');
     assert(reviewedDetailResponse.json && reviewedDetailResponse.json.review_trace_context && reviewedDetailResponse.json.review_trace_context.trace_present === true, 'Expected reviewed workspace detail to expose post-decision review trace context');
     assert(reviewedDetailResponse.json && Array.isArray(reviewedDetailResponse.json.review_trace_context.support_at_write), 'Expected reviewed workspace detail to expose write-time support signals');
     assert(reviewedDetailResponse.json && Array.isArray(reviewedDetailResponse.json.raw_review_records) && reviewedDetailResponse.json.raw_review_records[0] && reviewedDetailResponse.json.raw_review_records[0].rationale_snapshot, 'Expected reviewed workspace detail to keep the raw rationale snapshot on the review record');

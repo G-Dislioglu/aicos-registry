@@ -143,6 +143,14 @@ function verifyRuntimeWorkspace() {
     reviewer_mode: 'human'
   }, { candidateOutputDir: tempCandidateDir, mecReviewOutputDir: tempMecReviewDir });
 
+  const invariantWorkspaceBeforeRemoval = readMecReviewWorkspace(invariant.candidate.id, {
+    candidateOutputDir: tempCandidateDir,
+    mecReviewOutputDir: tempMecReviewDir,
+    eventOutputDir: tempEventDir
+  });
+  assert(invariantWorkspaceBeforeRemoval && invariantWorkspaceBeforeRemoval.challenge_context && typeof invariantWorkspaceBeforeRemoval.challenge_context.contradiction_pressure_bucket === 'string', 'Expected invariant workspace item to expose additive Phase 4A challenge context before pair-removal setup');
+  assert(invariantWorkspaceBeforeRemoval.challenge_context && invariantWorkspaceBeforeRemoval.challenge_context.manual_counterexample_allowed === true, 'Expected invariant workspace item to remain eligible for the locked manual Phase 4A challenge path');
+
   for (const candidateFilePath of invariant.candidateFilePaths || []) {
     if (fs.existsSync(candidateFilePath)) {
       fs.unlinkSync(candidateFilePath);
@@ -179,6 +187,8 @@ function verifyRuntimeWorkspace() {
   assert(boundaryWorkspace.contradiction_context && Array.isArray(boundaryWorkspace.contradiction_context.contradiction_signals) && boundaryWorkspace.contradiction_context.contradiction_signals.length >= 1, 'Expected unresolved boundary workspace item to expose contradiction signals');
   assert(boundaryWorkspace.decision_packet_context && boundaryWorkspace.decision_packet_context.decision_readiness === 'decision_fragile', 'Expected unresolved boundary workspace item to derive a fragile decision packet from visible friction and contradiction');
   assert(boundaryWorkspace.decision_packet_context && Array.isArray(boundaryWorkspace.decision_packet_context.friction_signals) && boundaryWorkspace.decision_packet_context.friction_signals.length >= 1, 'Expected unresolved boundary workspace item to expose decision friction signals');
+  assert(boundaryWorkspace.challenge_context && boundaryWorkspace.challenge_context.manual_counterexample_allowed === false, 'Expected unresolved boundary workspace item to expose additive challenge context with the Phase 4A lock still blocking manual challenge output');
+  assert(boundaryWorkspace.challenge_context && typeof boundaryWorkspace.challenge_context.challenge_summary === 'string', 'Expected unresolved boundary workspace item to expose additive challenge summary readability');
   assert(boundaryWorkspace.review_trace_context && boundaryWorkspace.review_trace_context.trace_present === false, 'Expected unresolved boundary workspace item to expose no post-decision trace before any review write');
   assert(boundaryWorkspace.state_explanation && boundaryWorkspace.state_explanation.terminal === false, 'Expected unresolved boundary workspace item to expose derived why-this-state explanation');
 
@@ -211,6 +221,7 @@ function verifyRuntimeWorkspace() {
   assert(curiosityWorkspace.review_trace_context && Array.isArray(curiosityWorkspace.review_trace_context.support_at_write), 'Expected terminal workspace item to expose write-time support signals');
   assert(curiosityWorkspace.latest_review && curiosityWorkspace.latest_review.rationale_snapshot && typeof curiosityWorkspace.latest_review.rationale_snapshot.decision_readiness === 'string', 'Expected terminal workspace item latest review to preserve its write-time rationale snapshot');
   assert(curiosityWorkspace.state_explanation && curiosityWorkspace.state_explanation.terminal === true, 'Expected terminal workspace item to expose derived why-this-state explanation');
+  assert(curiosityWorkspace.challenge_context && typeof curiosityWorkspace.challenge_context.contradiction_pressure_bucket === 'string', 'Expected terminal workspace item to expose additive Phase 4A challenge bucket readability');
 
   const registryAfter = snapshotRegistry();
   assert(JSON.stringify(registryBefore) === JSON.stringify(registryAfter), 'Registry files changed during Phase 3C runtime workspace verification');
@@ -279,6 +290,7 @@ function verifyCliWorkspace() {
   assert(listedWorkspace[0].delta_context && typeof listedWorkspace[0].delta_context.movement_bucket === 'string', 'Expected CLI workspace list item to expose Phase 3G delta context');
   assert(listedWorkspace[0].contradiction_context && typeof listedWorkspace[0].contradiction_context.contradiction_present === 'boolean', 'Expected CLI workspace list item to expose Phase 3H contradiction context');
   assert(listedWorkspace[0].decision_packet_context && typeof listedWorkspace[0].decision_packet_context.decision_readiness === 'string', 'Expected CLI workspace list item to expose Phase 3H decision packet context');
+  assert(listedWorkspace[0].challenge_context && typeof listedWorkspace[0].challenge_context.contradiction_pressure_bucket === 'string', 'Expected CLI workspace list item to expose additive Phase 4A challenge context');
   assert(listedWorkspace[0].review_trace_context && typeof listedWorkspace[0].review_trace_context.trace_present === 'boolean', 'Expected CLI workspace list item to expose Phase 3I review trace context');
 
   const loadedWorkspace = JSON.parse(runCli([
@@ -299,6 +311,7 @@ function verifyCliWorkspace() {
   assert(loadedWorkspace.contradiction_context && Array.isArray(loadedWorkspace.contradiction_context.contradiction_signals), 'Expected CLI workspace detail to expose contradiction signals');
   assert(loadedWorkspace.decision_packet_context && Array.isArray(loadedWorkspace.decision_packet_context.support_signals), 'Expected CLI workspace detail to expose decision support signals');
   assert(loadedWorkspace.decision_packet_context && Array.isArray(loadedWorkspace.decision_packet_context.friction_signals), 'Expected CLI workspace detail to expose decision friction signals');
+  assert(loadedWorkspace.challenge_context && typeof loadedWorkspace.challenge_context.challenge_summary === 'string', 'Expected CLI workspace detail to expose additive Phase 4A challenge summary');
   assert(loadedWorkspace.review_trace_context && loadedWorkspace.review_trace_context.trace_present === true, 'Expected CLI workspace detail to expose a written review trace');
   assert(loadedWorkspace.review_trace_context && Array.isArray(loadedWorkspace.review_trace_context.support_at_write), 'Expected CLI workspace detail to expose write-time support signals');
   assert(loadedWorkspace.latest_review && loadedWorkspace.latest_review.rationale_snapshot && typeof loadedWorkspace.latest_review.rationale_snapshot.delta_movement_bucket === 'string', 'Expected CLI workspace detail latest review to expose its rationale snapshot');
@@ -399,6 +412,7 @@ async function verifyHttpWorkspace() {
     assert(workspaceListPayload.items[0].delta_context && typeof workspaceListPayload.items[0].delta_context.movement_bucket === 'string', 'Expected HTTP workspace list item to expose delta context');
     assert(workspaceListPayload.items[0].contradiction_context && typeof workspaceListPayload.items[0].contradiction_context.contradiction_present === 'boolean', 'Expected HTTP workspace list item to expose contradiction context');
     assert(workspaceListPayload.items[0].decision_packet_context && typeof workspaceListPayload.items[0].decision_packet_context.decision_readiness === 'string', 'Expected HTTP workspace list item to expose decision packet context');
+    assert(workspaceListPayload.items[0].challenge_context && typeof workspaceListPayload.items[0].challenge_context.contradiction_pressure_bucket === 'string', 'Expected HTTP workspace list item to expose additive Phase 4A challenge context');
     assert(workspaceListPayload.items[0].review_trace_context && typeof workspaceListPayload.items[0].review_trace_context.trace_present === 'boolean', 'Expected HTTP workspace list item to expose review trace context');
 
     const workspaceDetailResponse = await fetch(`http://127.0.0.1:${port}/arena/mec-review-workspace/${createdCandidate.candidate.id}`);
@@ -414,6 +428,7 @@ async function verifyHttpWorkspace() {
     assert(workspaceDetailPayload.contradiction_context && Array.isArray(workspaceDetailPayload.contradiction_context.contradiction_signals), 'Expected HTTP workspace detail to expose contradiction signals');
     assert(workspaceDetailPayload.decision_packet_context && Array.isArray(workspaceDetailPayload.decision_packet_context.support_signals), 'Expected HTTP workspace detail to expose decision support signals');
     assert(workspaceDetailPayload.decision_packet_context && Array.isArray(workspaceDetailPayload.decision_packet_context.friction_signals), 'Expected HTTP workspace detail to expose decision friction signals');
+    assert(workspaceDetailPayload.challenge_context && typeof workspaceDetailPayload.challenge_context.challenge_summary === 'string', 'Expected HTTP workspace detail to expose additive Phase 4A challenge summary');
     assert(workspaceDetailPayload.review_trace_context && workspaceDetailPayload.review_trace_context.trace_present === true, 'Expected HTTP workspace detail to expose a written review trace');
     assert(workspaceDetailPayload.review_trace_context && Array.isArray(workspaceDetailPayload.review_trace_context.support_at_write), 'Expected HTTP workspace detail to expose write-time support signals');
     assert(workspaceDetailPayload.latest_review && workspaceDetailPayload.latest_review.rationale_snapshot && typeof workspaceDetailPayload.latest_review.rationale_snapshot.decision_readiness === 'string', 'Expected HTTP workspace detail latest review to expose its rationale snapshot');
