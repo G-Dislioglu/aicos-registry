@@ -34,6 +34,15 @@ const {
   sortReviewRecords
 } = require('./memory-review-lib');
 const {
+  createMecReviewRecord,
+  deriveMecCandidateReviewState,
+  getCurrentMecReviewState,
+  isReviewableMecReviewState,
+  isValidMecReviewOutcome,
+  normalizeMecReviewInput,
+  sortMecReviewRecords
+} = require('./mec-review-lib');
+const {
   DEFAULT_EVENTS_DIR,
   createEvent,
   getEvent,
@@ -51,6 +60,7 @@ const DEFAULT_RUNS_DIR = path.join(ROOT_DIR, 'runtime', 'arena-runs');
 const DEFAULT_AUDIT_DIR = path.join(ROOT_DIR, 'runtime', 'audit-records');
 const DEFAULT_MEMORY_CANDIDATES_DIR = path.join(ROOT_DIR, 'runtime', 'memory-candidates');
 const DEFAULT_EXPORT_REVIEWS_DIR = path.join(ROOT_DIR, 'runtime', 'export-reviews');
+const DEFAULT_MEC_REVIEWS_DIR = path.join(ROOT_DIR, 'runtime', 'mec-reviews');
 const DEFAULT_MEMORY_REVIEWS_DIR = path.join(ROOT_DIR, 'runtime', 'memory-reviews');
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -482,12 +492,18 @@ function createMecCandidateRecord(candidateInput = {}, options = {}) {
 
 function listMecCandidates(options = {}) {
   const candidateOutputDir = options.candidateOutputDir || process.env.MEC_CANDIDATE_DIR || DEFAULT_CANDIDATES_DIR;
-  return listCandidates({ candidateOutputDir }).map(item => enrichMecCandidateFreshness(item));
+  const mecReviewMap = getMecReviewRecordsByCandidate(options);
+  return listCandidates({ candidateOutputDir }).map(item => enrichMecCandidate(item, mecReviewMap.get(item.id) || []));
 }
 
 function readMecCandidate(candidateId, options = {}) {
   const candidateOutputDir = options.candidateOutputDir || process.env.MEC_CANDIDATE_DIR || DEFAULT_CANDIDATES_DIR;
-  return enrichMecCandidateFreshness(getCandidate(candidateId, { candidateOutputDir }));
+  const payload = getCandidate(candidateId, { candidateOutputDir });
+  if (!payload) {
+    return null;
+  }
+  const mecReviewMap = getMecReviewRecordsByCandidate(options);
+  return enrichMecCandidate(payload, mecReviewMap.get(candidateId) || []);
 }
 
 function listMemoryReviewPayloads(options = {}) {
@@ -554,12 +570,31 @@ function getExportReviewRecordsByCandidate(options = {}) {
   return exportReviewMap;
 }
 
+function getMecReviewRecordsByCandidate(options = {}) {
+  const reviewMap = new Map();
+  for (const item of listMecReviewPayloads(options)) {
+    const records = reviewMap.get(item.payload.candidate_id) || [];
+    records.push(item.payload);
+    reviewMap.set(item.payload.candidate_id, records);
+  }
+
+  for (const [candidateId, records] of reviewMap.entries()) {
+    reviewMap.set(candidateId, sortMecReviewRecords(records));
+  }
+
+  return reviewMap;
+}
+
 function buildReviewSummary(reviewRecords = []) {
   return deriveCandidateReviewState(reviewRecords);
 }
 
 function buildExportReviewSummary(exportReviewRecords = []) {
   return deriveCandidateExportReviewState(exportReviewRecords);
+}
+
+function buildMecReviewSummary(reviewRecords = []) {
+  return deriveMecCandidateReviewState(reviewRecords);
 }
 
 function enrichMemoryCandidate(payload, reviewRecords = [], exportReviewRecords = []) {
@@ -586,6 +621,22 @@ function enrichMemoryCandidate(payload, reviewRecords = [], exportReviewRecords 
     export_gate_reasons: exportGateDecision.export_gate_reasons,
     export_gate_blockers: exportGateDecision.export_gate_blockers,
     export_gate_decision: exportGateDecision
+  };
+}
+
+function enrichMecCandidate(payload, reviewRecords = []) {
+  const freshnessPayload = enrichMecCandidateFreshness(payload);
+  const reviewSummary = buildMecReviewSummary(reviewRecords);
+  return {
+    ...freshnessPayload,
+    current_review_state: reviewSummary.current_state,
+    review_summary: reviewSummary,
+    status_derivation: {
+      schema_version: reviewSummary.derivation_version,
+      rule: reviewSummary.derivation_rule,
+      reviewable: reviewSummary.reviewable,
+      terminal: reviewSummary.terminal
+    }
   };
 }
 
@@ -639,6 +690,17 @@ function saveMemoryReview(reviewRecord, options = {}) {
   const memoryReviewOutputDir = options.memoryReviewOutputDir || process.env.ARENA_MEMORY_REVIEW_DIR || DEFAULT_MEMORY_REVIEWS_DIR;
   ensureDirectory(memoryReviewOutputDir);
   const reviewFilePath = path.join(memoryReviewOutputDir, `${reviewRecord.review_id}.json`);
+  fs.writeFileSync(reviewFilePath, JSON.stringify(reviewRecord, null, 2));
+  return {
+    reviewFilePath,
+    reviewRecord
+  };
+}
+
+function saveMecReview(reviewRecord, options = {}) {
+  const mecReviewOutputDir = options.mecReviewOutputDir || process.env.MEC_REVIEW_DIR || DEFAULT_MEC_REVIEWS_DIR;
+  ensureDirectory(mecReviewOutputDir);
+  const reviewFilePath = path.join(mecReviewOutputDir, `${reviewRecord.review_id}.json`);
   fs.writeFileSync(reviewFilePath, JSON.stringify(reviewRecord, null, 2));
   return {
     reviewFilePath,
@@ -903,11 +965,100 @@ function reviewMemoryCandidate(candidateId, reviewInput = {}, options = {}) {
   };
 }
 
+function listMecReviewPayloads(options = {}) {
+  const mecReviewOutputDir = options.mecReviewOutputDir || process.env.MEC_REVIEW_DIR || DEFAULT_MEC_REVIEWS_DIR;
+  if (!fs.existsSync(mecReviewOutputDir)) {
+    return [];
+  }
+
+  return fs.readdirSync(mecReviewOutputDir)
+    .filter(file => file.endsWith('.json'))
+    .sort()
+    .map(file => {
+      const filePath = path.join(mecReviewOutputDir, file);
+      const payload = readJsonFile(filePath);
+      return {
+        payload,
+        filePath
+      };
+    });
+}
+
+function listMecReviews(options = {}) {
+  const reviewMap = getMecReviewRecordsByCandidate(options);
+  return listMecReviewPayloads(options).map(item => {
+    const reviewSummary = buildMecReviewSummary(reviewMap.get(item.payload.candidate_id) || []);
+    return {
+      review_id: item.payload.review_id,
+      candidate_id: item.payload.candidate_id,
+      candidate_type: item.payload.candidate_type,
+      reviewed_at: item.payload.reviewed_at,
+      review_outcome: item.payload.review_outcome,
+      review_source: item.payload.review_source,
+      reviewer_mode: item.payload.reviewer_mode,
+      current_candidate_review_state: reviewSummary.current_state,
+      candidate_reviewable: reviewSummary.reviewable,
+      candidate_terminal: reviewSummary.terminal,
+      superseded: item.payload.review_id !== reviewSummary.latest_review_id,
+      file_path: item.filePath
+    };
+  });
+}
+
+function readMecReview(reviewId, options = {}) {
+  const mecReviewOutputDir = options.mecReviewOutputDir || process.env.MEC_REVIEW_DIR || DEFAULT_MEC_REVIEWS_DIR;
+  const filePath = path.join(mecReviewOutputDir, `${reviewId}.json`);
+  if (!fs.existsSync(filePath)) {
+    return null;
+  }
+  return readJsonFile(filePath);
+}
+
+function reviewMecCandidate(candidateId, reviewInput = {}, options = {}) {
+  const candidateOutputDir = options.candidateOutputDir || process.env.MEC_CANDIDATE_DIR || DEFAULT_CANDIDATES_DIR;
+  const candidate = getCandidate(candidateId, { candidateOutputDir });
+  if (!candidate) {
+    const error = new Error(`MEC candidate not found: ${candidateId}`);
+    error.code = 'mec_candidate_not_found';
+    throw error;
+  }
+
+  const normalizedReviewInput = normalizeMecReviewInput(reviewInput);
+  if (!isValidMecReviewOutcome(normalizedReviewInput.review_outcome)) {
+    const error = new Error(`Invalid MEC review outcome: ${normalizedReviewInput.review_outcome || '(empty)'}`);
+    error.code = 'invalid_mec_review_outcome';
+    throw error;
+  }
+  if (!normalizedReviewInput.review_rationale) {
+    const error = new Error('MEC review rationale is required.');
+    error.code = 'missing_mec_review_rationale';
+    throw error;
+  }
+
+  const reviewMap = getMecReviewRecordsByCandidate(options);
+  const existingReviewRecords = reviewMap.get(candidateId) || [];
+  const currentState = getCurrentMecReviewState(existingReviewRecords);
+  if (!isReviewableMecReviewState(currentState)) {
+    const error = new Error(`MEC candidate is no longer reviewable: ${candidateId} (${currentState})`);
+    error.code = 'mec_candidate_not_reviewable';
+    error.current_status = currentState;
+    throw error;
+  }
+
+  const reviewRecord = createMecReviewRecord(candidate, normalizedReviewInput, currentState);
+  const saved = saveMecReview(reviewRecord, options);
+  return {
+    ...saved,
+    candidate: enrichMecCandidate(candidate, [...existingReviewRecords, reviewRecord])
+  };
+}
+
 module.exports = {
   DEFAULT_AUDIT_DIR,
   DEFAULT_CANDIDATES_DIR,
   DEFAULT_EVENTS_DIR,
   DEFAULT_EXPORT_REVIEWS_DIR,
+  DEFAULT_MEC_REVIEWS_DIR,
   DEFAULT_MEMORY_CANDIDATES_DIR,
   DEFAULT_MEMORY_REVIEWS_DIR,
   DEFAULT_RUNS_DIR,
@@ -919,6 +1070,7 @@ module.exports = {
   listExportReviews,
   listMecCandidates,
   listMecEvents,
+  listMecReviews,
   listArenaRuns,
   listMemoryCandidates,
   listMemoryReviews,
@@ -926,9 +1078,11 @@ module.exports = {
   readExportReview,
   readMecCandidate,
   readMecEvent,
+  readMecReview,
   readArenaRun,
   readAuditRecord,
   readMemoryCandidate,
   readMemoryReview,
+  reviewMecCandidate,
   reviewMemoryCandidate
 };

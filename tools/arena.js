@@ -4,6 +4,7 @@ const {
   DEFAULT_CANDIDATES_DIR,
   DEFAULT_EVENTS_DIR,
   DEFAULT_EXPORT_REVIEWS_DIR,
+  DEFAULT_MEC_REVIEWS_DIR,
   DEFAULT_MEMORY_CANDIDATES_DIR,
   DEFAULT_MEMORY_REVIEWS_DIR,
   DEFAULT_RUNS_DIR,
@@ -15,16 +16,19 @@ const {
   listMecCandidates,
   listArenaRuns,
   listMecEvents,
+  listMecReviews,
   listMemoryCandidates,
   listMemoryReviews,
   listReviewableCandidates,
   readExportReview,
   readMecCandidate,
   readMecEvent,
+  readMecReview,
   readArenaRun,
   readAuditRecord,
   readMemoryCandidate,
   readMemoryReview,
+  reviewMecCandidate,
   reviewMemoryCandidate
 } = require('./arena-lib');
 const {
@@ -67,6 +71,9 @@ function printUsage() {
   console.log('  node tools/arena.js create-mec-candidate --candidate-type TYPE [--principle TEXT] [--mechanism TEXT] [--source-event-id ID] [--source-card-id ID] [--scope SCOPE] [--locality LOCALITY] [--applies-when TEXT] [--proof-ref REF] [--proof-state STATE] [--gate-state STATE] [--distillation-mode MODE] [--linked-candidate-id ID] [--refutes-candidate-id ID] [--open-question TEXT] [--domain DOMAIN] [--case-description TEXT] [--resolution TEXT] [--impact-on-candidate TEXT] [--blind-spot-score VALUE] [--severity LEVEL] [--boundary-fails-when TEXT] [--boundary-edge-case TEXT] [--candidate-status STATUS] [--candidate-dir DIR] [--event-dir DIR] [--json]');
   console.log('  node tools/arena.js list-mec-candidates [--candidate-dir DIR] [--json]');
   console.log('  node tools/arena.js get-mec-candidate <candidate_id> [--candidate-dir DIR] [--json]');
+  console.log('  node tools/arena.js review-mec-candidate <candidate_id> --review-outcome OUTCOME --review-rationale TEXT [--review-source SOURCE] [--reviewer-mode MODE] [--confidence LEVEL] [--review-note NOTE] [--candidate-dir DIR] [--mec-review-dir DIR] [--json]');
+  console.log('  node tools/arena.js list-mec-reviews [--mec-review-dir DIR] [--json]');
+  console.log('  node tools/arena.js get-mec-review <review_id> [--mec-review-dir DIR] [--json]');
   console.log('  node tools/arena.js list-runs [--output-dir DIR] [--json]');
   console.log('  node tools/arena.js get-run <run_id> [--output-dir DIR] [--json]');
   console.log('  node tools/arena.js get-audit <run_id> [--audit-dir DIR] [--json]');
@@ -192,7 +199,14 @@ function formatMecCandidates(items) {
   if (items.length === 0) {
     return 'No MEC candidates found.';
   }
-  return items.map(item => `${item.id} | ${item.candidate_type} | ${item.status} | freshness:${item.freshness_state || '-'} | events:${(item.source_event_ids || []).length} | cards:${(item.source_card_ids || []).length} | linked:${item.linked_boundary_candidate_id || item.linked_candidate_id || '-'} | ${item.created_at}`).join('\n');
+  return items.map(item => `${item.id} | ${item.candidate_type} | stored:${item.status} | review:${item.current_review_state || 'proposal_only'} | reviews:${item.review_summary ? item.review_summary.review_count : 0} | freshness:${item.freshness_state || '-'} | events:${(item.source_event_ids || []).length} | cards:${(item.source_card_ids || []).length} | linked:${item.linked_boundary_candidate_id || item.linked_candidate_id || '-'} | ${item.created_at}`).join('\n');
+}
+
+function formatMecReviews(items) {
+  if (items.length === 0) {
+    return 'No MEC reviews found.';
+  }
+  return items.map(item => `${item.review_id} | ${item.candidate_id} | ${item.review_outcome} | current:${item.current_candidate_review_state} | superseded:${item.superseded} | ${item.review_source} | ${item.reviewed_at}`).join('\n');
 }
 
 function formatMemoryCandidates(items) {
@@ -227,6 +241,17 @@ function buildReviewInput(args) {
   };
 }
 
+function buildMecReviewInput(args) {
+  return {
+    review_outcome: args['review-outcome'],
+    review_rationale: args['review-rationale'],
+    review_source: args['review-source'],
+    reviewer_mode: args['reviewer-mode'],
+    confidence: args.confidence,
+    review_notes: args['review-note']
+  };
+}
+
 function buildExportReviewInput(args) {
   return {
     export_review_rationale: args['export-review-rationale'],
@@ -246,6 +271,7 @@ function main() {
   const candidateDir = args['candidate-dir'] || DEFAULT_CANDIDATES_DIR;
   const eventDir = args['event-dir'] || DEFAULT_EVENTS_DIR;
   const exportReviewDir = args['export-review-dir'] || DEFAULT_EXPORT_REVIEWS_DIR;
+  const mecReviewDir = args['mec-review-dir'] || DEFAULT_MEC_REVIEWS_DIR;
   const memoryDir = args['memory-dir'] || DEFAULT_MEMORY_CANDIDATES_DIR;
   const memoryReviewDir = args['memory-review-dir'] || DEFAULT_MEMORY_REVIEWS_DIR;
 
@@ -298,7 +324,7 @@ function main() {
   }
 
   if (command === 'list-mec-candidates') {
-    const items = listMecCandidates({ candidateOutputDir: candidateDir });
+    const items = listMecCandidates({ candidateOutputDir: candidateDir, mecReviewOutputDir: mecReviewDir });
     output(args.json ? items : formatMecCandidates(items), args.json);
     return;
   }
@@ -309,9 +335,46 @@ function main() {
       printUsage();
       process.exit(1);
     }
-    const payload = readMecCandidate(candidateId, { candidateOutputDir: candidateDir });
+    const payload = readMecCandidate(candidateId, { candidateOutputDir: candidateDir, mecReviewOutputDir: mecReviewDir });
     if (!payload) {
       console.error(`MEC candidate not found: ${candidateId}`);
+      process.exit(1);
+    }
+    output(payload, true);
+    return;
+  }
+
+  if (command === 'review-mec-candidate') {
+    const candidateId = args._[1];
+    if (!candidateId) {
+      printUsage();
+      process.exit(1);
+    }
+    try {
+      const result = reviewMecCandidate(candidateId, buildMecReviewInput(args), { candidateOutputDir: candidateDir, mecReviewOutputDir: mecReviewDir });
+      output(args.json ? result : JSON.stringify(result, null, 2), args.json);
+    } catch (error) {
+      console.error(error.message);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (command === 'list-mec-reviews') {
+    const items = listMecReviews({ mecReviewOutputDir: mecReviewDir });
+    output(args.json ? items : formatMecReviews(items), args.json);
+    return;
+  }
+
+  if (command === 'get-mec-review') {
+    const reviewId = args._[1];
+    if (!reviewId) {
+      printUsage();
+      process.exit(1);
+    }
+    const payload = readMecReview(reviewId, { mecReviewOutputDir: mecReviewDir });
+    if (!payload) {
+      console.error(`MEC review not found: ${reviewId}`);
       process.exit(1);
     }
     output(payload, true);

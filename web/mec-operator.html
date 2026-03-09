@@ -540,7 +540,7 @@
       <div class="stack">
         <section class="panel">
           <h2>Candidate Detail</h2>
-          <div class="panel-sub">Raw runtime detail. No review, export or canon meaning is implied.</div>
+          <div class="panel-sub">Raw runtime detail. Derived runtime review state is visible here, but no review, export or canon meaning is implied by the raw candidate artifact itself.</div>
           <div id="detail-meta" class="pill-row"></div>
           <div id="detail-summary" class="detail-grid"></div>
           <h3>Pair relationship</h3>
@@ -1158,6 +1158,16 @@
       `;
     }
 
+    function renderReviewDetailCards(payload) {
+      const reviewSummary = payload && payload.review_summary ? payload.review_summary : null;
+      return [
+        renderDetailCard('Derived review state', payload && payload.current_review_state ? payload.current_review_state : 'proposal_only'),
+        renderDetailCard('Review records', reviewSummary ? String(reviewSummary.review_count || 0) : '0'),
+        renderDetailCard('Reviewable now', reviewSummary ? String(Boolean(reviewSummary.reviewable)) : 'true'),
+        renderDetailCard('Terminal review state', reviewSummary ? String(Boolean(reviewSummary.terminal)) : 'false')
+      ];
+    }
+
     function renderDetailLinkageCard(label, candidateId, actions) {
       const targetItem = getCandidateById(candidateId);
       const isResolved = Boolean(targetItem);
@@ -1188,6 +1198,7 @@
         renderDetailCard('Created at', formatDate(payload.created_at)),
         renderDetailCard('Updated at', formatDate(payload.updated_at)),
         renderDetailCard('Distillation mode', payload.distillation_mode || '-'),
+        ...renderReviewDetailCards(payload),
         ...renderTypeSpecificDetailCards(payload),
         renderDetailCard('Boundary flags', boundaryFlags)
       ].join('');
@@ -1280,6 +1291,7 @@
             </div>
             <div class="row-meta">
               <span class="badge">${item.candidate_type}</span>
+              <span class="badge">review ${item.current_review_state || 'proposal_only'}</span>
               <span class="badge">freshness ${item.freshness_state || '-'}</span>
               ${linkedBadge}
               <span class="badge">events ${(item.source_event_ids || []).length}</span>
@@ -1371,6 +1383,7 @@
         detailMetaEl.innerHTML = [
           `<span class="pill">${payload.candidate_type}</span>`,
           `<span class="pill warn">runtime status: ${payload.status}</span>`,
+          `<span class="pill">review: ${payload.current_review_state || 'proposal_only'}</span>`,
           `<span class="pill">freshness: ${payload.freshness_state || '-'}</span>`,
           `<span class="pill">runtime-only</span>`,
           linkedId ? `<span class="pill">linked: ${linkedId}</span>` : ''

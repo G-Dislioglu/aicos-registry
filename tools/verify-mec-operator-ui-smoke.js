@@ -667,6 +667,12 @@ async function verifyEmbeddedUiWriteSemantics() {
     updated_at: '2026-03-08T18:03:00.000Z',
     distillation_mode: 'manual',
     freshness_state: 'fresh',
+    current_review_state: 'proposal_only',
+    review_summary: {
+      review_count: 0,
+      reviewable: true,
+      terminal: false
+    },
     candidate_boundary: {
       registry_mutation: false,
       auto_resolve: false
@@ -674,6 +680,7 @@ async function verifyEmbeddedUiWriteSemantics() {
   });
   assert(detailSummaryEl.innerHTML.includes('Open question'), 'Expected curiosity detail to expose open question');
   assert(detailSummaryEl.innerHTML.includes('Blind spot score'), 'Expected curiosity detail to expose blind spot score');
+  assert(detailSummaryEl.innerHTML.includes('Derived review state'), 'Expected detail rendering to expose derived review state cards');
 
   linkedCandidateIdEl.value = 'old-linked-result';
   refutesCandidateIdEl.value = 'old-refuted-result';
@@ -716,10 +723,12 @@ async function verifyEmbeddedUiWriteSemantics() {
 async function main() {
   const tempEventDir = fs.mkdtempSync(path.join(os.tmpdir(), 'aicos-mec-ui-events-'));
   const tempCandidateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'aicos-mec-ui-candidates-'));
+  const tempMecReviewDir = fs.mkdtempSync(path.join(os.tmpdir(), 'aicos-mec-ui-reviews-'));
   const port = 3346;
   const server = startServer(port, {
     eventOutputDir: tempEventDir,
-    candidateOutputDir: tempCandidateDir
+    candidateOutputDir: tempCandidateDir,
+    mecReviewOutputDir: tempMecReviewDir
   });
 
   try {
@@ -729,6 +738,7 @@ async function main() {
     assert(page.statusCode === 200, 'Expected MEC operator page to return 200');
     assert(page.text.includes('MEC Operator Shell'), 'Expected UI page title');
     assert(page.text.includes('Candidate Detail'), 'Expected candidate detail section');
+    assert(page.text.includes('Derived runtime review state is visible here'), 'Expected read-first review-state framing in candidate detail copy');
     assert(page.text.includes('Pair relationship'), 'Expected pair relationship detail block');
     assert(page.text.includes('Paired reading, not forced merging'), 'Expected paired reading framing in detail view');
     assert(page.text.includes('One linked case, two separately stored runtime objects'), 'Expected paired runtime object framing in pair view');
@@ -850,6 +860,25 @@ async function main() {
     assert(detailResponse.statusCode === 200, 'Expected candidate detail to return 200');
     assert(detailResponse.json && detailResponse.json.linked_boundary_candidate_id === candidateResponse.json.linked_boundary_candidate.id, 'Expected detail to preserve linked boundary id');
     assert(detailResponse.json && detailResponse.json.freshness_state === 'fresh', 'Expected candidate detail freshness_state to be fresh');
+
+    const reviewCreateResponse = await request('POST', `http://127.0.0.1:${port}/arena/mec-candidates/${candidateResponse.json.candidate.id}/reviews`, {
+      review_outcome: 'stabilize',
+      review_rationale: 'UI smoke read-first runtime stabilization.',
+      review_source: 'mec_ui_smoke',
+      reviewer_mode: 'human'
+    });
+    assert(reviewCreateResponse.statusCode === 201, 'Expected MEC review creation to return 201');
+    assert(reviewCreateResponse.json && reviewCreateResponse.json.reviewRecord && reviewCreateResponse.json.reviewRecord.review_outcome === 'stabilize', 'Expected created MEC review outcome to be stabilize');
+
+    const reviewedListResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-candidates`);
+    assert(reviewedListResponse.statusCode === 200, 'Expected reviewed candidate list to return 200');
+    assert(reviewedListResponse.json.items.some(item => item.id === candidateResponse.json.candidate.id && item.current_review_state === 'stabilize'), 'Expected candidate list to expose derived stabilize review state');
+
+    const reviewedDetailResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-candidates/${candidateResponse.json.candidate.id}`);
+    assert(reviewedDetailResponse.statusCode === 200, 'Expected reviewed candidate detail to return 200');
+    assert(reviewedDetailResponse.json && reviewedDetailResponse.json.status === 'proposal_only', 'Expected raw candidate status to remain proposal_only after review');
+    assert(reviewedDetailResponse.json && reviewedDetailResponse.json.current_review_state === 'stabilize', 'Expected candidate detail to expose derived stabilize review state');
+    assert(reviewedDetailResponse.json && reviewedDetailResponse.json.review_summary && reviewedDetailResponse.json.review_summary.review_count === 1, 'Expected candidate detail to expose review record count');
 
     const boundaryDetailResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-candidates/${boundaryResponse.json.candidate.id}`);
     assert(boundaryDetailResponse.statusCode === 200, 'Expected boundary candidate detail to return 200');

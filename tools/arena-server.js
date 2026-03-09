@@ -8,6 +8,7 @@ const {
   DEFAULT_CANDIDATES_DIR,
   DEFAULT_EVENTS_DIR,
   DEFAULT_EXPORT_REVIEWS_DIR,
+  DEFAULT_MEC_REVIEWS_DIR,
   DEFAULT_MEMORY_CANDIDATES_DIR,
   DEFAULT_MEMORY_REVIEWS_DIR,
   DEFAULT_RUNS_DIR,
@@ -17,6 +18,7 @@ const {
   executeArenaRun,
   listExportReviews,
   listMecCandidates,
+  listMecReviews,
   listArenaRuns,
   listMecEvents,
   listMemoryCandidates,
@@ -25,10 +27,12 @@ const {
   readExportReview,
   readMecCandidate,
   readMecEvent,
+  readMecReview,
   readArenaRun,
   readAuditRecord,
   readMemoryCandidate,
   readMemoryReview,
+  reviewMecCandidate,
   reviewMemoryCandidate
 } = require('./arena-lib');
 const {
@@ -88,6 +92,7 @@ async function handleRequest(req, res, options = {}) {
   const candidateOutputDir = options.candidateOutputDir || process.env.MEC_CANDIDATE_DIR || DEFAULT_CANDIDATES_DIR;
   const eventOutputDir = options.eventOutputDir || process.env.MEC_EVENT_DIR || DEFAULT_EVENTS_DIR;
   const exportReviewOutputDir = options.exportReviewOutputDir || process.env.ARENA_EXPORT_REVIEW_DIR || DEFAULT_EXPORT_REVIEWS_DIR;
+  const mecReviewOutputDir = options.mecReviewOutputDir || process.env.MEC_REVIEW_DIR || DEFAULT_MEC_REVIEWS_DIR;
   const memoryOutputDir = options.memoryOutputDir || process.env.ARENA_MEMORY_DIR || DEFAULT_MEMORY_CANDIDATES_DIR;
   const memoryReviewOutputDir = options.memoryReviewOutputDir || process.env.ARENA_MEMORY_REVIEW_DIR || DEFAULT_MEMORY_REVIEWS_DIR;
   const requestUrl = new URL(req.url, 'http://127.0.0.1');
@@ -107,6 +112,7 @@ async function handleRequest(req, res, options = {}) {
       candidate_output_dir: candidateOutputDir,
       event_output_dir: eventOutputDir,
       export_review_output_dir: exportReviewOutputDir,
+      mec_review_output_dir: mecReviewOutputDir,
       memory_output_dir: memoryOutputDir,
       memory_review_output_dir: memoryReviewOutputDir
     });
@@ -114,7 +120,7 @@ async function handleRequest(req, res, options = {}) {
   }
 
   if (pathname === '/arena/mec-candidates' && req.method === 'GET') {
-    const items = listMecCandidates({ candidateOutputDir });
+    const items = listMecCandidates({ candidateOutputDir, mecReviewOutputDir });
     sendJson(res, 200, {
       total: items.length,
       items
@@ -141,11 +147,55 @@ async function handleRequest(req, res, options = {}) {
 
   if (pathname.startsWith('/arena/mec-candidates/') && req.method === 'GET') {
     const candidateId = decodeURIComponent(pathname.slice('/arena/mec-candidates/'.length));
-    const payload = readMecCandidate(candidateId, { candidateOutputDir });
+    const payload = readMecCandidate(candidateId, { candidateOutputDir, mecReviewOutputDir });
     if (!payload) {
       sendJson(res, 404, {
         error: 'mec_candidate_not_found',
         candidate_id: candidateId
+      });
+      return;
+    }
+    sendJson(res, 200, payload);
+    return;
+  }
+
+  if (pathname.startsWith('/arena/mec-candidates/') && pathname.endsWith('/reviews') && req.method === 'POST') {
+    const candidateId = decodeURIComponent(pathname.slice('/arena/mec-candidates/'.length, -'/reviews'.length));
+    try {
+      const payload = await readRequestBody(req);
+      const result = reviewMecCandidate(candidateId, payload, { candidateOutputDir, mecReviewOutputDir });
+      sendJson(res, 201, result);
+    } catch (error) {
+      const statusCode = error.code === 'mec_candidate_not_found'
+        ? 404
+        : error.code === 'mec_candidate_not_reviewable'
+          ? 409
+          : 400;
+      sendJson(res, statusCode, {
+        error: error.code || 'invalid_mec_review_request',
+        message: error.message,
+        candidate_id: candidateId
+      });
+    }
+    return;
+  }
+
+  if (pathname === '/arena/mec-reviews' && req.method === 'GET') {
+    const items = listMecReviews({ mecReviewOutputDir });
+    sendJson(res, 200, {
+      total: items.length,
+      items
+    });
+    return;
+  }
+
+  if (pathname.startsWith('/arena/mec-reviews/') && req.method === 'GET') {
+    const reviewId = decodeURIComponent(pathname.slice('/arena/mec-reviews/'.length));
+    const payload = readMecReview(reviewId, { mecReviewOutputDir });
+    if (!payload) {
+      sendJson(res, 404, {
+        error: 'mec_review_not_found',
+        review_id: reviewId
       });
       return;
     }
@@ -394,9 +444,10 @@ function startServer(port = Number.parseInt(process.env.PORT || '3220', 10), opt
     const candidateOutputDir = options.candidateOutputDir || process.env.MEC_CANDIDATE_DIR || DEFAULT_CANDIDATES_DIR;
     const eventOutputDir = options.eventOutputDir || process.env.MEC_EVENT_DIR || DEFAULT_EVENTS_DIR;
     const exportReviewOutputDir = options.exportReviewOutputDir || process.env.ARENA_EXPORT_REVIEW_DIR || DEFAULT_EXPORT_REVIEWS_DIR;
+    const mecReviewOutputDir = options.mecReviewOutputDir || process.env.MEC_REVIEW_DIR || DEFAULT_MEC_REVIEWS_DIR;
     const memoryOutputDir = options.memoryOutputDir || process.env.ARENA_MEMORY_DIR || DEFAULT_MEMORY_CANDIDATES_DIR;
     const memoryReviewOutputDir = options.memoryReviewOutputDir || process.env.ARENA_MEMORY_REVIEW_DIR || DEFAULT_MEMORY_REVIEWS_DIR;
-    console.log(`arena-server listening on http://127.0.0.1:${effectivePort} -> ${path.resolve(outputDir)} | audit: ${path.resolve(auditOutputDir)} | mec-candidates: ${path.resolve(candidateOutputDir)} | events: ${path.resolve(eventOutputDir)} | export-reviews: ${path.resolve(exportReviewOutputDir)} | memory: ${path.resolve(memoryOutputDir)} | reviews: ${path.resolve(memoryReviewOutputDir)}`);
+    console.log(`arena-server listening on http://127.0.0.1:${effectivePort} -> ${path.resolve(outputDir)} | audit: ${path.resolve(auditOutputDir)} | mec-candidates: ${path.resolve(candidateOutputDir)} | events: ${path.resolve(eventOutputDir)} | export-reviews: ${path.resolve(exportReviewOutputDir)} | mec-reviews: ${path.resolve(mecReviewOutputDir)} | memory: ${path.resolve(memoryOutputDir)} | reviews: ${path.resolve(memoryReviewOutputDir)}`);
   });
 
   return server;
