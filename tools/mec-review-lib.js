@@ -23,7 +23,10 @@ function normalizeMecReviewInput(input = {}) {
     review_source: String(input.review_source || input.reviewSource || 'manual').trim() || 'manual',
     reviewer_mode: String(input.reviewer_mode || input.reviewerMode || 'human').trim() || 'human',
     confidence: String(input.confidence || '').trim(),
-    notes: toArray(input.review_notes || input.reviewNotes || input.notes)
+    notes: toArray(input.review_notes || input.reviewNotes || input.notes),
+    rationale_snapshot: input.rationale_snapshot && typeof input.rationale_snapshot === 'object'
+      ? { ...input.rationale_snapshot }
+      : null
   };
 }
 
@@ -108,6 +111,7 @@ function createMecReviewRecord(candidate, normalizedReviewInput, previousState) 
     reviewer_mode: normalizedReviewInput.reviewer_mode,
     confidence: normalizedReviewInput.confidence || null,
     notes: normalizedReviewInput.notes,
+    rationale_snapshot: normalizedReviewInput.rationale_snapshot,
     audit_meta: {
       source_surface: 'arena-lib',
       candidate_state_before: previousState,

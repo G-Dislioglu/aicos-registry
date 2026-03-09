@@ -177,6 +177,8 @@ function verifyRuntimeCore() {
   assert(stabilized.reviewRecord.review_outcome === 'stabilize', 'Expected stabilize review outcome');
   assert(stabilized.reviewRecord.audit_meta.registry_mutation === false, 'Expected stabilize review record to preserve registry boundary');
   assert(stabilized.reviewRecord.audit_meta.raw_candidate_artifact_rewritten === false, 'Expected stabilize review record to preserve raw artifact boundary');
+  assert(stabilized.reviewRecord.rationale_snapshot && typeof stabilized.reviewRecord.rationale_snapshot.decision_readiness === 'string', 'Expected stabilize review write to capture a minimal rationale snapshot');
+  assert(Array.isArray(stabilized.reviewRecord.rationale_snapshot.support_signals), 'Expected stabilize review write to preserve support signals in the rationale snapshot');
 
   const rejected = reviewMecCandidate(rejectCandidate.candidate.id, {
     review_outcome: 'reject',
@@ -187,6 +189,7 @@ function verifyRuntimeCore() {
     review_notes: ['reject remains runtime-only']
   }, { candidateOutputDir: tempCandidateDir, mecReviewOutputDir: tempMecReviewDir });
   assert(rejected.reviewRecord.review_outcome === 'reject', 'Expected reject review outcome');
+  assert(rejected.reviewRecord.rationale_snapshot && typeof rejected.reviewRecord.rationale_snapshot.delta_movement_bucket === 'string', 'Expected reject review write to capture delta readability inside the rationale snapshot');
 
   const rawStabilizeCandidate = JSON.parse(fs.readFileSync(stabilizeCandidate.candidateFilePaths[0], 'utf-8'));
   const rawRejectCandidate = JSON.parse(fs.readFileSync(rejectCandidate.candidateFilePaths[0], 'utf-8'));
@@ -211,6 +214,7 @@ function verifyRuntimeCore() {
 
   const loadedReview = readMecReview(stabilized.reviewRecord.review_id, { mecReviewOutputDir: tempMecReviewDir });
   assert(loadedReview && loadedReview.candidate_id === stabilizeCandidate.candidate.id, 'Expected MEC review readback to preserve candidate linkage');
+  assert(loadedReview && loadedReview.rationale_snapshot && loadedReview.rationale_snapshot.decision_readiness === stabilized.reviewRecord.rationale_snapshot.decision_readiness, 'Expected MEC review readback to preserve the captured rationale snapshot');
 
   const registryAfter = snapshotRegistry();
   assert(JSON.stringify(registryBefore) === JSON.stringify(registryAfter), 'Registry files changed during Phase 3A runtime verification');
@@ -264,6 +268,7 @@ function verifyCliSurface() {
   ]);
   const createdReview = JSON.parse(reviewOutput);
   assert(createdReview.reviewRecord.review_outcome === 'stabilize', 'Expected CLI MEC review outcome to be stabilize');
+  assert(createdReview.reviewRecord.rationale_snapshot && typeof createdReview.reviewRecord.rationale_snapshot.decision_readiness === 'string', 'Expected CLI MEC review write to capture a rationale snapshot');
 
   const listedCandidates = JSON.parse(runCli([
     path.join('tools', 'arena.js'),
@@ -301,6 +306,7 @@ function verifyCliSurface() {
     '--json'
   ]));
   assert(loadedReview.candidate_id === createdCandidate.candidate.id, 'Expected CLI MEC review detail to preserve candidate linkage');
+  assert(loadedReview.rationale_snapshot && typeof loadedReview.rationale_snapshot.delta_movement_bucket === 'string', 'Expected CLI MEC review detail to preserve rationale snapshot timing context');
 }
 
 async function verifyHttpSurface() {
@@ -394,6 +400,7 @@ async function verifyHttpSurface() {
     assert(reviewResponse.status === 201, 'Expected POST /arena/mec-candidates/:id/reviews to return 201');
     const createdReview = await reviewResponse.json();
     assert(createdReview.reviewRecord.review_outcome === 'reject', 'Expected HTTP MEC review outcome to be reject');
+    assert(createdReview.reviewRecord.rationale_snapshot && typeof createdReview.reviewRecord.rationale_snapshot.decision_readiness === 'string', 'Expected HTTP MEC review write to capture a rationale snapshot');
 
     const candidateGetResponse = await fetch(`http://127.0.0.1:${port}/arena/mec-candidates/${createdCandidate.candidate.id}`);
     assert(candidateGetResponse.ok, 'Expected GET /arena/mec-candidates/:id to return 200');
@@ -411,6 +418,7 @@ async function verifyHttpSurface() {
     assert(reviewGetResponse.ok, 'Expected GET /arena/mec-reviews/:id to return 200');
     const reviewGetPayload = await reviewGetResponse.json();
     assert(reviewGetPayload.candidate_id === createdCandidate.candidate.id, 'Expected HTTP MEC review readback to preserve candidate linkage');
+    assert(reviewGetPayload.rationale_snapshot && typeof reviewGetPayload.rationale_snapshot.delta_movement_bucket === 'string', 'Expected HTTP MEC review readback to preserve rationale snapshot timing context');
   } finally {
     serverProcess.kill();
   }

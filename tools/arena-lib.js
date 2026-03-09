@@ -1294,6 +1294,100 @@ function buildMecWorkspaceDecisionPacketContext(reviewSummary, latestReview, con
   };
 }
 
+function buildMecReviewRationaleSnapshot(workspaceItem) {
+  if (!workspaceItem) {
+    return null;
+  }
+  const decisionPacket = workspaceItem.decision_packet_context || {};
+  const contradiction = workspaceItem.contradiction_context || {};
+  const delta = workspaceItem.delta_context || {};
+  const evidence = workspaceItem.evidence_context || {};
+  const controlReadiness = workspaceItem.control_readiness || {};
+  const unresolvedReferences = Array.isArray(workspaceItem.unresolved_runtime_references) ? workspaceItem.unresolved_runtime_references : [];
+  return {
+    snapshot_version: 'phase3i-mec-review-rationale-snapshot/v1',
+    candidate_id: workspaceItem.candidate_id || workspaceItem.id || null,
+    captured_at: new Date().toISOString(),
+    decision_readiness: decisionPacket.decision_readiness || null,
+    decision_summary: decisionPacket.decision_summary || null,
+    support_signals: Array.isArray(decisionPacket.support_signals) ? decisionPacket.support_signals.slice(0, 4) : [],
+    friction_signals: Array.isArray(decisionPacket.friction_signals) ? decisionPacket.friction_signals.slice(0, 4) : [],
+    missing_signals: Array.isArray(decisionPacket.missing_signals) ? decisionPacket.missing_signals.slice(0, 4) : [],
+    contradiction_signals: Array.isArray(contradiction.contradiction_signals) ? contradiction.contradiction_signals.slice(0, 4) : [],
+    why_now: delta.why_now || null,
+    why_not_now: delta.why_not_now || null,
+    delta_movement_bucket: delta.movement_bucket || null,
+    unresolved_runtime_reference_count: unresolvedReferences.length,
+    unresolved_runtime_reference_labels: unresolvedReferences.map(item => item.label).slice(0, 4),
+    evidence_integrity_state: evidence.integrity_state || null,
+    control_reviewable: Boolean(controlReadiness.reviewable),
+    control_terminal: Boolean(controlReadiness.terminal)
+  };
+}
+
+function buildMecWorkspaceReviewTraceContext(latestReview = null, reviewSummary = null, decisionPacketContext = null, contradictionContext = null, deltaContext = null) {
+  const rationaleSnapshot = latestReview && latestReview.rationale_snapshot && typeof latestReview.rationale_snapshot === 'object'
+    ? latestReview.rationale_snapshot
+    : null;
+  if (!latestReview) {
+    return {
+      trace_present: false,
+      trace_summary: 'No review action has been written yet, so no action rationale trace is available.',
+      latest_action_outcome: null,
+      latest_action_at: null,
+      decision_readiness_at_write: null,
+      support_at_write: [],
+      friction_at_write: [],
+      missing_at_write: [],
+      contradiction_at_write: [],
+      why_now_at_write: null,
+      why_not_now_at_write: null
+    };
+  }
+  const supportAtWrite = rationaleSnapshot && Array.isArray(rationaleSnapshot.support_signals)
+    ? rationaleSnapshot.support_signals
+    : Array.isArray(decisionPacketContext && decisionPacketContext.support_signals)
+      ? decisionPacketContext.support_signals.slice(0, 4)
+      : [];
+  const frictionAtWrite = rationaleSnapshot && Array.isArray(rationaleSnapshot.friction_signals)
+    ? rationaleSnapshot.friction_signals
+    : Array.isArray(decisionPacketContext && decisionPacketContext.friction_signals)
+      ? decisionPacketContext.friction_signals.slice(0, 4)
+      : [];
+  const missingAtWrite = rationaleSnapshot && Array.isArray(rationaleSnapshot.missing_signals)
+    ? rationaleSnapshot.missing_signals
+    : Array.isArray(decisionPacketContext && decisionPacketContext.missing_signals)
+      ? decisionPacketContext.missing_signals.slice(0, 4)
+      : [];
+  const contradictionAtWrite = rationaleSnapshot && Array.isArray(rationaleSnapshot.contradiction_signals)
+    ? rationaleSnapshot.contradiction_signals
+    : Array.isArray(contradictionContext && contradictionContext.contradiction_signals)
+      ? contradictionContext.contradiction_signals.slice(0, 4)
+      : [];
+  const decisionReadinessAtWrite = rationaleSnapshot && rationaleSnapshot.decision_readiness
+    ? rationaleSnapshot.decision_readiness
+    : decisionPacketContext && decisionPacketContext.decision_readiness
+      ? decisionPacketContext.decision_readiness
+      : null;
+  const traceSummary = `Latest review write recorded ${latestReview.review_outcome || 'unknown'} from a ${decisionReadinessAtWrite || 'trace-unspecified'} desk read with ${supportAtWrite.length} support, ${frictionAtWrite.length} friction, ${missingAtWrite.length} missing, and ${contradictionAtWrite.length} contradiction signal(s).`;
+  return {
+    trace_present: true,
+    trace_summary: traceSummary,
+    latest_action_outcome: latestReview.review_outcome || null,
+    latest_action_at: latestReview.reviewed_at || null,
+    latest_review_id: latestReview.review_id || null,
+    latest_review_source: latestReview.review_source || null,
+    decision_readiness_at_write: decisionReadinessAtWrite,
+    support_at_write: supportAtWrite,
+    friction_at_write: frictionAtWrite,
+    missing_at_write: missingAtWrite,
+    contradiction_at_write: contradictionAtWrite,
+    why_now_at_write: rationaleSnapshot ? (rationaleSnapshot.why_now || null) : (deltaContext ? deltaContext.why_now || null : null),
+    why_not_now_at_write: rationaleSnapshot ? (rationaleSnapshot.why_not_now || null) : (deltaContext ? deltaContext.why_not_now || null : null),
+    delta_movement_bucket_at_write: rationaleSnapshot ? (rationaleSnapshot.delta_movement_bucket || null) : (deltaContext ? deltaContext.movement_bucket || null : null)
+  };
+}
+
 function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) {
   if (!payload) {
     return null;
@@ -1316,6 +1410,7 @@ function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) 
   const deltaContext = buildMecWorkspaceDeltaContext(payload, reviewSummary, latestReview, unresolvedRuntimeReferences, sourceLinkage, evidenceContext, reviewHistoryContext, controlReadiness, focusContext, compareContext);
   const contradictionContext = buildMecWorkspaceContradictionContext(reviewSummary, controlReadiness, unresolvedRuntimeReferences, evidenceContext, reviewHistoryContext, focusContext, compareContext, deltaContext);
   const decisionPacketContext = buildMecWorkspaceDecisionPacketContext(reviewSummary, latestReview, controlReadiness, unresolvedRuntimeReferences, sourceLinkage, evidenceContext, reviewHistoryContext, relatedCandidates, stateExplanation, focusContext, compareContext, deltaContext, contradictionContext);
+  const reviewTraceContext = buildMecWorkspaceReviewTraceContext(latestReview, reviewSummary, decisionPacketContext, contradictionContext, deltaContext);
   return {
     workspace_kind: 'mec_review_workspace',
     workspace_version: 'phase3c-mec-review-workspace/v1',
@@ -1332,7 +1427,10 @@ function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) 
       review_source: latestReview.review_source,
       reviewer_mode: latestReview.reviewer_mode,
       confidence: latestReview.confidence || null,
-      notes: Array.isArray(latestReview.notes) ? latestReview.notes : []
+      notes: Array.isArray(latestReview.notes) ? latestReview.notes : [],
+      rationale_snapshot: latestReview.rationale_snapshot && typeof latestReview.rationale_snapshot === 'object'
+        ? { ...latestReview.rationale_snapshot }
+        : null
     } : null,
     review_summary: reviewSummary,
     status_derivation: {
@@ -1357,6 +1455,7 @@ function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) 
     delta_context: deltaContext,
     contradiction_context: contradictionContext,
     decision_packet_context: decisionPacketContext,
+    review_trace_context: reviewTraceContext,
     workspace_summary: {
       review_count: reviewSummary.review_count,
       latest_review_outcome: latestReview ? latestReview.review_outcome : null,
@@ -1365,7 +1464,8 @@ function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) 
       attention_required: controlReadiness.attention_required,
       delta_attention: deltaContext.review_attention_now,
       decision_readiness: decisionPacketContext.decision_readiness,
-      contradiction_present: contradictionContext.contradiction_present
+      contradiction_present: contradictionContext.contradiction_present,
+      trace_present: reviewTraceContext.trace_present
     },
     raw_review_records: reviewRecords.map(record => ({ ...record })),
     raw_candidate_artifact: payload,
@@ -1846,6 +1946,11 @@ function reviewMecCandidate(candidateId, reviewInput = {}, options = {}) {
     error.code = 'mec_candidate_not_reviewable';
     error.current_status = currentState;
     throw error;
+  }
+
+  const workspaceBeforeWrite = readMecReviewWorkspace(candidateId, options);
+  if (!normalizedReviewInput.rationale_snapshot) {
+    normalizedReviewInput.rationale_snapshot = buildMecReviewRationaleSnapshot(workspaceBeforeWrite);
   }
 
   const reviewRecord = createMecReviewRecord(candidate, normalizedReviewInput, currentState);

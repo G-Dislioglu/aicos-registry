@@ -220,6 +220,7 @@ function buildUiScriptHarness() {
     'detail-delta',
     'detail-decision',
     'detail-contradiction',
+    'detail-trace',
     'review-actions',
     'review-message',
     'review-rationale',
@@ -800,6 +801,50 @@ function buildUiScriptHarness() {
     };
   }
 
+  function buildHarnessReviewTraceContext(rawCandidate, latestReview, decisionPacketContext, contradictionContext, deltaContext) {
+    const rationaleSnapshot = latestReview && latestReview.rationale_snapshot && typeof latestReview.rationale_snapshot === 'object'
+      ? latestReview.rationale_snapshot
+      : null;
+    if (!latestReview) {
+      return {
+        trace_present: false,
+        trace_summary: 'No review action has been written yet, so no action rationale trace is available.',
+        latest_action_outcome: null,
+        latest_action_at: null,
+        decision_readiness_at_write: null,
+        support_at_write: [],
+        friction_at_write: [],
+        missing_at_write: [],
+        contradiction_at_write: [],
+        why_now_at_write: null,
+        why_not_now_at_write: null,
+        delta_movement_bucket_at_write: null
+      };
+    }
+    return {
+      trace_present: true,
+      trace_summary: `Latest review write recorded ${latestReview.review_outcome || 'unknown'} from a ${(rationaleSnapshot && rationaleSnapshot.decision_readiness) || (decisionPacketContext && decisionPacketContext.decision_readiness) || 'trace-unspecified'} desk read.`,
+      latest_action_outcome: latestReview.review_outcome || null,
+      latest_action_at: latestReview.reviewed_at || null,
+      decision_readiness_at_write: (rationaleSnapshot && rationaleSnapshot.decision_readiness) || (decisionPacketContext && decisionPacketContext.decision_readiness) || null,
+      support_at_write: rationaleSnapshot && Array.isArray(rationaleSnapshot.support_signals)
+        ? rationaleSnapshot.support_signals
+        : (decisionPacketContext && Array.isArray(decisionPacketContext.support_signals) ? decisionPacketContext.support_signals.slice(0, 4) : []),
+      friction_at_write: rationaleSnapshot && Array.isArray(rationaleSnapshot.friction_signals)
+        ? rationaleSnapshot.friction_signals
+        : (decisionPacketContext && Array.isArray(decisionPacketContext.friction_signals) ? decisionPacketContext.friction_signals.slice(0, 4) : []),
+      missing_at_write: rationaleSnapshot && Array.isArray(rationaleSnapshot.missing_signals)
+        ? rationaleSnapshot.missing_signals
+        : (decisionPacketContext && Array.isArray(decisionPacketContext.missing_signals) ? decisionPacketContext.missing_signals.slice(0, 4) : []),
+      contradiction_at_write: rationaleSnapshot && Array.isArray(rationaleSnapshot.contradiction_signals)
+        ? rationaleSnapshot.contradiction_signals
+        : (contradictionContext && Array.isArray(contradictionContext.contradiction_signals) ? contradictionContext.contradiction_signals.slice(0, 4) : []),
+      why_now_at_write: rationaleSnapshot ? rationaleSnapshot.why_now || null : (deltaContext ? deltaContext.why_now || null : null),
+      why_not_now_at_write: rationaleSnapshot ? rationaleSnapshot.why_not_now || null : (deltaContext ? deltaContext.why_not_now || null : null),
+      delta_movement_bucket_at_write: rationaleSnapshot ? rationaleSnapshot.delta_movement_bucket || null : (deltaContext ? deltaContext.movement_bucket || null : null)
+    };
+  }
+
   function toWorkspaceItem(rawCandidate) {
     const reviewSummary = rawCandidate && rawCandidate.review_summary ? rawCandidate.review_summary : {
       review_count: 0,
@@ -907,6 +952,9 @@ function buildUiScriptHarness() {
     const decisionPacketContext = rawCandidate && rawCandidate.decision_packet_context
       ? rawCandidate.decision_packet_context
       : buildHarnessDecisionPacketContext(rawCandidate, reviewSummary, latestReview, unresolvedRuntimeReferences, evidenceContext, reviewHistoryContext, relatedCandidates, stateExplanation, focusContext, compareContext, deltaContext, contradictionContext);
+    const reviewTraceContext = rawCandidate && rawCandidate.review_trace_context
+      ? rawCandidate.review_trace_context
+      : buildHarnessReviewTraceContext(rawCandidate, latestReview, decisionPacketContext, contradictionContext, deltaContext);
     return {
       workspace_kind: 'mec_review_workspace',
       workspace_version: 'phase3c-mec-review-workspace/v1',
@@ -936,21 +984,17 @@ function buildUiScriptHarness() {
       delta_context: deltaContext,
       contradiction_context: contradictionContext,
       decision_packet_context: decisionPacketContext,
+      review_trace_context: reviewTraceContext,
       state_explanation: stateExplanation,
-      source_linkage: {
-        source_event_ids: rawCandidate.source_event_ids || [],
-        source_event_count: (rawCandidate.source_event_ids || []).length,
-        source_card_ids: rawCandidate.source_card_ids || [],
-        source_card_count: (rawCandidate.source_card_ids || []).length,
-        linked_candidate_id: rawCandidate.linked_candidate_id || null,
-        linked_boundary_candidate_id: rawCandidate.linked_boundary_candidate_id || null,
-        refutes_candidate_id: rawCandidate.refutes_candidate_id || null,
-        related_candidate_ids: [rawCandidate.linked_candidate_id, rawCandidate.linked_boundary_candidate_id, rawCandidate.refutes_candidate_id].filter(Boolean),
-        pair_counterpart_id: rawCandidate.candidate_type === 'invariant_candidate'
-          ? (rawCandidate.linked_boundary_candidate_id || null)
-          : rawCandidate.candidate_type === 'boundary_candidate'
-            ? (rawCandidate.linked_candidate_id || null)
-            : null,
+      workspace_summary: {
+        review_count: reviewSummary.review_count,
+        latest_review_outcome: reviewSummary.review_count > 0 ? reviewSummary.current_state : null,
+        unresolved_runtime_reference_count: unresolvedRuntimeReferences.length,
+        attention_required: unresolvedRuntimeReferences.length > 0,
+        delta_attention: Boolean(deltaContext && deltaContext.review_attention_now),
+        decision_readiness: decisionPacketContext.decision_readiness,
+        contradiction_present: contradictionContext.contradiction_present,
+        trace_present: reviewTraceContext.trace_present,
         pair_role: rawCandidate.candidate_type === 'invariant_candidate'
           ? 'invariant'
           : rawCandidate.candidate_type === 'boundary_candidate'
@@ -1065,7 +1109,17 @@ function buildUiScriptHarness() {
         review_source: payload.review_source || 'mec_ui_harness',
         reviewer_mode: payload.reviewer_mode || 'human',
         reviewed_at: reviewedAt,
-        review_rationale: payload.review_rationale || ''
+        review_rationale: payload.review_rationale || '',
+        rationale_snapshot: payload.rationale_snapshot || {
+          decision_readiness: 'decision_ready',
+          support_signals: ['Harness-visible support signal at write.'],
+          friction_signals: [],
+          missing_signals: [],
+          contradiction_signals: [],
+          why_now: 'Harness why-now signal at review write.',
+          why_not_now: null,
+          delta_movement_bucket: 'first_read_baseline'
+        }
       };
       const nextCandidate = toWorkspaceItem({
         ...targetCandidate.raw_candidate_artifact,
@@ -1166,6 +1220,7 @@ async function verifyEmbeddedUiWriteSemantics() {
   const detailDeltaEl = elements.get('detail-delta');
   const detailDecisionEl = elements.get('detail-decision');
   const detailContradictionEl = elements.get('detail-contradiction');
+  const detailTraceEl = elements.get('detail-trace');
   const rawReviewRecordsEl = elements.get('raw-review-records');
   const deskStatusEl = elements.get('desk-status');
   const facetListEl = elements.get('facet-list');
@@ -1360,6 +1415,8 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(detailDecisionEl.innerHTML.includes('Friction signals'), 'Expected desk detail to render friction signals');
   assert(detailContradictionEl.innerHTML.includes('Contradiction summary'), 'Expected desk detail to render contradiction summary');
   assert(detailContradictionEl.innerHTML.includes('Contradiction signals'), 'Expected desk detail to render contradiction signals');
+  assert(detailTraceEl.innerHTML.includes('Review action trace'), 'Expected desk detail to render review trace surface');
+  assert(detailTraceEl.innerHTML.includes('No review action has been written yet') || detailTraceEl.innerHTML.includes('no action rationale trace'), 'Expected desk detail to explain missing review trace before any write');
   assert(rawReviewRecordsEl.innerHTML.includes('No raw review records stored yet for this workspace item.'), 'Expected desk detail to render an empty raw review record state');
   assert(deskNavigationEl.innerHTML.includes('Reproducible desk state'), 'Expected desk detail to render queue navigation and reproducible state');
   assert(deskNavigationEl.innerHTML.includes('Compare state'), 'Expected desk detail to render compare navigation state');
@@ -1396,6 +1453,10 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(context.getCandidateById('candidate-curiosity').status === 'proposal_only', 'Expected review action to preserve raw runtime status in the embedded harness');
   assert(context.getCandidateById('candidate-curiosity').current_review_state === 'stabilize', 'Expected review action to update derived stabilize state in the embedded harness');
   assert(elements.get('raw-review-records').innerHTML.includes('Raw review record 1'), 'Expected desk detail to expose the newly written raw review record');
+  assert(context.getCandidateById('candidate-curiosity').raw_review_records[0].rationale_snapshot && context.getCandidateById('candidate-curiosity').raw_review_records[0].rationale_snapshot.decision_readiness, 'Expected review write to preserve a rationale snapshot in the embedded harness');
+  assert(elements.get('raw-review-records').innerHTML.includes('write snapshot | readiness'), 'Expected raw review record rendering to expose write snapshot readability');
+  assert(elements.get('detail-trace').innerHTML.includes('Review action trace'), 'Expected desk detail to render the written review trace after a runtime review write');
+  assert(elements.get('detail-trace').innerHTML.includes('Signals at write'), 'Expected desk detail to render write-time signals after a runtime review write');
   assert(elements.get('detail-history').innerHTML.includes('terminal_history') || elements.get('detail-history').innerHTML.includes('History is terminal at stabilize after 1 review record(s).'), 'Expected desk detail to compress the new review history after a runtime review write');
   assert(elements.get('detail-explanation').innerHTML.includes('Current derived state stabilize is terminal') || elements.get('detail-explanation').innerHTML.includes('Current derived state stabilize is terminal, so no further review outcomes are available.'), 'Expected desk detail explanation to update after the runtime review write');
   assert(String(context.location.search).includes('candidate=candidate-curiosity'), 'Expected selected candidate to be mirrored into desk URL state');
@@ -1626,10 +1687,21 @@ async function main() {
       review_outcome: 'stabilize',
       review_rationale: 'UI smoke read-first runtime stabilization.',
       review_source: 'mec_ui_smoke',
-      reviewer_mode: 'human'
+      reviewer_mode: 'human',
+      rationale_snapshot: {
+        decision_readiness: 'decision_ready',
+        support_signals: ['HTTP smoke support at write.'],
+        friction_signals: ['HTTP smoke friction at write.'],
+        missing_signals: [],
+        contradiction_signals: ['HTTP smoke contradiction at write.'],
+        why_now: 'HTTP smoke why-now at write.',
+        why_not_now: null,
+        delta_movement_bucket: 'first_read_attention'
+      }
     });
     assert(reviewCreateResponse.statusCode === 201, 'Expected MEC review creation to return 201');
     assert(reviewCreateResponse.json && reviewCreateResponse.json.reviewRecord && reviewCreateResponse.json.reviewRecord.review_outcome === 'stabilize', 'Expected created MEC review outcome to be stabilize');
+    assert(reviewCreateResponse.json && reviewCreateResponse.json.reviewRecord && reviewCreateResponse.json.reviewRecord.rationale_snapshot && reviewCreateResponse.json.reviewRecord.rationale_snapshot.decision_readiness === 'decision_ready', 'Expected HTTP review creation to preserve the rationale snapshot at write time');
 
     const reviewedListResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-review-workspace`);
     assert(reviewedListResponse.statusCode === 200, 'Expected reviewed workspace list to return 200');
@@ -1641,6 +1713,9 @@ async function main() {
     assert(reviewedDetailResponse.json && reviewedDetailResponse.json.current_review_state === 'stabilize', 'Expected candidate detail to expose derived stabilize review state');
     assert(reviewedDetailResponse.json && reviewedDetailResponse.json.review_summary && reviewedDetailResponse.json.review_summary.review_count === 1, 'Expected candidate detail to expose review record count');
     assert(reviewedDetailResponse.json && reviewedDetailResponse.json.raw_candidate_artifact && reviewedDetailResponse.json.raw_candidate_artifact.status === 'proposal_only', 'Expected reviewed workspace detail to keep raw candidate artifact proposal-origin');
+    assert(reviewedDetailResponse.json && reviewedDetailResponse.json.review_trace_context && reviewedDetailResponse.json.review_trace_context.trace_present === true, 'Expected reviewed workspace detail to expose post-decision review trace context');
+    assert(reviewedDetailResponse.json && Array.isArray(reviewedDetailResponse.json.review_trace_context.support_at_write), 'Expected reviewed workspace detail to expose write-time support signals');
+    assert(reviewedDetailResponse.json && Array.isArray(reviewedDetailResponse.json.raw_review_records) && reviewedDetailResponse.json.raw_review_records[0] && reviewedDetailResponse.json.raw_review_records[0].rationale_snapshot, 'Expected reviewed workspace detail to keep the raw rationale snapshot on the review record');
 
     const boundaryDetailResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-review-workspace/${boundaryResponse.json.candidate.id}`);
     assert(boundaryDetailResponse.statusCode === 200, 'Expected boundary workspace detail to return 200');
