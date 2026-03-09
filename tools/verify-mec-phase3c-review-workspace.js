@@ -175,6 +175,10 @@ function verifyRuntimeWorkspace() {
   assert(boundaryWorkspace.delta_context && boundaryWorkspace.delta_context.movement_bucket === 'first_read_attention', 'Expected unresolved boundary workspace item to derive a first-read attention delta bucket from visible signals');
   assert(boundaryWorkspace.delta_context && typeof boundaryWorkspace.delta_context.why_now === 'string' && boundaryWorkspace.delta_context.why_now.length > 0, 'Expected unresolved boundary workspace item to expose additive why-now readability');
   assert(boundaryWorkspace.delta_context && Array.isArray(boundaryWorkspace.delta_context.delta_signals) && boundaryWorkspace.delta_context.delta_signals.length >= 1, 'Expected unresolved boundary workspace item to expose additive delta signals');
+  assert(boundaryWorkspace.contradiction_context && boundaryWorkspace.contradiction_context.contradiction_present === true, 'Expected unresolved boundary workspace item to expose visible contradiction context');
+  assert(boundaryWorkspace.contradiction_context && Array.isArray(boundaryWorkspace.contradiction_context.contradiction_signals) && boundaryWorkspace.contradiction_context.contradiction_signals.length >= 1, 'Expected unresolved boundary workspace item to expose contradiction signals');
+  assert(boundaryWorkspace.decision_packet_context && boundaryWorkspace.decision_packet_context.decision_readiness === 'decision_fragile', 'Expected unresolved boundary workspace item to derive a fragile decision packet from visible friction and contradiction');
+  assert(boundaryWorkspace.decision_packet_context && Array.isArray(boundaryWorkspace.decision_packet_context.friction_signals) && boundaryWorkspace.decision_packet_context.friction_signals.length >= 1, 'Expected unresolved boundary workspace item to expose decision friction signals');
   assert(boundaryWorkspace.state_explanation && boundaryWorkspace.state_explanation.terminal === false, 'Expected unresolved boundary workspace item to expose derived why-this-state explanation');
 
   const curiosityWorkspace = readMecReviewWorkspace(curiosity.candidate.id, {
@@ -199,6 +203,9 @@ function verifyRuntimeWorkspace() {
   assert(curiosityWorkspace.delta_context && ['post_review_change_terminal', 'terminal_without_visible_change'].includes(curiosityWorkspace.delta_context.movement_bucket), 'Expected terminal workspace item to derive a terminal-aware delta bucket from visible signals');
   assert(curiosityWorkspace.delta_context && typeof curiosityWorkspace.delta_context.why_not_now === 'string' && curiosityWorkspace.delta_context.why_not_now.length > 0, 'Expected terminal workspace item to expose additive why-not-now readability when no active why-now signal remains');
   assert(curiosityWorkspace.delta_context && typeof curiosityWorkspace.delta_context.delta_summary === 'string', 'Expected terminal workspace item to expose additive delta summary');
+  assert(curiosityWorkspace.contradiction_context && typeof curiosityWorkspace.contradiction_context.contradiction_summary === 'string', 'Expected terminal workspace item to expose additive contradiction summary');
+  assert(curiosityWorkspace.decision_packet_context && ['decision_closed', 'decision_fragile'].includes(curiosityWorkspace.decision_packet_context.decision_readiness), 'Expected terminal workspace item to derive a terminal-aware decision packet readiness');
+  assert(curiosityWorkspace.decision_packet_context && typeof curiosityWorkspace.decision_packet_context.decision_summary === 'string', 'Expected terminal workspace item to expose additive decision packet summary');
   assert(curiosityWorkspace.state_explanation && curiosityWorkspace.state_explanation.terminal === true, 'Expected terminal workspace item to expose derived why-this-state explanation');
 
   const registryAfter = snapshotRegistry();
@@ -266,6 +273,8 @@ function verifyCliWorkspace() {
   assert(listedWorkspace[0].focus_context && typeof listedWorkspace[0].focus_context.focus_bucket === 'string', 'Expected CLI workspace list item to expose Phase 3F focus context');
   assert(listedWorkspace[0].compare_context && typeof listedWorkspace[0].compare_context.compare_ready === 'boolean', 'Expected CLI workspace list item to expose Phase 3F compare context');
   assert(listedWorkspace[0].delta_context && typeof listedWorkspace[0].delta_context.movement_bucket === 'string', 'Expected CLI workspace list item to expose Phase 3G delta context');
+  assert(listedWorkspace[0].contradiction_context && typeof listedWorkspace[0].contradiction_context.contradiction_present === 'boolean', 'Expected CLI workspace list item to expose Phase 3H contradiction context');
+  assert(listedWorkspace[0].decision_packet_context && typeof listedWorkspace[0].decision_packet_context.decision_readiness === 'string', 'Expected CLI workspace list item to expose Phase 3H decision packet context');
 
   const loadedWorkspace = JSON.parse(runCli([
     path.join('tools', 'arena.js'),
@@ -282,6 +291,9 @@ function verifyCliWorkspace() {
   assert(loadedWorkspace.compare_context && Array.isArray(loadedWorkspace.compare_context.compare_candidates), 'Expected CLI workspace detail to expose compare candidates');
   assert(loadedWorkspace.delta_context && typeof loadedWorkspace.delta_context.delta_summary === 'string', 'Expected CLI workspace detail to expose delta summary');
   assert(loadedWorkspace.delta_context && ('why_now' in loadedWorkspace.delta_context) && ('why_not_now' in loadedWorkspace.delta_context), 'Expected CLI workspace detail to expose why-now/why-not-now delta readability');
+  assert(loadedWorkspace.contradiction_context && Array.isArray(loadedWorkspace.contradiction_context.contradiction_signals), 'Expected CLI workspace detail to expose contradiction signals');
+  assert(loadedWorkspace.decision_packet_context && Array.isArray(loadedWorkspace.decision_packet_context.support_signals), 'Expected CLI workspace detail to expose decision support signals');
+  assert(loadedWorkspace.decision_packet_context && Array.isArray(loadedWorkspace.decision_packet_context.friction_signals), 'Expected CLI workspace detail to expose decision friction signals');
 }
 
 async function verifyHttpWorkspace() {
@@ -377,6 +389,8 @@ async function verifyHttpWorkspace() {
     assert(workspaceListPayload.items[0].focus_context && typeof workspaceListPayload.items[0].focus_context.focus_bucket === 'string', 'Expected HTTP workspace list item to expose focus context');
     assert(workspaceListPayload.items[0].compare_context && typeof workspaceListPayload.items[0].compare_context.compare_ready === 'boolean', 'Expected HTTP workspace list item to expose compare context');
     assert(workspaceListPayload.items[0].delta_context && typeof workspaceListPayload.items[0].delta_context.movement_bucket === 'string', 'Expected HTTP workspace list item to expose delta context');
+    assert(workspaceListPayload.items[0].contradiction_context && typeof workspaceListPayload.items[0].contradiction_context.contradiction_present === 'boolean', 'Expected HTTP workspace list item to expose contradiction context');
+    assert(workspaceListPayload.items[0].decision_packet_context && typeof workspaceListPayload.items[0].decision_packet_context.decision_readiness === 'string', 'Expected HTTP workspace list item to expose decision packet context');
 
     const workspaceDetailResponse = await fetch(`http://127.0.0.1:${port}/arena/mec-review-workspace/${createdCandidate.candidate.id}`);
     assert(workspaceDetailResponse.ok, 'Expected GET /arena/mec-review-workspace/:id to return 200');
@@ -388,6 +402,9 @@ async function verifyHttpWorkspace() {
     assert(workspaceDetailPayload.compare_context && Array.isArray(workspaceDetailPayload.compare_context.compare_candidates), 'Expected HTTP workspace detail to expose compare candidates');
     assert(workspaceDetailPayload.delta_context && typeof workspaceDetailPayload.delta_context.delta_summary === 'string', 'Expected HTTP workspace detail to expose delta summary');
     assert(workspaceDetailPayload.delta_context && ('why_now' in workspaceDetailPayload.delta_context) && ('why_not_now' in workspaceDetailPayload.delta_context), 'Expected HTTP workspace detail to expose why-now/why-not-now delta readability');
+    assert(workspaceDetailPayload.contradiction_context && Array.isArray(workspaceDetailPayload.contradiction_context.contradiction_signals), 'Expected HTTP workspace detail to expose contradiction signals');
+    assert(workspaceDetailPayload.decision_packet_context && Array.isArray(workspaceDetailPayload.decision_packet_context.support_signals), 'Expected HTTP workspace detail to expose decision support signals');
+    assert(workspaceDetailPayload.decision_packet_context && Array.isArray(workspaceDetailPayload.decision_packet_context.friction_signals), 'Expected HTTP workspace detail to expose decision friction signals');
   } finally {
     serverProcess.kill();
   }

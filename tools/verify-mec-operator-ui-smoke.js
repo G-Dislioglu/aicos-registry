@@ -218,6 +218,8 @@ function buildUiScriptHarness() {
     'detail-focus',
     'detail-compare',
     'detail-delta',
+    'detail-decision',
+    'detail-contradiction',
     'review-actions',
     'review-message',
     'review-rationale',
@@ -671,6 +673,133 @@ function buildUiScriptHarness() {
     };
   }
 
+  function buildHarnessContradictionContext(reviewSummary, unresolvedRuntimeReferences, evidenceContext, reviewHistoryContext, focusContext, compareContext, deltaContext) {
+    const reviewable = Boolean(reviewSummary && reviewSummary.reviewable);
+    const terminal = Boolean(reviewSummary && reviewSummary.terminal);
+    const unresolvedCount = unresolvedRuntimeReferences.length;
+    const totalReferenceCount = Number(evidenceContext && evidenceContext.total_reference_count || 0);
+    const totalReviewCount = Number(reviewHistoryContext && reviewHistoryContext.total_review_count || 0);
+    const compareReady = Boolean(compareContext && compareContext.compare_ready);
+    const contradictionSignals = [];
+    if (reviewable && unresolvedCount > 0) {
+      contradictionSignals.push('Review remains open while unresolved runtime references are still visible.');
+    }
+    if (reviewable && evidenceContext && evidenceContext.integrity_state === 'degraded') {
+      contradictionSignals.push('The workspace stays reviewable even though evidence integrity is currently degraded.');
+    }
+    if (terminal && deltaContext && deltaContext.changed_since_anchor) {
+      contradictionSignals.push('The raw candidate artifact changed after a terminal review anchor.');
+    }
+    if (compareReady && unresolvedCount > 0) {
+      contradictionSignals.push('Comparable neighboring context is visible, but reference gaps still weaken the current read.');
+    }
+    if (totalReviewCount > 0 && totalReferenceCount < 1) {
+      contradictionSignals.push('Review history is present, but only minimal current linkage evidence is visible.');
+    }
+    if (deltaContext && deltaContext.review_attention_now && deltaContext.changed_since_anchor === false && unresolvedCount > 0) {
+      contradictionSignals.push('No newer post-anchor artifact change is visible, yet unresolved runtime references still keep the item attention-bearing.');
+    }
+    if (focusContext && focusContext.focus_bucket === 'recent_terminal_decision' && reviewable) {
+      contradictionSignals.push('Terminal-looking decision history is visible while the current control readiness still reads as reviewable.');
+    }
+    return {
+      contradiction_present: contradictionSignals.length > 0,
+      contradiction_signals: contradictionSignals,
+      contradiction_summary: contradictionSignals.length > 0
+        ? `The current workspace view contains ${contradictionSignals.length} visible contradiction signal(s) that should be read before deciding.`
+        : 'No stronger contradiction signal is currently visible in the canonical workspace view.'
+    };
+  }
+
+  function buildHarnessDecisionPacketContext(rawCandidate, reviewSummary, latestReview, unresolvedRuntimeReferences, evidenceContext, reviewHistoryContext, relatedCandidates, stateExplanation, focusContext, compareContext, deltaContext, contradictionContext) {
+    const supportSignals = [];
+    const frictionSignals = [];
+    const missingSignals = [];
+    const unresolvedCount = unresolvedRuntimeReferences.length;
+    const totalReferenceCount = Number(evidenceContext && evidenceContext.total_reference_count || 0);
+    const totalReviewCount = Number(reviewHistoryContext && reviewHistoryContext.total_review_count || 0);
+    const compareReady = Boolean(compareContext && compareContext.compare_ready);
+    const contradictionCount = Number(contradictionContext && Array.isArray(contradictionContext.contradiction_signals) ? contradictionContext.contradiction_signals.length : 0);
+    const integrityState = evidenceContext && evidenceContext.integrity_state ? evidenceContext.integrity_state : 'minimal';
+    const terminal = Boolean(reviewSummary && reviewSummary.terminal);
+
+    if (integrityState === 'intact') {
+      supportSignals.push('Visible linkage and evidence currently resolve without runtime gaps.');
+    }
+    if (totalReviewCount > 0 && latestReview) {
+      supportSignals.push(`A visible review anchor already exists through ${totalReviewCount} raw review record(s).`);
+    }
+    if (compareReady) {
+      supportSignals.push('Comparable neighboring workspace context is available for cross-reading.');
+    }
+    if (deltaContext && deltaContext.stable_since_anchor) {
+      supportSignals.push('The visible workspace view appears stable since the latest decision anchor.');
+    }
+    if (evidenceContext && evidenceContext.pair_integrity === 'resolved') {
+      supportSignals.push('The linked pair counterpart is visibly resolved in the current workspace.');
+    }
+
+    if (unresolvedCount > 0) {
+      frictionSignals.push(`${unresolvedCount} unresolved runtime reference(s) still press against a clean decision read.`);
+    }
+    if (integrityState === 'degraded') {
+      frictionSignals.push('Evidence integrity is degraded in the current workspace view.');
+    }
+    if (deltaContext && deltaContext.review_attention_now) {
+      frictionSignals.push('Visible change signals indicate that the current read still needs renewed attention now.');
+    }
+    if (contradictionCount > 0) {
+      frictionSignals.push(`${contradictionCount} contradiction signal(s) remain visible in the current workspace view.`);
+    }
+    if (terminal) {
+      frictionSignals.push(`The current derived review state is already terminal at ${reviewSummary && reviewSummary.current_state ? reviewSummary.current_state : 'proposal_only'}.`);
+    }
+
+    if (totalReferenceCount < 1) {
+      missingSignals.push('Only minimal visible linkage evidence is available right now.');
+    }
+    if (totalReviewCount < 1) {
+      missingSignals.push('No visible review history anchor exists yet.');
+    }
+    if (stateExplanation && Array.isArray(stateExplanation.missing_visible_prerequisites)) {
+      for (const prerequisite of stateExplanation.missing_visible_prerequisites) {
+        missingSignals.push(`Missing visible prerequisite: ${prerequisite}`);
+      }
+    }
+    if (!compareReady && Array.isArray(relatedCandidates) && relatedCandidates.length < 1) {
+      missingSignals.push('No stronger compare or related-candidate context is currently visible.');
+    }
+
+    let decisionReadiness = 'decision_underconstrained';
+    if (terminal) {
+      decisionReadiness = 'decision_closed';
+    } else if (unresolvedCount > 0 || contradictionCount > 0) {
+      decisionReadiness = 'decision_fragile';
+    } else if (totalReferenceCount > 0 && totalReviewCount > 0) {
+      decisionReadiness = 'decision_ready';
+    }
+
+    const decisionSummary = decisionReadiness === 'decision_ready'
+      ? 'The current workspace view looks decision-ready because visible evidence, history and linkage are present without stronger contradiction pressure.'
+      : decisionReadiness === 'decision_fragile'
+        ? 'The current workspace view is decision-fragile because visible friction or contradiction signals still qualify the read.'
+        : decisionReadiness === 'decision_closed'
+          ? 'The current workspace view is decision-closed because a terminal review state is already visible.'
+          : 'The current workspace view is still underconstrained because visible decision support remains too thin.';
+
+    return {
+      decision_readiness: decisionReadiness,
+      support_signals: supportSignals,
+      friction_signals: frictionSignals,
+      missing_signals: missingSignals,
+      contradiction_count: contradictionCount,
+      decision_summary: decisionSummary,
+      stabilization_readable: supportSignals.length > 0,
+      rejection_pressure_visible: frictionSignals.length > 0,
+      open_gap_count: missingSignals.length
+    };
+  }
+
   function toWorkspaceItem(rawCandidate) {
     const reviewSummary = rawCandidate && rawCandidate.review_summary ? rawCandidate.review_summary : {
       review_count: 0,
@@ -772,6 +901,12 @@ function buildUiScriptHarness() {
     const deltaContext = rawCandidate && rawCandidate.delta_context
       ? rawCandidate.delta_context
       : buildHarnessDeltaContext(rawCandidate, reviewSummary, latestReview, unresolvedRuntimeReferences, evidenceContext, reviewHistoryContext, focusContext, compareContext);
+    const contradictionContext = rawCandidate && rawCandidate.contradiction_context
+      ? rawCandidate.contradiction_context
+      : buildHarnessContradictionContext(reviewSummary, unresolvedRuntimeReferences, evidenceContext, reviewHistoryContext, focusContext, compareContext, deltaContext);
+    const decisionPacketContext = rawCandidate && rawCandidate.decision_packet_context
+      ? rawCandidate.decision_packet_context
+      : buildHarnessDecisionPacketContext(rawCandidate, reviewSummary, latestReview, unresolvedRuntimeReferences, evidenceContext, reviewHistoryContext, relatedCandidates, stateExplanation, focusContext, compareContext, deltaContext, contradictionContext);
     return {
       workspace_kind: 'mec_review_workspace',
       workspace_version: 'phase3c-mec-review-workspace/v1',
@@ -799,6 +934,8 @@ function buildUiScriptHarness() {
       focus_context: focusContext,
       compare_context: compareContext,
       delta_context: deltaContext,
+      contradiction_context: contradictionContext,
+      decision_packet_context: decisionPacketContext,
       state_explanation: stateExplanation,
       source_linkage: {
         source_event_ids: rawCandidate.source_event_ids || [],
@@ -1027,6 +1164,8 @@ async function verifyEmbeddedUiWriteSemantics() {
   const detailFocusEl = elements.get('detail-focus');
   const detailCompareEl = elements.get('detail-compare');
   const detailDeltaEl = elements.get('detail-delta');
+  const detailDecisionEl = elements.get('detail-decision');
+  const detailContradictionEl = elements.get('detail-contradiction');
   const rawReviewRecordsEl = elements.get('raw-review-records');
   const deskStatusEl = elements.get('desk-status');
   const facetListEl = elements.get('facet-list');
@@ -1216,6 +1355,11 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(detailDeltaEl.innerHTML.includes('Delta summary'), 'Expected desk detail to render delta summary');
   assert(detailDeltaEl.innerHTML.includes('Why now / why not now'), 'Expected desk detail to render why-now/why-not-now readability');
   assert(detailDeltaEl.innerHTML.includes('Change categories'), 'Expected desk detail to render change categories');
+  assert(detailDecisionEl.innerHTML.includes('Decision readiness'), 'Expected desk detail to render decision readiness');
+  assert(detailDecisionEl.innerHTML.includes('Support signals'), 'Expected desk detail to render support signals');
+  assert(detailDecisionEl.innerHTML.includes('Friction signals'), 'Expected desk detail to render friction signals');
+  assert(detailContradictionEl.innerHTML.includes('Contradiction summary'), 'Expected desk detail to render contradiction summary');
+  assert(detailContradictionEl.innerHTML.includes('Contradiction signals'), 'Expected desk detail to render contradiction signals');
   assert(rawReviewRecordsEl.innerHTML.includes('No raw review records stored yet for this workspace item.'), 'Expected desk detail to render an empty raw review record state');
   assert(deskNavigationEl.innerHTML.includes('Reproducible desk state'), 'Expected desk detail to render queue navigation and reproducible state');
   assert(deskNavigationEl.innerHTML.includes('Compare state'), 'Expected desk detail to render compare navigation state');
@@ -1338,6 +1482,8 @@ async function main() {
     assert(page.text.includes('Focus context'), 'Expected focus context section');
     assert(page.text.includes('Compare context'), 'Expected compare context section');
     assert(page.text.includes('Delta / change context'), 'Expected delta context section');
+    assert(page.text.includes('Decision packet'), 'Expected decision packet section');
+    assert(page.text.includes('Contradiction context'), 'Expected contradiction context section');
     assert(page.text.includes('Raw review records'), 'Expected raw review record section');
     assert(page.text.includes('Raw candidate artifact'), 'Expected raw candidate artifact section');
     assert(page.text.includes('Pair relationship'), 'Expected pair relationship detail block');
@@ -1371,6 +1517,8 @@ async function main() {
     assert(page.text.includes('Signal-based focus framing that condenses real review tension'), 'Expected focus framing in UI');
     assert(page.text.includes('Quick-compare surface over existing linkage, source overlap, review-state and history signals'), 'Expected compare framing in UI');
     assert(page.text.includes('Signal-based change awareness over review anchors, visible runtime movement and why-now / why-not-now readability'), 'Expected delta/change-awareness framing in UI');
+    assert(page.text.includes('Signal-based decision condensation showing what supports, weakens or still underconstrains the current read without recommending an outcome'), 'Expected decision-packet framing in UI');
+    assert(page.text.includes('Visible signal contradictions that should be held together before a stabilize/reject decision is written'), 'Expected contradiction framing in UI');
     assert(page.text.includes('all review states'), 'Expected review-state filter in UI');
     assert(page.text.includes('sort: review state'), 'Expected review-state sort option in UI');
     assert(page.text.includes('stabilize'), 'Expected stabilize action label in UI');
