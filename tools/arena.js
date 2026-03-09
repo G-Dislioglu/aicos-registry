@@ -16,6 +16,7 @@ const {
   listMecCandidates,
   listArenaRuns,
   listMecEvents,
+  listMecReviewWorkspace,
   listMecReviews,
   listMemoryCandidates,
   listMemoryReviews,
@@ -23,6 +24,7 @@ const {
   readExportReview,
   readMecCandidate,
   readMecEvent,
+  readMecReviewWorkspace,
   readMecReview,
   readArenaRun,
   readAuditRecord,
@@ -69,10 +71,12 @@ function printUsage() {
   console.log('  node tools/arena.js list-events [--event-dir DIR] [--json]');
   console.log('  node tools/arena.js get-event <event_id> [--event-dir DIR] [--json]');
   console.log('  node tools/arena.js create-mec-candidate --candidate-type TYPE [--principle TEXT] [--mechanism TEXT] [--source-event-id ID] [--source-card-id ID] [--scope SCOPE] [--locality LOCALITY] [--applies-when TEXT] [--proof-ref REF] [--proof-state STATE] [--gate-state STATE] [--distillation-mode MODE] [--linked-candidate-id ID] [--refutes-candidate-id ID] [--open-question TEXT] [--domain DOMAIN] [--case-description TEXT] [--resolution TEXT] [--impact-on-candidate TEXT] [--blind-spot-score VALUE] [--severity LEVEL] [--boundary-fails-when TEXT] [--boundary-edge-case TEXT] [--candidate-status STATUS] [--candidate-dir DIR] [--event-dir DIR] [--json]');
-  console.log('  node tools/arena.js list-mec-candidates [--candidate-dir DIR] [--json]');
-  console.log('  node tools/arena.js get-mec-candidate <candidate_id> [--candidate-dir DIR] [--json]');
+  console.log('  node tools/arena.js list-mec-candidates [--candidate-dir DIR] [--mec-review-dir DIR] [--event-dir DIR] [--json]');
+  console.log('  node tools/arena.js get-mec-candidate <candidate_id> [--candidate-dir DIR] [--mec-review-dir DIR] [--event-dir DIR] [--json]');
+  console.log('  node tools/arena.js list-mec-review-workspace [--candidate-dir DIR] [--mec-review-dir DIR] [--event-dir DIR] [--json]');
+  console.log('  node tools/arena.js get-mec-review-workspace <candidate_id> [--candidate-dir DIR] [--mec-review-dir DIR] [--event-dir DIR] [--json]');
   console.log('  node tools/arena.js review-mec-candidate <candidate_id> --review-outcome OUTCOME --review-rationale TEXT [--review-source SOURCE] [--reviewer-mode MODE] [--confidence LEVEL] [--review-note NOTE] [--candidate-dir DIR] [--mec-review-dir DIR] [--json]');
-  console.log('  node tools/arena.js list-mec-reviews [--mec-review-dir DIR] [--json]');
+  console.log('  node tools/arena.js list-mec-reviews [--mec-review-dir DIR] [--event-dir DIR] [--candidate-dir DIR] [--json]');
   console.log('  node tools/arena.js get-mec-review <review_id> [--mec-review-dir DIR] [--json]');
   console.log('  node tools/arena.js list-runs [--output-dir DIR] [--json]');
   console.log('  node tools/arena.js get-run <run_id> [--output-dir DIR] [--json]');
@@ -199,7 +203,14 @@ function formatMecCandidates(items) {
   if (items.length === 0) {
     return 'No MEC candidates found.';
   }
-  return items.map(item => `${item.id} | ${item.candidate_type} | stored:${item.status} | review:${item.current_review_state || 'proposal_only'} | reviews:${item.review_summary ? item.review_summary.review_count : 0} | freshness:${item.freshness_state || '-'} | events:${(item.source_event_ids || []).length} | cards:${(item.source_card_ids || []).length} | linked:${item.linked_boundary_candidate_id || item.linked_candidate_id || '-'} | ${item.created_at}`).join('\n');
+  return items.map(item => `${item.id} | ${item.candidate_type} | stored:${item.status} | review:${item.current_review_state || 'proposal_only'} | reviews:${item.review_summary ? item.review_summary.review_count : 0} | last:${item.latest_review_outcome || '-'} | freshness:${item.freshness_state || '-'} | unresolved:${item.unresolved_runtime_reference_count || 0} | linked:${item.source_linkage ? item.source_linkage.pair_counterpart_id || item.source_linkage.linked_candidate_id || item.source_linkage.linked_boundary_candidate_id || '-' : (item.linked_boundary_candidate_id || item.linked_candidate_id || '-')} | ${item.created_at}`).join('\n');
+}
+
+function formatMecReviewWorkspace(items) {
+  if (items.length === 0) {
+    return 'No MEC review workspace items found.';
+  }
+  return items.map(item => `${item.workspace_id} | ${item.candidate_type} | review:${item.current_review_state} | latest:${item.latest_review_outcome || '-'} | reviews:${item.review_summary ? item.review_summary.review_count : 0} | reviewable:${item.reviewable} | terminal:${item.terminal} | unresolved:${item.unresolved_runtime_reference_count || 0} | freshness:${item.freshness_state || '-'} | controls:${item.control_readiness && item.control_readiness.available_outcomes ? item.control_readiness.available_outcomes.join(',') || '-' : '-'} | ${item.title}`).join('\n');
 }
 
 function formatMecReviews(items) {
@@ -324,7 +335,7 @@ function main() {
   }
 
   if (command === 'list-mec-candidates') {
-    const items = listMecCandidates({ candidateOutputDir: candidateDir, mecReviewOutputDir: mecReviewDir });
+    const items = listMecCandidates({ candidateOutputDir: candidateDir, mecReviewOutputDir: mecReviewDir, eventOutputDir: eventDir });
     output(args.json ? items : formatMecCandidates(items), args.json);
     return;
   }
@@ -335,12 +346,33 @@ function main() {
       printUsage();
       process.exit(1);
     }
-    const payload = readMecCandidate(candidateId, { candidateOutputDir: candidateDir, mecReviewOutputDir: mecReviewDir });
+    const payload = readMecCandidate(candidateId, { candidateOutputDir: candidateDir, mecReviewOutputDir: mecReviewDir, eventOutputDir: eventDir });
     if (!payload) {
       console.error(`MEC candidate not found: ${candidateId}`);
       process.exit(1);
     }
     output(payload, true);
+    return;
+  }
+
+  if (command === 'list-mec-review-workspace') {
+    const items = listMecReviewWorkspace({ candidateOutputDir: candidateDir, mecReviewOutputDir: mecReviewDir, eventOutputDir: eventDir });
+    output(args.json ? items : formatMecReviewWorkspace(items), args.json);
+    return;
+  }
+
+  if (command === 'get-mec-review-workspace') {
+    const candidateId = args._[1];
+    if (!candidateId) {
+      printUsage();
+      process.exit(1);
+    }
+    const payload = readMecReviewWorkspace(candidateId, { candidateOutputDir: candidateDir, mecReviewOutputDir: mecReviewDir, eventOutputDir: eventDir });
+    if (!payload) {
+      console.error(`MEC review workspace item not found: ${candidateId}`);
+      process.exit(1);
+    }
+    output(args.json ? payload : JSON.stringify(payload, null, 2), args.json);
     return;
   }
 
@@ -361,7 +393,7 @@ function main() {
   }
 
   if (command === 'list-mec-reviews') {
-    const items = listMecReviews({ mecReviewOutputDir: mecReviewDir });
+    const items = listMecReviews({ candidateOutputDir: candidateDir, mecReviewOutputDir: mecReviewDir, eventOutputDir: eventDir });
     output(args.json ? items : formatMecReviews(items), args.json);
     return;
   }

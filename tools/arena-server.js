@@ -18,6 +18,7 @@ const {
   executeArenaRun,
   listExportReviews,
   listMecCandidates,
+  listMecReviewWorkspace,
   listMecReviews,
   listArenaRuns,
   listMecEvents,
@@ -27,6 +28,7 @@ const {
   readExportReview,
   readMecCandidate,
   readMecEvent,
+  readMecReviewWorkspace,
   readMecReview,
   readArenaRun,
   readAuditRecord,
@@ -120,7 +122,16 @@ async function handleRequest(req, res, options = {}) {
   }
 
   if (pathname === '/arena/mec-candidates' && req.method === 'GET') {
-    const items = listMecCandidates({ candidateOutputDir, mecReviewOutputDir });
+    const items = listMecCandidates({ candidateOutputDir, mecReviewOutputDir, eventOutputDir });
+    sendJson(res, 200, {
+      total: items.length,
+      items
+    });
+    return;
+  }
+
+  if (pathname === '/arena/mec-review-workspace' && req.method === 'GET') {
+    const items = listMecReviewWorkspace({ candidateOutputDir, mecReviewOutputDir, eventOutputDir });
     sendJson(res, 200, {
       total: items.length,
       items
@@ -147,10 +158,24 @@ async function handleRequest(req, res, options = {}) {
 
   if (pathname.startsWith('/arena/mec-candidates/') && req.method === 'GET') {
     const candidateId = decodeURIComponent(pathname.slice('/arena/mec-candidates/'.length));
-    const payload = readMecCandidate(candidateId, { candidateOutputDir, mecReviewOutputDir });
+    const payload = readMecCandidate(candidateId, { candidateOutputDir, mecReviewOutputDir, eventOutputDir });
     if (!payload) {
       sendJson(res, 404, {
         error: 'mec_candidate_not_found',
+        candidate_id: candidateId
+      });
+      return;
+    }
+    sendJson(res, 200, payload);
+    return;
+  }
+
+  if (pathname.startsWith('/arena/mec-review-workspace/') && req.method === 'GET') {
+    const candidateId = decodeURIComponent(pathname.slice('/arena/mec-review-workspace/'.length));
+    const payload = readMecReviewWorkspace(candidateId, { candidateOutputDir, mecReviewOutputDir, eventOutputDir });
+    if (!payload) {
+      sendJson(res, 404, {
+        error: 'mec_review_workspace_not_found',
         candidate_id: candidateId
       });
       return;
@@ -181,7 +206,7 @@ async function handleRequest(req, res, options = {}) {
   }
 
   if (pathname === '/arena/mec-reviews' && req.method === 'GET') {
-    const items = listMecReviews({ mecReviewOutputDir });
+    const items = listMecReviews({ candidateOutputDir, mecReviewOutputDir, eventOutputDir });
     sendJson(res, 200, {
       total: items.length,
       items

@@ -497,7 +497,7 @@
       <div class="stack">
         <section class="panel">
           <h2>Candidate List</h2>
-          <div class="panel-sub">Flat object list with explicit pair hints and visible derived review state. Counts stay cautious.</div>
+          <div class="panel-sub">Canonical MEC review workspace list with explicit pair hints and visible derived review state. Counts stay cautious.</div>
           <div id="summary" class="summary-grid"></div>
           <div class="toolbar">
             <input id="candidate-search" type="search" placeholder="Search by id, type, principle, mechanism or linked id">
@@ -554,7 +554,7 @@
       <div class="stack">
         <section class="panel">
           <h2>Candidate Detail</h2>
-          <div class="panel-sub">Raw runtime detail. Derived runtime review state is visible here, but no review, export or canon meaning is implied by the raw candidate artifact itself.</div>
+          <div class="panel-sub">Canonical MEC review workspace detail. Raw runtime candidate artifact stays separate from the derived operational workspace state shown here.</div>
           <div id="detail-meta" class="pill-row"></div>
           <div id="detail-summary" class="detail-grid"></div>
           <h3>Review actions</h3>
@@ -774,6 +774,10 @@
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+    }
+
+    function getRawCandidateArtifact(item) {
+      return item && item.raw_candidate_artifact ? item.raw_candidate_artifact : item;
     }
 
     function formatDate(value) {
@@ -1051,6 +1055,9 @@
       if (!item) {
         return '';
       }
+      if (item.unresolved_runtime_reference_count) {
+        return `Unresolved runtime references ${item.unresolved_runtime_reference_count}`;
+      }
       if (item.candidate_type === 'boundary_candidate' && item.linked_candidate_id) {
         return `Linked target ${item.linked_candidate_id}`;
       }
@@ -1225,7 +1232,8 @@
     }
 
     function formatCandidateTitle(item) {
-      return item.principle || item.open_question || item.case_description || item.id;
+      const rawCandidate = getRawCandidateArtifact(item);
+      return item.title || rawCandidate.principle || rawCandidate.open_question || rawCandidate.case_description || rawCandidate.id || item.id;
     }
 
     function renderTypeSpecificDetailCards(payload) {
@@ -1286,12 +1294,41 @@
     function renderReviewDetailCards(payload) {
       const reviewSummary = payload && payload.review_summary ? payload.review_summary : null;
       return [
+        renderDetailCard('Workspace id', payload && payload.workspace_id ? payload.workspace_id : payload.id),
         renderDetailCard('Derived review state', payload && payload.current_review_state ? payload.current_review_state : 'proposal_only'),
         renderDetailCard('Review records', reviewSummary ? String(reviewSummary.review_count || 0) : '0'),
         renderDetailCard('Last review outcome', getLastReviewOutcome(payload)),
         renderDetailCard('Last reviewed at', reviewSummary && reviewSummary.latest_reviewed_at ? formatDate(reviewSummary.latest_reviewed_at) : '-'),
+        renderDetailCard('Unresolved runtime references', payload ? String(payload.unresolved_runtime_reference_count || 0) : '0'),
         renderDetailCard('Reviewable now', reviewSummary ? String(Boolean(reviewSummary.reviewable)) : 'true'),
         renderDetailCard('Terminal review state', reviewSummary ? String(Boolean(reviewSummary.terminal)) : 'false')
+      ];
+    }
+
+    function renderWorkspaceSpecificDetailCards(payload) {
+      if (!payload) {
+        return [];
+      }
+      const controls = payload.control_readiness && Array.isArray(payload.control_readiness.available_outcomes)
+        ? payload.control_readiness.available_outcomes.join(', ') || '-'
+        : '-';
+      const unresolvedReferences = Array.isArray(payload.unresolved_runtime_references) ? payload.unresolved_runtime_references : [];
+      return [
+        renderDetailCard('Workspace kind', payload.workspace_kind || '-'),
+        renderDetailCard('Workspace version', payload.workspace_version || '-'),
+        renderDetailCard('Available outcomes', controls),
+        unresolvedReferences.length > 0
+          ? `
+            <div class="detail-card">
+              <strong>Unresolved runtime references</strong>
+              <div style="display:grid; gap:8px;">
+                ${unresolvedReferences.map(item => `
+                  <div class="tiny">${escapeHtml(item.reference_kind)} | ${escapeHtml(item.reference_id)} | ${escapeHtml(item.label)}</div>
+                `).join('')}
+              </div>
+            </div>
+          `
+          : renderDetailCard('Unresolved runtime references', 'none')
       ];
     }
 
@@ -1347,21 +1384,23 @@
     }
 
     function renderDetail(payload) {
-      const sourceCards = (payload.source_card_ids || []).join(', ') || '-';
-      const boundaryFlags = payload.candidate_boundary
-        ? Object.entries(payload.candidate_boundary).map(([key, value]) => `${key}: ${value}`).join(', ')
+      const rawCandidate = getRawCandidateArtifact(payload);
+      const sourceCards = (rawCandidate.source_card_ids || []).join(', ') || '-';
+      const boundaryFlags = rawCandidate.candidate_boundary
+        ? Object.entries(rawCandidate.candidate_boundary).map(([key, value]) => `${key}: ${value}`).join(', ')
         : '-';
       detailSummaryEl.innerHTML = [
-        renderDetailCard('Primary text', payload.principle || payload.open_question || payload.case_description || payload.id),
-        renderDetailCard('Mechanism', payload.mechanism || '-'),
+        renderDetailCard('Primary text', rawCandidate.principle || rawCandidate.open_question || rawCandidate.case_description || rawCandidate.id),
+        renderDetailCard('Mechanism', rawCandidate.mechanism || '-'),
         renderDetailCard('Freshness', payload.freshness_state || '-'),
-        renderSourceEventDetailCard(payload.source_event_ids || []),
+        renderSourceEventDetailCard(rawCandidate.source_event_ids || []),
         renderDetailCard('Source card ids', sourceCards),
-        renderDetailCard('Created at', formatDate(payload.created_at)),
-        renderDetailCard('Updated at', formatDate(payload.updated_at)),
-        renderDetailCard('Distillation mode', payload.distillation_mode || '-'),
+        renderDetailCard('Created at', formatDate(rawCandidate.created_at)),
+        renderDetailCard('Updated at', formatDate(rawCandidate.updated_at)),
+        renderDetailCard('Distillation mode', rawCandidate.distillation_mode || '-'),
         ...renderReviewDetailCards(payload),
-        ...renderTypeSpecificDetailCards(payload),
+        ...renderWorkspaceSpecificDetailCards(payload),
+        ...renderTypeSpecificDetailCards(rawCandidate),
         renderDetailCard('Boundary flags', boundaryFlags)
       ].join('');
       detailSummaryEl.querySelectorAll('.detail-event-add').forEach(node => {
@@ -1426,7 +1465,7 @@
           node.addEventListener('click', () => setCreateRefutedTargetId(node.dataset.candidateId, 'candidate detail'));
         });
       }
-      candidateDetailEl.textContent = JSON.stringify(payload, null, 2);
+      candidateDetailEl.textContent = JSON.stringify(rawCandidate, null, 2);
     }
 
     function renderCandidateList() {
@@ -1544,14 +1583,16 @@
       detailPairEl.innerHTML = '';
       detailLinkageEl.innerHTML = '';
       try {
-        const payload = await fetchJson(`/arena/mec-candidates/${encodeURIComponent(candidateId)}`);
+        const payload = await fetchJson(`/arena/mec-review-workspace/${encodeURIComponent(candidateId)}`);
         const linkedId = payload.linked_boundary_candidate_id || payload.linked_candidate_id;
         detailMetaEl.innerHTML = [
+          `<span class="pill">workspace</span>`,
           `<span class="pill">${payload.candidate_type}</span>`,
           `<span class="pill warn">runtime status: ${payload.status}</span>`,
           `<span class="pill">review: ${payload.current_review_state || 'proposal_only'}</span>`,
           `<span class="pill">last review: ${getLastReviewOutcome(payload)}</span>`,
           `<span class="pill">freshness: ${payload.freshness_state || '-'}</span>`,
+          `<span class="pill">unresolved: ${payload.unresolved_runtime_reference_count || 0}</span>`,
           `<span class="pill">runtime-only</span>`,
           linkedId ? `<span class="pill">linked: ${linkedId}</span>` : ''
         ].join('');
@@ -1563,7 +1604,7 @@
         const missingCandidateId = error && error.data && error.data.candidate_id
           ? error.data.candidate_id
           : candidateId;
-        if (error && error.code === 'mec_candidate_not_found') {
+        if (error && (error.code === 'mec_candidate_not_found' || error.code === 'mec_review_workspace_not_found')) {
           detailMetaEl.innerHTML = '<span class="pill warn">reference unavailable</span>';
           detailLinkageEl.innerHTML = `
             <div class="detail-card">
@@ -1793,7 +1834,7 @@
 
     async function refreshAll() {
       const [candidatePayload, eventPayload] = await Promise.all([
-        fetchJson('/arena/mec-candidates'),
+        fetchJson('/arena/mec-review-workspace'),
         fetchJson('/arena/events')
       ]);
       state.candidates = candidatePayload.items || [];

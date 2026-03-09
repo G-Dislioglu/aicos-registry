@@ -1,0 +1,370 @@
+#!/usr/bin/env node
+const { spawn, spawnSync } = require('child_process');
+const crypto = require('crypto');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const {
+  createMecCandidateRecord,
+  createMecEvent,
+  listMecReviewWorkspace,
+  readMecReviewWorkspace,
+  reviewMecCandidate
+} = require('./arena-lib');
+
+const ROOT_DIR = path.join(__dirname, '..');
+const REQUIRED_FILES = [
+  path.join(ROOT_DIR, 'MEC_PHASE3C_CANONICAL_REVIEW_WORKSPACE_ACCEPTANCE.md'),
+  path.join(ROOT_DIR, 'tools', 'verify-mec-phase3c-review-workspace.js'),
+  path.join(ROOT_DIR, 'tools', 'arena-lib.js'),
+  path.join(ROOT_DIR, 'tools', 'arena.js'),
+  path.join(ROOT_DIR, 'tools', 'arena-server.js'),
+  path.join(ROOT_DIR, 'tools', 'verify-mec-operator-ui-smoke.js'),
+  path.join(ROOT_DIR, 'web', 'mec-operator.html')
+];
+const REGISTRY_DIRS = [
+  path.join(ROOT_DIR, 'cards'),
+  path.join(ROOT_DIR, 'index'),
+  path.join(ROOT_DIR, 'human'),
+  path.join(ROOT_DIR, 'taxonomies')
+];
+
+function assert(condition, message) {
+  if (!condition) {
+    throw new Error(message);
+  }
+}
+
+function hashFile(filePath) {
+  const digest = crypto.createHash('sha256');
+  digest.update(fs.readFileSync(filePath));
+  return digest.digest('hex');
+}
+
+function snapshotDirectory(dirPath) {
+  const snapshot = {};
+  for (const entry of fs.readdirSync(dirPath, { withFileTypes: true })) {
+    const fullPath = path.join(dirPath, entry.name);
+    if (entry.isDirectory()) {
+      Object.assign(snapshot, snapshotDirectory(fullPath));
+    } else {
+      snapshot[path.relative(ROOT_DIR, fullPath)] = hashFile(fullPath);
+    }
+  }
+  return snapshot;
+}
+
+function snapshotRegistry() {
+  return REGISTRY_DIRS.reduce((acc, dirPath) => {
+    Object.assign(acc, snapshotDirectory(dirPath));
+    return acc;
+  }, {});
+}
+
+function runCli(args, options = {}) {
+  const result = spawnSync(process.execPath, args, {
+    cwd: ROOT_DIR,
+    encoding: 'utf-8',
+    env: {
+      ...process.env,
+      ...(options.env || {})
+    }
+  });
+  assert(result.status === 0, `${args.join(' ')} failed: ${(result.stderr || result.stdout || '').trim()}`);
+  return result.stdout.trim();
+}
+
+function runVerifier(relativePath) {
+  const result = spawnSync(process.execPath, [relativePath], {
+    cwd: ROOT_DIR,
+    encoding: 'utf-8'
+  });
+  assert(result.status === 0, `${relativePath} failed: ${(result.stderr || result.stdout || '').trim()}`);
+}
+
+function verifyFilesExist() {
+  for (const filePath of REQUIRED_FILES) {
+    assert(fs.existsSync(filePath), `Missing required Phase 3C file: ${path.relative(ROOT_DIR, filePath)}`);
+  }
+}
+
+function verifyRuntimeWorkspace() {
+  const registryBefore = snapshotRegistry();
+  const tempEventDir = fs.mkdtempSync(path.join(os.tmpdir(), 'aicos-phase3c-runtime-events-'));
+  const tempCandidateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'aicos-phase3c-runtime-candidates-'));
+  const tempMecReviewDir = fs.mkdtempSync(path.join(os.tmpdir(), 'aicos-phase3c-runtime-reviews-'));
+
+  const eventResult = createMecEvent({
+    event_type: 'phase3c_probe',
+    domain: 'mec_phase3c',
+    summary: 'Phase 3C canonical workspace event',
+    source_ref: 'verifier://phase3c/runtime',
+    trace_ref: 'trace://phase3c/runtime'
+  }, { eventOutputDir: tempEventDir });
+
+  const invariant = createMecCandidateRecord({
+    candidate_type: 'invariant_candidate',
+    principle: 'Phase 3C invariant workspace object',
+    mechanism: 'Workspace should consolidate linkage and review state',
+    source_event_ids: [eventResult.event.id],
+    fails_when: ['workspace derivation missing', 'pair linkage disappears'],
+    edge_cases: ['single workspace derivation'],
+    severity: 'medium',
+    distillation_mode: 'manual'
+  }, { candidateOutputDir: tempCandidateDir, eventOutputDir: tempEventDir });
+
+  const boundary = createMecCandidateRecord({
+    candidate_type: 'boundary_candidate',
+    principle: 'Phase 3C boundary workspace object',
+    mechanism: 'Boundary should stay visible in the same workspace',
+    linked_candidate_id: invariant.candidate.id,
+    source_event_ids: [eventResult.event.id],
+    fails_when: ['linked candidate disappears'],
+    edge_cases: ['runtime-only link drift'],
+    severity: 'medium',
+    distillation_mode: 'manual'
+  }, { candidateOutputDir: tempCandidateDir, eventOutputDir: tempEventDir });
+
+  const curiosity = createMecCandidateRecord({
+    candidate_type: 'curiosity_candidate',
+    principle: 'Phase 3C curiosity workspace object',
+    mechanism: 'Workspace keeps raw and derived state separate',
+    open_question: 'Can the workspace show the latest outcome consistently?',
+    domain: 'mec_phase3c',
+    blind_spot_score: 0.4,
+    source_event_ids: [eventResult.event.id],
+    distillation_mode: 'manual'
+  }, { candidateOutputDir: tempCandidateDir, eventOutputDir: tempEventDir });
+
+  reviewMecCandidate(curiosity.candidate.id, {
+    review_outcome: 'reject',
+    review_rationale: 'Phase 3C runtime workspace reject proof.',
+    review_source: 'phase3c_runtime_verifier',
+    reviewer_mode: 'human'
+  }, { candidateOutputDir: tempCandidateDir, mecReviewOutputDir: tempMecReviewDir });
+
+  for (const candidateFilePath of invariant.candidateFilePaths || []) {
+    if (fs.existsSync(candidateFilePath)) {
+      fs.unlinkSync(candidateFilePath);
+    }
+  }
+  fs.unlinkSync(path.join(tempEventDir, `${eventResult.event.id}.json`));
+
+  const workspaceItems = listMecReviewWorkspace({
+    candidateOutputDir: tempCandidateDir,
+    mecReviewOutputDir: tempMecReviewDir,
+    eventOutputDir: tempEventDir
+  });
+  assert(workspaceItems.length === 2, 'Expected workspace list to derive over the remaining runtime candidates');
+
+  const boundaryWorkspace = workspaceItems.find(item => item.candidate_id === boundary.candidate.id);
+  assert(boundaryWorkspace, 'Expected boundary candidate in runtime workspace list');
+  assert(boundaryWorkspace.workspace_kind === 'mec_review_workspace', 'Expected canonical workspace kind on runtime workspace item');
+  assert(boundaryWorkspace.unresolved_runtime_reference_count >= 2, 'Expected boundary workspace item to surface unresolved linked-candidate and source-event risks');
+  assert(boundaryWorkspace.control_readiness.reviewable === true, 'Expected unresolved boundary workspace item to stay minimally reviewable');
+  assert(boundaryWorkspace.control_readiness.available_outcomes.includes('stabilize') && boundaryWorkspace.control_readiness.available_outcomes.includes('reject'), 'Expected reviewable workspace item to expose minimal outcomes');
+
+  const curiosityWorkspace = readMecReviewWorkspace(curiosity.candidate.id, {
+    candidateOutputDir: tempCandidateDir,
+    mecReviewOutputDir: tempMecReviewDir,
+    eventOutputDir: tempEventDir
+  });
+  assert(curiosityWorkspace && curiosityWorkspace.current_review_state === 'reject', 'Expected read workspace item to expose derived reject state');
+  assert(curiosityWorkspace.latest_review_outcome === 'reject', 'Expected read workspace item to expose latest review outcome');
+  assert(curiosityWorkspace.review_summary.review_count === 1, 'Expected read workspace item to expose review count');
+  assert(curiosityWorkspace.raw_candidate_artifact && curiosityWorkspace.raw_candidate_artifact.status === 'proposal_only', 'Expected raw candidate artifact to remain proposal-origin inside workspace');
+  assert(curiosityWorkspace.control_readiness.terminal === true, 'Expected rejected workspace item to be terminal');
+  assert(Array.isArray(curiosityWorkspace.control_readiness.available_outcomes) && curiosityWorkspace.control_readiness.available_outcomes.length === 0, 'Expected terminal workspace item to expose no further outcomes');
+
+  const registryAfter = snapshotRegistry();
+  assert(JSON.stringify(registryBefore) === JSON.stringify(registryAfter), 'Registry files changed during Phase 3C runtime workspace verification');
+}
+
+function verifyCliWorkspace() {
+  const tempEventDir = fs.mkdtempSync(path.join(os.tmpdir(), 'aicos-phase3c-cli-events-'));
+  const tempCandidateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'aicos-phase3c-cli-candidates-'));
+  const tempMecReviewDir = fs.mkdtempSync(path.join(os.tmpdir(), 'aicos-phase3c-cli-reviews-'));
+
+  const eventOutput = runCli([
+    path.join('tools', 'arena.js'),
+    'create-event',
+    '--event-type', 'phase3c_cli_probe',
+    '--domain', 'mec_phase3c',
+    '--summary', 'Phase 3C CLI workspace event',
+    '--source-ref', 'verifier://phase3c/cli',
+    '--trace-ref', 'trace://phase3c/cli',
+    '--event-dir', tempEventDir,
+    '--json'
+  ]);
+  const createdEvent = JSON.parse(eventOutput);
+
+  const candidateOutput = runCli([
+    path.join('tools', 'arena.js'),
+    'create-mec-candidate',
+    '--candidate-type', 'curiosity_candidate',
+    '--principle', 'Phase 3C CLI curiosity',
+    '--mechanism', 'CLI should read the canonical review workspace',
+    '--open-question', 'Can CLI expose the same workspace semantics?',
+    '--domain', 'mec_phase3c',
+    '--blind-spot-score', '0.3',
+    '--source-event-id', createdEvent.event.id,
+    '--distillation-mode', 'manual',
+    '--candidate-dir', tempCandidateDir,
+    '--event-dir', tempEventDir,
+    '--json'
+  ]);
+  const createdCandidate = JSON.parse(candidateOutput);
+
+  runCli([
+    path.join('tools', 'arena.js'),
+    'review-mec-candidate',
+    createdCandidate.candidate.id,
+    '--review-outcome', 'stabilize',
+    '--review-rationale', 'CLI workspace stabilize proof.',
+    '--review-source', 'phase3c_cli_verifier',
+    '--candidate-dir', tempCandidateDir,
+    '--mec-review-dir', tempMecReviewDir,
+    '--json'
+  ]);
+
+  const listedWorkspace = JSON.parse(runCli([
+    path.join('tools', 'arena.js'),
+    'list-mec-review-workspace',
+    '--candidate-dir', tempCandidateDir,
+    '--mec-review-dir', tempMecReviewDir,
+    '--event-dir', tempEventDir,
+    '--json'
+  ]));
+  assert(Array.isArray(listedWorkspace) && listedWorkspace.length === 1, 'Expected CLI workspace list to return one item');
+  assert(listedWorkspace[0].workspace_kind === 'mec_review_workspace', 'Expected CLI workspace list item to expose canonical workspace kind');
+  assert(listedWorkspace[0].current_review_state === 'stabilize', 'Expected CLI workspace list item to expose stabilize state');
+
+  const loadedWorkspace = JSON.parse(runCli([
+    path.join('tools', 'arena.js'),
+    'get-mec-review-workspace',
+    createdCandidate.candidate.id,
+    '--candidate-dir', tempCandidateDir,
+    '--mec-review-dir', tempMecReviewDir,
+    '--event-dir', tempEventDir,
+    '--json'
+  ]));
+  assert(loadedWorkspace.latest_review_outcome === 'stabilize', 'Expected CLI workspace detail to expose latest stabilize outcome');
+  assert(loadedWorkspace.raw_candidate_artifact && loadedWorkspace.raw_candidate_artifact.status === 'proposal_only', 'Expected CLI workspace detail to preserve raw proposal-origin artifact');
+}
+
+async function verifyHttpWorkspace() {
+  const tempEventDir = fs.mkdtempSync(path.join(os.tmpdir(), 'aicos-phase3c-http-events-'));
+  const tempCandidateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'aicos-phase3c-http-candidates-'));
+  const tempMecReviewDir = fs.mkdtempSync(path.join(os.tmpdir(), 'aicos-phase3c-http-reviews-'));
+  const port = 3348;
+  const serverProcess = spawn(process.execPath, ['tools/arena-server.js'], {
+    cwd: ROOT_DIR,
+    env: {
+      ...process.env,
+      PORT: String(port),
+      MEC_EVENT_DIR: tempEventDir,
+      MEC_CANDIDATE_DIR: tempCandidateDir,
+      MEC_REVIEW_DIR: tempMecReviewDir
+    },
+    stdio: ['ignore', 'pipe', 'pipe']
+  });
+
+  await new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error('Timed out waiting for arena-server to start for Phase 3C HTTP verification'));
+    }, 5000);
+
+    serverProcess.stdout.on('data', data => {
+      if (String(data).includes('arena-server listening')) {
+        clearTimeout(timeout);
+        resolve();
+      }
+    });
+
+    serverProcess.stderr.on('data', data => {
+      clearTimeout(timeout);
+      reject(new Error(String(data)));
+    });
+
+    serverProcess.on('exit', code => {
+      clearTimeout(timeout);
+      reject(new Error(`arena-server exited early with code ${code}`));
+    });
+  });
+
+  try {
+    const eventResponse = await fetch(`http://127.0.0.1:${port}/arena/events`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event_type: 'phase3c_http_probe',
+        domain: 'mec_phase3c',
+        summary: 'Phase 3C HTTP workspace event',
+        source_ref: 'verifier://phase3c/http',
+        trace_ref: 'trace://phase3c/http'
+      })
+    });
+    assert(eventResponse.ok, 'Expected HTTP event create for Phase 3C workspace verification');
+    const createdEvent = await eventResponse.json();
+
+    const candidateResponse = await fetch(`http://127.0.0.1:${port}/arena/mec-candidates`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        candidate_type: 'curiosity_candidate',
+        principle: 'Phase 3C HTTP curiosity',
+        mechanism: 'HTTP should expose canonical workspace semantics',
+        open_question: 'Can HTTP show the same latest outcome?',
+        domain: 'mec_phase3c',
+        blind_spot_score: 0.2,
+        source_event_ids: [createdEvent.event.id],
+        distillation_mode: 'manual'
+      })
+    });
+    assert(candidateResponse.status === 201, 'Expected HTTP candidate create for Phase 3C workspace verification');
+    const createdCandidate = await candidateResponse.json();
+
+    const reviewResponse = await fetch(`http://127.0.0.1:${port}/arena/mec-candidates/${createdCandidate.candidate.id}/reviews`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        review_outcome: 'reject',
+        review_rationale: 'HTTP workspace reject proof.',
+        review_source: 'phase3c_http_verifier',
+        reviewer_mode: 'human'
+      })
+    });
+    assert(reviewResponse.status === 201, 'Expected HTTP workspace review create');
+
+    const workspaceListResponse = await fetch(`http://127.0.0.1:${port}/arena/mec-review-workspace`);
+    assert(workspaceListResponse.ok, 'Expected GET /arena/mec-review-workspace to return 200');
+    const workspaceListPayload = await workspaceListResponse.json();
+    assert(Array.isArray(workspaceListPayload.items) && workspaceListPayload.items.length === 1, 'Expected one workspace item over HTTP');
+    assert(workspaceListPayload.items[0].workspace_kind === 'mec_review_workspace', 'Expected HTTP workspace list item kind');
+    assert(workspaceListPayload.items[0].current_review_state === 'reject', 'Expected HTTP workspace list item current review state');
+
+    const workspaceDetailResponse = await fetch(`http://127.0.0.1:${port}/arena/mec-review-workspace/${createdCandidate.candidate.id}`);
+    assert(workspaceDetailResponse.ok, 'Expected GET /arena/mec-review-workspace/:id to return 200');
+    const workspaceDetailPayload = await workspaceDetailResponse.json();
+    assert(workspaceDetailPayload.latest_review_outcome === 'reject', 'Expected HTTP workspace detail latest review outcome');
+    assert(workspaceDetailPayload.review_summary.review_count === 1, 'Expected HTTP workspace detail review count');
+    assert(workspaceDetailPayload.raw_candidate_artifact && workspaceDetailPayload.raw_candidate_artifact.status === 'proposal_only', 'Expected HTTP workspace detail raw artifact to remain proposal-origin');
+  } finally {
+    serverProcess.kill();
+  }
+}
+
+async function main() {
+  verifyFilesExist();
+  verifyRuntimeWorkspace();
+  verifyCliWorkspace();
+  await verifyHttpWorkspace();
+  runVerifier(path.join('tools', 'verify-mec-operator-ui-smoke.js'));
+  runVerifier(path.join('tools', 'verify-mec-phase3a-review-core.js'));
+  console.log('MEC Phase 3C canonical review workspace verification passed.');
+}
+
+main().catch(error => {
+  console.error(error.message);
+  process.exit(1);
+});

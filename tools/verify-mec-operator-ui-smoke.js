@@ -465,6 +465,67 @@ function buildUiScriptHarness() {
     }
   };
 
+  function toWorkspaceItem(rawCandidate) {
+    const reviewSummary = rawCandidate && rawCandidate.review_summary ? rawCandidate.review_summary : {
+      review_count: 0,
+      reviewable: true,
+      terminal: false,
+      current_state: 'proposal_only',
+      latest_reviewed_at: null
+    };
+    return {
+      workspace_kind: 'mec_review_workspace',
+      workspace_version: 'phase3c-mec-review-workspace/v1',
+      workspace_id: rawCandidate.id,
+      candidate_id: rawCandidate.id,
+      title: rawCandidate.principle || rawCandidate.open_question || rawCandidate.case_description || rawCandidate.id,
+      latest_review_outcome: reviewSummary.review_count > 0 ? reviewSummary.current_state : null,
+      unresolved_runtime_references: [],
+      unresolved_runtime_reference_count: 0,
+      reviewable: Boolean(reviewSummary.reviewable),
+      terminal: Boolean(reviewSummary.terminal),
+      control_readiness: {
+        reviewable: Boolean(reviewSummary.reviewable),
+        terminal: Boolean(reviewSummary.terminal),
+        available_outcomes: reviewSummary.reviewable ? ['stabilize', 'reject'] : [],
+        can_stabilize: Boolean(reviewSummary.reviewable),
+        can_reject: Boolean(reviewSummary.reviewable),
+        blocked_reason: reviewSummary.reviewable ? null : `terminal review state: ${reviewSummary.current_state || 'proposal_only'}`,
+        attention_required: false,
+        unresolved_runtime_reference_count: 0
+      },
+      source_linkage: {
+        source_event_ids: rawCandidate.source_event_ids || [],
+        source_event_count: (rawCandidate.source_event_ids || []).length,
+        source_card_ids: rawCandidate.source_card_ids || [],
+        source_card_count: (rawCandidate.source_card_ids || []).length,
+        linked_candidate_id: rawCandidate.linked_candidate_id || null,
+        linked_boundary_candidate_id: rawCandidate.linked_boundary_candidate_id || null,
+        refutes_candidate_id: rawCandidate.refutes_candidate_id || null,
+        related_candidate_ids: [rawCandidate.linked_candidate_id, rawCandidate.linked_boundary_candidate_id, rawCandidate.refutes_candidate_id].filter(Boolean),
+        pair_counterpart_id: rawCandidate.candidate_type === 'invariant_candidate'
+          ? (rawCandidate.linked_boundary_candidate_id || null)
+          : rawCandidate.candidate_type === 'boundary_candidate'
+            ? (rawCandidate.linked_candidate_id || null)
+            : null,
+        pair_role: rawCandidate.candidate_type === 'invariant_candidate'
+          ? 'invariant'
+          : rawCandidate.candidate_type === 'boundary_candidate'
+            ? 'boundary'
+            : null
+      },
+      raw_candidate_artifact: { ...rawCandidate },
+      ...rawCandidate
+    };
+  }
+
+  for (let index = 0; index < candidateList.length; index += 1) {
+    candidateList[index] = toWorkspaceItem(candidateList[index]);
+  }
+  Object.keys(candidateDetails).forEach(candidateId => {
+    candidateDetails[candidateId] = toWorkspaceItem(candidateDetails[candidateId]);
+  });
+
   const document = {
     getElementById(id) {
       if (!elements.has(id)) {
@@ -477,6 +538,9 @@ function buildUiScriptHarness() {
   async function fetch(url, options = {}) {
     const target = new URL(url, 'http://127.0.0.1:1');
     const method = String(options.method || 'GET').toUpperCase();
+    if (target.pathname === '/arena/mec-review-workspace' && method === 'GET') {
+      return createFetchResponse(200, { items: candidateList });
+    }
     if (target.pathname === '/arena/mec-candidates' && method === 'GET') {
       return createFetchResponse(200, { items: candidateList });
     }
@@ -514,11 +578,22 @@ function buildUiScriptHarness() {
     if (target.pathname === '/arena/events') {
       return createFetchResponse(200, { items: events });
     }
+    if (target.pathname.startsWith('/arena/mec-review-workspace/')) {
+      const candidateId = decodeURIComponent(target.pathname.split('/').pop());
+      if (!candidateDetails[candidateId]) {
+        return createFetchResponse(404, {
+          error: 'mec_review_workspace_not_found',
+          candidate_id: candidateId
+        });
+      }
+      return createFetchResponse(200, candidateDetails[candidateId]);
+    }
     if (target.pathname.startsWith('/arena/mec-candidates/') && target.pathname.endsWith('/reviews') && method === 'POST') {
       const segments = target.pathname.split('/');
       const candidateId = decodeURIComponent(segments[segments.length - 2]);
       const payload = options.body ? JSON.parse(options.body) : {};
-      const targetCandidate = candidateList.find(item => item.id === candidateId);
+      const targetCandidateIndex = candidateList.findIndex(item => item.id === candidateId);
+      const targetCandidate = targetCandidateIndex >= 0 ? candidateList[targetCandidateIndex] : null;
       const targetDetail = candidateDetails[candidateId];
       if (!targetCandidate || !targetDetail) {
         return createFetchResponse(404, {
@@ -534,10 +609,18 @@ function buildUiScriptHarness() {
         current_state: payload.review_outcome,
         latest_reviewed_at: reviewedAt
       };
-      targetCandidate.current_review_state = payload.review_outcome;
-      targetCandidate.review_summary = { ...reviewSummary };
-      targetDetail.current_review_state = payload.review_outcome;
-      targetDetail.review_summary = { ...reviewSummary };
+      const nextCandidate = toWorkspaceItem({
+        ...targetCandidate.raw_candidate_artifact,
+        current_review_state: payload.review_outcome,
+        review_summary: { ...reviewSummary }
+      });
+      const nextDetail = toWorkspaceItem({
+        ...targetDetail.raw_candidate_artifact,
+        current_review_state: payload.review_outcome,
+        review_summary: { ...reviewSummary }
+      });
+      candidateList[targetCandidateIndex] = nextCandidate;
+      candidateDetails[candidateId] = nextDetail;
       return createFetchResponse(201, {
         reviewRecord: {
           review_id: `mecreview-ui-${payload.review_outcome}`,
@@ -545,7 +628,7 @@ function buildUiScriptHarness() {
           review_outcome: payload.review_outcome,
           reviewed_at: reviewedAt
         },
-        candidate: targetDetail
+        candidate: nextDetail
       });
     }
     if (target.pathname.startsWith('/arena/mec-candidates/')) {
@@ -783,6 +866,7 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(detailSummaryEl.innerHTML.includes('Open question'), 'Expected curiosity detail to expose open question');
   assert(detailSummaryEl.innerHTML.includes('Blind spot score'), 'Expected curiosity detail to expose blind spot score');
   assert(detailSummaryEl.innerHTML.includes('Derived review state'), 'Expected detail rendering to expose derived review state cards');
+  assert(detailSummaryEl.innerHTML.includes('Workspace kind'), 'Expected detail rendering to expose canonical workspace cards');
   assert(detailSummaryEl.innerHTML.includes('Last review outcome'), 'Expected detail rendering to expose last review outcome');
 
   const reviewRationaleEl = elements.get('review-rationale');
@@ -882,7 +966,8 @@ async function main() {
     assert(page.statusCode === 200, 'Expected MEC operator page to return 200');
     assert(page.text.includes('MEC Operator Shell'), 'Expected UI page title');
     assert(page.text.includes('Candidate Detail'), 'Expected candidate detail section');
-    assert(page.text.includes('Derived runtime review state is visible here'), 'Expected read-first review-state framing in candidate detail copy');
+    assert(page.text.includes('Canonical MEC review workspace detail'), 'Expected workspace detail framing in candidate detail copy');
+    assert(page.text.includes('Canonical MEC review workspace list'), 'Expected workspace list framing in candidate list copy');
     assert(page.text.includes('Pair relationship'), 'Expected pair relationship detail block');
     assert(page.text.includes('Paired reading, not forced merging'), 'Expected paired reading framing in detail view');
     assert(page.text.includes('One linked case, two separately stored runtime objects'), 'Expected paired runtime object framing in pair view');
@@ -909,6 +994,7 @@ async function main() {
     assert(page.text.includes('sort: review state'), 'Expected review-state sort option in UI');
     assert(page.text.includes('stabilize'), 'Expected stabilize action label in UI');
     assert(page.text.includes('reject'), 'Expected reject action label in UI');
+    assert(page.text.includes('Raw runtime candidate artifact stays separate from the derived operational workspace state shown here.'), 'Expected explicit raw-vs-derived boundary in UI');
 
     const eventResponse = await request('POST', `http://127.0.0.1:${port}/arena/events`, {
       event_type: 'ui_probe',
@@ -992,18 +1078,20 @@ async function main() {
     assert(curiosityResponse.json && curiosityResponse.json.candidate && curiosityResponse.json.candidate.id, 'Expected created curiosity candidate id');
     assert(curiosityResponse.json.candidate.open_question === 'Where does the current phase-2 transfer boundary stop holding?', 'Expected curiosity create response to preserve open_question');
 
-    const listResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-candidates`);
-    assert(listResponse.statusCode === 200, 'Expected candidate list to return 200');
+    const listResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-review-workspace`);
+    assert(listResponse.statusCode === 200, 'Expected workspace list to return 200');
     assert(listResponse.json && Array.isArray(listResponse.json.items) && listResponse.json.items.length === 5, 'Expected invariant, linked boundary, explicit boundary, counterexample, and curiosity in list');
     assert(listResponse.json.items.every(item => item.freshness_state === 'fresh'), 'Expected candidate list freshness_state values to be fresh');
     assert(listResponse.json.items.some(item => item.id === boundaryResponse.json.candidate.id && item.linked_candidate_id === candidateResponse.json.candidate.id), 'Expected candidate list to expose explicit boundary linkage');
     assert(listResponse.json.items.some(item => item.id === counterexampleResponse.json.candidate.id && item.refutes_candidate_id === candidateResponse.json.candidate.id && item.case_description), 'Expected candidate list to expose counterexample refuted target and case description');
     assert(listResponse.json.items.some(item => item.id === curiosityResponse.json.candidate.id && item.domain === 'mec_ui_phase2' && item.open_question), 'Expected candidate list to expose curiosity domain and open question');
+    assert(listResponse.json.items.every(item => item.workspace_kind === 'mec_review_workspace'), 'Expected workspace list items to declare the canonical workspace kind');
 
-    const detailResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-candidates/${candidateResponse.json.candidate.id}`);
-    assert(detailResponse.statusCode === 200, 'Expected candidate detail to return 200');
+    const detailResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-review-workspace/${candidateResponse.json.candidate.id}`);
+    assert(detailResponse.statusCode === 200, 'Expected workspace detail to return 200');
     assert(detailResponse.json && detailResponse.json.linked_boundary_candidate_id === candidateResponse.json.linked_boundary_candidate.id, 'Expected detail to preserve linked boundary id');
     assert(detailResponse.json && detailResponse.json.freshness_state === 'fresh', 'Expected candidate detail freshness_state to be fresh');
+    assert(detailResponse.json && detailResponse.json.raw_candidate_artifact && detailResponse.json.raw_candidate_artifact.status === 'proposal_only', 'Expected workspace detail to preserve the raw proposal-origin artifact separately');
 
     const reviewCreateResponse = await request('POST', `http://127.0.0.1:${port}/arena/mec-candidates/${candidateResponse.json.candidate.id}/reviews`, {
       review_outcome: 'stabilize',
@@ -1014,28 +1102,29 @@ async function main() {
     assert(reviewCreateResponse.statusCode === 201, 'Expected MEC review creation to return 201');
     assert(reviewCreateResponse.json && reviewCreateResponse.json.reviewRecord && reviewCreateResponse.json.reviewRecord.review_outcome === 'stabilize', 'Expected created MEC review outcome to be stabilize');
 
-    const reviewedListResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-candidates`);
-    assert(reviewedListResponse.statusCode === 200, 'Expected reviewed candidate list to return 200');
+    const reviewedListResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-review-workspace`);
+    assert(reviewedListResponse.statusCode === 200, 'Expected reviewed workspace list to return 200');
     assert(reviewedListResponse.json.items.some(item => item.id === candidateResponse.json.candidate.id && item.current_review_state === 'stabilize'), 'Expected candidate list to expose derived stabilize review state');
 
-    const reviewedDetailResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-candidates/${candidateResponse.json.candidate.id}`);
-    assert(reviewedDetailResponse.statusCode === 200, 'Expected reviewed candidate detail to return 200');
+    const reviewedDetailResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-review-workspace/${candidateResponse.json.candidate.id}`);
+    assert(reviewedDetailResponse.statusCode === 200, 'Expected reviewed workspace detail to return 200');
     assert(reviewedDetailResponse.json && reviewedDetailResponse.json.status === 'proposal_only', 'Expected raw candidate status to remain proposal_only after review');
     assert(reviewedDetailResponse.json && reviewedDetailResponse.json.current_review_state === 'stabilize', 'Expected candidate detail to expose derived stabilize review state');
     assert(reviewedDetailResponse.json && reviewedDetailResponse.json.review_summary && reviewedDetailResponse.json.review_summary.review_count === 1, 'Expected candidate detail to expose review record count');
+    assert(reviewedDetailResponse.json && reviewedDetailResponse.json.raw_candidate_artifact && reviewedDetailResponse.json.raw_candidate_artifact.status === 'proposal_only', 'Expected reviewed workspace detail to keep raw candidate artifact proposal-origin');
 
-    const boundaryDetailResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-candidates/${boundaryResponse.json.candidate.id}`);
-    assert(boundaryDetailResponse.statusCode === 200, 'Expected boundary candidate detail to return 200');
+    const boundaryDetailResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-review-workspace/${boundaryResponse.json.candidate.id}`);
+    assert(boundaryDetailResponse.statusCode === 200, 'Expected boundary workspace detail to return 200');
     assert(boundaryDetailResponse.json && boundaryDetailResponse.json.linked_candidate_id === candidateResponse.json.candidate.id, 'Expected boundary detail to preserve linked_candidate_id');
     assert(boundaryDetailResponse.json && Array.isArray(boundaryDetailResponse.json.fails_when) && boundaryDetailResponse.json.fails_when.length === 1, 'Expected boundary detail to preserve fails_when');
 
-    const counterexampleDetailResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-candidates/${counterexampleResponse.json.candidate.id}`);
-    assert(counterexampleDetailResponse.statusCode === 200, 'Expected counterexample candidate detail to return 200');
+    const counterexampleDetailResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-review-workspace/${counterexampleResponse.json.candidate.id}`);
+    assert(counterexampleDetailResponse.statusCode === 200, 'Expected counterexample workspace detail to return 200');
     assert(counterexampleDetailResponse.json && counterexampleDetailResponse.json.refutes_candidate_id === candidateResponse.json.candidate.id, 'Expected counterexample detail to preserve refutes_candidate_id');
     assert(counterexampleDetailResponse.json && counterexampleDetailResponse.json.case_description === 'Clean reproduction still fails after the supposed fix path.', 'Expected counterexample detail to preserve case_description');
 
-    const curiosityDetailResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-candidates/${curiosityResponse.json.candidate.id}`);
-    assert(curiosityDetailResponse.statusCode === 200, 'Expected curiosity candidate detail to return 200');
+    const curiosityDetailResponse = await request('GET', `http://127.0.0.1:${port}/arena/mec-review-workspace/${curiosityResponse.json.candidate.id}`);
+    assert(curiosityDetailResponse.statusCode === 200, 'Expected curiosity workspace detail to return 200');
     assert(curiosityDetailResponse.json && curiosityDetailResponse.json.domain === 'mec_ui_phase2', 'Expected curiosity detail to preserve domain');
     assert(curiosityDetailResponse.json && curiosityDetailResponse.json.open_question === 'Where does the current phase-2 transfer boundary stop holding?', 'Expected curiosity detail to preserve open_question');
     assert(curiosityDetailResponse.json && curiosityDetailResponse.json.candidate_boundary.auto_resolve === false, 'Expected curiosity detail to preserve no-auto-resolve boundary');
