@@ -742,6 +742,7 @@ function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) 
       unresolved_runtime_reference_count: unresolvedRuntimeReferences.length,
       attention_required: controlReadiness.attention_required
     },
+    raw_review_records: reviewRecords.map(record => ({ ...record })),
     raw_candidate_artifact: payload,
     ...freshnessPayload
   };

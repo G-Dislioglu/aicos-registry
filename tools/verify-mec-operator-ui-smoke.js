@@ -208,13 +208,19 @@ function buildUiScriptHarness() {
     'candidate-list',
     'candidate-detail',
     'detail-meta',
+    'desk-navigation',
+    'detail-overview',
     'detail-summary',
     'review-actions',
     'review-message',
     'review-rationale',
     'detail-pair',
     'detail-linkage',
+    'raw-review-records',
     'summary',
+    'desk-status',
+    'facet-list',
+    'desk-queue',
     'pair-list',
     'event-list',
     'candidate-type',
@@ -255,7 +261,7 @@ function buildUiScriptHarness() {
     'domain',
     'blind-spot-score',
     'refresh-button',
-    'search',
+    'candidate-search',
     'clear-filters-button',
     'use-selected-linked-button',
     'use-selected-refute-button',
@@ -473,6 +479,7 @@ function buildUiScriptHarness() {
       current_state: 'proposal_only',
       latest_reviewed_at: null
     };
+    const rawReviewRecords = Array.isArray(rawCandidate && rawCandidate.raw_review_records) ? rawCandidate.raw_review_records.map(record => ({ ...record })) : [];
     return {
       workspace_kind: 'mec_review_workspace',
       workspace_version: 'phase3c-mec-review-workspace/v1',
@@ -514,7 +521,13 @@ function buildUiScriptHarness() {
             ? 'boundary'
             : null
       },
-      raw_candidate_artifact: { ...rawCandidate },
+      raw_review_records: rawReviewRecords,
+      raw_candidate_artifact: Object.keys(rawCandidate || {}).reduce((acc, key) => {
+        if (key !== 'raw_review_records') {
+          acc[key] = rawCandidate[key];
+        }
+        return acc;
+      }, {}),
       ...rawCandidate
     };
   }
@@ -609,25 +622,31 @@ function buildUiScriptHarness() {
         current_state: payload.review_outcome,
         latest_reviewed_at: reviewedAt
       };
+      const reviewRecord = {
+        review_id: `mecreview-ui-${payload.review_outcome}`,
+        candidate_id: candidateId,
+        review_outcome: payload.review_outcome,
+        review_source: payload.review_source || 'mec_ui_harness',
+        reviewer_mode: payload.reviewer_mode || 'human',
+        reviewed_at: reviewedAt,
+        review_rationale: payload.review_rationale || ''
+      };
       const nextCandidate = toWorkspaceItem({
         ...targetCandidate.raw_candidate_artifact,
         current_review_state: payload.review_outcome,
-        review_summary: { ...reviewSummary }
+        review_summary: { ...reviewSummary },
+        raw_review_records: [reviewRecord]
       });
       const nextDetail = toWorkspaceItem({
         ...targetDetail.raw_candidate_artifact,
         current_review_state: payload.review_outcome,
-        review_summary: { ...reviewSummary }
+        review_summary: { ...reviewSummary },
+        raw_review_records: [reviewRecord]
       });
       candidateList[targetCandidateIndex] = nextCandidate;
       candidateDetails[candidateId] = nextDetail;
       return createFetchResponse(201, {
-        reviewRecord: {
-          review_id: `mecreview-ui-${payload.review_outcome}`,
-          candidate_id: candidateId,
-          review_outcome: payload.review_outcome,
-          reviewed_at: reviewedAt
-        },
+        reviewRecord,
         candidate: nextDetail
       });
     }
@@ -648,6 +667,17 @@ function buildUiScriptHarness() {
     return createFetchResponse(404, { error: 'not_found' });
   }
 
+  const location = {
+    pathname: '/',
+    search: ''
+  };
+  const history = {
+    replaceState(_state, _title, url) {
+      const resolved = new URL(url, 'http://127.0.0.1:1');
+      location.pathname = resolved.pathname;
+      location.search = resolved.search;
+    }
+  };
   const context = {
     document,
     window: null,
@@ -655,7 +685,10 @@ function buildUiScriptHarness() {
     console,
     setTimeout,
     clearTimeout,
-    URL
+    URL,
+    URLSearchParams,
+    location,
+    history
   };
   context.window = context;
   vm.createContext(context);
@@ -665,8 +698,6 @@ function buildUiScriptHarness() {
     context,
     elements,
     flush: async () => {
-      await new Promise(resolve => setImmediate(resolve));
-      await new Promise(resolve => setImmediate(resolve));
       await new Promise(resolve => setImmediate(resolve));
       await new Promise(resolve => setImmediate(resolve));
       await new Promise(resolve => setImmediate(resolve));
@@ -681,13 +712,19 @@ async function verifyEmbeddedUiWriteSemantics() {
 
   const { context, elements } = harness;
   const candidateListEl = elements.get('candidate-list');
-  const searchEl = elements.get('search');
+  const searchEl = elements.get('candidate-search');
   const sourceEventIdsEl = elements.get('source-event-ids');
   const linkedCandidateIdEl = elements.get('linked-candidate-id');
   const refutesCandidateIdEl = elements.get('refutes-candidate-id');
+  const deskNavigationEl = elements.get('desk-navigation');
+  const detailOverviewEl = elements.get('detail-overview');
   const detailSummaryEl = elements.get('detail-summary');
   const detailMetaEl = elements.get('detail-meta');
   const detailLinkageEl = elements.get('detail-linkage');
+  const rawReviewRecordsEl = elements.get('raw-review-records');
+  const deskStatusEl = elements.get('desk-status');
+  const facetListEl = elements.get('facet-list');
+  const deskQueueEl = elements.get('desk-queue');
   const formResultActionsEl = elements.get('form-result-actions');
   const formMessageEl = elements.get('form-message');
   const formEl = elements.get('create-form');
@@ -700,11 +737,15 @@ async function verifyEmbeddedUiWriteSemantics() {
   };
 
   context.renderCandidateList();
+  assert(deskStatusEl.innerHTML.includes('Desk facet'), 'Expected desk status strip to render current workspace scope');
+  assert(facetListEl.innerHTML.includes('Reviewable now'), 'Expected desk facet entrypoints to render');
+  assert(deskQueueEl.innerHTML.includes('Active desk queue'), 'Expected desk queue summary to render');
+  assert(candidateListEl.innerHTML.includes('Ready for first review'), 'Expected candidate list to render grouped desk sections');
   assert(candidateListEl.innerHTML.includes('Linked target candidate-invariant'), 'Expected boundary candidate list row to expose linked target context');
   assert(candidateListEl.innerHTML.includes('Refutes candidate-invariant | Counterexample detail'), 'Expected counterexample candidate list row to expose refuted target context');
   assert(candidateListEl.innerHTML.includes('Domain mec_ui_harness | blind spot 0.5'), 'Expected curiosity candidate list row to expose domain and blind spot context');
   assert(candidateListEl.innerHTML.includes('review proposal_only'), 'Expected candidate list rows to expose derived review state badge');
-  assert(candidateListEl.innerHTML.includes('reviews 0'), 'Expected candidate list rows to expose review count badge');
+  assert(candidateListEl.innerHTML.includes('records 0'), 'Expected candidate list rows to expose raw review record count badge');
 
   vm.runInContext(`state.reviewFilter = 'reviewable_only';`, context);
   context.renderCandidateList();
@@ -719,6 +760,12 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(!candidateListEl.innerHTML.includes('candidate-curiosity'), 'Expected counterexample search to exclude unrelated curiosity candidates');
 
   applySearch('');
+
+  vm.runInContext(`state.deskFacet = 'attention';`, context);
+  context.renderCandidateList();
+  assert(candidateListEl.innerHTML.includes('No workspace objects found for the current review-desk scope.'), 'Expected attention facet to hide rows when no workspace item needs attention in the harness');
+  vm.runInContext(`state.deskFacet = '';`, context);
+  context.renderCandidateList();
 
   elements.get('candidate-type').value = 'boundary_candidate';
   linkedCandidateIdEl.value = 'missing-linked-target';
@@ -838,6 +885,7 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(detailLinkageEl.innerHTML.includes('Reference unavailable'), 'Expected missing candidate detail fetches to render a reference-unavailable detail card');
   assert(elements.get('candidate-detail').textContent.includes('Referenced runtime candidate is not available: missing-candidate'), 'Expected missing candidate detail fetches to explain the unavailable runtime candidate');
 
+  await context.selectCandidate('candidate-curiosity');
   context.renderDetail({
     id: 'candidate-curiosity',
     candidate_type: 'curiosity_candidate',
@@ -861,13 +909,19 @@ async function verifyEmbeddedUiWriteSemantics() {
     candidate_boundary: {
       registry_mutation: false,
       auto_resolve: false
-    }
+    },
+    raw_review_records: []
   });
+  vm.runInContext(`state.selectedCandidateId = 'candidate-curiosity';`, context);
+  context.renderDeskNavigation();
+  assert(detailOverviewEl.innerHTML.includes('Desk queue facet'), 'Expected desk detail to render selected queue context');
   assert(detailSummaryEl.innerHTML.includes('Open question'), 'Expected curiosity detail to expose open question');
   assert(detailSummaryEl.innerHTML.includes('Blind spot score'), 'Expected curiosity detail to expose blind spot score');
   assert(detailSummaryEl.innerHTML.includes('Derived review state'), 'Expected detail rendering to expose derived review state cards');
   assert(detailSummaryEl.innerHTML.includes('Workspace kind'), 'Expected detail rendering to expose canonical workspace cards');
   assert(detailSummaryEl.innerHTML.includes('Last review outcome'), 'Expected detail rendering to expose last review outcome');
+  assert(rawReviewRecordsEl.innerHTML.includes('No raw review records stored yet for this workspace item.'), 'Expected desk detail to render an empty raw review record state');
+  assert(deskNavigationEl.innerHTML.includes('Reproducible desk state'), 'Expected desk detail to render queue navigation and reproducible state');
 
   const reviewRationaleEl = elements.get('review-rationale');
   reviewRationaleEl.value = 'Operator stabilize proof from embedded harness.';
@@ -892,6 +946,8 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(reviewMessageEl.textContent.includes('Runtime review recorded: stabilize for candidate-curiosity'), 'Expected stabilize action to surface success message');
   assert(context.getCandidateById('candidate-curiosity').status === 'proposal_only', 'Expected review action to preserve raw runtime status in the embedded harness');
   assert(context.getCandidateById('candidate-curiosity').current_review_state === 'stabilize', 'Expected review action to update derived stabilize state in the embedded harness');
+  assert(elements.get('raw-review-records').innerHTML.includes('Raw review record 1'), 'Expected desk detail to expose the newly written raw review record');
+  assert(String(context.location.search).includes('candidate=candidate-curiosity'), 'Expected selected candidate to be mirrored into desk URL state');
 
   context.renderReviewActions({
     id: 'candidate-curiosity',
@@ -964,13 +1020,17 @@ async function main() {
 
     const page = await request('GET', `http://127.0.0.1:${port}/`);
     assert(page.statusCode === 200, 'Expected MEC operator page to return 200');
-    assert(page.text.includes('MEC Operator Shell'), 'Expected UI page title');
-    assert(page.text.includes('Candidate Detail'), 'Expected candidate detail section');
-    assert(page.text.includes('Canonical MEC review workspace detail'), 'Expected workspace detail framing in candidate detail copy');
-    assert(page.text.includes('Canonical MEC review workspace list'), 'Expected workspace list framing in candidate list copy');
+    assert(page.text.includes('MEC Review Desk'), 'Expected UI page title');
+    assert(page.text.includes('Review Desk Detail'), 'Expected review desk detail section');
+    assert(page.text.includes('Desk context'), 'Expected desk context section');
+    assert(page.text.includes('Derived review state'), 'Expected derived review state section');
+    assert(page.text.includes('Raw review records'), 'Expected raw review record section');
+    assert(page.text.includes('Raw candidate artifact'), 'Expected raw candidate artifact section');
     assert(page.text.includes('Pair relationship'), 'Expected pair relationship detail block');
     assert(page.text.includes('Paired reading, not forced merging'), 'Expected paired reading framing in detail view');
     assert(page.text.includes('One linked case, two separately stored runtime objects'), 'Expected paired runtime object framing in pair view');
+    assert(page.text.includes('One working desk over the canonical MEC review workspace'), 'Expected review desk framing in list copy');
+    assert(page.text.includes('visible segments and queue flow'), 'Expected desk queue framing in list copy');
     assert(page.text.includes('Use selected candidate'), 'Expected create shortcut action');
     assert(page.text.includes('Linked target'), 'Expected linked target safety framing');
     assert(page.text.includes('Refuted target'), 'Expected refuted target safety framing');
@@ -989,12 +1049,12 @@ async function main() {
     assert(page.text.includes('Use as refuted target'), 'Expected candidate detail carryover into refuted target field');
     assert(page.text.includes('freshness'), 'Expected freshness signal visibility in UI');
     assert(page.text.includes('Review actions'), 'Expected review action section in UI');
-    assert(page.text.includes('Minimal runtime review controls only'), 'Expected minimal review action framing in UI');
+    assert(page.text.includes('Actions stay inside the desk'), 'Expected review desk action framing in UI');
     assert(page.text.includes('all review states'), 'Expected review-state filter in UI');
     assert(page.text.includes('sort: review state'), 'Expected review-state sort option in UI');
     assert(page.text.includes('stabilize'), 'Expected stabilize action label in UI');
     assert(page.text.includes('reject'), 'Expected reject action label in UI');
-    assert(page.text.includes('Raw runtime candidate artifact stays separate from the derived operational workspace state shown here.'), 'Expected explicit raw-vs-derived boundary in UI');
+    assert(page.text.includes('raw candidate artifact, derived workspace state, and raw runtime review records'), 'Expected explicit three-layer desk boundary in UI');
 
     const eventResponse = await request('POST', `http://127.0.0.1:${port}/arena/events`, {
       event_type: 'ui_probe',
