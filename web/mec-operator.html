@@ -860,6 +860,15 @@
         </section>
 
         <section class="panel">
+          <h3>Bootstrap Runtime</h3>
+          <div class="panel-sub">Fresh deployments start empty. Create one minimal runtime event to unlock source-event-based candidate creation.</div>
+          <div class="form-actions">
+            <button id="bootstrap-event-button" type="button">Create starter event</button>
+          </div>
+          <div id="bootstrap-event-message"></div>
+        </section>
+
+        <section class="panel">
           <h3>Available Events</h3>
           <div class="panel-sub">Use these runtime event ids in candidate creation.</div>
           <div id="event-list" class="list"></div>
@@ -933,6 +942,8 @@
     const refutesCandidateIdEl = document.getElementById('refutes-candidate-id');
     const linkedTargetStateEl = document.getElementById('linked-target-state');
     const refuteTargetStateEl = document.getElementById('refute-target-state');
+    const bootstrapEventButtonEl = document.getElementById('bootstrap-event-button');
+    const bootstrapEventMessageEl = document.getElementById('bootstrap-event-message');
 
     function escapeHtml(value) {
       return String(value || '')
@@ -999,6 +1010,22 @@
         .split(/\r?\n/)
         .map(item => item.trim())
         .filter(Boolean);
+    }
+
+    function buildBootstrapEventPayload() {
+      const timestamp = new Date().toISOString();
+      return {
+        event_type: 'operator_bootstrap',
+        domain: 'mec_operator',
+        summary: `Bootstrap runtime event ${timestamp}`,
+        source_ref: 'render://bootstrap/manual',
+        trace_ref: `trace://render/bootstrap/${Date.now()}`,
+        confidence: 'medium',
+        privacy_class: 'internal',
+        ttl_days: 14,
+        priority_score: 0.5,
+        salience_signals: ['render', 'bootstrap']
+      };
     }
 
     async function fetchJson(url, options) {
@@ -2912,7 +2939,7 @@
 
     function renderEvents() {
       if (state.events.length === 0) {
-        eventListEl.innerHTML = '<div class="empty">No MEC events found. Candidate creation that requires event ids will fail until runtime events exist.</div>';
+        eventListEl.innerHTML = '<div class="empty">No MEC events found yet. Use the starter-event button above to create the first runtime event.</div>';
         return;
       }
 
@@ -3158,6 +3185,11 @@
     function clearMessage() {
       formMessageEl.className = '';
       formMessageEl.textContent = '';
+    }
+
+    function showBootstrapEventMessage(type, text) {
+      bootstrapEventMessageEl.className = type ? `message ${type}` : '';
+      bootstrapEventMessageEl.textContent = text;
     }
 
     function updateTypeSections() {
@@ -3419,6 +3451,33 @@
     refutesCandidateIdEl.addEventListener('input', updateCreateTargetSafety);
     sourceEventIdsEl.addEventListener('input', updateSourceEventReadback);
 
+    bootstrapEventButtonEl.addEventListener('click', async () => {
+      showBootstrapEventMessage('', '');
+      bootstrapEventButtonEl.disabled = true;
+      try {
+        const result = await fetchJson('/arena/events', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(buildBootstrapEventPayload())
+        });
+        const createdEventId = result && result.event && result.event.id ? result.event.id : '';
+        await refreshAll();
+        if (createdEventId) {
+          const currentSourceEventIds = new Set(splitLines(sourceEventIdsEl.value));
+          currentSourceEventIds.add(createdEventId);
+          sourceEventIdsEl.value = Array.from(currentSourceEventIds).join('\\n');
+          updateSourceEventReadback();
+          showBootstrapEventMessage('ok', `Created starter event ${createdEventId}. The event id was added to the candidate form.`);
+        } else {
+          showBootstrapEventMessage('ok', 'Created starter event.');
+        }
+      } catch (error) {
+        showBootstrapEventMessage('error', error.message);
+      } finally {
+        bootstrapEventButtonEl.disabled = false;
+      }
+    });
+
     formEl.addEventListener('submit', async event => {
       event.preventDefault();
       clearMessage();
@@ -3485,3 +3544,5 @@
   </script>
 </body>
 </html>
+
+
