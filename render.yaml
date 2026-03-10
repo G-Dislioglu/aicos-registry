@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: aicos-registry
+    env: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /arena/health
+    disk:
+      name: aicos-runtime
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: 20.11.0
+      - key: ARENA_RUNS_DIR
+        value: /var/data/arena-runs
+      - key: ARENA_AUDIT_DIR
+        value: /var/data/audit-records
+      - key: ARENA_MEMORY_DIR
+        value: /var/data/memory-candidates
+      - key: ARENA_MEMORY_REVIEW_DIR
+        value: /var/data/memory-reviews
+      - key: ARENA_EXPORT_REVIEW_DIR
+        value: /var/data/export-reviews
+      - key: MEC_CANDIDATE_DIR
+        value: /var/data/mec-candidates
+      - key: MEC_EVENT_DIR
+        value: /var/data/events
+      - key: MEC_REVIEW_DIR
+        value: /var/data/mec-reviews

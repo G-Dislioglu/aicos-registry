@@ -1,0 +1,11 @@
+{
+  "name": "aicos-registry",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node tools/arena-server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

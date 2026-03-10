@@ -475,6 +475,7 @@ async function handleRequest(req, res, options = {}) {
 }
 
 function startServer(port = Number.parseInt(process.env.PORT || '3220', 10), options = {}) {
+  const host = options.host || process.env.HOST || '0.0.0.0';
   const server = http.createServer((req, res) => {
     handleRequest(req, res, options).catch(error => {
       sendJson(res, 500, {
@@ -484,9 +485,10 @@ function startServer(port = Number.parseInt(process.env.PORT || '3220', 10), opt
     });
   });
 
-  server.listen(port, () => {
+  server.listen(port, host, () => {
     const address = server.address();
     const effectivePort = typeof address === 'object' && address ? address.port : port;
+    const effectiveHost = typeof address === 'object' && address && address.address ? address.address : host;
     const outputDir = options.outputDir || process.env.ARENA_RUNS_DIR || DEFAULT_RUNS_DIR;
     const auditOutputDir = options.auditOutputDir || process.env.ARENA_AUDIT_DIR || DEFAULT_AUDIT_DIR;
     const candidateOutputDir = options.candidateOutputDir || process.env.MEC_CANDIDATE_DIR || DEFAULT_CANDIDATES_DIR;
@@ -495,7 +497,7 @@ function startServer(port = Number.parseInt(process.env.PORT || '3220', 10), opt
     const mecReviewOutputDir = options.mecReviewOutputDir || process.env.MEC_REVIEW_DIR || DEFAULT_MEC_REVIEWS_DIR;
     const memoryOutputDir = options.memoryOutputDir || process.env.ARENA_MEMORY_DIR || DEFAULT_MEMORY_CANDIDATES_DIR;
     const memoryReviewOutputDir = options.memoryReviewOutputDir || process.env.ARENA_MEMORY_REVIEW_DIR || DEFAULT_MEMORY_REVIEWS_DIR;
-    console.log(`arena-server listening on http://127.0.0.1:${effectivePort} -> ${path.resolve(outputDir)} | audit: ${path.resolve(auditOutputDir)} | mec-candidates: ${path.resolve(candidateOutputDir)} | events: ${path.resolve(eventOutputDir)} | export-reviews: ${path.resolve(exportReviewOutputDir)} | mec-reviews: ${path.resolve(mecReviewOutputDir)} | memory: ${path.resolve(memoryOutputDir)} | reviews: ${path.resolve(memoryReviewOutputDir)}`);
+    console.log(`arena-server listening on http://${effectiveHost}:${effectivePort} -> ${path.resolve(outputDir)} | audit: ${path.resolve(auditOutputDir)} | mec-candidates: ${path.resolve(candidateOutputDir)} | events: ${path.resolve(eventOutputDir)} | export-reviews: ${path.resolve(exportReviewOutputDir)} | mec-reviews: ${path.resolve(mecReviewOutputDir)} | memory: ${path.resolve(memoryOutputDir)} | reviews: ${path.resolve(memoryReviewOutputDir)}`);
   });
 
   return server;
