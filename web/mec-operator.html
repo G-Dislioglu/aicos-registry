@@ -743,12 +743,12 @@
   <div class="page">
     <section class="hero">
       <h1>MEC Review Desk</h1>
-      <p>Runtime-only review desk over the canonical MEC review workspace. Raw candidates stay raw, review records stay separate, and operational review state stays derived.</p>
+      <p>Operator desk for reviewing runtime MEC candidates. Candidates stay unchanged, review records stay separate, and the current review state is always derived from what is already stored.</p>
       <div class="pill-row">
-        <span class="pill">runtime-only</span>
+        <span class="pill">runtime review</span>
         <span class="pill">operator desk</span>
-        <span class="pill warn">not final product UI</span>
-        <span class="pill warn">status = runtime status only</span>
+        <span class="pill warn">working UI</span>
+        <span class="pill warn">status shown here is runtime-only</span>
       </div>
       <div class="hero-controls">
         <label class="inline-field" for="operator-token">
@@ -767,7 +767,7 @@
       <div class="stack">
         <section class="panel">
           <h2>MEC Review Desk</h2>
-          <div class="panel-sub">One working desk over the canonical MEC review workspace. Use the visible segments and queue flow below to move through reviewable, terminal and attention-bearing runtime objects.</div>
+          <div class="panel-sub">Use this desk to move through review-ready items, blocked items, and items that still need attention.</div>
           <div id="summary" class="summary-grid"></div>
           <div id="desk-status" class="desk-status"></div>
           <div id="facet-list" class="facet-row"></div>
@@ -818,8 +818,8 @@
         </section>
 
         <section class="panel">
-          <h2>Linkage / Pair View</h2>
-          <div class="panel-sub">Linked invariant/boundary cases are shown together without hiding that they are still two stored objects.</div>
+          <h2>Linked Pair View</h2>
+          <div class="panel-sub">Read linked invariant and boundary candidates together without treating them as one stored object.</div>
           <div id="pair-list" class="list"></div>
         </section>
       </div>
@@ -827,17 +827,17 @@
       <div class="stack">
         <section class="panel">
           <h2>Review Desk Detail</h2>
-          <div class="panel-sub">Stay inside one workspace detail and keep the three layers visibly separate: raw candidate artifact, derived workspace state, and raw runtime review records.</div>
+          <div class="panel-sub">Stay inside one candidate detail and keep the three layers separate: raw candidate, derived review state, and raw review records.</div>
           <div id="detail-meta" class="pill-row"></div>
           <div id="desk-navigation" class="desk-nav-grid"></div>
           <div class="detail-guide">Start here: desk context, current review state, why this state, then review actions. Open the lower sections only when you need deeper comparison, contradiction, challenge, or raw artifact inspection.</div>
 
           <h3>Desk context</h3>
-          <div class="panel-sub">Selected workspace object inside the current review desk queue.</div>
+          <div class="panel-sub">The currently selected candidate inside the visible review queue.</div>
           <div id="detail-overview" class="detail-grid"></div>
 
           <h3>Derived review state</h3>
-          <div class="panel-sub">Operational reading over the canonical workspace. This is derived from raw review records and raw candidate artifacts.</div>
+          <div class="panel-sub">Current review state as read from the stored candidate and review records.</div>
           <div id="detail-summary" class="detail-grid"></div>
 
           <h3>Why this state</h3>
@@ -845,11 +845,11 @@
           <div id="detail-explanation" class="compact-list"></div>
 
           <h3>Focus context</h3>
-          <div class="panel-sub">Signal-based focus framing that condenses real review tension, pairability and carry-forward history from the canonical workspace only.</div>
+          <div class="panel-sub">A compact read of what deserves attention next.</div>
           <div id="detail-focus" class="compact-list"></div>
 
           <h3>Review actions</h3>
-          <div class="panel-sub">Minimal runtime review controls only. Actions stay inside the desk, write separate review records, and keep the raw candidate artifact proposal-origin.</div>
+          <div class="panel-sub">Write one separate review record from this screen. The candidate itself stays unchanged.</div>
           <div class="field full">
             <label for="review-rationale">Review rationale</label>
             <textarea id="review-rationale" placeholder="Optional operator rationale. If left empty, a minimal runtime rationale is generated."></textarea>
@@ -867,22 +867,22 @@
             <div class="detail-fold-body">
               <div class="detail-section">
                 <h3>Evidence / lineage context</h3>
-                <div class="panel-sub">Readable condensation of existing linkage, reference availability and integrity signals from the canonical workspace.</div>
+                <div class="panel-sub">Visible linkage, reference availability and integrity signals.</div>
                 <div id="detail-evidence" class="compact-list"></div>
               </div>
               <div class="detail-section">
                 <h3>Review history context</h3>
-                <div class="panel-sub">Compressed reading over raw review records so the desk shows direction and history without inventing a new review ontology.</div>
+                <div class="panel-sub">Recent review direction from the stored review records.</div>
                 <div id="detail-history" class="compact-list"></div>
               </div>
               <div class="detail-section">
                 <h3>Related candidate context</h3>
-                <div class="panel-sub">Neighboring candidates derived from existing linkage and shared-source signals only.</div>
+                <div class="panel-sub">Nearby candidates found through linkage and shared source signals.</div>
                 <div id="detail-related" class="compact-list"></div>
               </div>
               <div class="detail-section">
                 <h3>Compare context</h3>
-                <div class="panel-sub">Quick-compare surface over existing linkage, source overlap, review-state and history signals without inventing a ranking ontology.</div>
+                <div class="panel-sub">Quick compare using linkage, source overlap, review state and history.</div>
                 <div id="detail-compare" class="compact-list"></div>
               </div>
             </div>
@@ -893,38 +893,38 @@
             <div class="detail-fold-body">
               <div class="detail-section">
                 <h3>Delta / change context</h3>
-                <div class="panel-sub">Signal-based change awareness over review anchors, visible runtime movement and why-now / why-not-now readability from the canonical workspace only.</div>
+                <div class="panel-sub">What changed, what stayed stable, and why this might matter now.</div>
                 <div id="detail-delta" class="compact-list"></div>
               </div>
               <div class="detail-section">
                 <h3>Decision packet</h3>
-                <div class="panel-sub">Signal-based decision condensation showing what supports, weakens or still underconstrains the current read without recommending an outcome.</div>
+                <div class="panel-sub">What currently supports, weakens or still leaves the read open.</div>
                 <div id="detail-decision" class="compact-list"></div>
               </div>
               <div class="detail-section">
                 <h3>Contradiction context</h3>
-                <div class="panel-sub">Visible signal contradictions that should be held together before a stabilize/reject decision is written.</div>
+                <div class="panel-sub">Visible contradictions to hold together before writing a decision.</div>
                 <div id="detail-contradiction" class="compact-list"></div>
               </div>
               <div class="detail-section">
                 <h3>Challenge context</h3>
-                <div class="panel-sub">Single-candidate challenge reading from the canonical workspace only. Contradiction pressure stays compact, readable and non-recommendatory.</div>
+                <div class="panel-sub">Challenge pressure around this candidate, kept compact and readable.</div>
                 <div id="detail-challenge" class="compact-list"></div>
                 <div id="challenge-message"></div>
               </div>
               <div class="detail-section">
                 <h3>Refutation context</h3>
-                <div class="panel-sub">Read-first counterexample and refuted-primary readability from the canonical workspace only. This surface stays inspectable and does not introduce any new write path.</div>
+                <div class="panel-sub">How visible counterexamples relate back to the primary candidate.</div>
                 <div id="detail-refutation" class="compact-list"></div>
               </div>
               <div class="detail-section">
                 <h3>Challenge dossier context</h3>
-                <div class="panel-sub">Primary-candidate-centered challenge posture over already visible counterexample relations from the canonical workspace only. Coverage stays compact, inspectable, and non-recommendatory.</div>
+                <div class="panel-sub">A compact view of challenge coverage around the primary candidate.</div>
                 <div id="detail-challenge-dossier" class="compact-list"></div>
               </div>
               <div class="detail-section">
                 <h3>Review action trace</h3>
-                <div class="panel-sub">Compact trace showing which visible decision, contradiction and delta signals were present when the latest review write was recorded.</div>
+                <div class="panel-sub">What was visible when the latest review action was written.</div>
                 <div id="detail-trace" class="compact-list"></div>
               </div>
             </div>
@@ -935,12 +935,12 @@
             <div class="detail-fold-body">
               <div class="detail-section">
                 <h3>Raw review records</h3>
-                <div class="panel-sub">Separate runtime review records as stored. These are not the same thing as the derived workspace state.</div>
+                <div class="panel-sub">Stored review records exactly as written. These are separate from the derived review state.</div>
                 <div id="raw-review-records" class="compact-list"></div>
               </div>
               <div class="detail-section">
                 <h3>Raw candidate artifact</h3>
-                <div class="panel-sub">Stored runtime candidate artifact exactly as read from runtime candidate storage.</div>
+                <div class="panel-sub">Stored candidate data exactly as read from runtime storage.</div>
                 <pre id="candidate-detail" class="json-view">Select a candidate from the desk.</pre>
               </div>
             </div>
@@ -1433,21 +1433,21 @@
       bootstrapEventButtonEl.disabled = writeAuthRequired && !tokenPresent;
       operatorAuthStatusEl.className = `helper-text status-note ${writeAuthRequired ? 'warn' : 'good'}`;
       if (writeAuthRequired && !tokenPresent) {
-        operatorAuthStatusEl.textContent = 'Server write auth is enabled. Load a valid operator token to create events, candidates, reviews, or challenge records.';
+        operatorAuthStatusEl.textContent = 'Protected writes are enabled. Load a valid operator token before creating events, candidates, reviews or challenge records.';
         updateCreateSubmitState();
         return;
       }
       if (writeAuthRequired && tokenPresent) {
-        operatorAuthStatusEl.textContent = 'Server write auth is enabled. A local operator token is loaded for protected write requests.';
+        operatorAuthStatusEl.textContent = 'Protected writes are enabled. A local operator token is loaded and ready.';
         updateCreateSubmitState();
         return;
       }
       if (tokenPresent) {
-        operatorAuthStatusEl.textContent = 'Server write auth is not currently required. A local operator token is loaded for protected environments.';
+        operatorAuthStatusEl.textContent = 'Writes are open here right now. A local operator token is still loaded for protected environments.';
         updateCreateSubmitState();
         return;
       }
-      operatorAuthStatusEl.textContent = 'Server write auth is not currently required. Writes remain available without a token on this surface.';
+      operatorAuthStatusEl.textContent = 'Writes are open here right now. No operator token is required on this surface.';
       updateCreateSubmitState();
     }
 
@@ -1706,50 +1706,50 @@
       return [
         {
           value: '',
-          label: 'All visible workspace',
-          hint: 'Current workspace scope after toolbar filters',
+          label: 'All visible candidates',
+          hint: 'Current desk scope after toolbar filters',
           count: items.length
         },
         {
           value: 'reviewable',
           label: 'Reviewable now',
-          hint: 'Derived state still allows stabilize / reject',
+          hint: 'Can still take a stabilize or reject write',
           count: items.filter(item => item.review_summary && item.review_summary.reviewable).length
         },
         {
           value: 'attention',
-          label: 'Attention required',
-          hint: 'Has unresolved runtime references in workspace',
+          label: 'Needs attention',
+          hint: 'Has unresolved references',
           count: items.filter(item => Number(item.unresolved_runtime_reference_count || 0) > 0).length
         },
         {
           value: 'without_reviews',
-          label: 'Without review record',
-          hint: 'Workspace items still at raw candidate only',
+          label: 'No review yet',
+          hint: 'Candidates without any review record yet',
           count: items.filter(item => getReviewCount(item) === 0).length
         },
         {
           value: 'with_reviews',
-          label: 'With review record',
-          hint: 'Workspace items already carrying raw review records',
+          label: 'Already reviewed',
+          hint: 'Candidates already carrying review records',
           count: items.filter(item => getReviewCount(item) > 0).length
         },
         {
           value: 'terminal',
-          label: 'Terminal outcomes',
-          hint: 'Derived state already reached stabilize / reject',
+          label: 'Closed out',
+          hint: 'Already stabilized or rejected',
           count: items.filter(item => item.review_summary && item.review_summary.terminal).length
         },
         {
           value: 'stabilized',
           label: 'Stabilized',
-          hint: 'Latest derived review state is stabilize',
+          hint: 'Latest review state is stabilize',
           count: items.filter(item => getCurrentReviewState(item) === 'stabilize').length
         },
         {
           value: 'rejected',
           label: 'Rejected',
-          hint: 'Latest derived review state is reject',
+          hint: 'Latest review state is reject',
           count: items.filter(item => getCurrentReviewState(item) === 'reject').length
         }
       ];
@@ -1759,80 +1759,80 @@
       const sections = [
         {
           key: 'change_now',
-          label: 'Change: review movement now',
-          hint: 'Workspace items whose visible signals suggest a fresh read is justified now',
+          label: 'Fresh movement now',
+          hint: 'Visible signals suggest a new read is justified now',
           matcher: item => item && item.delta_context && item.delta_context.review_attention_now === true
         },
         {
           key: 'change_stable',
-          label: 'Change: stable since anchor',
-          hint: 'Workspace items whose visible review anchor still matches the current workspace read',
+          label: 'Stable since anchor',
+          hint: 'Visible signals still match the last anchor point',
           matcher: item => item && item.delta_context && item.delta_context.stable_since_anchor === true
         },
         {
           key: 'decision_ready',
-          label: 'Decision: ready',
-          hint: 'Workspace items whose current visible support is decision-ready without stronger contradiction pressure',
+          label: 'Decision ready',
+          hint: 'Support looks strong enough to write a decision now',
           matcher: item => item && item.decision_packet_context && item.decision_packet_context.decision_readiness === 'decision_ready'
         },
         {
           key: 'decision_fragile',
-          label: 'Decision: fragile',
-          hint: 'Workspace items where visible friction or contradiction still qualifies the current read',
+          label: 'Decision fragile',
+          hint: 'Support exists, but friction or contradiction still matters',
           matcher: item => item && item.decision_packet_context && item.decision_packet_context.decision_readiness === 'decision_fragile'
         },
         {
           key: 'focus_reference_tension',
-          label: 'Focus: reference tension',
-          hint: 'Reviewable workspace items whose visible runtime references still need attention',
+          label: 'Reference tension',
+          hint: 'Reviewable candidates whose references still need attention',
           matcher: item => item && item.focus_context && item.focus_context.focus_bucket === 'reviewable_reference_tension'
         },
         {
           key: 'focus_compare',
-          label: 'Focus: compare now',
-          hint: 'Workspace items best read in comparison because they sit in linked-pair or comparative zones',
+          label: 'Compare now',
+          hint: 'Best read side by side with a linked or nearby candidate',
           matcher: item => item && item.focus_context && ['linked_pair_review', 'comparative_review_zone'].includes(item.focus_context.focus_bucket)
         },
         {
           key: 'focus_history',
-          label: 'Focus: history carry-forward',
-          hint: 'Workspace items where visible review history still shapes the current read',
+          label: 'History still matters',
+          hint: 'Past reviews still shape the current read',
           matcher: item => item && item.focus_context && ['history_carry_forward', 'recent_terminal_decision', 'terminal_reference_gap'].includes(item.focus_context.focus_bucket)
         },
         {
           key: 'attention',
-          label: 'Attention-bearing workspace',
-          hint: 'Visible runtime objects with unresolved workspace references',
+          label: 'Needs attention',
+          hint: 'Visible candidates with unresolved references',
           matcher: item => Number(item.unresolved_runtime_reference_count || 0) > 0
         },
         {
           key: 'reviewable_new',
           label: 'Ready for first review',
-          hint: 'Reviewable workspace items without any raw review record yet',
+          hint: 'Reviewable candidates without any review record yet',
           matcher: item => Boolean(item.review_summary && item.review_summary.reviewable) && getReviewCount(item) === 0
         },
         {
           key: 'reviewable_existing',
-          label: 'Reviewable with prior record',
-          hint: 'Still reviewable while already carrying at least one raw review record',
+          label: 'Reviewable again',
+          hint: 'Still reviewable and already carrying at least one review record',
           matcher: item => Boolean(item.review_summary && item.review_summary.reviewable) && getReviewCount(item) > 0
         },
         {
           key: 'terminal_stabilize',
-          label: 'Terminal stabilized',
-          hint: 'Operationally closed with stabilize',
+          label: 'Closed as stabilize',
+          hint: 'Already closed out with stabilize',
           matcher: item => getCurrentReviewState(item) === 'stabilize'
         },
         {
           key: 'terminal_reject',
-          label: 'Terminal rejected',
-          hint: 'Operationally closed with reject',
+          label: 'Closed as reject',
+          hint: 'Already closed out with reject',
           matcher: item => getCurrentReviewState(item) === 'reject'
         },
         {
           key: 'other',
-          label: 'Other visible workspace',
-          hint: 'Remaining visible runtime objects in the desk',
+          label: 'Other visible candidates',
+          hint: 'Everything else still visible in the desk',
           matcher: () => true
         }
       ];
@@ -2433,14 +2433,14 @@
     function renderReviewDetailCards(payload) {
       const reviewSummary = payload && payload.review_summary ? payload.review_summary : null;
       return [
-        renderDetailCard('Workspace id', payload && payload.workspace_id ? payload.workspace_id : payload.id),
-        renderDetailCard('Derived review state', payload && payload.current_review_state ? payload.current_review_state : 'proposal_only'),
+        renderDetailCard('Candidate id', payload && payload.workspace_id ? payload.workspace_id : payload.id),
+        renderDetailCard('Current review state', payload && payload.current_review_state ? payload.current_review_state : 'proposal_only'),
         renderDetailCard('Review records', reviewSummary ? String(reviewSummary.review_count || 0) : '0'),
         renderDetailCard('Last review outcome', getLastReviewOutcome(payload)),
         renderDetailCard('Last reviewed at', reviewSummary && reviewSummary.latest_reviewed_at ? formatDate(reviewSummary.latest_reviewed_at) : '-'),
-        renderDetailCard('Unresolved runtime references', payload ? String(payload.unresolved_runtime_reference_count || 0) : '0'),
-        renderDetailCard('Reviewable now', reviewSummary ? String(Boolean(reviewSummary.reviewable)) : 'true'),
-        renderDetailCard('Terminal review state', reviewSummary ? String(Boolean(reviewSummary.terminal)) : 'false')
+        renderDetailCard('Open reference gaps', payload ? String(payload.unresolved_runtime_reference_count || 0) : '0'),
+        renderDetailCard('Reviewable now', reviewSummary ? (reviewSummary.reviewable ? 'yes' : 'no') : 'yes'),
+        renderDetailCard('Closed out', reviewSummary ? (reviewSummary.terminal ? 'yes' : 'no') : 'no')
       ];
     }
 
@@ -2474,12 +2474,12 @@
     function renderDeskOverview(payload) {
       const records = getWorkspaceReviewRecords(payload);
       detailOverviewEl.innerHTML = [
-        renderDetailCard('Desk queue facet', getActiveDeskFacetLabel(getFilterScopedCandidates())),
-        renderDetailCard('Selected workspace id', payload && payload.workspace_id ? payload.workspace_id : payload.id),
-        renderDetailCard('Primary working text', formatCandidateTitle(payload)),
-        renderDetailCard('Raw review records loaded', String(records.length)),
-        renderDetailCard('Control readiness', payload && payload.control_readiness && payload.control_readiness.reviewable ? 'reviewable' : 'terminal'),
-        renderDetailCard('Runtime-only boundary', 'raw candidate + raw review records stay separate')
+        renderDetailCard('Current desk segment', getActiveDeskFacetLabel(getFilterScopedCandidates())),
+        renderDetailCard('Selected candidate id', payload && payload.workspace_id ? payload.workspace_id : payload.id),
+        renderDetailCard('Working title', formatCandidateTitle(payload)),
+        renderDetailCard('Review records loaded', String(records.length)),
+        renderDetailCard('Action state', payload && payload.control_readiness && payload.control_readiness.reviewable ? 'reviewable' : 'closed out'),
+        renderDetailCard('Data boundary', 'raw candidate and review records stay separate')
       ].join('');
     }
 
