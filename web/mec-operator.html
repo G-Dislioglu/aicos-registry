@@ -241,6 +241,10 @@
       margin-bottom: 14px;
     }
 
+    .toolbar-guide {
+      margin-bottom: 10px;
+    }
+
     .toolbar input {
       flex: 1;
       min-width: 220px;
@@ -771,46 +775,47 @@
           <div id="summary" class="summary-grid"></div>
           <div id="desk-status" class="desk-status"></div>
           <div id="facet-list" class="facet-row"></div>
+          <div class="field-hint toolbar-guide">Use search, filters and sort to answer one question at a time: what needs review now, what is blocked, and what still needs attention.</div>
           <div class="toolbar">
-            <input id="candidate-search" type="search" placeholder="Search by id, type, principle, mechanism or linked id">
+            <input id="candidate-search" type="search" placeholder="Search by id, title, mechanism, linked id or source signal">
             <select id="candidate-type-filter">
-              <option value="">all types</option>
-              <option value="invariant_candidate">invariant_candidate</option>
-              <option value="boundary_candidate">boundary_candidate</option>
-              <option value="counterexample_candidate">counterexample_candidate</option>
-              <option value="curiosity_candidate">curiosity_candidate</option>
+              <option value="">Type: all</option>
+              <option value="invariant_candidate">Type: invariant</option>
+              <option value="boundary_candidate">Type: boundary</option>
+              <option value="counterexample_candidate">Type: counterexample</option>
+              <option value="curiosity_candidate">Type: curiosity</option>
             </select>
             <select id="candidate-status-filter">
-              <option value="">all statuses</option>
-              <option value="proposal_only">proposal_only</option>
-              <option value="challenged">challenged</option>
-              <option value="needs_more_evidence">needs_more_evidence</option>
-              <option value="local_only">local_only</option>
-              <option value="reconsolidation_pending">reconsolidation_pending</option>
-              <option value="runtime_accepted">runtime_accepted</option>
-              <option value="runtime_rejected">runtime_rejected</option>
-              <option value="superseded">superseded</option>
+              <option value="">Runtime status: all</option>
+              <option value="proposal_only">Runtime status: proposal only</option>
+              <option value="challenged">Runtime status: challenged</option>
+              <option value="needs_more_evidence">Runtime status: needs more evidence</option>
+              <option value="local_only">Runtime status: local only</option>
+              <option value="reconsolidation_pending">Runtime status: reconsolidation pending</option>
+              <option value="runtime_accepted">Runtime status: accepted</option>
+              <option value="runtime_rejected">Runtime status: rejected</option>
+              <option value="superseded">Runtime status: superseded</option>
             </select>
             <select id="candidate-link-filter">
-              <option value="">all linkage</option>
-              <option value="paired">paired only</option>
-              <option value="standalone">standalone only</option>
+              <option value="">Linkage: all</option>
+              <option value="paired">Linkage: paired only</option>
+              <option value="standalone">Linkage: standalone only</option>
             </select>
             <select id="review-state-filter">
-              <option value="">all review states</option>
-              <option value="proposal_only">proposal_only</option>
-              <option value="stabilize">stabilize</option>
-              <option value="reject">reject</option>
-              <option value="reviewable_only">reviewable only</option>
-              <option value="terminal_only">terminal only</option>
+              <option value="">Review state: all</option>
+              <option value="proposal_only">Review state: proposal only</option>
+              <option value="stabilize">Review state: stabilize</option>
+              <option value="reject">Review state: reject</option>
+              <option value="reviewable_only">Review state: open for review</option>
+              <option value="terminal_only">Review state: closed only</option>
             </select>
             <select id="candidate-sort">
-              <option value="recent">sort: most recent</option>
-              <option value="review_state">sort: review state</option>
-              <option value="review_count">sort: review count</option>
-              <option value="freshness">sort: freshness</option>
+              <option value="recent">Sort: most recent</option>
+              <option value="review_state">Sort: review state</option>
+              <option value="review_count">Sort: review count</option>
+              <option value="freshness">Sort: freshness</option>
             </select>
-            <button id="clear-filters-button" class="secondary" type="button">Clear</button>
+            <button id="clear-filters-button" class="secondary" type="button">Clear filters</button>
             <button id="refresh-button" type="button">Refresh</button>
           </div>
           <div id="desk-queue" class="desk-queue-grid"></div>
@@ -2103,6 +2108,22 @@
       return '';
     }
 
+    function formatCandidateTypeLabel(candidateType) {
+      if (candidateType === 'invariant_candidate') {
+        return 'invariant';
+      }
+      if (candidateType === 'boundary_candidate') {
+        return 'boundary';
+      }
+      if (candidateType === 'counterexample_candidate') {
+        return 'counterexample';
+      }
+      if (candidateType === 'curiosity_candidate') {
+        return 'curiosity';
+      }
+      return candidateType || '-';
+    }
+
     function getCandidatePrimaryStateBadge(item) {
       if (!item) {
         return '<span class="badge">unknown</span>';
@@ -2124,7 +2145,7 @@
       if (!item) {
         return badges;
       }
-      badges.push(`<span class="badge">${escapeHtml(item.candidate_type || '-')}</span>`);
+      badges.push(`<span class="badge">${escapeHtml(formatCandidateTypeLabel(item.candidate_type))}</span>`);
       const lastOutcome = getLastReviewOutcome(item);
       if (lastOutcome !== '-') {
         badges.push(`<span class="badge">last ${escapeHtml(lastOutcome)}</span>`);
@@ -2365,7 +2386,7 @@
           <div class="tiny">${hint}</div>
         </div>
       `).join('');
-      deskStatusEl.innerHTML = `Desk facet: <strong>${escapeHtml(getActiveDeskFacetLabel(getFilterScopedCandidates()))}</strong> · toolbar scope: <strong>${escapeHtml(String(getFilterScopedCandidates().length))}</strong> workspace items · active queue: <strong>${escapeHtml(String(candidates.length))}</strong> items.`;
+      deskStatusEl.innerHTML = `Showing <strong>${escapeHtml(String(candidates.length))}</strong> candidates in <strong>${escapeHtml(getActiveDeskFacetLabel(getFilterScopedCandidates()))}</strong>. Toolbar filters currently match <strong>${escapeHtml(String(getFilterScopedCandidates().length))}</strong> candidates overall.`;
       renderFacetList(getFilterScopedCandidates());
       renderDeskQueueSummary(getFilterScopedCandidates(), candidates);
     }
