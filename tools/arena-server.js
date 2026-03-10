@@ -43,15 +43,106 @@ const {
 } = require('./model-control-lib');
 
 const MEC_OPERATOR_UI_PATH = path.join(__dirname, '..', 'web', 'mec-operator.html');
+const MAX_REQUEST_BODY_BYTES = 1024 * 1024;
+const WRITE_AUTH_HEADER_NAME = 'x-arena-operator-token';
+const WRITE_AUTH_ENV_NAME = 'ARENA_OPERATOR_TOKEN';
+const PUBLIC_RESPONSE_STRIP_KEYS = new Set([
+  'file_path',
+  'candidateFilePaths',
+  'eventFilePath'
+]);
+
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function shouldStripPathValue(value) {
+  const normalized = String(value || '');
+  return /^[A-Za-z]:[\\/]/.test(normalized)
+    || normalized.startsWith('/var/')
+    || normalized.startsWith('/home/')
+    || normalized.startsWith('/Users/')
+    || normalized.includes('cards/<type>/')
+    || normalized.includes('\\cards\\')
+    || normalized.includes('/cards/');
+}
+
+function sanitizePublicPayload(payload) {
+  if (Array.isArray(payload)) {
+    return payload.map(item => sanitizePublicPayload(item));
+  }
+  if (!isPlainObject(payload)) {
+    return payload;
+  }
+  return Object.entries(payload).reduce((acc, [key, value]) => {
+    if (PUBLIC_RESPONSE_STRIP_KEYS.has(key)) {
+      return acc;
+    }
+    if (key === 'path' && typeof value === 'string' && shouldStripPathValue(value)) {
+      return acc;
+    }
+    acc[key] = sanitizePublicPayload(value);
+    return acc;
+  }, {});
+}
 
 function sendJson(res, statusCode, payload) {
   res.writeHead(statusCode, { 'Content-Type': 'application/json; charset=utf-8' });
-  res.end(JSON.stringify(payload, null, 2));
+  res.end(JSON.stringify(sanitizePublicPayload(payload), null, 2));
 }
 
 function sendHtml(res, statusCode, filePath) {
   res.writeHead(statusCode, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(fs.readFileSync(filePath, 'utf-8'));
+}
+
+function createHttpError(statusCode, code, message) {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  error.code = code;
+  return error;
+}
+
+function getRequestHeader(req, name) {
+  const value = req.headers[String(name || '').toLowerCase()];
+  if (Array.isArray(value)) {
+    return String(value[0] || '');
+  }
+  return String(value || '');
+}
+
+function getOperatorWriteToken() {
+  return String(process.env[WRITE_AUTH_ENV_NAME] || '').trim();
+}
+
+function isWriteAuthRequired() {
+  return Boolean(getOperatorWriteToken());
+}
+
+function assertJsonRequest(req) {
+  const contentType = getRequestHeader(req, 'content-type').toLowerCase();
+  if (!contentType.startsWith('application/json')) {
+    throw createHttpError(415, 'unsupported_media_type', 'JSON request body required.');
+  }
+}
+
+function assertWriteAuthorized(req) {
+  const expectedToken = getOperatorWriteToken();
+  if (!expectedToken) {
+    return;
+  }
+  const operatorToken = getRequestHeader(req, WRITE_AUTH_HEADER_NAME).trim();
+  const authorization = getRequestHeader(req, 'authorization').trim();
+  const bearerToken = authorization.toLowerCase().startsWith('bearer ')
+    ? authorization.slice(7).trim()
+    : '';
+  const providedToken = operatorToken || bearerToken;
+  if (!providedToken) {
+    throw createHttpError(403, 'write_auth_required', `Operator write token required via ${WRITE_AUTH_HEADER_NAME} header.`);
+  }
+  if (providedToken !== expectedToken) {
+    throw createHttpError(403, 'invalid_write_token', 'Operator write token rejected.');
+  }
 }
 
 function sendMethodNotAllowed(res, method) {
@@ -72,20 +163,43 @@ function sendNotFound(res, pathname) {
 function readRequestBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
+    let totalBytes = 0;
+    let settled = false;
     req.on('data', chunk => chunks.push(chunk));
+    req.on('data', chunk => {
+      totalBytes += chunk.length;
+      if (settled || totalBytes <= MAX_REQUEST_BODY_BYTES) {
+        return;
+      }
+      settled = true;
+      reject(createHttpError(413, 'request_entity_too_large', `Request body exceeds ${MAX_REQUEST_BODY_BYTES} bytes.`));
+      req.destroy();
+    });
     req.on('end', () => {
+      if (settled) {
+        return;
+      }
       const raw = Buffer.concat(chunks).toString('utf-8').trim();
       if (!raw) {
+        settled = true;
         resolve({});
         return;
       }
       try {
+        settled = true;
         resolve(JSON.parse(raw));
       } catch (error) {
+        settled = true;
         reject(error);
       }
     });
-    req.on('error', reject);
+    req.on('error', error => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      reject(error);
+    });
   });
 }
 
@@ -110,14 +224,8 @@ async function handleRequest(req, res, options = {}) {
     sendJson(res, 200, {
       ok: true,
       surface: 'arena-server',
-      output_dir: outputDir,
-      audit_output_dir: auditOutputDir,
-      candidate_output_dir: candidateOutputDir,
-      event_output_dir: eventOutputDir,
-      export_review_output_dir: exportReviewOutputDir,
-      mec_review_output_dir: mecReviewOutputDir,
-      memory_output_dir: memoryOutputDir,
-      memory_review_output_dir: memoryReviewOutputDir
+      write_auth_required: isWriteAuthRequired(),
+      max_request_body_bytes: MAX_REQUEST_BODY_BYTES
     });
     return;
   }
@@ -131,24 +239,17 @@ async function handleRequest(req, res, options = {}) {
     return;
   }
 
-  if (pathname === '/arena/mec-review-workspace' && req.method === 'GET') {
-    const items = listMecReviewWorkspace({ candidateOutputDir, mecReviewOutputDir, eventOutputDir });
-    sendJson(res, 200, {
-      total: items.length,
-      items
-    });
-    return;
-  }
-
   if (pathname === '/arena/mec-candidates' && req.method === 'POST') {
     try {
+      assertWriteAuthorized(req);
+      assertJsonRequest(req);
       const payload = await readRequestBody(req);
       const result = createMecCandidateRecord(payload, { candidateOutputDir, eventOutputDir });
       sendJson(res, 201, result);
     } catch (error) {
-      const statusCode = error.code === 'mec_source_event_not_found' || error.code === 'mec_source_card_not_found'
+      const statusCode = error.statusCode || ((error.code === 'mec_source_event_not_found' || error.code === 'mec_source_card_not_found')
         ? 404
-        : 400;
+        : 400);
       sendJson(res, statusCode, {
         error: error.code || 'invalid_mec_candidate_request',
         message: error.message
@@ -188,15 +289,17 @@ async function handleRequest(req, res, options = {}) {
   if (pathname.startsWith('/arena/mec-candidates/') && pathname.endsWith('/reviews') && req.method === 'POST') {
     const candidateId = decodeURIComponent(pathname.slice('/arena/mec-candidates/'.length, -'/reviews'.length));
     try {
+      assertWriteAuthorized(req);
+      assertJsonRequest(req);
       const payload = await readRequestBody(req);
       const result = reviewMecCandidate(candidateId, payload, { candidateOutputDir, mecReviewOutputDir });
       sendJson(res, 201, result);
     } catch (error) {
-      const statusCode = error.code === 'mec_candidate_not_found'
+      const statusCode = error.statusCode || (error.code === 'mec_candidate_not_found'
         ? 404
         : error.code === 'mec_candidate_not_reviewable'
           ? 409
-          : 400;
+          : 400);
       sendJson(res, statusCode, {
         error: error.code || 'invalid_mec_review_request',
         message: error.message,
@@ -209,15 +312,17 @@ async function handleRequest(req, res, options = {}) {
   if (pathname.startsWith('/arena/mec-candidates/') && pathname.endsWith('/challenge-counterexamples') && req.method === 'POST') {
     const candidateId = decodeURIComponent(pathname.slice('/arena/mec-candidates/'.length, -'/challenge-counterexamples'.length));
     try {
+      assertWriteAuthorized(req);
+      assertJsonRequest(req);
       const payload = await readRequestBody(req);
       const result = createMecChallengeCounterexample(candidateId, payload, { candidateOutputDir, eventOutputDir, mecReviewOutputDir });
       sendJson(res, 201, result);
     } catch (error) {
-      const statusCode = error.code === 'mec_candidate_not_found'
+      const statusCode = error.statusCode || (error.code === 'mec_candidate_not_found'
         ? 404
         : error.code === 'mec_candidate_not_challengeable'
           ? 409
-          : 400;
+          : 400);
       sendJson(res, statusCode, {
         error: error.code || 'invalid_mec_challenge_request',
         message: error.message,
@@ -262,11 +367,13 @@ async function handleRequest(req, res, options = {}) {
 
   if (pathname === '/arena/events' && req.method === 'POST') {
     try {
+      assertWriteAuthorized(req);
+      assertJsonRequest(req);
       const payload = await readRequestBody(req);
       const result = createMecEvent(payload, { eventOutputDir });
       sendJson(res, 201, result);
     } catch (error) {
-      sendJson(res, 400, {
+      sendJson(res, error.statusCode || 400, {
         error: error.code || 'invalid_event_request',
         message: error.message
       });
@@ -308,12 +415,14 @@ async function handleRequest(req, res, options = {}) {
 
   if (pathname === '/arena/runs' && req.method === 'POST') {
     try {
+      assertWriteAuthorized(req);
+      assertJsonRequest(req);
       const payload = await readRequestBody(req);
       const result = executeArenaRun(payload, { outputDir, auditOutputDir, memoryOutputDir, memoryReviewOutputDir });
       sendJson(res, 201, result);
     } catch (error) {
-      sendJson(res, 400, {
-        error: 'invalid_json',
+      sendJson(res, error.statusCode || 400, {
+        error: error.code || 'invalid_json',
         message: error.message
       });
     }
@@ -383,15 +492,17 @@ async function handleRequest(req, res, options = {}) {
   if (pathname.startsWith('/arena/memory-candidates/') && pathname.endsWith('/reviews') && req.method === 'POST') {
     const candidateId = decodeURIComponent(pathname.slice('/arena/memory-candidates/'.length, -'/reviews'.length));
     try {
+      assertWriteAuthorized(req);
+      assertJsonRequest(req);
       const payload = await readRequestBody(req);
       const result = reviewMemoryCandidate(candidateId, payload, { memoryOutputDir, memoryReviewOutputDir, exportReviewOutputDir });
       sendJson(res, 201, result);
     } catch (error) {
-      const statusCode = error.code === 'memory_candidate_not_found'
+      const statusCode = error.statusCode || (error.code === 'memory_candidate_not_found'
         ? 404
         : error.code === 'memory_candidate_not_reviewable'
           ? 409
-          : 400;
+          : 400);
       sendJson(res, statusCode, {
         error: error.code || 'invalid_review_request',
         message: error.message,
@@ -404,13 +515,15 @@ async function handleRequest(req, res, options = {}) {
   if (pathname.startsWith('/arena/memory-candidates/') && pathname.endsWith('/export-reviews') && req.method === 'POST') {
     const candidateId = decodeURIComponent(pathname.slice('/arena/memory-candidates/'.length, -'/export-reviews'.length));
     try {
+      assertWriteAuthorized(req);
+      assertJsonRequest(req);
       const payload = await readRequestBody(req);
       const result = createExportReviewForCandidate(candidateId, payload, { memoryOutputDir, memoryReviewOutputDir, exportReviewOutputDir });
       sendJson(res, 201, result);
     } catch (error) {
-      const statusCode = error.code === 'memory_candidate_not_found'
+      const statusCode = error.statusCode || (error.code === 'memory_candidate_not_found'
         ? 404
-        : 400;
+        : 400);
       sendJson(res, statusCode, {
         error: error.code || 'invalid_export_review_request',
         message: error.message,

@@ -13,6 +13,8 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 20.11.0
+      - key: ARENA_OPERATOR_TOKEN
+        sync: false
       - key: ARENA_RUNS_DIR
         value: /var/data/arena-runs
       - key: ARENA_AUDIT_DIR

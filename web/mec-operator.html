@@ -266,6 +266,30 @@
       color: var(--text);
     }
 
+    .hero-controls {
+      display: grid;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .inline-field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .inline-field span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status-note.good {
+      color: var(--good);
+    }
+
+    .status-note.warn {
+      color: var(--warn);
+    }
+
     input,
     select,
     textarea {
@@ -582,6 +606,17 @@
         <span class="pill warn">not final product UI</span>
         <span class="pill warn">status = runtime status only</span>
       </div>
+      <div class="hero-controls">
+        <label class="inline-field" for="operator-token">
+          <span>Operator write token</span>
+          <input id="operator-token" type="password" placeholder="Optional locally; required when server write auth is enabled" autocomplete="off">
+        </label>
+        <div class="action-row">
+          <button id="save-token-button" class="secondary" type="button">Save token locally</button>
+          <button id="clear-token-button" class="secondary" type="button">Clear token</button>
+        </div>
+        <div id="operator-auth-status" class="helper-text status-note"></div>
+      </div>
     </section>
 
     <div class="layout">
@@ -889,9 +924,12 @@
       linkFilter: '',
       reviewFilter: '',
       sortMode: 'recent',
-      deskFacet: ''
+      deskFacet: '',
+      writeAuthRequired: false
     };
 
+    const WRITE_AUTH_HEADER_NAME = 'X-Arena-Operator-Token';
+    const WRITE_TOKEN_STORAGE_KEY = 'mec_operator_write_token';
     const candidateListEl = document.getElementById('candidate-list');
     const candidateDetailEl = document.getElementById('candidate-detail');
     const detailMetaEl = document.getElementById('detail-meta');
@@ -944,6 +982,10 @@
     const refuteTargetStateEl = document.getElementById('refute-target-state');
     const bootstrapEventButtonEl = document.getElementById('bootstrap-event-button');
     const bootstrapEventMessageEl = document.getElementById('bootstrap-event-message');
+    const operatorTokenEl = document.getElementById('operator-token');
+    const saveTokenButtonEl = document.getElementById('save-token-button');
+    const clearTokenButtonEl = document.getElementById('clear-token-button');
+    const operatorAuthStatusEl = document.getElementById('operator-auth-status');
 
     function escapeHtml(value) {
       return String(value || '')
@@ -1028,13 +1070,90 @@
       };
     }
 
+    function getStoredOperatorToken() {
+      try {
+        return String(window.localStorage.getItem(WRITE_TOKEN_STORAGE_KEY) || '').trim();
+      } catch (error) {
+        return '';
+      }
+    }
+
+    function getOperatorToken() {
+      return String(operatorTokenEl.value || '').trim();
+    }
+
+    function persistOperatorToken() {
+      const token = getOperatorToken();
+      try {
+        if (token) {
+          window.localStorage.setItem(WRITE_TOKEN_STORAGE_KEY, token);
+        } else {
+          window.localStorage.removeItem(WRITE_TOKEN_STORAGE_KEY);
+        }
+      } catch (error) {
+        return false;
+      }
+      return true;
+    }
+
+    function clearStoredOperatorToken() {
+      operatorTokenEl.value = '';
+      try {
+        window.localStorage.removeItem(WRITE_TOKEN_STORAGE_KEY);
+      } catch (error) {
+        return false;
+      }
+      return true;
+    }
+
+    function getWriteHeaders(headers = {}) {
+      const merged = { ...headers };
+      const token = getOperatorToken();
+      if (token) {
+        merged[WRITE_AUTH_HEADER_NAME] = token;
+      }
+      return merged;
+    }
+
+    function updateWriteUiState() {
+      const tokenPresent = Boolean(getOperatorToken());
+      const writeAuthRequired = Boolean(state.writeAuthRequired);
+      bootstrapEventButtonEl.disabled = writeAuthRequired && !tokenPresent;
+      createSubmitButtonEl.disabled = writeAuthRequired && !tokenPresent;
+      operatorAuthStatusEl.className = `helper-text status-note ${writeAuthRequired ? 'warn' : 'good'}`;
+      if (writeAuthRequired && !tokenPresent) {
+        operatorAuthStatusEl.textContent = 'Server write auth is enabled. Load a valid operator token to create events, candidates, reviews, or challenge records.';
+        return;
+      }
+      if (writeAuthRequired && tokenPresent) {
+        operatorAuthStatusEl.textContent = 'Server write auth is enabled. A local operator token is loaded for protected write requests.';
+        return;
+      }
+      if (tokenPresent) {
+        operatorAuthStatusEl.textContent = 'Server write auth is not currently required. A local operator token is loaded for protected environments.';
+        return;
+      }
+      operatorAuthStatusEl.textContent = 'Server write auth is not currently required. Writes remain available without a token on this surface.';
+    }
+
     async function fetchJson(url, options) {
-      const response = await fetch(url, options);
+      const normalizedOptions = options ? { ...options } : {};
+      const method = String(normalizedOptions.method || 'GET').toUpperCase();
+      if (method !== 'GET' && method !== 'HEAD') {
+        normalizedOptions.headers = getWriteHeaders(normalizedOptions.headers || {});
+      }
+      const response = await fetch(url, normalizedOptions);
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
         const error = new Error(data.message || data.error || 'Request failed');
         error.code = data.error || '';
         error.data = data;
+        if (error.code === 'write_auth_required') {
+          error.message = 'Protected write rejected. Load a valid operator token and retry.';
+        }
+        if (error.code === 'invalid_write_token') {
+          error.message = 'Protected write rejected because the current operator token was not accepted by the server.';
+        }
         throw error;
       }
       return data;
@@ -3304,18 +3423,21 @@
     }
 
     async function refreshAll() {
-      const [candidatePayload, eventPayload] = await Promise.all([
+      const [candidatePayload, eventPayload, healthPayload] = await Promise.all([
         fetchJson('/arena/mec-review-workspace'),
-        fetchJson('/arena/events')
+        fetchJson('/arena/events'),
+        fetchJson('/arena/health')
       ]);
       state.candidates = candidatePayload.items || [];
       state.events = eventPayload.items || [];
+      state.writeAuthRequired = Boolean(healthPayload && healthPayload.write_auth_required);
       if (state.compareCandidateId && !state.candidates.some(item => item.id === state.compareCandidateId)) {
         state.compareCandidateId = null;
       }
       renderCandidateList();
       renderPairView();
       renderEvents();
+      updateWriteUiState();
       if (state.selectedCandidateId && state.candidates.some(item => item.id === state.selectedCandidateId)) {
         await selectCandidate(state.selectedCandidateId);
       } else {
@@ -3354,6 +3476,20 @@
       updateSourceEventReadback();
       updateCreateTargetSafety();
     }
+
+    saveTokenButtonEl.addEventListener('click', () => {
+      const persisted = persistOperatorToken();
+      updateWriteUiState();
+      showBootstrapEventMessage(persisted ? 'ok' : 'error', persisted ? 'Operator token saved locally in this browser.' : 'Operator token could not be saved locally in this browser.');
+    });
+
+    clearTokenButtonEl.addEventListener('click', () => {
+      const cleared = clearStoredOperatorToken();
+      updateWriteUiState();
+      showBootstrapEventMessage(cleared ? 'ok' : 'error', cleared ? 'Operator token cleared from local browser storage.' : 'Operator token could not be cleared from local browser storage.');
+    });
+
+    operatorTokenEl.addEventListener('input', updateWriteUiState);
 
     document.getElementById('refresh-button').addEventListener('click', () => {
       refreshAll().catch(error => {
@@ -3533,9 +3669,11 @@
     linkFilterEl.value = state.linkFilter;
     reviewFilterEl.value = state.reviewFilter;
     candidateSortEl.value = state.sortMode;
+    operatorTokenEl.value = getStoredOperatorToken();
     updateTypeSections();
     updateSourceEventReadback();
     updateCreateTargetSafety();
+    updateWriteUiState();
     refreshAll().catch(error => {
       candidateDetailEl.textContent = error.message;
       candidateListEl.innerHTML = `<div class="empty">${error.message}</div>`;
