@@ -1469,10 +1469,10 @@
         error.code = data.error || '';
         error.data = data;
         if (error.code === 'write_auth_required') {
-          error.message = 'Protected write rejected. Load a valid operator token and retry.';
+          error.message = 'This write is protected. Load a valid operator token and try again.';
         }
         if (error.code === 'invalid_write_token') {
-          error.message = 'Protected write rejected because the current operator token was not accepted by the server.';
+          error.message = 'The current operator token was not accepted by the server. Load the correct token and try again.';
         }
         throw error;
       }
@@ -1480,11 +1480,11 @@
     }
 
     function buildReferenceUnavailableMessage(candidateId) {
-      return `Referenced runtime candidate is not available${candidateId ? `: ${candidateId}` : ''}. Refresh the operator if runtime state changed.`;
+      return `This candidate is no longer available${candidateId ? `: ${candidateId}` : ''}. Refresh the desk if runtime state changed.`;
     }
 
     function buildTargetReferenceErrorMessage(roleLabel, candidateId) {
-      return `${roleLabel} is no longer present in the runtime candidate list${candidateId ? `: ${candidateId}` : ''}. Refresh the operator selection or choose a current runtime candidate id.`;
+      return `${roleLabel} is no longer in the current runtime candidate list${candidateId ? `: ${candidateId}` : ''}. Refresh the desk or choose a current candidate.`;
     }
 
     function getCurrentReviewState(item) {
@@ -3394,7 +3394,7 @@
       renderSummary(items);
 
       if (items.length === 0) {
-        candidateListEl.innerHTML = '<div class="empty">No workspace objects found for the current review-desk scope.</div>';
+        candidateListEl.innerHTML = '<div class="empty">No candidates match the current desk filters.</div>';
         return;
       }
 
@@ -3441,7 +3441,7 @@
     function renderPairView() {
       const pairs = buildPairMap(state.candidates).filter(({ invariant, boundary }) => matchesCandidateFilters(invariant) || (boundary && matchesCandidateFilters(boundary)));
       if (pairs.length === 0) {
-        pairListEl.innerHTML = '<div class="empty">No linked invariant/boundary cases found yet.</div>';
+        pairListEl.innerHTML = '<div class="empty">No linked invariant / boundary pairs are visible right now.</div>';
         return;
       }
 
@@ -3471,7 +3471,7 @@
 
     function renderEvents() {
       if (state.events.length === 0) {
-        eventListEl.innerHTML = '<div class="empty">No MEC events found yet. Use the starter-event button above to create the first runtime event.</div>';
+        eventListEl.innerHTML = '<div class="empty">No runtime events are available yet. Use the starter-event button above to create the first one.</div>';
         return;
       }
 
@@ -3511,25 +3511,25 @@
       detailMetaEl.innerHTML = '';
       detailOverviewEl.innerHTML = '';
       detailSummaryEl.innerHTML = '';
-      detailExplanationEl.innerHTML = '<div class="empty">Loading state explanation...</div>';
-      detailEvidenceEl.innerHTML = '<div class="empty">Loading evidence context...</div>';
+      detailExplanationEl.innerHTML = '<div class="empty">Loading why-this-state context...</div>';
+      detailEvidenceEl.innerHTML = '<div class="empty">Loading evidence and linkage context...</div>';
       detailHistoryEl.innerHTML = '<div class="empty">Loading review history...</div>';
-      detailRelatedEl.innerHTML = '<div class="empty">Loading related candidate context...</div>';
+      detailRelatedEl.innerHTML = '<div class="empty">Loading related candidates...</div>';
       detailFocusEl.innerHTML = '<div class="empty">Loading focus context...</div>';
       detailCompareEl.innerHTML = '<div class="empty">Loading compare context...</div>';
-      detailDeltaEl.innerHTML = '<div class="empty">Loading delta context...</div>';
-      detailDecisionEl.innerHTML = '<div class="empty">Loading decision packet...</div>';
+      detailDeltaEl.innerHTML = '<div class="empty">Loading change context...</div>';
+      detailDecisionEl.innerHTML = '<div class="empty">Loading decision context...</div>';
       detailContradictionEl.innerHTML = '<div class="empty">Loading contradiction context...</div>';
       detailChallengeEl.innerHTML = '<div class="empty">Loading challenge context...</div>';
       detailRefutationEl.innerHTML = '<div class="empty">Loading refutation context...</div>';
-      detailChallengeDossierEl.innerHTML = '<div class="empty">Loading challenge dossier context...</div>';
-      detailTraceEl.innerHTML = '<div class="empty">Loading review trace...</div>';
-      reviewActionsEl.innerHTML = '<div class="empty">Loading review controls...</div>';
+      detailChallengeDossierEl.innerHTML = '<div class="empty">Loading challenge coverage...</div>';
+      detailTraceEl.innerHTML = '<div class="empty">Loading latest review trace...</div>';
+      reviewActionsEl.innerHTML = '<div class="empty">Loading review actions...</div>';
       clearReviewMessage();
       clearChallengeMessage();
       detailPairEl.innerHTML = '';
       detailLinkageEl.innerHTML = '';
-      rawReviewRecordsEl.innerHTML = '<div class="empty">Loading raw review records...</div>';
+      rawReviewRecordsEl.innerHTML = '<div class="empty">Loading stored review records...</div>';
       try {
         const payload = await fetchJson(`/arena/mec-review-workspace/${encodeURIComponent(candidateId)}`);
         const linkedId = payload.linked_boundary_candidate_id || payload.linked_candidate_id;
@@ -3555,44 +3555,44 @@
           : candidateId;
         if (error && (error.code === 'mec_candidate_not_found' || error.code === 'mec_review_workspace_not_found')) {
           detailMetaEl.innerHTML = '<span class="pill warn">reference unavailable</span>';
-          detailOverviewEl.innerHTML = '<div class="empty">Desk context unavailable because the selected runtime candidate disappeared from the current workspace.</div>';
-          detailExplanationEl.innerHTML = '<div class="empty">State explanation is unavailable because the workspace detail could not be loaded.</div>';
-          detailEvidenceEl.innerHTML = '<div class="empty">Evidence context is unavailable because the workspace detail could not be loaded.</div>';
-          detailHistoryEl.innerHTML = '<div class="empty">Review-history context is unavailable because the workspace detail could not be loaded.</div>';
-          detailRelatedEl.innerHTML = '<div class="empty">Related candidate context is unavailable because the workspace detail could not be loaded.</div>';
-          detailFocusEl.innerHTML = '<div class="empty">Focus context is unavailable because the workspace detail could not be loaded.</div>';
-          detailCompareEl.innerHTML = '<div class="empty">Compare context is unavailable because the workspace detail could not be loaded.</div>';
-          detailDeltaEl.innerHTML = '<div class="empty">Delta context is unavailable because the workspace detail could not be loaded.</div>';
-          detailDecisionEl.innerHTML = '<div class="empty">Decision packet is unavailable because the workspace detail could not be loaded.</div>';
-          detailContradictionEl.innerHTML = '<div class="empty">Contradiction context is unavailable because the workspace detail could not be loaded.</div>';
-          detailChallengeEl.innerHTML = '<div class="empty">Challenge context is unavailable because the workspace detail could not be loaded.</div>';
-          detailTraceEl.innerHTML = '<div class="empty">Review trace is unavailable because the workspace detail could not be loaded.</div>';
+          detailOverviewEl.innerHTML = '<div class="empty">This desk view is no longer available because the selected candidate disappeared from the current runtime set.</div>';
+          detailExplanationEl.innerHTML = '<div class="empty">Why-this-state context is unavailable because this candidate could not be loaded.</div>';
+          detailEvidenceEl.innerHTML = '<div class="empty">Evidence context is unavailable because this candidate could not be loaded.</div>';
+          detailHistoryEl.innerHTML = '<div class="empty">Review history is unavailable because this candidate could not be loaded.</div>';
+          detailRelatedEl.innerHTML = '<div class="empty">Related candidates are unavailable because this candidate could not be loaded.</div>';
+          detailFocusEl.innerHTML = '<div class="empty">Focus context is unavailable because this candidate could not be loaded.</div>';
+          detailCompareEl.innerHTML = '<div class="empty">Compare context is unavailable because this candidate could not be loaded.</div>';
+          detailDeltaEl.innerHTML = '<div class="empty">Change context is unavailable because this candidate could not be loaded.</div>';
+          detailDecisionEl.innerHTML = '<div class="empty">Decision context is unavailable because this candidate could not be loaded.</div>';
+          detailContradictionEl.innerHTML = '<div class="empty">Contradiction context is unavailable because this candidate could not be loaded.</div>';
+          detailChallengeEl.innerHTML = '<div class="empty">Challenge context is unavailable because this candidate could not be loaded.</div>';
+          detailTraceEl.innerHTML = '<div class="empty">Review trace is unavailable because this candidate could not be loaded.</div>';
           detailLinkageEl.innerHTML = `
             <div class="detail-card">
               <strong>Reference unavailable</strong>
-              <span>Referenced runtime candidate is not present in the current runtime candidate list.</span>
+              <span>This candidate is not present in the current runtime candidate list.</span>
               <div class="tiny">${escapeHtml(missingCandidateId)}</div>
             </div>
           `;
-          rawReviewRecordsEl.innerHTML = '<div class="empty">Raw review records are unavailable because the workspace detail could not be loaded.</div>';
-          reviewActionsEl.innerHTML = '<div class="empty">Review controls are unavailable because the selected candidate is no longer present in the runtime candidate list.</div>';
+          rawReviewRecordsEl.innerHTML = '<div class="empty">Stored review records are unavailable because this candidate could not be loaded.</div>';
+          reviewActionsEl.innerHTML = '<div class="empty">Review actions are unavailable because this candidate is no longer present in the runtime candidate list.</div>';
           clearChallengeMessage();
           candidateDetailEl.textContent = buildReferenceUnavailableMessage(missingCandidateId);
         } else {
-          detailOverviewEl.innerHTML = '<div class="empty">Desk context failed to load.</div>';
-          detailExplanationEl.innerHTML = '<div class="empty">State explanation failed to load.</div>';
-          detailEvidenceEl.innerHTML = '<div class="empty">Evidence context failed to load.</div>';
-          detailHistoryEl.innerHTML = '<div class="empty">Review-history context failed to load.</div>';
-          detailRelatedEl.innerHTML = '<div class="empty">Related candidate context failed to load.</div>';
-          detailFocusEl.innerHTML = '<div class="empty">Focus context failed to load.</div>';
-          detailCompareEl.innerHTML = '<div class="empty">Compare context failed to load.</div>';
-          detailDeltaEl.innerHTML = '<div class="empty">Delta context failed to load.</div>';
-          detailDecisionEl.innerHTML = '<div class="empty">Decision packet failed to load.</div>';
-          detailContradictionEl.innerHTML = '<div class="empty">Contradiction context failed to load.</div>';
-          detailChallengeEl.innerHTML = '<div class="empty">Challenge context failed to load.</div>';
-          detailTraceEl.innerHTML = '<div class="empty">Review trace failed to load.</div>';
-          rawReviewRecordsEl.innerHTML = '<div class="empty">Raw review records failed to load.</div>';
-          reviewActionsEl.innerHTML = '<div class="empty">Review controls failed to load.</div>';
+          detailOverviewEl.innerHTML = '<div class="empty">Desk context could not be loaded.</div>';
+          detailExplanationEl.innerHTML = '<div class="empty">Why-this-state context could not be loaded.</div>';
+          detailEvidenceEl.innerHTML = '<div class="empty">Evidence context could not be loaded.</div>';
+          detailHistoryEl.innerHTML = '<div class="empty">Review history could not be loaded.</div>';
+          detailRelatedEl.innerHTML = '<div class="empty">Related candidates could not be loaded.</div>';
+          detailFocusEl.innerHTML = '<div class="empty">Focus context could not be loaded.</div>';
+          detailCompareEl.innerHTML = '<div class="empty">Compare context could not be loaded.</div>';
+          detailDeltaEl.innerHTML = '<div class="empty">Change context could not be loaded.</div>';
+          detailDecisionEl.innerHTML = '<div class="empty">Decision context could not be loaded.</div>';
+          detailContradictionEl.innerHTML = '<div class="empty">Contradiction context could not be loaded.</div>';
+          detailChallengeEl.innerHTML = '<div class="empty">Challenge context could not be loaded.</div>';
+          detailTraceEl.innerHTML = '<div class="empty">Review trace could not be loaded.</div>';
+          rawReviewRecordsEl.innerHTML = '<div class="empty">Stored review records could not be loaded.</div>';
+          reviewActionsEl.innerHTML = '<div class="empty">Review actions could not be loaded.</div>';
           clearChallengeMessage();
           candidateDetailEl.textContent = error.message;
         }
@@ -3889,24 +3889,24 @@
         } else {
           state.selectedCandidateId = null;
           syncDeskUrlState();
-          candidateDetailEl.textContent = 'No candidate selected.';
+          candidateDetailEl.textContent = 'No candidate selected yet.';
           detailMetaEl.innerHTML = '';
-          deskNavigationEl.innerHTML = '<div class="empty">No workspace queue is available yet.</div>';
-          detailOverviewEl.innerHTML = '<div class="empty">No desk context loaded.</div>';
+          deskNavigationEl.innerHTML = '<div class="empty">No review queue is available yet.</div>';
+          detailOverviewEl.innerHTML = '<div class="empty">Select a candidate from the desk to load context here.</div>';
           detailSummaryEl.innerHTML = '';
-          detailExplanationEl.innerHTML = '<div class="empty">No state explanation loaded.</div>';
-          detailEvidenceEl.innerHTML = '<div class="empty">No evidence context loaded.</div>';
-          detailHistoryEl.innerHTML = '<div class="empty">No review-history context loaded.</div>';
-          detailRelatedEl.innerHTML = '<div class="empty">No related candidate context loaded.</div>';
-          detailFocusEl.innerHTML = '<div class="empty">No focus context loaded.</div>';
-          detailCompareEl.innerHTML = '<div class="empty">No compare context loaded.</div>';
-          detailDeltaEl.innerHTML = '<div class="empty">No delta context loaded.</div>';
-          detailDecisionEl.innerHTML = '<div class="empty">No decision packet loaded.</div>';
-          detailContradictionEl.innerHTML = '<div class="empty">No contradiction context loaded.</div>';
-          detailChallengeEl.innerHTML = '<div class="empty">No challenge context loaded.</div>';
-          detailTraceEl.innerHTML = '<div class="empty">No review trace loaded.</div>';
+          detailExplanationEl.innerHTML = '<div class="empty">No why-this-state context loaded yet.</div>';
+          detailEvidenceEl.innerHTML = '<div class="empty">No evidence context loaded yet.</div>';
+          detailHistoryEl.innerHTML = '<div class="empty">No review history loaded yet.</div>';
+          detailRelatedEl.innerHTML = '<div class="empty">No related candidates loaded yet.</div>';
+          detailFocusEl.innerHTML = '<div class="empty">No focus context loaded yet.</div>';
+          detailCompareEl.innerHTML = '<div class="empty">No compare context loaded yet.</div>';
+          detailDeltaEl.innerHTML = '<div class="empty">No change context loaded yet.</div>';
+          detailDecisionEl.innerHTML = '<div class="empty">No decision context loaded yet.</div>';
+          detailContradictionEl.innerHTML = '<div class="empty">No contradiction context loaded yet.</div>';
+          detailChallengeEl.innerHTML = '<div class="empty">No challenge context loaded yet.</div>';
+          detailTraceEl.innerHTML = '<div class="empty">No review trace loaded yet.</div>';
           reviewActionsEl.innerHTML = '<div class="empty">Select a candidate to review.</div>';
-          rawReviewRecordsEl.innerHTML = '<div class="empty">No raw review records available.</div>';
+          rawReviewRecordsEl.innerHTML = '<div class="empty">No stored review records available yet.</div>';
           clearReviewMessage();
           clearChallengeMessage();
           detailPairEl.innerHTML = '';
