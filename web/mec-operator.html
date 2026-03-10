@@ -569,6 +569,11 @@
       border-color: rgba(255, 204, 102, 0.5);
     }
 
+    .field-safety.good {
+      border-color: rgba(127, 224, 161, 0.45);
+      background: rgba(28, 88, 48, 0.18);
+    }
+
     .source-readback-list {
       display: grid;
       gap: 8px;
@@ -2438,14 +2443,14 @@
             <span class="badge">${escapeHtml(explanation.current_state || 'proposal_only')}</span>
             <span class="badge">${escapeHtml(explanation.reviewable ? 'reviewable' : 'not reviewable')}</span>
             <span class="badge">${escapeHtml(explanation.terminal ? 'terminal' : 'non-terminal')}</span>
-            <span class="badge">missing ${escapeHtml(String(explanation.unresolved_reference_count || 0))}</span>
+            <span class="badge">gaps ${escapeHtml(String(explanation.unresolved_reference_count || 0))}</span>
           </div>
           <div style="display:grid; gap:8px; margin-top:8px;">
             ${(Array.isArray(explanation.explanation_lines) ? explanation.explanation_lines : []).map(line => `<div class="tiny">${escapeHtml(line)}</div>`).join('') || '<div class="tiny">No explanation lines available.</div>'}
           </div>
           ${(Array.isArray(explanation.missing_visible_prerequisites) && explanation.missing_visible_prerequisites.length > 0)
-            ? `<div style="display:grid; gap:6px; margin-top:10px;">${explanation.missing_visible_prerequisites.map(line => `<div class="tiny">missing visible prerequisite: ${escapeHtml(line)}</div>`).join('')}</div>`
-            : `<div class="tiny" style="margin-top:10px;">No visible prerequisite is currently missing from the runtime workspace context.</div>`}
+            ? `<div style="display:grid; gap:6px; margin-top:10px;">${explanation.missing_visible_prerequisites.map(line => `<div class="tiny">Missing now: ${escapeHtml(line)}</div>`).join('')}</div>`
+            : `<div class="tiny" style="margin-top:10px;">No visible prerequisite is currently missing.</div>`}
         </div>
       `;
     }
@@ -2563,11 +2568,11 @@
           <span>${escapeHtml(focus.focus_summary || '-')}</span>
           <div class="row-meta">
             <span class="badge">${escapeHtml(focus.focus_bucket || '-')}</span>
-            <span class="badge">compare ${escapeHtml(focus.compare_ready ? 'ready' : 'not_ready')}</span>
+            <span class="badge">compare ${escapeHtml(focus.compare_ready ? 'ready' : 'not ready')}</span>
           </div>
         </div>
         <div class="detail-card">
-          <strong>Focus signals</strong>
+          <strong>Best next read</strong>
           <div style="display:grid; gap:6px; margin-top:4px;">
             ${(Array.isArray(focus.focus_signals) && focus.focus_signals.length > 0)
               ? focus.focus_signals.map(signal => `<div class="tiny">${escapeHtml(signal)}</div>`).join('')
@@ -2710,7 +2715,7 @@
           </div>
         </div>
         <div class="detail-card">
-          <strong>Support signals</strong>
+          <strong>What supports this read</strong>
           <div style="display:grid; gap:6px; margin-top:4px;">
             ${(Array.isArray(decision.support_signals) && decision.support_signals.length > 0)
               ? decision.support_signals.map(signal => `<div class="tiny">${escapeHtml(signal)}</div>`).join('')
@@ -2718,7 +2723,7 @@
           </div>
         </div>
         <div class="detail-card">
-          <strong>Friction signals</strong>
+          <strong>What pushes back</strong>
           <div style="display:grid; gap:6px; margin-top:4px;">
             ${(Array.isArray(decision.friction_signals) && decision.friction_signals.length > 0)
               ? decision.friction_signals.map(signal => `<div class="tiny">${escapeHtml(signal)}</div>`).join('')
@@ -2726,7 +2731,7 @@
           </div>
         </div>
         <div class="detail-card">
-          <strong>Missing / open gaps</strong>
+          <strong>What is still open</strong>
           <div style="display:grid; gap:6px; margin-top:4px;">
             ${(Array.isArray(decision.missing_signals) && decision.missing_signals.length > 0)
               ? decision.missing_signals.map(signal => `<div class="tiny">${escapeHtml(signal)}</div>`).join('')
@@ -2772,6 +2777,13 @@
       challengeMessageEl.textContent = text;
     }
 
+    function getWriteBlockReason() {
+      if (state.writeAuthRequired && !getOperatorToken()) {
+        return 'Load a valid operator token before writing on this protected surface.';
+      }
+      return '';
+    }
+
     function renderChallengeContext(payload) {
       const challenge = getChallengeContext(payload);
       if (!challenge) {
@@ -2784,9 +2796,11 @@
       const challengeFlags = Array.isArray(challenge.challenge_flags) ? challenge.challenge_flags : [];
       const blockers = Array.isArray(challenge.manual_counterexample_blockers) ? challenge.manual_counterexample_blockers : [];
       const manualAllowed = Boolean(challenge.manual_counterexample_allowed);
+      const writeBlockReason = getWriteBlockReason();
+      const actionAllowed = manualAllowed && !writeBlockReason;
       detailChallengeEl.innerHTML = `
         <div class="detail-card">
-          <strong>Challenge summary</strong>
+          <strong>Challenge posture</strong>
           <span>${escapeHtml(challenge.challenge_summary || '-')}</span>
           <div class="row-meta">
             <span class="badge">${escapeHtml(challenge.contradiction_pressure_bucket || 'not_applicable')}</span>
@@ -2796,7 +2810,7 @@
           </div>
         </div>
         <div class="detail-card">
-          <strong>Challenge signals</strong>
+          <strong>Why challenge is active</strong>
           <div style="display:grid; gap:6px; margin-top:4px;">
             ${challengeSignals.length > 0
               ? challengeSignals.map(signal => `<div class="tiny">pressure | ${escapeHtml(signal)}</div>`).join('')
@@ -2831,20 +2845,24 @@
           </div>
         </div>
         <div class="detail-card">
-          <strong>Manual counterexample proposal</strong>
-          <span>Bound to the currently selected primary candidate only. Creates one proposal-only runtime counterexample artifact.</span>
+          <strong>Manual counterexample action</strong>
+          <span>Creates one proposal-only runtime counterexample for the selected primary candidate.</span>
           <div class="tiny">selected primary | ${escapeHtml(challenge.selected_primary_candidate_id || payload.id || '-')} | boundary ${escapeHtml(challenge.boundary_candidate_id || 'not_visible')} | integrity ${escapeHtml(challenge.boundary_integrity || 'not_applicable')}</div>
+          <div class="field-safety ${actionAllowed ? 'good' : 'warn'}" style="margin-top:8px;">
+            <strong>${actionAllowed ? 'Action ready' : 'Action blocked'}</strong>
+            <span>${escapeHtml(actionAllowed ? 'You can write one proposal-only counterexample from this screen.' : (writeBlockReason || blockers.join(' ') || 'Manual counterexample create is currently blocked for this workspace item.'))}</span>
+          </div>
           <div style="display:grid; gap:8px; margin-top:8px;">
-            <textarea class="challenge-case-description" placeholder="Required: describe the contradicting case"${manualAllowed ? '' : ' disabled'}></textarea>
-            <input class="challenge-principle" type="text" placeholder="Optional: short counterexample principle"${manualAllowed ? '' : ' disabled'}>
-            <textarea class="challenge-mechanism" placeholder="Optional: why this counterexample matters now"${manualAllowed ? '' : ' disabled'}></textarea>
-            <textarea class="challenge-resolution" placeholder="Optional: local resolution or containment"${manualAllowed ? '' : ' disabled'}></textarea>
-            <input class="challenge-impact" type="text" placeholder="Optional: e.g. narrows_scope"${manualAllowed ? '' : ' disabled'}>
+            <textarea class="challenge-case-description" placeholder="Required: describe the contradicting case"${actionAllowed ? '' : ' disabled'}></textarea>
+            <input class="challenge-principle" type="text" placeholder="Optional: short counterexample principle"${actionAllowed ? '' : ' disabled'}>
+            <textarea class="challenge-mechanism" placeholder="Optional: why this matters now"${actionAllowed ? '' : ' disabled'}></textarea>
+            <textarea class="challenge-resolution" placeholder="Optional: local resolution or containment"${actionAllowed ? '' : ' disabled'}></textarea>
+            <input class="challenge-impact" type="text" placeholder="Optional: e.g. narrows_scope"${actionAllowed ? '' : ' disabled'}>
           </div>
           <div class="action-row" style="margin-top:10px;">
-            <button class="mini-button challenge-create" type="button" data-candidate-id="${escapeHtml(challenge.selected_primary_candidate_id || payload.id || '')}"${manualAllowed ? '' : ' disabled'}>Create proposal-only counterexample</button>
+            <button class="mini-button challenge-create" type="button" data-candidate-id="${escapeHtml(challenge.selected_primary_candidate_id || payload.id || '')}"${actionAllowed ? '' : ' disabled'}>Create counterexample</button>
           </div>
-          <div class="tiny" style="margin-top:8px;">${escapeHtml(manualAllowed ? 'No review write, reopen, ranking or recommendation behavior is implied by this path.' : (blockers.join(' | ') || 'Manual counterexample create is currently blocked for this workspace item.'))}</div>
+          <div class="tiny" style="margin-top:8px;">${escapeHtml(actionAllowed ? 'This path adds one separate proposal-only runtime artifact. It does not reopen or auto-resolve the candidate.' : 'Resolve the blocked condition above before this action becomes writable.')}</div>
         </div>
       `;
       detailChallengeEl.querySelectorAll('.challenge-open-counterexample').forEach(node => {
@@ -3124,16 +3142,31 @@
       const reviewSummary = payload.review_summary || null;
       const reviewable = reviewSummary ? Boolean(reviewSummary.reviewable) : true;
       const lastOutcome = getLastReviewOutcome(payload);
+      const writeBlockReason = getWriteBlockReason();
+      const actionAllowed = reviewable && !writeBlockReason;
+      const blockedReason = writeBlockReason || (!reviewable ? `No further review write is allowed because this workspace item is already terminal: ${getCurrentReviewState(payload)}.` : '');
       reviewActionsEl.innerHTML = `
         <div class="detail-card">
-          <strong>Runtime review controls</strong>
-          <span>Current derived review state: ${escapeHtml(getCurrentReviewState(payload))}</span>
-          <div class="tiny">Latest review outcome: ${escapeHtml(lastOutcome)} | review count: ${escapeHtml(String(getReviewCount(payload)))}</div>
-          <div class="action-row">
-            <button class="mini-button review-action-stabilize" type="button" data-review-outcome="stabilize" data-candidate-id="${escapeHtml(payload.id)}"${reviewable ? '' : ' disabled'}>stabilize</button>
-            <button class="mini-button review-action-reject" type="button" data-review-outcome="reject" data-candidate-id="${escapeHtml(payload.id)}"${reviewable ? '' : ' disabled'}>reject</button>
+          <strong>Review write readiness</strong>
+          <span>${escapeHtml(actionAllowed ? 'Ready to write one review record from this screen.' : 'Review write is currently blocked.')}</span>
+          <div class="row-meta">
+            <span class="badge">state ${escapeHtml(getCurrentReviewState(payload))}</span>
+            <span class="badge">last ${escapeHtml(lastOutcome)}</span>
+            <span class="badge">records ${escapeHtml(String(getReviewCount(payload)))}</span>
           </div>
-          <div class="tiny">${escapeHtml(reviewable ? 'Writes one separate runtime review record. Raw candidate artifact stays proposal-origin.' : `No further write allowed from this surface because the candidate is already terminal: ${getCurrentReviewState(payload)}.`)}</div>
+          <div class="field-safety ${actionAllowed ? 'good' : 'warn'}">
+            <strong>${actionAllowed ? 'Write ready' : 'Blocked now'}</strong>
+            <span>${escapeHtml(actionAllowed ? 'Choose one outcome below. The raw candidate artifact stays unchanged.' : blockedReason)}</span>
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Review action</strong>
+          <span>Writes one separate runtime review record. This does not edit the raw candidate artifact.</span>
+          <div class="action-row">
+            <button class="mini-button review-action-stabilize" type="button" data-review-outcome="stabilize" data-candidate-id="${escapeHtml(payload.id)}"${actionAllowed ? '' : ' disabled'}>Stabilize now</button>
+            <button class="mini-button review-action-reject" type="button" data-review-outcome="reject" data-candidate-id="${escapeHtml(payload.id)}"${actionAllowed ? '' : ' disabled'}>Reject now</button>
+          </div>
+          <div class="tiny">${escapeHtml(actionAllowed ? 'Use your rationale field if you want a human-readable reason stored with the review.' : 'When the blocked condition is resolved, the action buttons become available again.')}</div>
         </div>
       `;
       reviewActionsEl.querySelectorAll('.review-action-stabilize, .review-action-reject').forEach(node => {
