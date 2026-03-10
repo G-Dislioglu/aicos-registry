@@ -272,6 +272,15 @@ async function handleRequest(req, res, options = {}) {
     return;
   }
 
+  if (pathname === '/arena/mec-review-workspace' && req.method === 'GET') {
+    const items = listMecReviewWorkspace({ candidateOutputDir, mecReviewOutputDir, eventOutputDir });
+    sendJson(res, 200, {
+      total: items.length,
+      items
+    });
+    return;
+  }
+
   if (pathname.startsWith('/arena/mec-review-workspace/') && req.method === 'GET') {
     const candidateId = decodeURIComponent(pathname.slice('/arena/mec-review-workspace/'.length));
     const payload = readMecReviewWorkspace(candidateId, { candidateOutputDir, mecReviewOutputDir, eventOutputDir });
