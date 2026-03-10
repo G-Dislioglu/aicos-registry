@@ -2029,32 +2029,32 @@
       const nextItem = index >= 0 && index < queue.length - 1 ? queue[index + 1] : null;
       const compareItem = state.compareCandidateId ? getCandidateById(state.compareCandidateId) : null;
       if (!selectedItem) {
-        deskNavigationEl.innerHTML = '<div class="empty">Select a workspace item to navigate the current desk queue.</div>';
+        deskNavigationEl.innerHTML = '<div class="empty">Select a candidate to move through the current desk queue.</div>';
         return;
       }
       deskNavigationEl.innerHTML = `
         <div class="detail-card">
           <strong>Queue state</strong>
           <span>${escapeHtml(getActiveDeskFacetLabel(getFilterScopedCandidates()))}</span>
-          <div class="tiny">${escapeHtml(index >= 0 ? `Position ${index + 1} of ${queue.length} in the current desk queue.` : 'Selected object is outside the current queue filter.')}</div>
+          <div class="tiny">${escapeHtml(index >= 0 ? `Position ${index + 1} of ${queue.length} in the current queue.` : 'This candidate is outside the current queue filter.')}</div>
         </div>
         <div class="detail-card">
-          <strong>Previous / next</strong>
+          <strong>Move through queue</strong>
           <div class="action-row">
             <button class="mini-button desk-nav-prev" type="button"${previousItem ? ` data-candidate-id="${escapeHtml(previousItem.id)}"` : ' disabled'}>Previous</button>
             <button class="mini-button desk-nav-next" type="button"${nextItem ? ` data-candidate-id="${escapeHtml(nextItem.id)}"` : ' disabled'}>Next</button>
           </div>
-          <div class="tiny">Move through the currently visible desk queue without leaving the workspace surface.</div>
+          <div class="tiny">Move through the visible queue without losing your current desk scope.</div>
         </div>
         <div class="detail-card">
-          <strong>Reproducible desk state</strong>
+          <strong>Shareable desk state</strong>
           <span>${escapeHtml(selectedItem.id)}</span>
-          <div class="tiny">Filter, facet, sort, selected candidate and compare target stay mirrored in the URL query string.</div>
+          <div class="tiny">Filters, selected candidate and compare target stay mirrored in the URL.</div>
         </div>
         <div class="detail-card">
-          <strong>Compare state</strong>
+          <strong>Compare target</strong>
           <span>${escapeHtml(compareItem ? compareItem.id : 'none selected')}</span>
-          <div class="tiny">Hold one optional comparison target alongside the selected workspace object without leaving the desk.</div>
+          <div class="tiny">Keep one optional side-by-side comparison target while staying in the desk.</div>
         </div>
       `;
       deskNavigationEl.querySelectorAll('.desk-nav-prev, .desk-nav-next').forEach(node => {
@@ -3503,12 +3503,12 @@
             <span class="badge">boundary ${boundary ? boundary.id : 'missing'}</span>
           </div>
           <div style="margin-top:10px; display:grid; gap:10px;">
-            <div class="pair-reading-note">One linked case, two separately stored runtime objects. Read them together without forcing a merge.</div>
+            <div class="pair-reading-note">One linked case, two separate runtime objects. Read them together without treating them as one record.</div>
             <div class="pair-reading-grid">
-              ${renderPairReadingCard(invariant, 'invariant', 'Invariant object', 'Principle-side object for the linked case.', 'Open invariant', invariant.id)}
+              ${renderPairReadingCard(invariant, 'invariant', 'Invariant side', 'Principle-side object for this linked case.', 'Open invariant', invariant.id)}
               ${boundary
-                ? renderPairReadingCard(boundary, 'boundary', 'Boundary object', 'Failure-boundary object linked to the invariant.', 'Open boundary', boundary.id)
-                : renderPairReadingCard(null, 'boundary', 'Boundary object', 'Linked boundary object is missing from the current runtime set.', '', '')}
+                ? renderPairReadingCard(boundary, 'boundary', 'Boundary side', 'Failure-boundary object linked to the invariant.', 'Open boundary', boundary.id)
+                : renderPairReadingCard(null, 'boundary', 'Boundary side', 'The linked boundary is missing from the current runtime set.', '', '')}
             </div>
           </div>
         </article>
@@ -3537,8 +3537,9 @@
             <span class="badge">freshness ${event.freshness_state || '-'}</span>
             <span class="badge">priority ${event.priority_score}</span>
           </div>
+          <div class="tiny">Use this event when you want to carry concrete runtime evidence into the create form.</div>
           <div class="field-inline-actions">
-            <button class="mini-button event-add" type="button" data-event-id="${event.id}">Add event id</button>
+            <button class="mini-button event-add" type="button" data-event-id="${event.id}">Use in create form</button>
           </div>
           <div class="tiny">${event.id}</div>
         </article>
@@ -3584,13 +3585,13 @@
         const payload = await fetchJson(`/arena/mec-review-workspace/${encodeURIComponent(candidateId)}`);
         const linkedId = payload.linked_boundary_candidate_id || payload.linked_candidate_id;
         detailMetaEl.innerHTML = [
-          `<span class="pill">workspace</span>`,
-          `<span class="pill">${payload.candidate_type}</span>`,
+          `<span class="pill">candidate</span>`,
+          `<span class="pill">${formatCandidateTypeLabel(payload.candidate_type)}</span>`,
           `<span class="pill warn">runtime status: ${payload.status}</span>`,
           `<span class="pill">review: ${payload.current_review_state || 'proposal_only'}</span>`,
           `<span class="pill">last review: ${getLastReviewOutcome(payload)}</span>`,
           `<span class="pill">freshness: ${payload.freshness_state || '-'}</span>`,
-          `<span class="pill">unresolved: ${payload.unresolved_runtime_reference_count || 0}</span>`,
+          `<span class="pill">open gaps: ${payload.unresolved_runtime_reference_count || 0}</span>`,
           `<span class="pill">runtime-only</span>`,
           linkedId ? `<span class="pill">linked: ${linkedId}</span>` : ''
         ].join('');
@@ -3757,8 +3758,8 @@
       }
       formResultActionsEl.innerHTML = `
         <div class="detail-card">
-          <strong>Create result actions</strong>
-          <span>Open the concretely returned runtime objects from this create result or carry returned ids forward into the current create form.</span>
+          <strong>Next step after create</strong>
+          <span>Open the returned runtime objects or carry returned ids forward into the current form.</span>
           <div class="action-row">
             <button class="mini-button create-result-open" type="button" data-candidate-id="${escapeHtml(createdCandidateId)}">Open created candidate</button>
             ${linkedBoundaryId ? `<button class="mini-button create-result-open" type="button" data-candidate-id="${escapeHtml(linkedBoundaryId)}">Open linked boundary</button>` : ''}
@@ -3769,6 +3770,7 @@
             <button class="mini-button create-result-use-linked" type="button" data-candidate-id="${escapeHtml(createdCandidateId)}" data-candidate-type="${escapeHtml(createdCandidateType)}">Use created as linked target</button>
             <button class="mini-button create-result-use-refute" type="button" data-candidate-id="${escapeHtml(createdCandidateId)}" data-candidate-type="${escapeHtml(createdCandidateType)}">Use created as refuted target</button>
           </div>
+          <div class="tiny">Carry-forward is useful when you are creating a related boundary or counterexample next.</div>
         </div>
       `;
       formResultActionsEl.querySelectorAll('.create-result-open').forEach(node => {
