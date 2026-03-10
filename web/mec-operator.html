@@ -421,6 +421,62 @@
       line-height: 1.5;
     }
 
+    .detail-guide {
+      margin: 12px 0 14px;
+      border: 1px solid rgba(122, 162, 255, 0.28);
+      border-radius: 14px;
+      background: rgba(27, 44, 82, 0.42);
+      padding: 12px 14px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .detail-fold {
+      margin: 12px 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(13, 20, 41, 0.72);
+      overflow: hidden;
+    }
+
+    .detail-fold summary {
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      font-weight: 700;
+    }
+
+    .detail-fold summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .detail-fold summary span {
+      color: var(--muted);
+      font-weight: 400;
+      font-size: 12px;
+    }
+
+    .detail-fold-body {
+      padding: 0 14px 14px;
+    }
+
+    .detail-section {
+      margin-top: 12px;
+    }
+
+    .detail-section:first-child {
+      margin-top: 0;
+    }
+
+    .detail-section > h3 {
+      margin: 0 0 6px;
+    }
+
     .pair-reading-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -743,52 +799,24 @@
           <div class="panel-sub">Stay inside one workspace detail and keep the three layers visibly separate: raw candidate artifact, derived workspace state, and raw runtime review records.</div>
           <div id="detail-meta" class="pill-row"></div>
           <div id="desk-navigation" class="desk-nav-grid"></div>
+          <div class="detail-guide">Start here: desk context, current review state, why this state, then review actions. Open the lower sections only when you need deeper comparison, contradiction, challenge, or raw artifact inspection.</div>
+
           <h3>Desk context</h3>
           <div class="panel-sub">Selected workspace object inside the current review desk queue.</div>
           <div id="detail-overview" class="detail-grid"></div>
+
           <h3>Derived review state</h3>
           <div class="panel-sub">Operational reading over the canonical workspace. This is derived from raw review records and raw candidate artifacts.</div>
           <div id="detail-summary" class="detail-grid"></div>
+
           <h3>Why this state</h3>
           <div class="panel-sub">Compact, signal-based explanation of why this workspace item is reviewable, terminal or blocked, and what visible context is still missing.</div>
           <div id="detail-explanation" class="compact-list"></div>
-          <h3>Evidence / lineage context</h3>
-          <div class="panel-sub">Readable condensation of existing linkage, reference availability and integrity signals from the canonical workspace.</div>
-          <div id="detail-evidence" class="compact-list"></div>
-          <h3>Review history context</h3>
-          <div class="panel-sub">Compressed reading over raw review records so the desk shows direction and history without inventing a new review ontology.</div>
-          <div id="detail-history" class="compact-list"></div>
-          <h3>Related candidate context</h3>
-          <div class="panel-sub">Neighboring candidates derived from existing linkage and shared-source signals only.</div>
-          <div id="detail-related" class="compact-list"></div>
+
           <h3>Focus context</h3>
           <div class="panel-sub">Signal-based focus framing that condenses real review tension, pairability and carry-forward history from the canonical workspace only.</div>
           <div id="detail-focus" class="compact-list"></div>
-          <h3>Compare context</h3>
-          <div class="panel-sub">Quick-compare surface over existing linkage, source overlap, review-state and history signals without inventing a ranking ontology.</div>
-          <div id="detail-compare" class="compact-list"></div>
-          <h3>Delta / change context</h3>
-          <div class="panel-sub">Signal-based change awareness over review anchors, visible runtime movement and why-now / why-not-now readability from the canonical workspace only.</div>
-          <div id="detail-delta" class="compact-list"></div>
-          <h3>Decision packet</h3>
-          <div class="panel-sub">Signal-based decision condensation showing what supports, weakens or still underconstrains the current read without recommending an outcome.</div>
-          <div id="detail-decision" class="compact-list"></div>
-          <h3>Contradiction context</h3>
-          <div class="panel-sub">Visible signal contradictions that should be held together before a stabilize/reject decision is written.</div>
-          <div id="detail-contradiction" class="compact-list"></div>
-          <h3>Challenge context</h3>
-          <div class="panel-sub">Single-candidate challenge reading from the canonical workspace only. Contradiction pressure stays compact, readable and non-recommendatory.</div>
-          <div id="detail-challenge" class="compact-list"></div>
-          <div id="challenge-message"></div>
-          <h3>Refutation context</h3>
-          <div class="panel-sub">Read-first counterexample and refuted-primary readability from the canonical workspace only. This surface stays inspectable and does not introduce any new write path.</div>
-          <div id="detail-refutation" class="compact-list"></div>
-          <h3>Challenge dossier context</h3>
-          <div class="panel-sub">Primary-candidate-centered challenge posture over already visible counterexample relations from the canonical workspace only. Coverage stays compact, inspectable, and non-recommendatory.</div>
-          <div id="detail-challenge-dossier" class="compact-list"></div>
-          <h3>Review action trace</h3>
-          <div class="panel-sub">Compact trace showing which visible decision, contradiction and delta signals were present when the latest review write was recorded.</div>
-          <div id="detail-trace" class="compact-list"></div>
+
           <h3>Review actions</h3>
           <div class="panel-sub">Minimal runtime review controls only. Actions stay inside the desk, write separate review records, and keep the raw candidate artifact proposal-origin.</div>
           <div class="field full">
@@ -797,16 +825,95 @@
           </div>
           <div id="review-actions" class="compact-list"></div>
           <div id="review-message"></div>
+
           <h3>Pair relationship</h3>
           <div class="panel-sub">Paired reading, not forced merging. Two runtime objects can belong to one linked case.</div>
           <div id="detail-pair" class="compact-list"></div>
           <div id="detail-linkage" class="compact-list"></div>
-          <h3>Raw review records</h3>
-          <div class="panel-sub">Separate runtime review records as stored. These are not the same thing as the derived workspace state.</div>
-          <div id="raw-review-records" class="compact-list"></div>
-          <h3>Raw candidate artifact</h3>
-          <div class="panel-sub">Stored runtime candidate artifact exactly as read from runtime candidate storage.</div>
-          <pre id="candidate-detail" class="json-view">Select a candidate from the desk.</pre>
+
+          <details class="detail-fold" open>
+            <summary>Comparison and supporting context <span>Evidence, history, related objects and quick compare.</span></summary>
+            <div class="detail-fold-body">
+              <div class="detail-section">
+                <h3>Evidence / lineage context</h3>
+                <div class="panel-sub">Readable condensation of existing linkage, reference availability and integrity signals from the canonical workspace.</div>
+                <div id="detail-evidence" class="compact-list"></div>
+              </div>
+              <div class="detail-section">
+                <h3>Review history context</h3>
+                <div class="panel-sub">Compressed reading over raw review records so the desk shows direction and history without inventing a new review ontology.</div>
+                <div id="detail-history" class="compact-list"></div>
+              </div>
+              <div class="detail-section">
+                <h3>Related candidate context</h3>
+                <div class="panel-sub">Neighboring candidates derived from existing linkage and shared-source signals only.</div>
+                <div id="detail-related" class="compact-list"></div>
+              </div>
+              <div class="detail-section">
+                <h3>Compare context</h3>
+                <div class="panel-sub">Quick-compare surface over existing linkage, source overlap, review-state and history signals without inventing a ranking ontology.</div>
+                <div id="detail-compare" class="compact-list"></div>
+              </div>
+            </div>
+          </details>
+
+          <details class="detail-fold">
+            <summary>Decision and challenge analysis <span>Delta, decision packet, contradiction, challenge and refutation.</span></summary>
+            <div class="detail-fold-body">
+              <div class="detail-section">
+                <h3>Delta / change context</h3>
+                <div class="panel-sub">Signal-based change awareness over review anchors, visible runtime movement and why-now / why-not-now readability from the canonical workspace only.</div>
+                <div id="detail-delta" class="compact-list"></div>
+              </div>
+              <div class="detail-section">
+                <h3>Decision packet</h3>
+                <div class="panel-sub">Signal-based decision condensation showing what supports, weakens or still underconstrains the current read without recommending an outcome.</div>
+                <div id="detail-decision" class="compact-list"></div>
+              </div>
+              <div class="detail-section">
+                <h3>Contradiction context</h3>
+                <div class="panel-sub">Visible signal contradictions that should be held together before a stabilize/reject decision is written.</div>
+                <div id="detail-contradiction" class="compact-list"></div>
+              </div>
+              <div class="detail-section">
+                <h3>Challenge context</h3>
+                <div class="panel-sub">Single-candidate challenge reading from the canonical workspace only. Contradiction pressure stays compact, readable and non-recommendatory.</div>
+                <div id="detail-challenge" class="compact-list"></div>
+                <div id="challenge-message"></div>
+              </div>
+              <div class="detail-section">
+                <h3>Refutation context</h3>
+                <div class="panel-sub">Read-first counterexample and refuted-primary readability from the canonical workspace only. This surface stays inspectable and does not introduce any new write path.</div>
+                <div id="detail-refutation" class="compact-list"></div>
+              </div>
+              <div class="detail-section">
+                <h3>Challenge dossier context</h3>
+                <div class="panel-sub">Primary-candidate-centered challenge posture over already visible counterexample relations from the canonical workspace only. Coverage stays compact, inspectable, and non-recommendatory.</div>
+                <div id="detail-challenge-dossier" class="compact-list"></div>
+              </div>
+              <div class="detail-section">
+                <h3>Review action trace</h3>
+                <div class="panel-sub">Compact trace showing which visible decision, contradiction and delta signals were present when the latest review write was recorded.</div>
+                <div id="detail-trace" class="compact-list"></div>
+              </div>
+            </div>
+          </details>
+
+          <details class="detail-fold">
+            <summary>Raw review records and artifact <span>Deep inspection only when needed.</span></summary>
+            <div class="detail-fold-body">
+              <div class="detail-section">
+                <h3>Raw review records</h3>
+                <div class="panel-sub">Separate runtime review records as stored. These are not the same thing as the derived workspace state.</div>
+                <div id="raw-review-records" class="compact-list"></div>
+              </div>
+              <div class="detail-section">
+                <h3>Raw candidate artifact</h3>
+                <div class="panel-sub">Stored runtime candidate artifact exactly as read from runtime candidate storage.</div>
+                <pre id="candidate-detail" class="json-view">Select a candidate from the desk.</pre>
+              </div>
+            </div>
+          </details>
         </section>
 
         <section class="panel">
