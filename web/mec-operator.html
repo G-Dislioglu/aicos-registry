@@ -477,6 +477,28 @@
       line-height: 1.45;
     }
 
+    .field.required-now label {
+      color: #fff2c2;
+    }
+
+    .required-chip {
+      display: none;
+      margin-left: 8px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 204, 102, 0.35);
+      background: rgba(92, 64, 17, 0.22);
+      color: #ffe8bd;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: lowercase;
+      vertical-align: middle;
+    }
+
+    .field.required-now .required-chip {
+      display: inline-flex;
+    }
+
     .field-safety {
       margin-top: 8px;
       border: 1px solid var(--line);
@@ -575,6 +597,20 @@
 
     .message.validation li + li {
       margin-top: 4px;
+    }
+
+    .create-readiness.good {
+      border-color: rgba(127, 224, 161, 0.45);
+      background: rgba(28, 88, 48, 0.18);
+    }
+
+    .create-readiness.warn {
+      border-color: rgba(255, 204, 102, 0.35);
+      background: rgba(92, 64, 17, 0.18);
+    }
+
+    .create-submit-note {
+      margin-top: 10px;
     }
 
     .result-actions {
@@ -776,7 +812,8 @@
         <section class="panel">
           <h2>Create Candidate</h2>
           <div class="panel-sub">Only MEC Phase 2 create fields. New candidates remain runtime-only and proposal-only.</div>
-          <div id="create-requirements" class="helper-text">Invariant candidates require at least one source event, two fails_when entries and one edge case.</div>
+          <div id="create-requirements" class="helper-text">Required now: principle, mechanism, 1 source event, 2 fails-when lines, 1 edge case. A linked boundary is created automatically.</div>
+          <div id="create-readiness" class="field-safety create-readiness"></div>
           <form id="create-form">
             <div class="form-grid">
               <div class="field">
@@ -795,16 +832,16 @@
                   <option value="semi_manual">semi_manual</option>
                 </select>
               </div>
-              <div class="field full">
-                <label for="principle">Principle</label>
+              <div class="field full" data-required-types="invariant_candidate">
+                <label for="principle">Principle <span class="required-chip">required</span></label>
                 <input id="principle" name="principle" type="text" placeholder="Short claim or principle">
               </div>
-              <div class="field full">
-                <label for="mechanism">Mechanism</label>
+              <div class="field full" data-required-types="invariant_candidate">
+                <label for="mechanism">Mechanism <span class="required-chip">required</span></label>
                 <textarea id="mechanism" name="mechanism" placeholder="Why this candidate exists or how it works"></textarea>
               </div>
-              <div class="field full">
-                <label for="source-event-ids">Source event ids</label>
+              <div class="field full" data-required-types="invariant_candidate">
+                <label for="source-event-ids">Source event ids <span class="required-chip">required</span></label>
                 <textarea id="source-event-ids" name="source_event_ids" placeholder="One event id per line"></textarea>
                 <div class="field-hint">Use the event buttons below to append runtime event ids into this field.</div>
                 <div id="source-event-readback" class="source-readback-list"></div>
@@ -816,12 +853,12 @@
 
               <div id="invariant-fields" class="section-toggle active field-group full">
                 <div class="form-grid">
-                  <div class="field full">
-                    <label for="fails-when">Fails when</label>
+                  <div class="field full" data-required-types="invariant_candidate">
+                    <label for="fails-when">Fails when <span class="required-chip">required</span></label>
                     <textarea id="fails-when" name="fails_when" placeholder="For invariant creation: at least two lines"></textarea>
                   </div>
-                  <div class="field full">
-                    <label for="edge-cases">Edge cases</label>
+                  <div class="field full" data-required-types="invariant_candidate">
+                    <label for="edge-cases">Edge cases <span class="required-chip">required</span></label>
                     <textarea id="edge-cases" name="edge_cases" placeholder="At least one line"></textarea>
                   </div>
                   <div class="field">
@@ -837,16 +874,16 @@
 
               <div id="boundary-fields" class="section-toggle full">
                 <div class="form-grid">
-                  <div class="field full">
-                    <label for="linked-candidate-id">Linked candidate id</label>
+                  <div class="field full" data-required-types="boundary_candidate">
+                    <label for="linked-candidate-id">Linked candidate id <span class="required-chip">required</span></label>
                     <input id="linked-candidate-id" name="linked_candidate_id" type="text" placeholder="Required for boundary_candidate">
                     <div class="field-inline-actions">
                       <button id="use-selected-linked-button" class="mini-button" type="button">Use selected candidate</button>
                     </div>
                     <div id="linked-target-state" class="field-safety"></div>
                   </div>
-                  <div class="field full">
-                    <label for="boundary-fails-when">Fails when</label>
+                  <div class="field full" data-required-types="boundary_candidate">
+                    <label for="boundary-fails-when">Fails when <span class="required-chip">required</span></label>
                     <textarea id="boundary-fails-when" name="boundary_fails_when" placeholder="At least one line"></textarea>
                   </div>
                   <div class="field full">
@@ -866,16 +903,16 @@
 
               <div id="counterexample-fields" class="section-toggle full">
                 <div class="form-grid">
-                  <div class="field full">
-                    <label for="refutes-candidate-id">Refutes candidate id</label>
+                  <div class="field full" data-required-types="counterexample_candidate">
+                    <label for="refutes-candidate-id">Refutes candidate id <span class="required-chip">required</span></label>
                     <input id="refutes-candidate-id" name="refutes_candidate_id" type="text" placeholder="Required for counterexample_candidate">
                     <div class="field-inline-actions">
                       <button id="use-selected-refute-button" class="mini-button" type="button">Use selected candidate</button>
                     </div>
                     <div id="refute-target-state" class="field-safety"></div>
                   </div>
-                  <div class="field full">
-                    <label for="case-description">Case description</label>
+                  <div class="field full" data-required-types="counterexample_candidate">
+                    <label for="case-description">Case description <span class="required-chip">required</span></label>
                     <textarea id="case-description" name="case_description" placeholder="Required"></textarea>
                   </div>
                   <div class="field full">
@@ -891,12 +928,12 @@
 
               <div id="curiosity-fields" class="section-toggle full">
                 <div class="form-grid">
-                  <div class="field full">
-                    <label for="open-question">Open question</label>
+                  <div class="field full" data-required-types="curiosity_candidate">
+                    <label for="open-question">Open question <span class="required-chip">required</span></label>
                     <textarea id="open-question" name="open_question" placeholder="Required for curiosity_candidate"></textarea>
                   </div>
-                  <div class="field">
-                    <label for="domain">Domain</label>
+                  <div class="field" data-required-types="curiosity_candidate">
+                    <label for="domain">Domain <span class="required-chip">required</span></label>
                     <input id="domain" name="domain" type="text" placeholder="Required">
                   </div>
                   <div class="field">
@@ -910,6 +947,7 @@
               <button type="submit">Create runtime candidate</button>
               <button id="reset-button" class="secondary" type="reset">Reset</button>
             </div>
+            <div id="create-submit-note" class="field-hint create-submit-note"></div>
           </form>
           <div id="form-message"></div>
           <div id="form-result-actions" class="result-actions"></div>
@@ -995,12 +1033,15 @@
     const reviewFilterEl = document.getElementById('review-state-filter');
     const candidateSortEl = document.getElementById('candidate-sort');
     const createRequirementsEl = document.getElementById('create-requirements');
+    const createReadinessEl = document.getElementById('create-readiness');
+    const createSubmitNoteEl = document.getElementById('create-submit-note');
     const sourceEventIdsEl = document.getElementById('source-event-ids');
     const sourceEventReadbackEl = document.getElementById('source-event-readback');
     const linkedCandidateIdEl = document.getElementById('linked-candidate-id');
     const refutesCandidateIdEl = document.getElementById('refutes-candidate-id');
     const linkedTargetStateEl = document.getElementById('linked-target-state');
     const refuteTargetStateEl = document.getElementById('refute-target-state');
+    const createRequiredFieldEls = Array.from(formEl.querySelectorAll('[data-required-types]'));
     const bootstrapEventButtonEl = document.getElementById('bootstrap-event-button');
     const bootstrapEventMessageEl = document.getElementById('bootstrap-event-message');
     const operatorTokenEl = document.getElementById('operator-token');
@@ -1038,6 +1079,7 @@
       values.add(eventId);
       sourceEventIdsEl.value = Array.from(values).join('\n');
       updateSourceEventReadback();
+      updateCreateSubmitState();
       clearValidationMessage();
       showMessage('ok', `Source event id added to create form: ${eventId}.`);
     }
@@ -1046,6 +1088,7 @@
       const currentValue = String(sourceEventIdsEl.value || '').trim();
       sourceEventIdsEl.value = currentValue ? `${currentValue}\n${eventId}` : eventId;
       updateSourceEventReadback();
+      updateCreateSubmitState();
       clearValidationMessage();
       showMessage('ok', `Source event id added to create form: ${eventId}.`);
     }
@@ -1140,25 +1183,134 @@
       return merged;
     }
 
+    function getCreateRequirementText(candidateType) {
+      if (candidateType === 'boundary_candidate') {
+        return 'Required now: linked target and 1 fails-when line.';
+      }
+      if (candidateType === 'counterexample_candidate') {
+        return 'Required now: refuted target and case description.';
+      }
+      if (candidateType === 'curiosity_candidate') {
+        return 'Required now: open question and domain.';
+      }
+      return 'Required now: principle, mechanism, 1 source event, 2 fails-when lines, 1 edge case. A linked boundary is created automatically.';
+    }
+
+    function updateCreateRequiredFieldState(candidateType) {
+      createRequiredFieldEls.forEach(node => {
+        const requiredTypes = String(node.dataset.requiredTypes || '')
+          .split(',')
+          .map(item => item.trim())
+          .filter(Boolean);
+        node.classList.toggle('required-now', requiredTypes.includes(candidateType));
+      });
+    }
+
+    function getCreateReadiness(payload) {
+      const type = payload && payload.candidate_type ? payload.candidate_type : candidateTypeEl.value;
+      const reasons = [];
+      if (type === 'invariant_candidate') {
+        if (!payload.principle) {
+          reasons.push('Add a principle.');
+        }
+        if (!payload.mechanism) {
+          reasons.push('Add a mechanism.');
+        }
+        if ((payload.source_event_ids || []).length < 1) {
+          reasons.push('Add 1 source event.');
+        }
+        if ((payload.fails_when || []).length < 2) {
+          reasons.push('Add 2 fails-when lines.');
+        }
+        if ((payload.edge_cases || []).length < 1) {
+          reasons.push('Add 1 edge case.');
+        }
+      }
+      if (type === 'boundary_candidate') {
+        if (!payload.linked_candidate_id) {
+          reasons.push('Add a linked target.');
+        } else if (!getCandidateById(payload.linked_candidate_id)) {
+          reasons.push('Linked target must exist in the current runtime workspace.');
+        }
+        if ((payload.fails_when || []).length < 1) {
+          reasons.push('Add 1 fails-when line.');
+        }
+      }
+      if (type === 'counterexample_candidate') {
+        if (!payload.refutes_candidate_id) {
+          reasons.push('Add a refuted target.');
+        } else if (!getCandidateById(payload.refutes_candidate_id)) {
+          reasons.push('Refuted target must exist in the current runtime workspace.');
+        }
+        if (!payload.case_description) {
+          reasons.push('Add a case description.');
+        }
+      }
+      if (type === 'curiosity_candidate') {
+        if (!payload.open_question) {
+          reasons.push('Add an open question.');
+        }
+        if (!payload.domain) {
+          reasons.push('Add a domain.');
+        }
+      }
+      return {
+        type,
+        ready: reasons.length < 1,
+        reasons
+      };
+    }
+
+    function renderCreateReadiness(payload, readiness) {
+      const activeReadiness = readiness || getCreateReadiness(payload || buildCreatePayload());
+      const typeLabel = activeReadiness.type || candidateTypeEl.value;
+      createReadinessEl.className = `field-safety create-readiness ${activeReadiness.ready ? 'good' : 'warn'}`;
+      if (activeReadiness.ready) {
+        createReadinessEl.innerHTML = `<strong>Create readiness</strong><span>Ready to create ${escapeHtml(typeLabel)} now.</span>`;
+      } else {
+        createReadinessEl.innerHTML = `<strong>Create readiness</strong><span>Still missing ${escapeHtml(String(activeReadiness.reasons.length))} requirement(s): ${escapeHtml(activeReadiness.reasons.join(' '))}</span>`;
+      }
+    }
+
+    function updateCreateSubmitState() {
+      const payload = buildCreatePayload();
+      const readiness = getCreateReadiness(payload);
+      const writeAuthBlocked = Boolean(state.writeAuthRequired) && !getOperatorToken();
+      createSubmitButtonEl.disabled = writeAuthBlocked || !readiness.ready;
+      renderCreateReadiness(payload, readiness);
+      if (writeAuthBlocked) {
+        createSubmitNoteEl.textContent = 'Load a valid operator token before creating runtime candidates on this protected surface.';
+        return;
+      }
+      if (readiness.ready) {
+        createSubmitNoteEl.textContent = 'Minimum create requirements are satisfied for the currently selected candidate type.';
+        return;
+      }
+      createSubmitNoteEl.textContent = `Before create: ${readiness.reasons.join(' ')}`;
+    }
+
     function updateWriteUiState() {
       const tokenPresent = Boolean(getOperatorToken());
       const writeAuthRequired = Boolean(state.writeAuthRequired);
       bootstrapEventButtonEl.disabled = writeAuthRequired && !tokenPresent;
-      createSubmitButtonEl.disabled = writeAuthRequired && !tokenPresent;
       operatorAuthStatusEl.className = `helper-text status-note ${writeAuthRequired ? 'warn' : 'good'}`;
       if (writeAuthRequired && !tokenPresent) {
         operatorAuthStatusEl.textContent = 'Server write auth is enabled. Load a valid operator token to create events, candidates, reviews, or challenge records.';
+        updateCreateSubmitState();
         return;
       }
       if (writeAuthRequired && tokenPresent) {
         operatorAuthStatusEl.textContent = 'Server write auth is enabled. A local operator token is loaded for protected write requests.';
+        updateCreateSubmitState();
         return;
       }
       if (tokenPresent) {
         operatorAuthStatusEl.textContent = 'Server write auth is not currently required. A local operator token is loaded for protected environments.';
+        updateCreateSubmitState();
         return;
       }
       operatorAuthStatusEl.textContent = 'Server write auth is not currently required. Writes remain available without a token on this surface.';
+      updateCreateSubmitState();
     }
 
     async function fetchJson(url, options) {
@@ -1987,7 +2139,11 @@
         || (selectedType === 'counterexample_candidate' && !refutedTargetId);
       const unresolvedRequiredTarget = (selectedType === 'boundary_candidate' && linkedTargetId && !linkedTargetItem)
         || (selectedType === 'counterexample_candidate' && refutedTargetId && !refutedTargetItem);
-      createSubmitButtonEl.disabled = missingRequiredTarget || unresolvedRequiredTarget;
+      if (missingRequiredTarget || unresolvedRequiredTarget) {
+        updateCreateSubmitState();
+        return;
+      }
+      updateCreateSubmitState();
     }
 
     function renderSummary(candidates) {
@@ -3288,7 +3444,7 @@
       formMessageEl.className = 'message validation';
       formMessageEl.dataset.kind = 'validation';
       formMessageEl.innerHTML = `
-        <strong>Complete the required fields before creating this runtime candidate.</strong>
+        <strong>Before create, finish these items:</strong>
         <ul>
           ${items.map(item => `<li>${escapeHtml(item)}</li>`).join('')}
         </ul>
@@ -3366,22 +3522,23 @@
       const selected = candidateTypeEl.value;
       const ids = ['invariant-fields', 'boundary-fields', 'counterexample-fields', 'curiosity-fields'];
       ids.forEach(id => document.getElementById(id).classList.remove('active'));
-      createRequirementsEl.textContent = 'Select a candidate type to see the minimum MEC Phase 2 create requirements.';
+      createRequirementsEl.textContent = 'Select a candidate type to see the current minimum create requirements.';
+      updateCreateRequiredFieldState(selected);
       if (selected === 'invariant_candidate') {
         document.getElementById('invariant-fields').classList.add('active');
-        createRequirementsEl.textContent = 'Invariant candidates require principle, mechanism, at least one source event, two fails_when entries and one edge case. A linked boundary will be created automatically.';
+        createRequirementsEl.textContent = getCreateRequirementText(selected);
       }
       if (selected === 'boundary_candidate') {
         document.getElementById('boundary-fields').classList.add('active');
-        createRequirementsEl.textContent = 'Boundary candidates require linked_candidate_id and at least one fails_when entry.';
+        createRequirementsEl.textContent = getCreateRequirementText(selected);
       }
       if (selected === 'counterexample_candidate') {
         document.getElementById('counterexample-fields').classList.add('active');
-        createRequirementsEl.textContent = 'Counterexample candidates require refutes_candidate_id and case_description.';
+        createRequirementsEl.textContent = getCreateRequirementText(selected);
       }
       if (selected === 'curiosity_candidate') {
         document.getElementById('curiosity-fields').classList.add('active');
-        createRequirementsEl.textContent = 'Curiosity candidates require open_question and domain.';
+        createRequirementsEl.textContent = getCreateRequirementText(selected);
       }
       updateCreateTargetSafety();
     }
@@ -3390,43 +3547,43 @@
       const errors = [];
       if (payload.candidate_type === 'invariant_candidate') {
         if (!payload.principle) {
-          errors.push('principle is required for invariant_candidate');
+          errors.push('Add a principle.');
         }
         if (!payload.mechanism) {
-          errors.push('mechanism is required for invariant_candidate');
+          errors.push('Add a mechanism.');
         }
         if ((payload.source_event_ids || []).length < 1) {
-          errors.push('at least one source event id is required for invariant_candidate');
+          errors.push('Add at least 1 source event.');
         }
         if ((payload.fails_when || []).length < 2) {
-          errors.push('at least two fails_when entries are required for invariant_candidate');
+          errors.push('Add at least 2 fails-when lines.');
         }
         if ((payload.edge_cases || []).length < 1) {
-          errors.push('at least one edge_case entry is required for invariant_candidate');
+          errors.push('Add at least 1 edge case.');
         }
       }
       if (payload.candidate_type === 'boundary_candidate') {
         if (!payload.linked_candidate_id) {
-          errors.push('linked_candidate_id is required for boundary_candidate');
+          errors.push('Add a linked target.');
         }
         if ((payload.fails_when || []).length < 1) {
-          errors.push('at least one fails_when entry is required for boundary_candidate');
+          errors.push('Add at least 1 fails-when line.');
         }
       }
       if (payload.candidate_type === 'counterexample_candidate') {
         if (!payload.refutes_candidate_id) {
-          errors.push('refutes_candidate_id is required for counterexample_candidate');
+          errors.push('Add a refuted target.');
         }
         if (!payload.case_description) {
-          errors.push('case_description is required for counterexample_candidate');
+          errors.push('Add a case description.');
         }
       }
       if (payload.candidate_type === 'curiosity_candidate') {
         if (!payload.open_question) {
-          errors.push('open_question is required for curiosity_candidate');
+          errors.push('Add an open question.');
         }
         if (!payload.domain) {
-          errors.push('domain is required for curiosity_candidate');
+          errors.push('Add a domain.');
         }
       }
       return errors;
@@ -3648,13 +3805,20 @@
     sourceEventIdsEl.addEventListener('input', () => {
       clearValidationMessage();
       updateSourceEventReadback();
+      updateCreateSubmitState();
     });
     formEl.querySelectorAll('input, textarea, select').forEach(node => {
       if (node === linkedCandidateIdEl || node === refutesCandidateIdEl || node === sourceEventIdsEl || node === candidateTypeEl) {
         return;
       }
-      node.addEventListener('input', clearValidationMessage);
-      node.addEventListener('change', clearValidationMessage);
+      node.addEventListener('input', () => {
+        clearValidationMessage();
+        updateCreateSubmitState();
+      });
+      node.addEventListener('change', () => {
+        clearValidationMessage();
+        updateCreateSubmitState();
+      });
     });
 
     bootstrapEventButtonEl.addEventListener('click', async () => {
