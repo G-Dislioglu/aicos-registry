@@ -1450,7 +1450,6 @@
       const pathname = window.location.pathname || '/';
       const nextUrl = search ? `${pathname}?${search}` : pathname;
       window.history.replaceState({}, '', nextUrl);
-      window.location.search = search ? `?${search}` : '';
     }
 
     function restoreDeskUrlState() {
