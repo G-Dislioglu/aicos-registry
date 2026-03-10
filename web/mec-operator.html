@@ -331,6 +331,32 @@
       box-shadow: 0 0 0 1px rgba(122, 162, 255, 0.35) inset;
     }
 
+    .candidate-row-primary {
+      display: grid;
+      gap: 8px;
+    }
+
+    .candidate-row-signal {
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .candidate-row-footer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      align-items: center;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .candidate-row-footer strong {
+      color: var(--text);
+      font-size: 12px;
+    }
+
     .row-top,
     .row-meta,
     .pair-top {
@@ -1929,9 +1955,9 @@
       const queueIndexInfo = getDeskQueueIndex(state.selectedCandidateId);
       const activePosition = queueIndexInfo.index >= 0 ? queueIndexInfo.index + 1 : 0;
       deskQueueEl.innerHTML = [
-        ['Active desk queue', `${visibleItems.length}`, `${getActiveDeskFacetLabel(baseItems)} after toolbar filters`],
-        ['Selected queue position', activePosition > 0 ? `${activePosition}/${queueIndexInfo.queue.length}` : '-', activePosition > 0 ? 'Current selected workspace position in the visible queue' : 'Select a workspace object from the desk'],
-        ['Review records in queue', `${visibleItems.filter(item => getReviewCount(item) > 0).length}`, 'Visible objects already carrying raw review records']
+        ['Active queue', `${visibleItems.length}`, `${getActiveDeskFacetLabel(baseItems)} after toolbar filters`],
+        ['Selected position', activePosition > 0 ? `${activePosition}/${queueIndexInfo.queue.length}` : '-', activePosition > 0 ? 'Current selected workspace position in the visible queue' : 'Select a workspace object from the desk'],
+        ['Reviewed in queue', `${visibleItems.filter(item => getReviewCount(item) > 0).length}`, 'Visible objects already carrying raw review records']
       ].map(([label, value, hint]) => `
         <div class="metric">
           <strong>${escapeHtml(String(value))}</strong>
@@ -2075,6 +2101,61 @@
         return item.linked_candidate_id || '';
       }
       return '';
+    }
+
+    function getCandidatePrimaryStateBadge(item) {
+      if (!item) {
+        return '<span class="badge">unknown</span>';
+      }
+      if (Number(item.unresolved_runtime_reference_count || 0) > 0) {
+        return `<span class="badge warn">attention ${escapeHtml(String(item.unresolved_runtime_reference_count || 0))}</span>`;
+      }
+      if (item.review_summary && item.review_summary.terminal) {
+        return `<span class="badge">terminal ${escapeHtml(getCurrentReviewState(item))}</span>`;
+      }
+      if (item.review_summary && item.review_summary.reviewable) {
+        return '<span class="badge good">reviewable now</span>';
+      }
+      return `<span class="badge">review ${escapeHtml(getCurrentReviewState(item))}</span>`;
+    }
+
+    function getCandidateSecondaryStateBadges(item) {
+      const badges = [];
+      if (!item) {
+        return badges;
+      }
+      badges.push(`<span class="badge">${escapeHtml(item.candidate_type || '-')}</span>`);
+      const lastOutcome = getLastReviewOutcome(item);
+      if (lastOutcome !== '-') {
+        badges.push(`<span class="badge">last ${escapeHtml(lastOutcome)}</span>`);
+      }
+      const reviewCount = getReviewCount(item);
+      if (reviewCount > 0) {
+        badges.push(`<span class="badge">records ${escapeHtml(String(reviewCount))}</span>`);
+      } else {
+        badges.push('<span class="badge">first review pending</span>');
+      }
+      if (item.freshness_state) {
+        badges.push(`<span class="badge">freshness ${escapeHtml(item.freshness_state)}</span>`);
+      }
+      const linkBadge = getCandidateListLinkBadge(item);
+      if (linkBadge) {
+        badges.push(linkBadge);
+      }
+      return badges;
+    }
+
+    function getCandidateRowFooter(item) {
+      const parts = [];
+      if (!item) {
+        return parts;
+      }
+      parts.push(`<span><strong>${escapeHtml(item.id)}</strong>${getCompactCounterpartIdHint(item)}</span>`);
+      parts.push(`<span>events ${escapeHtml(String((item.source_event_ids || []).length))}</span>`);
+      if ((item.source_card_ids || []).length > 0) {
+        parts.push(`<span>cards ${escapeHtml(String((item.source_card_ids || []).length))}</span>`);
+      }
+      return parts;
     }
 
     function getCandidateListLinkBadge(item) {
@@ -2261,28 +2342,22 @@
     function renderSummary(candidates) {
       const visibleObjects = candidates.length;
       const storedObjects = state.candidates.length;
-      const pairCases = buildPairMap(state.candidates).length;
-      const standaloneVisibleObjects = candidates.filter(item => {
-        const isInvariantWithBoundary = item.candidate_type === 'invariant_candidate' && item.linked_boundary_candidate_id;
-        const isLinkedBoundary = item.candidate_type === 'boundary_candidate' && item.linked_candidate_id;
-        return !isInvariantWithBoundary && !isLinkedBoundary;
-      }).length;
-      const runtimeOnly = candidates.filter(item => item.status === 'proposal_only').length;
       const reviewableVisible = candidates.filter(item => item.review_summary && item.review_summary.reviewable).length;
       const terminalVisible = candidates.filter(item => item.review_summary && item.review_summary.terminal).length;
       const attentionVisible = candidates.filter(item => Number(item.unresolved_runtime_reference_count || 0) > 0).length;
       const reviewedVisible = candidates.filter(item => getReviewCount(item) > 0).length;
+      const firstReviewVisible = candidates.filter(item => getReviewCount(item) === 0).length;
+      const pairCases = buildPairMap(state.candidates).length;
 
       summaryEl.innerHTML = [
         ['Visible workspace', visibleObjects, 'Current desk queue after toolbar + facet filters'],
+        ['Reviewable now', reviewableVisible, 'Can still receive one minimal review write'],
+        ['Needs attention', attentionVisible, 'Visible workspace objects with unresolved references'],
+        ['First review', firstReviewVisible, 'Visible objects without any raw review record yet'],
+        ['Reviewed', reviewedVisible, 'Visible workspace objects already carrying raw review records'],
+        ['Terminal', terminalVisible, 'Derived review state already reached stabilize / reject'],
         ['Stored workspace', storedObjects, 'All runtime workspace objects currently loaded'],
-        ['Linked cases', pairCases, 'Invariant + boundary pairs still shown as separate runtime objects'],
-        ['Standalone visible', standaloneVisibleObjects, 'Visible objects outside linked pairs'],
-        ['Without review record', runtimeOnly - reviewedVisible >= 0 ? runtimeOnly - reviewedVisible : candidates.filter(item => getReviewCount(item) === 0).length, 'Visible workspace objects still at raw candidate only'],
-        ['With review record', reviewedVisible, 'Visible workspace objects already carrying raw review records'],
-        ['Reviewable visible', reviewableVisible, 'Derived review state allows one minimal review write'],
-        ['Attention visible', attentionVisible, 'Visible workspace objects with unresolved runtime references'],
-        ['Terminal visible', terminalVisible, 'Derived review state already reached stabilize/reject']
+        ['Linked cases', pairCases, 'Invariant + boundary pairs still shown as separate runtime objects']
       ].map(([label, value, hint]) => `
         <div class="metric">
           <strong>${value}</strong>
@@ -3310,30 +3385,26 @@
           </div>
           <div class="list">
             ${section.items.map(item => {
-              const linkedBadge = getCandidateListLinkBadge(item);
-              const counterpartHint = getCompactCounterpartIdHint(item);
               const contextLine = getCandidateListContext(item);
+              const primaryBadge = getCandidatePrimaryStateBadge(item);
+              const secondaryBadges = getCandidateSecondaryStateBadges(item);
+              const footerParts = getCandidateRowFooter(item);
               const active = state.selectedCandidateId === item.id ? 'active' : '';
               return `
                 <article class="candidate-row ${active}" data-candidate-id="${item.id}">
                   <div class="row-top">
                     <div class="row-title">${formatCandidateTitle(item)}</div>
-                    <span class="badge warn">runtime status: ${item.status || 'proposal_only'}</span>
+                    ${primaryBadge}
                   </div>
-                  <div class="row-meta">
-                    <span class="badge">${item.candidate_type}</span>
-                    <span class="badge">review ${item.current_review_state || 'proposal_only'}</span>
-                    <span class="badge">last ${getLastReviewOutcome(item)}</span>
-                    <span class="badge">records ${getWorkspaceReviewRecords(item).length}</span>
-                    <span class="badge">freshness ${item.freshness_state || '-'}</span>
-                    <span class="badge">${item.review_summary && item.review_summary.reviewable ? 'reviewable' : 'terminal'}</span>
-                    ${Number(item.unresolved_runtime_reference_count || 0) > 0 ? `<span class="badge warn">attention ${escapeHtml(String(item.unresolved_runtime_reference_count || 0))}</span>` : ''}
-                    ${linkedBadge}
-                    <span class="badge">events ${(item.source_event_ids || []).length}</span>
-                    <span class="badge">cards ${(item.source_card_ids || []).length}</span>
+                  <div class="candidate-row-primary">
+                    <div class="row-meta">
+                      ${secondaryBadges.join('')}
+                    </div>
+                    ${contextLine ? `<div class="candidate-row-signal">${escapeHtml(contextLine)}</div>` : ''}
                   </div>
-                  ${contextLine ? `<div class="tiny">${escapeHtml(contextLine)}</div>` : ''}
-                  <div class="tiny">${item.id}${counterpartHint}</div>
+                  <div class="candidate-row-footer">
+                    ${footerParts.join('')}
+                  </div>
                 </article>
               `;
             }).join('')}
