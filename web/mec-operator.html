@@ -542,6 +542,7 @@
       border-radius: 12px;
       border: 1px solid var(--line);
       font-size: 14px;
+      line-height: 1.5;
     }
 
     .message.error {
@@ -554,6 +555,26 @@
       border-color: rgba(127, 224, 161, 0.45);
       color: #d8ffdf;
       background: rgba(28, 88, 48, 0.26);
+    }
+
+    .message.validation {
+      border-color: rgba(255, 204, 102, 0.35);
+      color: #ffe8bd;
+      background: rgba(92, 64, 17, 0.22);
+    }
+
+    .message.validation strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .message.validation ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .message.validation li + li {
+      margin-top: 4px;
     }
 
     .result-actions {
@@ -1017,6 +1038,7 @@
       values.add(eventId);
       sourceEventIdsEl.value = Array.from(values).join('\n');
       updateSourceEventReadback();
+      clearValidationMessage();
       showMessage('ok', `Source event id added to create form: ${eventId}.`);
     }
 
@@ -1024,6 +1046,7 @@
       const currentValue = String(sourceEventIdsEl.value || '').trim();
       sourceEventIdsEl.value = currentValue ? `${currentValue}\n${eventId}` : eventId;
       updateSourceEventReadback();
+      clearValidationMessage();
       showMessage('ok', `Source event id added to create form: ${eventId}.`);
     }
 
@@ -1034,6 +1057,7 @@
       }
       linkedCandidateIdEl.value = normalizedId;
       updateCreateTargetSafety();
+      clearValidationMessage();
       showMessage('ok', `Linked candidate id set to ${normalizedId}${sourceLabel ? ` from ${sourceLabel}` : ''}.`);
     }
 
@@ -1044,6 +1068,7 @@
       }
       refutesCandidateIdEl.value = normalizedId;
       updateCreateTargetSafety();
+      clearValidationMessage();
       showMessage('ok', `Refutes candidate id set to ${normalizedId}${sourceLabel ? ` from ${sourceLabel}` : ''}.`);
     }
 
@@ -3248,8 +3273,26 @@
     }
 
     function showMessage(type, text) {
-      formMessageEl.className = `message ${type}`;
+      formMessageEl.className = type ? `message ${type}` : '';
+      formMessageEl.dataset.kind = type || '';
+      formMessageEl.innerHTML = '';
       formMessageEl.textContent = text;
+    }
+
+    function showValidationMessage(errors) {
+      const items = Array.isArray(errors) ? errors.filter(Boolean) : [];
+      if (items.length < 1) {
+        clearMessage();
+        return;
+      }
+      formMessageEl.className = 'message validation';
+      formMessageEl.dataset.kind = 'validation';
+      formMessageEl.innerHTML = `
+        <strong>Complete the required fields before creating this runtime candidate.</strong>
+        <ul>
+          ${items.map(item => `<li>${escapeHtml(item)}</li>`).join('')}
+        </ul>
+      `;
     }
 
     function clearResultActions() {
@@ -3303,7 +3346,15 @@
 
     function clearMessage() {
       formMessageEl.className = '';
+      formMessageEl.dataset.kind = '';
+      formMessageEl.innerHTML = '';
       formMessageEl.textContent = '';
+    }
+
+    function clearValidationMessage() {
+      if (formMessageEl.dataset.kind === 'validation') {
+        clearMessage();
+      }
     }
 
     function showBootstrapEventMessage(type, text) {
@@ -3565,7 +3616,10 @@
       syncDeskUrlState();
     });
 
-    candidateTypeEl.addEventListener('change', updateTypeSections);
+    candidateTypeEl.addEventListener('change', () => {
+      clearValidationMessage();
+      updateTypeSections();
+    });
 
     document.getElementById('use-selected-linked-button').addEventListener('click', () => {
       if (!state.selectedCandidateId) {
@@ -3583,9 +3637,25 @@
       setCreateRefutedTargetId(state.selectedCandidateId, 'current selection');
     });
 
-    linkedCandidateIdEl.addEventListener('input', updateCreateTargetSafety);
-    refutesCandidateIdEl.addEventListener('input', updateCreateTargetSafety);
-    sourceEventIdsEl.addEventListener('input', updateSourceEventReadback);
+    linkedCandidateIdEl.addEventListener('input', () => {
+      clearValidationMessage();
+      updateCreateTargetSafety();
+    });
+    refutesCandidateIdEl.addEventListener('input', () => {
+      clearValidationMessage();
+      updateCreateTargetSafety();
+    });
+    sourceEventIdsEl.addEventListener('input', () => {
+      clearValidationMessage();
+      updateSourceEventReadback();
+    });
+    formEl.querySelectorAll('input, textarea, select').forEach(node => {
+      if (node === linkedCandidateIdEl || node === refutesCandidateIdEl || node === sourceEventIdsEl || node === candidateTypeEl) {
+        return;
+      }
+      node.addEventListener('input', clearValidationMessage);
+      node.addEventListener('change', clearValidationMessage);
+    });
 
     bootstrapEventButtonEl.addEventListener('click', async () => {
       showBootstrapEventMessage('', '');
@@ -3621,7 +3691,7 @@
       const payload = buildCreatePayload();
       const validationErrors = validateCreatePayload(payload);
       if (validationErrors.length > 0) {
-        showMessage('error', validationErrors.join(' | '));
+        showValidationMessage(validationErrors);
         return;
       }
       try {
