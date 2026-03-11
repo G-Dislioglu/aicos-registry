@@ -83,6 +83,10 @@
       padding: 6px 10px;
       border-radius: 999px;
       font-size: 12px;
+      max-width: 260px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .pill.warn {
@@ -187,6 +191,7 @@
 
     .facet-button.active {
       border-color: var(--accent);
+      background: rgba(122, 162, 255, 0.11);
       box-shadow: 0 0 0 1px rgba(122, 162, 255, 0.35) inset;
     }
 
@@ -236,7 +241,7 @@
 
     .desk-nav-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
       margin: 12px 0 14px;
     }
@@ -538,6 +543,19 @@
       font-size: 12px;
     }
 
+    .detail-fold summary::after {
+      content: '\25B8';
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1;
+      transition: transform 160ms ease;
+      flex-shrink: 0;
+    }
+
+    .detail-fold[open] > summary::after {
+      transform: rotate(90deg);
+    }
+
     .detail-fold-body {
       padding: 0 14px 14px;
     }
@@ -801,7 +819,6 @@
       <div class="pill-row">
         <span class="pill">runtime review</span>
         <span class="pill">operator desk</span>
-        <span class="pill warn">working UI</span>
         <span class="pill warn">status shown here is runtime-only</span>
       </div>
       <div class="hero-controls">
@@ -867,6 +884,7 @@
             </select>
             <button id="clear-filters-button" class="secondary" type="button">Clear filters</button>
             <button id="refresh-button" type="button">Refresh</button>
+            <span id="last-refresh-time" class="tiny" style="align-self:center;"></span>
           </div>
           <div id="desk-queue" class="desk-queue-grid"></div>
           <div id="candidate-list" class="desk-section-list"></div>
@@ -880,12 +898,13 @@
       </div>
 
       <div class="stack">
-        <section class="panel">
+        <section class="panel" id="review-desk-detail-panel">
           <h2>Review Desk Detail</h2>
           <div class="panel-sub">Stay inside one candidate detail and keep the three layers separate: raw candidate, derived review state, and raw review records.</div>
           <div id="detail-meta" class="pill-row"></div>
           <div id="desk-navigation" class="desk-nav-grid"></div>
           <div class="detail-guide">Start here: desk context, current review state, why this state, then review actions. Open the lower sections only when you need deeper comparison, contradiction, challenge, or raw artifact inspection.</div>
+          <div style="text-align:right; margin:-4px 0 8px;"><a href="#create-candidate-panel" class="tiny">&#8595; Create new candidate</a></div>
 
           <h3>Desk context</h3>
           <div class="panel-sub">The currently selected candidate inside the visible review queue.</div>
@@ -917,7 +936,7 @@
           <div id="detail-pair" class="compact-list"></div>
           <div id="detail-linkage" class="compact-list"></div>
 
-          <details class="detail-fold" open>
+          <details class="detail-fold">
             <summary>Comparison and supporting context <span>Evidence, history, related objects and quick compare.</span></summary>
             <div class="detail-fold-body">
               <div class="detail-section">
@@ -1002,7 +1021,7 @@
           </details>
         </section>
 
-        <section class="panel">
+        <section class="panel" id="create-candidate-panel">
           <h2>Create Candidate</h2>
           <div class="panel-sub">Only MEC Phase 2 create fields. New candidates remain runtime-only and proposal-only.</div>
           <div id="create-requirements" class="helper-text">Required now: principle, mechanism, 1 source event, 2 fails-when lines, 1 edge case. A linked boundary is created automatically.</div>
@@ -1278,8 +1297,9 @@
     }
 
     function appendVisibleDetailSourceEventId(eventId) {
-      const currentValue = String(sourceEventIdsEl.value || '').trim();
-      sourceEventIdsEl.value = currentValue ? `${currentValue}\n${eventId}` : eventId;
+      const values = new Set(splitLines(sourceEventIdsEl.value));
+      values.add(eventId);
+      sourceEventIdsEl.value = Array.from(values).join('\n');
       updateSourceEventReadback();
       updateCreateSubmitState();
       clearValidationMessage();
@@ -3462,7 +3482,7 @@
               const footerParts = getCandidateRowFooter(item);
               const active = state.selectedCandidateId === item.id ? 'active' : '';
               return `
-                <article class="candidate-row ${active}" data-candidate-id="${item.id}">
+                <article class="candidate-row ${active}" data-candidate-id="${item.id}" tabindex="0" role="button">
                   <div class="row-top">
                     <div class="row-title">${formatCandidateTitle(item)}</div>
                     ${primaryBadge}
@@ -3485,6 +3505,12 @@
 
       candidateListEl.querySelectorAll('[data-candidate-id]').forEach(node => {
         node.addEventListener('click', () => selectCandidate(node.dataset.candidateId));
+        node.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            selectCandidate(node.dataset.candidateId);
+          }
+        });
       });
     }
 
@@ -3552,6 +3578,10 @@
 
     async function selectCandidate(candidateId) {
       state.selectedCandidateId = candidateId;
+      if (window.innerWidth < 1120) {
+        const detailPanel = document.getElementById('review-desk-detail-panel');
+        if (detailPanel) detailPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
       if (state.compareCandidateId === candidateId) {
         state.compareCandidateId = null;
       }
@@ -3923,6 +3953,8 @@
       state.candidates = candidatePayload.items || [];
       state.events = eventPayload.items || [];
       state.writeAuthRequired = Boolean(healthPayload && healthPayload.write_auth_required);
+      const lastRefreshEl = document.getElementById('last-refresh-time');
+      if (lastRefreshEl) lastRefreshEl.textContent = `Refreshed ${new Date().toLocaleTimeString()}`;
       if (state.compareCandidateId && !state.candidates.some(item => item.id === state.compareCandidateId)) {
         state.compareCandidateId = null;
       }
@@ -4119,7 +4151,7 @@
         if (createdEventId) {
           const currentSourceEventIds = new Set(splitLines(sourceEventIdsEl.value));
           currentSourceEventIds.add(createdEventId);
-          sourceEventIdsEl.value = Array.from(currentSourceEventIds).join('\\n');
+          sourceEventIdsEl.value = Array.from(currentSourceEventIds).join('\n');
           updateSourceEventReadback();
           showBootstrapEventMessage('ok', `Created starter event ${createdEventId}. The event id was added to the candidate form.`);
         } else {
