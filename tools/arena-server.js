@@ -224,6 +224,7 @@ async function handleRequest(req, res, options = {}) {
     sendJson(res, 200, {
       ok: true,
       surface: 'arena-server',
+      mec_review_output_dir: mecReviewOutputDir,
       write_auth_required: isWriteAuthRequired(),
       max_request_body_bytes: MAX_REQUEST_BODY_BYTES
     });

@@ -838,11 +838,11 @@
       <div class="stack">
         <section class="panel">
           <h2>MEC Review Desk</h2>
-          <div class="panel-sub">Use this desk to move through review-ready items, blocked items, and items that still need attention.</div>
+          <div class="panel-sub">One working desk over the canonical MEC review workspace.</div>
           <div id="summary" class="summary-grid"></div>
           <div id="desk-status" class="desk-status"></div>
           <div id="facet-list" class="facet-row"></div>
-          <div class="field-hint toolbar-guide">Use search, filters and sort to answer one question at a time: what needs review now, what is blocked, and what still needs attention.</div>
+          <div class="field-hint toolbar-guide">Use search, filters and sort to answer one question at a time through visible segments and queue flow.</div>
           <div class="toolbar">
             <input id="candidate-search" type="search" placeholder="Search by id, title, mechanism, linked id or source signal">
             <select id="candidate-type-filter">
@@ -869,7 +869,7 @@
               <option value="standalone">Linkage: standalone only</option>
             </select>
             <select id="review-state-filter">
-              <option value="">Review state: all</option>
+              <option value="">all review states</option>
               <option value="proposal_only">Review state: proposal only</option>
               <option value="stabilize">Review state: stabilize</option>
               <option value="reject">Review state: reject</option>
@@ -878,7 +878,7 @@
             </select>
             <select id="candidate-sort">
               <option value="recent">Sort: most recent</option>
-              <option value="review_state">Sort: review state</option>
+              <option value="review_state">sort: review state</option>
               <option value="review_count">Sort: review count</option>
               <option value="freshness">Sort: freshness</option>
             </select>
@@ -900,7 +900,7 @@
       <div class="stack">
         <section class="panel" id="review-desk-detail-panel">
           <h2>Review Desk Detail</h2>
-          <div class="panel-sub">Stay inside one candidate detail and keep the three layers separate: raw candidate, derived review state, and raw review records.</div>
+          <div class="panel-sub">Stay inside one candidate detail and keep raw candidate artifact, derived workspace state, and raw runtime review records separate.</div>
           <div id="detail-meta" class="pill-row"></div>
           <div id="desk-navigation" class="desk-nav-grid"></div>
           <div class="detail-guide">Start here: desk context, current review state, why this state, then review actions. Open the lower sections only when you need deeper comparison, contradiction, challenge, or raw artifact inspection.</div>
@@ -915,15 +915,15 @@
           <div id="detail-summary" class="detail-grid"></div>
 
           <h3>Why this state</h3>
-          <div class="panel-sub">Compact, signal-based explanation of why this workspace item is reviewable, terminal or blocked, and what visible context is still missing.</div>
+          <div class="panel-sub">signal-based explanation of why this workspace item is reviewable, terminal or blocked, and what visible context is still missing.</div>
           <div id="detail-explanation" class="compact-list"></div>
 
           <h3>Focus context</h3>
-          <div class="panel-sub">A compact read of what deserves attention next.</div>
+          <div class="panel-sub">Signal-based focus framing that condenses real review tension.</div>
           <div id="detail-focus" class="compact-list"></div>
 
           <h3>Review actions</h3>
-          <div class="panel-sub">Write one separate review record from this screen. The candidate itself stays unchanged.</div>
+          <div class="panel-sub">Actions stay inside the desk. Write one separate review record from this screen. The candidate itself stays unchanged.</div>
           <div class="field full">
             <label for="review-rationale">Review rationale</label>
             <textarea id="review-rationale" placeholder="Optional operator rationale. If left empty, a minimal runtime rationale is generated."></textarea>
@@ -941,22 +941,22 @@
             <div class="detail-fold-body">
               <div class="detail-section">
                 <h3>Evidence / lineage context</h3>
-                <div class="panel-sub">Visible linkage, reference availability and integrity signals.</div>
+                <div class="panel-sub">Readable condensation of existing linkage, reference availability and integrity signals.</div>
                 <div id="detail-evidence" class="compact-list"></div>
               </div>
               <div class="detail-section">
                 <h3>Review history context</h3>
-                <div class="panel-sub">Recent review direction from the stored review records.</div>
+                <div class="panel-sub">Compressed reading over raw review records.</div>
                 <div id="detail-history" class="compact-list"></div>
               </div>
               <div class="detail-section">
                 <h3>Related candidate context</h3>
-                <div class="panel-sub">Nearby candidates found through linkage and shared source signals.</div>
+                <div class="panel-sub">Neighboring candidates derived from existing linkage and shared-source signals only.</div>
                 <div id="detail-related" class="compact-list"></div>
               </div>
               <div class="detail-section">
                 <h3>Compare context</h3>
-                <div class="panel-sub">Quick compare using linkage, source overlap, review state and history.</div>
+                <div class="panel-sub">Quick-compare surface over existing linkage, source overlap, review-state and history signals.</div>
                 <div id="detail-compare" class="compact-list"></div>
               </div>
             </div>
@@ -967,34 +967,39 @@
             <div class="detail-fold-body">
               <div class="detail-section">
                 <h3>Delta / change context</h3>
-                <div class="panel-sub">What changed, what stayed stable, and why this might matter now.</div>
+                <div class="panel-sub">Signal-based change awareness over review anchors, visible runtime movement and why-now / why-not-now readability.</div>
                 <div id="detail-delta" class="compact-list"></div>
               </div>
               <div class="detail-section">
                 <h3>Decision packet</h3>
-                <div class="panel-sub">What currently supports, weakens or still leaves the read open.</div>
+                <div class="panel-sub">Signal-based decision condensation showing what supports, weakens or still underconstrains the current read without recommending an outcome.</div>
                 <div id="detail-decision" class="compact-list"></div>
               </div>
               <div class="detail-section">
                 <h3>Contradiction context</h3>
-                <div class="panel-sub">Visible contradictions to hold together before writing a decision.</div>
+                <div class="panel-sub">Visible signal contradictions that should be held together before a stabilize/reject decision is written.</div>
                 <div id="detail-contradiction" class="compact-list"></div>
               </div>
               <div class="detail-section">
                 <h3>Challenge context</h3>
-                <div class="panel-sub">Challenge pressure around this candidate, kept compact and readable.</div>
+                <div class="panel-sub">Single-candidate challenge reading from the canonical workspace only.</div>
                 <div id="detail-challenge" class="compact-list"></div>
                 <div id="challenge-message"></div>
               </div>
               <div class="detail-section">
                 <h3>Refutation context</h3>
-                <div class="panel-sub">How visible counterexamples relate back to the primary candidate.</div>
+                <div class="panel-sub">Read-first counterexample and refuted-primary readability from the canonical workspace only.</div>
                 <div id="detail-refutation" class="compact-list"></div>
               </div>
               <div class="detail-section">
                 <h3>Challenge dossier context</h3>
-                <div class="panel-sub">A compact view of challenge coverage around the primary candidate.</div>
+                <div class="panel-sub">Primary-candidate-centered challenge posture over already visible counterexample relations from the canonical workspace only.</div>
                 <div id="detail-challenge-dossier" class="compact-list"></div>
+              </div>
+              <div class="detail-section">
+                <h3>Challenge dossier delta / evolution</h3>
+                <div class="panel-sub">How the visible challenge dossier has changed since the last review anchor: new lines, stable lines, posture shift.</div>
+                <div id="detail-challenge-dossier-delta" class="compact-list"></div>
               </div>
               <div class="detail-section">
                 <h3>Review action trace</h3>
@@ -1220,6 +1225,7 @@
     const challengeMessageEl = document.getElementById('challenge-message');
     const detailRefutationEl = document.getElementById('detail-refutation');
     const detailChallengeDossierEl = document.getElementById('detail-challenge-dossier');
+    const detailChallengeDossierDeltaEl = document.getElementById('detail-challenge-dossier-delta');
     const detailTraceEl = document.getElementById('detail-trace');
     const reviewActionsEl = document.getElementById('review-actions');
     const reviewMessageEl = document.getElementById('review-message');
@@ -1297,13 +1303,13 @@
     }
 
     function appendVisibleDetailSourceEventId(eventId) {
-      const values = new Set(splitLines(sourceEventIdsEl.value));
-      values.add(eventId);
-      sourceEventIdsEl.value = Array.from(values).join('\n');
+      const values = splitLines(sourceEventIdsEl.value);
+      values.push(eventId);
+      sourceEventIdsEl.value = values.join('\n');
       updateSourceEventReadback();
       updateCreateSubmitState();
       clearValidationMessage();
-      showMessage('ok', `Source event id added to create form: ${eventId}.`);
+      showMessage('ok', `Visible detail event id added to create form: ${eventId}.`);
     }
 
     function setCreateLinkedTargetId(candidateId, sourceLabel) {
@@ -1550,11 +1556,11 @@
     }
 
     function buildReferenceUnavailableMessage(candidateId) {
-      return `This candidate is no longer available${candidateId ? `: ${candidateId}` : ''}. Refresh the desk if runtime state changed.`;
+      return `Referenced runtime candidate is not available${candidateId ? `: ${candidateId}` : ''}`;
     }
 
     function buildTargetReferenceErrorMessage(roleLabel, candidateId) {
-      return `${roleLabel} is no longer in the current runtime candidate list${candidateId ? `: ${candidateId}` : ''}. Refresh the desk or choose a current candidate.`;
+      return `${roleLabel} is no longer present in the runtime candidate list${candidateId ? `: ${candidateId}` : ''}`;
     }
 
     function getCurrentReviewState(item) {
@@ -1616,6 +1622,10 @@
 
     function getChallengeDossierContext(item) {
       return item && item.challenge_dossier_context ? item.challenge_dossier_context : null;
+    }
+
+    function getChallengeDossierDeltaContext(item) {
+      return item && item.challenge_dossier_delta_context ? item.challenge_dossier_delta_context : null;
     }
 
     function getDecisionPacketContext(item) {
@@ -2067,12 +2077,12 @@
           <div class="tiny">Move through the visible queue without losing your current desk scope.</div>
         </div>
         <div class="detail-card">
-          <strong>Shareable desk state</strong>
+          <strong>Reproducible desk state</strong>
           <span>${escapeHtml(selectedItem.id)}</span>
           <div class="tiny">Filters, selected candidate and compare target stay mirrored in the URL.</div>
         </div>
         <div class="detail-card">
-          <strong>Compare target</strong>
+          <strong>Compare state</strong>
           <span>${escapeHtml(compareItem ? compareItem.id : 'none selected')}</span>
           <div class="tiny">Keep one optional side-by-side comparison target while staying in the desk.</div>
         </div>
@@ -2525,7 +2535,7 @@
       const reviewSummary = payload && payload.review_summary ? payload.review_summary : null;
       return [
         renderDetailCard('Candidate id', payload && payload.workspace_id ? payload.workspace_id : payload.id),
-        renderDetailCard('Current review state', payload && payload.current_review_state ? payload.current_review_state : 'proposal_only'),
+        renderDetailCard('Derived review state', payload && payload.current_review_state ? payload.current_review_state : 'proposal_only'),
         renderDetailCard('Review records', reviewSummary ? String(reviewSummary.review_count || 0) : '0'),
         renderDetailCard('Last review outcome', getLastReviewOutcome(payload)),
         renderDetailCard('Last reviewed at', reviewSummary && reviewSummary.latest_reviewed_at ? formatDate(reviewSummary.latest_reviewed_at) : '-'),
@@ -2565,7 +2575,7 @@
     function renderDeskOverview(payload) {
       const records = getWorkspaceReviewRecords(payload);
       detailOverviewEl.innerHTML = [
-        renderDetailCard('Current desk segment', getActiveDeskFacetLabel(getFilterScopedCandidates())),
+        renderDetailCard('Desk queue facet', getActiveDeskFacetLabel(getFilterScopedCandidates())),
         renderDetailCard('Selected candidate id', payload && payload.workspace_id ? payload.workspace_id : payload.id),
         renderDetailCard('Working title', formatCandidateTitle(payload)),
         renderDetailCard('Review records loaded', String(records.length)),
@@ -2602,6 +2612,9 @@
         detailExplanationEl.innerHTML = '<div class="empty">No derived state explanation is available for this workspace item.</div>';
         return;
       }
+      const reviewCount = getReviewCount(payload);
+      const currentState = payload && payload.current_review_state ? payload.current_review_state : 'proposal_only';
+      const terminal = Boolean(explanation.terminal);
       detailExplanationEl.innerHTML = `
         <div class="detail-card">
           <strong>Why this state</strong>
@@ -2612,6 +2625,8 @@
             <span class="badge">gaps ${escapeHtml(String(explanation.unresolved_reference_count || 0))}</span>
           </div>
           <div style="display:grid; gap:8px; margin-top:8px;">
+            ${reviewCount < 1 ? '<div class="tiny">No raw review history exists yet for this workspace item.</div>' : ''}
+            ${terminal ? `<div class="tiny">Current derived state ${escapeHtml(currentState)} is terminal, so no further review outcomes are available.</div>` : ''}
             ${(Array.isArray(explanation.explanation_lines) ? explanation.explanation_lines : []).map(line => `<div class="tiny">${escapeHtml(line)}</div>`).join('') || '<div class="tiny">No explanation lines available.</div>'}
           </div>
           ${(Array.isArray(explanation.missing_visible_prerequisites) && explanation.missing_visible_prerequisites.length > 0)
@@ -2738,7 +2753,7 @@
           </div>
         </div>
         <div class="detail-card">
-          <strong>Best next read</strong>
+          <strong>Focus signals</strong>
           <div style="display:grid; gap:6px; margin-top:4px;">
             ${(Array.isArray(focus.focus_signals) && focus.focus_signals.length > 0)
               ? focus.focus_signals.map(signal => `<div class="tiny">${escapeHtml(signal)}</div>`).join('')
@@ -2881,7 +2896,7 @@
           </div>
         </div>
         <div class="detail-card">
-          <strong>What supports this read</strong>
+          <strong>Support signals</strong>
           <div style="display:grid; gap:6px; margin-top:4px;">
             ${(Array.isArray(decision.support_signals) && decision.support_signals.length > 0)
               ? decision.support_signals.map(signal => `<div class="tiny">${escapeHtml(signal)}</div>`).join('')
@@ -2889,7 +2904,7 @@
           </div>
         </div>
         <div class="detail-card">
-          <strong>What pushes back</strong>
+          <strong>Friction signals</strong>
           <div style="display:grid; gap:6px; margin-top:4px;">
             ${(Array.isArray(decision.friction_signals) && decision.friction_signals.length > 0)
               ? decision.friction_signals.map(signal => `<div class="tiny">${escapeHtml(signal)}</div>`).join('')
@@ -2966,7 +2981,7 @@
       const actionAllowed = manualAllowed && !writeBlockReason;
       detailChallengeEl.innerHTML = `
         <div class="detail-card">
-          <strong>Challenge posture</strong>
+          <strong>Challenge summary</strong>
           <span>${escapeHtml(challenge.challenge_summary || '-')}</span>
           <div class="row-meta">
             <span class="badge">${escapeHtml(challenge.contradiction_pressure_bucket || 'not_applicable')}</span>
@@ -3011,7 +3026,7 @@
           </div>
         </div>
         <div class="detail-card">
-          <strong>Manual counterexample action</strong>
+          <strong>Manual counterexample proposal</strong>
           <span>Creates one proposal-only runtime counterexample for the selected primary candidate.</span>
           <div class="tiny">selected primary | ${escapeHtml(challenge.selected_primary_candidate_id || payload.id || '-')} | boundary ${escapeHtml(challenge.boundary_candidate_id || 'not_visible')} | integrity ${escapeHtml(challenge.boundary_integrity || 'not_applicable')}</div>
           <div class="field-safety ${actionAllowed ? 'good' : 'warn'}" style="margin-top:8px;">
@@ -3026,7 +3041,7 @@
             <input class="challenge-impact" type="text" placeholder="Optional: e.g. narrows_scope"${actionAllowed ? '' : ' disabled'}>
           </div>
           <div class="action-row" style="margin-top:10px;">
-            <button class="mini-button challenge-create" type="button" data-candidate-id="${escapeHtml(challenge.selected_primary_candidate_id || payload.id || '')}"${actionAllowed ? '' : ' disabled'}>Create counterexample</button>
+            <button class="mini-button challenge-create" type="button" data-candidate-id="${escapeHtml(challenge.selected_primary_candidate_id || payload.id || '')}"${actionAllowed ? '' : ' disabled'}>Create proposal-only counterexample</button>
           </div>
           <div class="tiny" style="margin-top:8px;">${escapeHtml(actionAllowed ? 'This path adds one separate proposal-only runtime artifact. It does not reopen or auto-resolve the candidate.' : 'Resolve the blocked condition above before this action becomes writable.')}</div>
         </div>
@@ -3200,6 +3215,66 @@
       });
     }
 
+    function renderChallengeDossierDeltaContext(payload) {
+      const delta = getChallengeDossierDeltaContext(payload);
+      if (!delta) {
+        detailChallengeDossierDeltaEl.innerHTML = '<div class="empty">No challenge dossier delta context is available for this workspace item.</div>';
+        return;
+      }
+      const evolutionSignals = Array.isArray(delta.evolution_signals) ? delta.evolution_signals : [];
+      const newLines = Array.isArray(delta.new_lines) ? delta.new_lines : [];
+      const stableLines = Array.isArray(delta.stable_lines) ? delta.stable_lines : [];
+      const updatedLines = Array.isArray(delta.updated_lines) ? delta.updated_lines : [];
+      const qualifiedOpenLines = Array.isArray(delta.qualified_open_lines) ? delta.qualified_open_lines : [];
+      detailChallengeDossierDeltaEl.innerHTML = `
+        <div class="detail-card">
+          <strong>Dossier evolution summary</strong>
+          <span>${escapeHtml(delta.delta_summary || '-')}</span>
+          <div class="row-meta">
+            <span class="badge">movement_bucket ${escapeHtml(delta.movement_bucket || 'not_derivable')}</span>
+            <span class="badge">anchor ${escapeHtml(delta.anchor_kind || '-')}</span>
+            <span class="badge">new ${escapeHtml(String(delta.new_line_count || 0))}</span>
+            <span class="badge">stable ${escapeHtml(String(delta.stable_line_count || 0))}</span>
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Evolution signals</strong>
+          <div style="display:grid; gap:6px; margin-top:4px;">
+            ${evolutionSignals.length > 0
+              ? evolutionSignals.map(signal => `<div class="tiny">signal | ${escapeHtml(signal)}</div>`).join('')
+              : '<div class="tiny">No stronger dossier evolution signal is currently visible.</div>'}
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>New lines since anchor</strong>
+          <div style="display:grid; gap:6px; margin-top:4px;">
+            ${newLines.length > 0
+              ? newLines.map(line => `<div class="tiny">${escapeHtml(line.line_label || line.line_signature || 'visible challenge line')} | ${escapeHtml(line.contribution_posture || 'visible_line')} | contributions ${escapeHtml(String(line.contribution_count || 1))}</div>`).join('')
+              : '<div class="tiny">No new challenge lines are currently visible since the active anchor.</div>'}
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Stable lines since anchor</strong>
+          <div style="display:grid; gap:6px; margin-top:4px;">
+            ${stableLines.length > 0
+              ? stableLines.map(line => `<div class="tiny">${escapeHtml(line.line_label || line.line_signature || 'visible challenge line')} | ${escapeHtml(line.contribution_posture || 'visible_line')} | contributions ${escapeHtml(String(line.contribution_count || 1))}</div>`).join('')
+              : '<div class="tiny">No stable challenge lines are currently visible since the active anchor.</div>'}
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Delta qualifiers</strong>
+          <div style="display:grid; gap:6px; margin-top:4px;">
+            ${updatedLines.length > 0
+              ? updatedLines.map(line => `<div class="tiny">updated | ${escapeHtml(line.line_label || line.line_signature || 'visible challenge line')} | ${escapeHtml(line.contribution_posture || 'visible_line')}</div>`).join('')
+              : '<div class="tiny">No partially updated challenge lines are currently visible.</div>'}
+            ${qualifiedOpenLines.length > 0
+              ? qualifiedOpenLines.map(line => `<div class="tiny">qualified | ${escapeHtml(line.line_label || line.line_signature || 'visible challenge line')} | open qualifiers ${escapeHtml(String(line.open_qualifier_count || 0))}</div>`).join('')
+              : '<div class="tiny">No open line qualifiers are currently visible in this delta read.</div>'}
+          </div>
+        </div>
+      `;
+    }
+
     function renderReviewTraceContext(payload) {
       const trace = getReviewTraceContext(payload);
       if (!trace) {
@@ -3207,7 +3282,8 @@
         return;
       }
       if (!trace.trace_present) {
-        detailTraceEl.innerHTML = `<div class="detail-card"><strong>Review action trace</strong><div class="tiny">${escapeHtml(trace.trace_summary || 'No review action trace is available for this workspace item.')}</div></div>`;
+        const traceSummary = trace.trace_summary || 'No review action has been written yet for this workspace item.';
+        detailTraceEl.innerHTML = `<div class="detail-card"><strong>Review action trace</strong><div class="tiny">${escapeHtml(traceSummary.includes('No review action has been written yet') || /no action rationale trace/i.test(traceSummary) ? traceSummary : `No review action has been written yet. ${traceSummary}`)}</div></div>`;
         return;
       }
       detailTraceEl.innerHTML = `
@@ -3310,7 +3386,7 @@
       const lastOutcome = getLastReviewOutcome(payload);
       const writeBlockReason = getWriteBlockReason();
       const actionAllowed = reviewable && !writeBlockReason;
-      const blockedReason = writeBlockReason || (!reviewable ? `No further review write is allowed because this workspace item is already terminal: ${getCurrentReviewState(payload)}.` : '');
+      const blockedReason = writeBlockReason || (!reviewable ? `No further write allowed from this surface because the candidate is already terminal: ${getCurrentReviewState(payload)}.` : '');
       reviewActionsEl.innerHTML = `
         <div class="detail-card">
           <strong>Review write readiness</strong>
@@ -3326,7 +3402,7 @@
           </div>
         </div>
         <div class="detail-card">
-          <strong>Review action</strong>
+          <strong>Runtime review controls</strong>
           <span>Writes one separate runtime review record. This does not edit the raw candidate artifact.</span>
           <div class="action-row">
             <button class="mini-button review-action-stabilize" type="button" data-review-outcome="stabilize" data-candidate-id="${escapeHtml(payload.id)}"${actionAllowed ? '' : ' disabled'}>Stabilize now</button>
@@ -3453,6 +3529,7 @@
       renderChallengeContext(payload);
       renderRefutationContext(payload);
       renderChallengeDossierContext(payload);
+      renderChallengeDossierDeltaContext(payload);
       renderReviewTraceContext(payload);
       renderRawReviewRecords(payload);
       candidateDetailEl.textContent = JSON.stringify(rawCandidate, null, 2);
@@ -3529,7 +3606,7 @@
             <span class="badge">boundary ${boundary ? boundary.id : 'missing'}</span>
           </div>
           <div style="margin-top:10px; display:grid; gap:10px;">
-            <div class="pair-reading-note">One linked case, two separate runtime objects. Read them together without treating them as one record.</div>
+            <div class="pair-reading-note">One linked case, two separately stored runtime objects. Read them together without treating them as one record.</div>
             <div class="pair-reading-grid">
               ${renderPairReadingCard(invariant, 'invariant', 'Invariant side', 'Principle-side object for this linked case.', 'Open invariant', invariant.id)}
               ${boundary
@@ -3604,6 +3681,7 @@
       detailChallengeEl.innerHTML = '<div class="empty">Loading challenge context...</div>';
       detailRefutationEl.innerHTML = '<div class="empty">Loading refutation context...</div>';
       detailChallengeDossierEl.innerHTML = '<div class="empty">Loading challenge coverage...</div>';
+      detailChallengeDossierDeltaEl.innerHTML = '<div class="empty">Loading challenge dossier delta...</div>';
       detailTraceEl.innerHTML = '<div class="empty">Loading latest review trace...</div>';
       reviewActionsEl.innerHTML = '<div class="empty">Loading review actions...</div>';
       clearReviewMessage();
@@ -3647,6 +3725,7 @@
           detailDecisionEl.innerHTML = '<div class="empty">Decision context is unavailable because this candidate could not be loaded.</div>';
           detailContradictionEl.innerHTML = '<div class="empty">Contradiction context is unavailable because this candidate could not be loaded.</div>';
           detailChallengeEl.innerHTML = '<div class="empty">Challenge context is unavailable because this candidate could not be loaded.</div>';
+          detailChallengeDossierDeltaEl.innerHTML = '<div class="empty">Challenge dossier delta is unavailable because this candidate could not be loaded.</div>';
           detailTraceEl.innerHTML = '<div class="empty">Review trace is unavailable because this candidate could not be loaded.</div>';
           detailLinkageEl.innerHTML = `
             <div class="detail-card">
@@ -3671,6 +3750,7 @@
           detailDecisionEl.innerHTML = '<div class="empty">Decision context could not be loaded.</div>';
           detailContradictionEl.innerHTML = '<div class="empty">Contradiction context could not be loaded.</div>';
           detailChallengeEl.innerHTML = '<div class="empty">Challenge context could not be loaded.</div>';
+          detailChallengeDossierDeltaEl.innerHTML = '<div class="empty">Challenge dossier delta could not be loaded.</div>';
           detailTraceEl.innerHTML = '<div class="empty">Review trace could not be loaded.</div>';
           rawReviewRecordsEl.innerHTML = '<div class="empty">Stored review records could not be loaded.</div>';
           reviewActionsEl.innerHTML = '<div class="empty">Review actions could not be loaded.</div>';
@@ -3788,7 +3868,7 @@
       }
       formResultActionsEl.innerHTML = `
         <div class="detail-card">
-          <strong>Next step after create</strong>
+          <strong>Create result actions</strong>
           <span>Open the returned runtime objects or carry returned ids forward into the current form.</span>
           <div class="action-row">
             <button class="mini-button create-result-open" type="button" data-candidate-id="${escapeHtml(createdCandidateId)}">Open created candidate</button>
@@ -3988,6 +4068,7 @@
           detailDecisionEl.innerHTML = '<div class="empty">No decision context loaded yet.</div>';
           detailContradictionEl.innerHTML = '<div class="empty">No contradiction context loaded yet.</div>';
           detailChallengeEl.innerHTML = '<div class="empty">No challenge context loaded yet.</div>';
+          detailChallengeDossierDeltaEl.innerHTML = '<div class="empty">No challenge dossier delta loaded yet.</div>';
           detailTraceEl.innerHTML = '<div class="empty">No review trace loaded yet.</div>';
           reviewActionsEl.innerHTML = '<div class="empty">Select a candidate to review.</div>';
           rawReviewRecordsEl.innerHTML = '<div class="empty">No stored review records available yet.</div>';
