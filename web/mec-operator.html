@@ -1007,6 +1007,11 @@
                 <div id="detail-challenge-dossier-digest" class="compact-list"></div>
               </div>
               <div class="detail-section">
+                <h3>Review gate signal surface</h3>
+                <div class="panel-sub">Normalized review gate signals derived from the canonical digest only: coverage, stability, contradiction pressure, watchpoints, and gate flags.</div>
+                <div id="detail-review-gate-signals" class="compact-list"></div>
+              </div>
+              <div class="detail-section">
                 <h3>Review action trace</h3>
                 <div class="panel-sub">What was visible when the latest review action was written.</div>
                 <div id="detail-trace" class="compact-list"></div>
@@ -1232,6 +1237,7 @@
     const detailChallengeDossierEl = document.getElementById('detail-challenge-dossier');
     const detailChallengeDossierDeltaEl = document.getElementById('detail-challenge-dossier-delta');
     const detailChallengeDossierDigestEl = document.getElementById('detail-challenge-dossier-digest');
+    const detailReviewGateSignalsEl = document.getElementById('detail-review-gate-signals');
     const detailTraceEl = document.getElementById('detail-trace');
     const reviewActionsEl = document.getElementById('review-actions');
     const reviewMessageEl = document.getElementById('review-message');
@@ -1636,6 +1642,10 @@
 
     function getChallengeDossierReviewDigest(item) {
       return item && item.challenge_dossier_review_digest ? item.challenge_dossier_review_digest : null;
+    }
+
+    function getReviewGateSignalSurface(item) {
+      return item && item.review_gate_signal_surface ? item.review_gate_signal_surface : null;
     }
 
     function getDecisionPacketContext(item) {
@@ -3336,6 +3346,44 @@
       `;
     }
 
+    function renderReviewGateSignalSurface(payload) {
+      const gate = getReviewGateSignalSurface(payload);
+      if (!gate) {
+        detailReviewGateSignalsEl.innerHTML = '<div class="empty">No review gate signal surface is available for this workspace item.</div>';
+        return;
+      }
+      const gateFlags = Array.isArray(gate.gate_flags) ? gate.gate_flags : [];
+      detailReviewGateSignalsEl.innerHTML = `
+        <div class="detail-card">
+          <strong>Review readiness summary</strong>
+          <span>${escapeHtml(gate.review_readiness_summary || '-')}</span>
+          <div class="row-meta">
+            <span class="badge">${escapeHtml(gate.review_readiness_bucket || 'gate_not_ready')}</span>
+            <span class="badge">coverage ${escapeHtml(gate.coverage_signal || 'not_visible')}</span>
+            <span class="badge">stability ${escapeHtml(gate.stability_signal || 'not_visible')}</span>
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Gate signals</strong>
+          <div style="display:grid; gap:6px; margin-top:4px;">
+            <div class="tiny">coverage_signal | ${escapeHtml(gate.coverage_signal || 'not_visible')}</div>
+            <div class="tiny">stability_signal | ${escapeHtml(gate.stability_signal || 'not_visible')}</div>
+            <div class="tiny">contradiction_pressure_signal | ${escapeHtml(gate.contradiction_pressure_signal || 'not_visible')}</div>
+            <div class="tiny">unresolved_watchpoint_signal | ${escapeHtml(gate.unresolved_watchpoint_signal || 'not_visible')}</div>
+            <div class="tiny">decision_readiness | ${escapeHtml(gate.decision_readiness_carry_through || 'decision_underconstrained')}</div>
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Gate flags</strong>
+          <div style="display:grid; gap:6px; margin-top:4px;">
+            ${gateFlags.length > 0
+              ? gateFlags.map(item => `<div class="tiny">flag | ${escapeHtml(item)}</div>`).join('')
+              : '<div class="tiny">No stronger gate flag is currently visible.</div>'}
+          </div>
+        </div>
+      `;
+    }
+
     function renderReviewTraceContext(payload) {
       const trace = getReviewTraceContext(payload);
       if (!trace) {
@@ -3592,6 +3640,7 @@
       renderChallengeDossierContext(payload);
       renderChallengeDossierDeltaContext(payload);
       renderChallengeDossierReviewDigest(payload);
+      renderReviewGateSignalSurface(payload);
       renderReviewTraceContext(payload);
       renderRawReviewRecords(payload);
       candidateDetailEl.textContent = JSON.stringify(rawCandidate, null, 2);

@@ -2385,6 +2385,111 @@ function buildMecWorkspaceChallengeContext(payload, latestReview = null, sourceL
   };
  }
 
+ function buildMecWorkspaceReviewGateSignalSurface(payload, reviewSummary, latestReview, contradictionContext = null, decisionPacketContext = null, challengeContext = null, refutationContext = null, challengeDossierContext = null, challengeDossierDeltaContext = null, challengeDossierReviewDigest = null) {
+  const digestPresent = Boolean(challengeDossierReviewDigest && challengeDossierReviewDigest.digest_present);
+  const watchpointCount = Number(challengeDossierReviewDigest && challengeDossierReviewDigest.watchpoint_count || 0);
+  const contradictionCount = Array.isArray(contradictionContext && contradictionContext.contradiction_signals)
+    ? contradictionContext.contradiction_signals.length
+    : 0;
+  const coverageGapCount = Number(challengeDossierContext && (challengeDossierContext.coverage_gap_count || challengeDossierContext.open_coverage_gap_count) || 0);
+  const movementBucket = challengeDossierDeltaContext && challengeDossierDeltaContext.movement_bucket
+    ? challengeDossierDeltaContext.movement_bucket
+    : 'not_derivable';
+  const challengePostureBucket = challengeDossierContext && challengeDossierContext.challenge_posture_bucket
+    ? challengeDossierContext.challenge_posture_bucket
+    : 'no_visible_challenge_dossier';
+  const challengePressureBucket = (challengeContext && challengeContext.contradiction_pressure_bucket)
+    || (refutationContext && refutationContext.challenge_basis_bucket)
+    || 'not_visible';
+  let coverageSignal = 'no_visible_dossier';
+  if (challengeDossierContext && challengeDossierContext.dossier_role === 'counterexample_contribution') {
+    coverageSignal = coverageGapCount > 0 ? 'contribution_with_open_gaps' : 'counterexample_contribution_visible';
+  } else if (challengePostureBucket === 'pressure_without_counterexample_coverage') {
+    coverageSignal = 'pressure_without_counterexample_coverage';
+  } else if (coverageGapCount > 0) {
+    coverageSignal = 'coverage_gaps_visible';
+  } else if (Number(challengeDossierContext && challengeDossierContext.reinforcing_line_count || 0) > 0) {
+    coverageSignal = 'reinforced_coverage_visible';
+  } else if (Number(challengeDossierContext && challengeDossierContext.distinct_challenge_line_count || 0) >= 2) {
+    coverageSignal = 'multi_line_coverage_visible';
+  } else if (digestPresent) {
+    coverageSignal = 'single_line_coverage_visible';
+  }
+  let stabilitySignal = 'anchor_not_derivable';
+  if (movementBucket === 'expanding') {
+    stabilitySignal = 'expanding_since_anchor';
+  } else if (movementBucket === 'updated' || movementBucket === 'posture_shifted') {
+    stabilitySignal = 'changed_since_anchor';
+  } else if (movementBucket === 'stabilizing' || movementBucket === 'unchanged') {
+    stabilitySignal = 'stable_since_anchor';
+  } else if (movementBucket === 'pressure_without_coverage') {
+    stabilitySignal = 'pressure_without_coverage';
+  }
+  let contradictionPressureSignal = 'not_visible';
+  if (challengePressureBucket === 'high_visible_pressure' || contradictionCount >= 3) {
+    contradictionPressureSignal = 'high_pressure_visible';
+  } else if (challengePressureBucket === 'moderate_visible_pressure' || contradictionCount >= 1 || Boolean(refutationContext && refutationContext.refutation_present)) {
+    contradictionPressureSignal = 'moderate_pressure_visible';
+  } else if (digestPresent || challengePressureBucket === 'low_visible_pressure') {
+    contradictionPressureSignal = 'low_pressure_visible';
+  }
+  let unresolvedWatchpointSignal = 'not_visible';
+  if (watchpointCount >= 4) {
+    unresolvedWatchpointSignal = 'watchpoints_elevated';
+  } else if (watchpointCount >= 1) {
+    unresolvedWatchpointSignal = 'watchpoints_present';
+  } else if (digestPresent) {
+    unresolvedWatchpointSignal = 'watchpoints_clear';
+  }
+  const decisionReadiness = decisionPacketContext && decisionPacketContext.decision_readiness
+    ? decisionPacketContext.decision_readiness
+    : 'decision_underconstrained';
+  let reviewReadinessBucket = 'gate_not_ready';
+  if (reviewSummary && reviewSummary.terminal) {
+    reviewReadinessBucket = 'gate_closed';
+  } else if (coverageSignal === 'pressure_without_counterexample_coverage' || contradictionPressureSignal === 'high_pressure_visible' || unresolvedWatchpointSignal === 'watchpoints_elevated') {
+    reviewReadinessBucket = 'gate_restricted';
+  } else if (decisionReadiness === 'decision_ready' && stabilitySignal === 'stable_since_anchor' && unresolvedWatchpointSignal === 'watchpoints_clear') {
+    reviewReadinessBucket = 'gate_clear_read';
+  } else if (digestPresent) {
+    reviewReadinessBucket = 'gate_qualified_read';
+  }
+  const gateFlags = [];
+  if (coverageSignal === 'pressure_without_counterexample_coverage') gateFlags.push('counterexample_coverage_missing');
+  if (coverageSignal === 'coverage_gaps_visible' || coverageSignal === 'contribution_with_open_gaps') gateFlags.push('coverage_gaps_visible');
+  if (stabilitySignal === 'expanding_since_anchor') gateFlags.push('expanding_since_anchor');
+  if (stabilitySignal === 'changed_since_anchor') gateFlags.push('changed_since_anchor');
+  if (contradictionPressureSignal === 'high_pressure_visible') gateFlags.push('high_contradiction_pressure');
+  if (contradictionPressureSignal === 'moderate_pressure_visible') gateFlags.push('contradiction_pressure_visible');
+  if (unresolvedWatchpointSignal === 'watchpoints_elevated') gateFlags.push('watchpoints_elevated');
+  if (unresolvedWatchpointSignal === 'watchpoints_present') gateFlags.push('watchpoints_present');
+  if (decisionReadiness === 'decision_fragile') gateFlags.push('decision_fragile');
+  if (decisionReadiness === 'decision_underconstrained') gateFlags.push('decision_underconstrained');
+  if (reviewSummary && reviewSummary.terminal) gateFlags.push('review_terminal');
+  let reviewReadinessSummary = 'No stronger review gate signal surface is currently derivable.';
+  if (reviewReadinessBucket === 'gate_closed') {
+    reviewReadinessSummary = `Review gate stays closed because the current review state is already terminal at ${reviewSummary.current_state || 'proposal_only'}.`;
+  } else if (reviewReadinessBucket === 'gate_restricted') {
+    reviewReadinessSummary = `Gate signals remain restricted: coverage reads as ${coverageSignal}, stability reads as ${stabilitySignal}, contradiction pressure reads as ${contradictionPressureSignal}, and watchpoints read as ${unresolvedWatchpointSignal}.`;
+  } else if (reviewReadinessBucket === 'gate_clear_read') {
+    reviewReadinessSummary = `Gate signals currently read clear: coverage is ${coverageSignal}, stability is ${stabilitySignal}, contradiction pressure is ${contradictionPressureSignal}, and no unresolved watchpoint remains visible.`;
+  } else if (reviewReadinessBucket === 'gate_qualified_read') {
+    reviewReadinessSummary = `Gate signals are readable but qualified: coverage is ${coverageSignal}, stability is ${stabilitySignal}, contradiction pressure is ${contradictionPressureSignal}, and watchpoints are ${unresolvedWatchpointSignal}.`;
+  }
+  return {
+    gate_surface_present: digestPresent || contradictionCount > 0 || watchpointCount > 0,
+    review_readiness_bucket: reviewReadinessBucket,
+    coverage_signal: coverageSignal,
+    stability_signal: stabilitySignal,
+    contradiction_pressure_signal: contradictionPressureSignal,
+    unresolved_watchpoint_signal: unresolvedWatchpointSignal,
+    review_readiness_summary: reviewReadinessSummary,
+    decision_readiness_carry_through: decisionReadiness,
+    gate_flags: Array.from(new Set(gateFlags)).slice(0, 8),
+    review_gate_signal_surface_version: 'phase4f-mec-review-gate-signal-surface/v1'
+  };
+ }
+
  function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) {
   if (!payload) {
     return null;
@@ -2413,6 +2518,7 @@ function buildMecWorkspaceChallengeContext(payload, latestReview = null, sourceL
   const challengeDossierContext = buildMecWorkspaceChallengeDossierContext(payload, reviewSummary, latestReview, sourceLinkage, unresolvedRuntimeReferences, evidenceContext, reviewHistoryContext, relatedCandidates, deltaContext, contradictionContext, decisionPacketContext, challengeContext, refutationContext, reviewTraceContext, candidateMap, reviewMap);
   const challengeDossierDeltaContext = buildMecWorkspaceChallengeDossierDeltaContext(payload, reviewSummary, latestReview, challengeDossierContext, reviewTraceContext, candidateMap);
   const challengeDossierReviewDigest = buildMecWorkspaceChallengeDossierReviewDigest(payload, reviewSummary, latestReview, sourceLinkage, unresolvedRuntimeReferences, evidenceContext, reviewHistoryContext, relatedCandidates, deltaContext, contradictionContext, decisionPacketContext, challengeContext, refutationContext, challengeDossierContext, challengeDossierDeltaContext, reviewTraceContext, candidateMap, reviewMap);
+  const reviewGateSignalSurface = buildMecWorkspaceReviewGateSignalSurface(payload, reviewSummary, latestReview, contradictionContext, decisionPacketContext, challengeContext, refutationContext, challengeDossierContext, challengeDossierDeltaContext, challengeDossierReviewDigest);
   return {
     workspace_kind: 'mec_review_workspace',
     workspace_version: 'phase3c-mec-review-workspace/v1',
@@ -2462,6 +2568,7 @@ function buildMecWorkspaceChallengeContext(payload, latestReview = null, sourceL
     challenge_dossier_context: challengeDossierContext,
     challenge_dossier_delta_context: challengeDossierDeltaContext,
     challenge_dossier_review_digest: challengeDossierReviewDigest,
+    review_gate_signal_surface: reviewGateSignalSurface,
     review_trace_context: reviewTraceContext,
     workspace_summary: {
       review_count: reviewSummary.review_count,
@@ -2485,6 +2592,9 @@ function buildMecWorkspaceChallengeContext(payload, latestReview = null, sourceL
       challenge_dossier_review_digest_present: challengeDossierReviewDigest.digest_present,
       challenge_dossier_review_digest_bucket: challengeDossierReviewDigest.digest_bucket,
       challenge_dossier_review_watchpoints: challengeDossierReviewDigest.watchpoint_count,
+      review_gate_readiness_bucket: reviewGateSignalSurface.review_readiness_bucket,
+      review_gate_coverage_signal: reviewGateSignalSurface.coverage_signal,
+      review_gate_watchpoint_signal: reviewGateSignalSurface.unresolved_watchpoint_signal,
       trace_present: reviewTraceContext.trace_present
     },
     raw_review_records: reviewRecords.map(record => ({ ...record })),
