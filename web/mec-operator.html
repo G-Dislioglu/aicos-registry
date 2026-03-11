@@ -1002,6 +1002,11 @@
                 <div id="detail-challenge-dossier-delta" class="compact-list"></div>
               </div>
               <div class="detail-section">
+                <h3>Challenge dossier review digest</h3>
+                <div class="panel-sub">Consolidated review read over coverage, delta, refutation pressure, chronology and unresolved watchpoints from the canonical workspace only.</div>
+                <div id="detail-challenge-dossier-digest" class="compact-list"></div>
+              </div>
+              <div class="detail-section">
                 <h3>Review action trace</h3>
                 <div class="panel-sub">What was visible when the latest review action was written.</div>
                 <div id="detail-trace" class="compact-list"></div>
@@ -1226,6 +1231,7 @@
     const detailRefutationEl = document.getElementById('detail-refutation');
     const detailChallengeDossierEl = document.getElementById('detail-challenge-dossier');
     const detailChallengeDossierDeltaEl = document.getElementById('detail-challenge-dossier-delta');
+    const detailChallengeDossierDigestEl = document.getElementById('detail-challenge-dossier-digest');
     const detailTraceEl = document.getElementById('detail-trace');
     const reviewActionsEl = document.getElementById('review-actions');
     const reviewMessageEl = document.getElementById('review-message');
@@ -1626,6 +1632,10 @@
 
     function getChallengeDossierDeltaContext(item) {
       return item && item.challenge_dossier_delta_context ? item.challenge_dossier_delta_context : null;
+    }
+
+    function getChallengeDossierReviewDigest(item) {
+      return item && item.challenge_dossier_review_digest ? item.challenge_dossier_review_digest : null;
     }
 
     function getDecisionPacketContext(item) {
@@ -3275,6 +3285,57 @@
       `;
     }
 
+    function renderChallengeDossierReviewDigest(payload) {
+      const digest = getChallengeDossierReviewDigest(payload);
+      if (!digest) {
+        detailChallengeDossierDigestEl.innerHTML = '<div class="empty">No challenge dossier review digest is available for this workspace item.</div>';
+        return;
+      }
+      const chronology = Array.isArray(digest.chronology) ? digest.chronology : [];
+      const watchpoints = Array.isArray(digest.watchpoints) ? digest.watchpoints : [];
+      const digestFlags = Array.isArray(digest.digest_flags) ? digest.digest_flags : [];
+      detailChallengeDossierDigestEl.innerHTML = `
+        <div class="detail-card">
+          <strong>Digest summary</strong>
+          <span>${escapeHtml(digest.digest_summary || '-')}</span>
+          <div class="row-meta">
+            <span class="badge">${escapeHtml(digest.digest_role || 'not_applicable')}</span>
+            <span class="badge">${escapeHtml(digest.digest_bucket || 'not_applicable')}</span>
+            <span class="badge">watchpoints ${escapeHtml(String(digest.watchpoint_count || 0))}</span>
+            <span class="badge">lines ${escapeHtml(String(digest.distinct_challenge_line_count || 0))}</span>
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Consolidated read</strong>
+          <div style="display:grid; gap:6px; margin-top:4px;">
+            <div class="tiny">coverage | ${escapeHtml(digest.coverage_read || 'not_visible')}</div>
+            <div class="tiny">delta | ${escapeHtml(digest.delta_read || 'not_visible')}</div>
+            <div class="tiny">refutation | ${escapeHtml(digest.refutation_read || 'not_visible')}</div>
+            <div class="tiny">primary | ${escapeHtml(digest.primary_candidate_title || digest.primary_candidate_id || 'not_visible')}</div>
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Chronology</strong>
+          <div style="display:grid; gap:6px; margin-top:4px;">
+            ${chronology.length > 0
+              ? chronology.map(item => `<div class="tiny">${escapeHtml(item.kind || 'signal')} | ${escapeHtml(item.label || '-')} | ${escapeHtml(item.detail || '-')}</div>`).join('')
+              : '<div class="tiny">No compact challenge chronology is currently visible.</div>'}
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Watchpoints</strong>
+          <div style="display:grid; gap:6px; margin-top:4px;">
+            ${watchpoints.length > 0
+              ? watchpoints.map(item => `<div class="tiny">watch | ${escapeHtml(item)}</div>`).join('')
+              : '<div class="tiny">No stronger unresolved watchpoint is currently visible.</div>'}
+            ${digestFlags.length > 0
+              ? digestFlags.map(item => `<div class="tiny">flag | ${escapeHtml(item)}</div>`).join('')
+              : '<div class="tiny">No stronger digest flags are currently visible.</div>'}
+          </div>
+        </div>
+      `;
+    }
+
     function renderReviewTraceContext(payload) {
       const trace = getReviewTraceContext(payload);
       if (!trace) {
@@ -3530,6 +3591,7 @@
       renderRefutationContext(payload);
       renderChallengeDossierContext(payload);
       renderChallengeDossierDeltaContext(payload);
+      renderChallengeDossierReviewDigest(payload);
       renderReviewTraceContext(payload);
       renderRawReviewRecords(payload);
       candidateDetailEl.textContent = JSON.stringify(rawCandidate, null, 2);

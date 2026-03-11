@@ -2150,6 +2150,241 @@ function buildMecWorkspaceChallengeContext(payload, latestReview = null, sourceL
   };
  }
 
+ function deriveMecChallengeDossierReviewDigestBucket(challengeDossierContext = null, challengeDossierDeltaContext = null, refutationContext = null, watchpointCount = 0) {
+  const dossierPresent = Boolean(challengeDossierContext && challengeDossierContext.dossier_present);
+  const dossierRole = challengeDossierContext && challengeDossierContext.dossier_role
+    ? challengeDossierContext.dossier_role
+    : 'not_applicable';
+  const movementBucket = challengeDossierDeltaContext && challengeDossierDeltaContext.movement_bucket
+    ? challengeDossierDeltaContext.movement_bucket
+    : 'not_derivable';
+  const refutationPresent = Boolean(refutationContext && refutationContext.refutation_present);
+  if (!dossierPresent && !refutationPresent && watchpointCount < 1) {
+    return 'not_applicable';
+  }
+  if (dossierRole === 'counterexample_contribution') {
+    return watchpointCount > 0
+      ? 'counterexample_contribution_with_watchpoints'
+      : 'counterexample_contribution_visible';
+  }
+  if (movementBucket === 'pressure_without_coverage') {
+    return 'pressure_without_counterexample_coverage';
+  }
+  if (movementBucket === 'expanding') {
+    return watchpointCount > 0
+      ? 'expanding_with_watchpoints'
+      : 'expanding_visible_digest';
+  }
+  if (movementBucket === 'updated' || movementBucket === 'posture_shifted') {
+    return watchpointCount > 0
+      ? 'changed_with_watchpoints'
+      : 'changed_visible_digest';
+  }
+  if (watchpointCount > 0) {
+    return dossierPresent
+      ? 'coverage_with_watchpoints'
+      : 'watchpoints_without_dossier';
+  }
+  if (movementBucket === 'stabilizing' || movementBucket === 'unchanged') {
+    return 'stable_visible_digest';
+  }
+  return dossierPresent || refutationPresent
+    ? 'visible_digest'
+    : 'not_applicable';
+ }
+
+ function buildMecWorkspaceChallengeDossierReviewDigest(payload, reviewSummary, latestReview, sourceLinkage = {}, unresolvedReferences = [], evidenceContext = null, reviewHistoryContext = null, relatedCandidates = [], deltaContext = null, contradictionContext = null, decisionPacketContext = null, challengeContext = null, refutationContext = null, challengeDossierContext = null, challengeDossierDeltaContext = null, reviewTraceContext = null, candidateMap = new Map(), reviewMap = new Map()) {
+  const candidateId = payload && payload.id ? payload.id : null;
+  const candidateType = payload && payload.candidate_type ? payload.candidate_type : null;
+  const primaryCandidateId = candidateType === 'counterexample_candidate'
+    ? ((refutationContext && refutationContext.primary_candidate_id)
+      || (challengeDossierContext && challengeDossierContext.primary_candidate_id)
+      || (sourceLinkage && sourceLinkage.refutes_candidate_id)
+      || null)
+    : candidateId;
+  const primaryCandidate = primaryCandidateId ? candidateMap.get(primaryCandidateId) || null : null;
+  const primaryReviewSummary = primaryCandidateId
+    ? (primaryCandidateId === candidateId ? reviewSummary : buildMecReviewSummary(reviewMap.get(primaryCandidateId) || []))
+    : null;
+  const coverageGaps = Array.isArray(challengeDossierContext && challengeDossierContext.coverage_gaps)
+    ? challengeDossierContext.coverage_gaps
+    : [];
+  const contradictionSignals = Array.isArray(contradictionContext && contradictionContext.contradiction_signals)
+    ? contradictionContext.contradiction_signals
+    : [];
+  const decisionMissingSignals = Array.isArray(decisionPacketContext && decisionPacketContext.missing_signals)
+    ? decisionPacketContext.missing_signals
+    : [];
+  const refutationOpenQualifiers = Array.isArray(refutationContext && refutationContext.open_qualifiers)
+    ? refutationContext.open_qualifiers
+    : [];
+  const unresolvedReferenceLabels = Array.isArray(unresolvedReferences)
+    ? unresolvedReferences.map(item => item.label).filter(Boolean)
+    : [];
+  const watchpoints = Array.from(new Set([
+    ...coverageGaps,
+    ...unresolvedReferenceLabels,
+    ...decisionMissingSignals,
+    ...contradictionSignals,
+    ...refutationOpenQualifiers
+  ])).slice(0, 6);
+  const digestBucket = deriveMecChallengeDossierReviewDigestBucket(challengeDossierContext, challengeDossierDeltaContext, refutationContext, watchpoints.length);
+  const coverageRead = challengeDossierContext && challengeDossierContext.dossier_present
+    ? `Coverage currently reads as ${challengeDossierContext.challenge_posture_bucket || 'not_visible'} with ${Number(challengeDossierContext.visible_counterexample_count || 0)} visible counterexample(s) across ${Number(challengeDossierContext.distinct_challenge_line_count || 0)} visible line(s).`
+    : 'No stronger consolidated challenge dossier coverage is currently visible in the canonical workspace.';
+  const deltaRead = challengeDossierDeltaContext && challengeDossierDeltaContext.delta_summary
+    ? challengeDossierDeltaContext.delta_summary
+    : 'No stronger challenge dossier evolution read is currently visible.';
+  const refutationRole = refutationContext && refutationContext.refutation_role
+    ? refutationContext.refutation_role
+    : 'not_applicable';
+  const refutationBucket = (refutationContext && refutationContext.challenge_basis_bucket)
+    || (challengeContext && challengeContext.contradiction_pressure_bucket)
+    || 'not_visible';
+  const refutationRead = refutationContext && refutationContext.refutation_present
+    ? `Refutation currently reads as ${refutationRole} with visible pressure bucket ${refutationBucket}.`
+    : 'No explicit refutation relation is currently visible inside this consolidated digest.';
+  const chronology = [];
+  if (latestReview && latestReview.reviewed_at) {
+    chronology.push({
+      kind: 'review_anchor',
+      label: `Latest review anchor ${latestReview.review_outcome || 'written'}`,
+      at: latestReview.reviewed_at,
+      detail: `Latest review source ${latestReview.review_source || 'not_visible'}`,
+      timing_bucket: 'anchor'
+    });
+  }
+  const newLines = Array.isArray(challengeDossierDeltaContext && challengeDossierDeltaContext.new_lines)
+    ? challengeDossierDeltaContext.new_lines
+    : [];
+  const updatedLines = Array.isArray(challengeDossierDeltaContext && challengeDossierDeltaContext.updated_lines)
+    ? challengeDossierDeltaContext.updated_lines
+    : [];
+  const stableLines = Array.isArray(challengeDossierDeltaContext && challengeDossierDeltaContext.stable_lines)
+    ? challengeDossierDeltaContext.stable_lines
+    : [];
+  for (const line of newLines.slice(0, 2)) {
+    chronology.push({
+      kind: 'new_challenge_line',
+      label: line.line_label || line.line_signature || 'visible challenge line',
+      at: null,
+      detail: `New visible line since anchor | ${line.contribution_posture || 'visible_line'}`,
+      timing_bucket: 'since_anchor'
+    });
+  }
+  for (const line of updatedLines.slice(0, 2)) {
+    chronology.push({
+      kind: 'updated_challenge_line',
+      label: line.line_label || line.line_signature || 'visible challenge line',
+      at: null,
+      detail: `Updated across anchor | ${line.contribution_posture || 'visible_line'}`,
+      timing_bucket: 'across_anchor'
+    });
+  }
+  for (const line of stableLines.slice(0, chronology.length < 2 ? 2 : 1)) {
+    chronology.push({
+      kind: 'stable_challenge_line',
+      label: line.line_label || line.line_signature || 'visible challenge line',
+      at: null,
+      detail: `Stable before anchor | ${line.contribution_posture || 'visible_line'}`,
+      timing_bucket: 'pre_anchor'
+    });
+  }
+  const latestReviewedAt = latestReview && latestReview.reviewed_at
+    ? parseMecWorkspaceTimestamp(latestReview.reviewed_at)
+    : null;
+  const visibleCounterexamples = [];
+  for (const candidate of candidateMap.values()) {
+    if (!candidate || candidate.candidate_type !== 'counterexample_candidate') {
+      continue;
+    }
+    if ((candidate.refutes_candidate_id || null) !== primaryCandidateId) {
+      continue;
+    }
+    visibleCounterexamples.push(candidate);
+  }
+  visibleCounterexamples.sort((left, right) => parseMecWorkspaceTimestamp(right.updated_at || right.created_at) - parseMecWorkspaceTimestamp(left.updated_at || left.created_at));
+  for (const counterexample of visibleCounterexamples.slice(0, 3)) {
+    const createdAt = counterexample.created_at ? parseMecWorkspaceTimestamp(counterexample.created_at) : null;
+    chronology.push({
+      kind: 'counterexample_visible',
+      label: buildMecWorkspaceTitle(counterexample),
+      candidate_id: counterexample.id,
+      at: counterexample.updated_at || counterexample.created_at || null,
+      detail: `basis ${(counterexample.challenge_basis && counterexample.challenge_basis.contradiction_pressure_bucket) || 'not_visible'} | stored ${counterexample.status || 'proposal_only'}`,
+      timing_bucket: latestReviewedAt !== null && createdAt !== null && createdAt > latestReviewedAt
+        ? 'post_anchor'
+        : 'visible'
+    });
+  }
+  const digestFlags = [];
+  if (challengeDossierContext && challengeDossierContext.dossier_role === 'counterexample_contribution') {
+    digestFlags.push('counterexample_contribution_visible');
+  }
+  if (newLines.length > 0) {
+    digestFlags.push('new_dossier_lines_visible');
+  }
+  if (updatedLines.length > 0) {
+    digestFlags.push('updated_dossier_lines_visible');
+  }
+  if (stableLines.length > 0) {
+    digestFlags.push('stable_dossier_lines_visible');
+  }
+  if (watchpoints.length > 0) {
+    digestFlags.push('watchpoints_visible');
+  }
+  if (refutationContext && refutationContext.refutation_present) {
+    digestFlags.push('refutation_visible');
+  }
+  if (reviewTraceContext && reviewTraceContext.trace_present) {
+    digestFlags.push('review_trace_visible');
+  }
+  const visibleCounterexampleCount = Number((challengeDossierContext && challengeDossierContext.visible_counterexample_count)
+    || (refutationContext && (refutationContext.visible_counterexample_count || refutationContext.visible_sibling_counterexample_count))
+    || 0);
+  const distinctChallengeLineCount = Number(challengeDossierContext && challengeDossierContext.distinct_challenge_line_count || 0);
+  let digestSummary = 'No consolidated challenge dossier review digest is currently derivable for this workspace item.';
+  if (candidateType === 'counterexample_candidate' && primaryCandidateId) {
+    digestSummary = `This proposal-only counterexample contributes into the consolidated review digest for ${primaryCandidateId}. Coverage reads as ${challengeDossierContext && challengeDossierContext.challenge_posture_bucket ? challengeDossierContext.challenge_posture_bucket : 'not_visible'}, evolution reads as ${challengeDossierDeltaContext && challengeDossierDeltaContext.movement_bucket ? challengeDossierDeltaContext.movement_bucket : 'not_derivable'}, and ${watchpoints.length} watchpoint(s) remain visible.`;
+  } else if (challengeDossierContext && challengeDossierContext.dossier_present) {
+    digestSummary = `This primary-candidate review digest currently spans ${visibleCounterexampleCount} visible counterexample(s) across ${distinctChallengeLineCount} visible challenge line(s). Coverage reads as ${challengeDossierContext.challenge_posture_bucket || 'not_visible'}, evolution reads as ${challengeDossierDeltaContext && challengeDossierDeltaContext.movement_bucket ? challengeDossierDeltaContext.movement_bucket : 'not_derivable'}, and ${watchpoints.length > 0 ? `${watchpoints.length} watchpoint(s) remain visible.` : 'no stronger watchpoint remains visible.'}`;
+  } else if (watchpoints.length > 0 || (refutationContext && refutationContext.refutation_present)) {
+    digestSummary = `A compact consolidated review digest is still readable even without a stronger visible dossier snapshot. Refutation reads as ${refutationRole}, and ${watchpoints.length} watchpoint(s) remain visible.`;
+  }
+  return {
+    digest_present: Boolean((challengeDossierContext && challengeDossierContext.dossier_present) || (refutationContext && refutationContext.refutation_present) || watchpoints.length > 0),
+    digest_role: candidateType === 'counterexample_candidate'
+      ? 'counterexample_contribution_review_digest'
+      : (challengeDossierContext && challengeDossierContext.dossier_present)
+        ? 'primary_candidate_review_digest'
+        : 'not_applicable',
+    digest_summary: digestSummary,
+    primary_candidate_id: primaryCandidateId,
+    primary_candidate_title: primaryCandidate
+      ? buildMecWorkspaceTitle(primaryCandidate)
+      : (challengeDossierContext && challengeDossierContext.primary_candidate_title) || null,
+    primary_candidate_current_review_state: primaryReviewSummary ? primaryReviewSummary.current_state : null,
+    primary_candidate_reviewable: primaryReviewSummary ? Boolean(primaryReviewSummary.reviewable) : false,
+    primary_candidate_terminal: primaryReviewSummary ? Boolean(primaryReviewSummary.terminal) : false,
+    digest_bucket: digestBucket,
+    coverage_read: coverageRead,
+    delta_read: deltaRead,
+    refutation_read: refutationRead,
+    visible_counterexample_count: visibleCounterexampleCount,
+    distinct_challenge_line_count: distinctChallengeLineCount,
+    reinforcing_line_count: Number(challengeDossierContext && challengeDossierContext.reinforcing_line_count || 0),
+    new_line_count: Number(challengeDossierDeltaContext && challengeDossierDeltaContext.new_line_count || 0),
+    stable_line_count: Number(challengeDossierDeltaContext && challengeDossierDeltaContext.stable_line_count || 0),
+    updated_line_count: Number(challengeDossierDeltaContext && challengeDossierDeltaContext.updated_line_count || 0),
+    coverage_gap_count: coverageGaps.length,
+    watchpoint_count: watchpoints.length,
+    chronology: chronology.slice(0, 8),
+    watchpoints,
+    digest_flags: Array.from(new Set(digestFlags)).slice(0, 8),
+    challenge_dossier_review_digest_surface_version: 'phase4e-mec-challenge-dossier-review-digest/v1'
+  };
+ }
+
  function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) {
   if (!payload) {
     return null;
@@ -2177,6 +2412,7 @@ function buildMecWorkspaceChallengeContext(payload, latestReview = null, sourceL
   const refutationContext = buildMecWorkspaceRefutationContext(payload, reviewSummary, latestReview, sourceLinkage, unresolvedRuntimeReferences, evidenceContext, reviewHistoryContext, relatedCandidates, deltaContext, contradictionContext, decisionPacketContext, challengeContext, reviewTraceContext, candidateMap, reviewMap);
   const challengeDossierContext = buildMecWorkspaceChallengeDossierContext(payload, reviewSummary, latestReview, sourceLinkage, unresolvedRuntimeReferences, evidenceContext, reviewHistoryContext, relatedCandidates, deltaContext, contradictionContext, decisionPacketContext, challengeContext, refutationContext, reviewTraceContext, candidateMap, reviewMap);
   const challengeDossierDeltaContext = buildMecWorkspaceChallengeDossierDeltaContext(payload, reviewSummary, latestReview, challengeDossierContext, reviewTraceContext, candidateMap);
+  const challengeDossierReviewDigest = buildMecWorkspaceChallengeDossierReviewDigest(payload, reviewSummary, latestReview, sourceLinkage, unresolvedRuntimeReferences, evidenceContext, reviewHistoryContext, relatedCandidates, deltaContext, contradictionContext, decisionPacketContext, challengeContext, refutationContext, challengeDossierContext, challengeDossierDeltaContext, reviewTraceContext, candidateMap, reviewMap);
   return {
     workspace_kind: 'mec_review_workspace',
     workspace_version: 'phase3c-mec-review-workspace/v1',
@@ -2225,6 +2461,7 @@ function buildMecWorkspaceChallengeContext(payload, latestReview = null, sourceL
     refutation_context: refutationContext,
     challenge_dossier_context: challengeDossierContext,
     challenge_dossier_delta_context: challengeDossierDeltaContext,
+    challenge_dossier_review_digest: challengeDossierReviewDigest,
     review_trace_context: reviewTraceContext,
     workspace_summary: {
       review_count: reviewSummary.review_count,
@@ -2245,6 +2482,9 @@ function buildMecWorkspaceChallengeContext(payload, latestReview = null, sourceL
       challenge_line_count: Number(challengeDossierContext.distinct_challenge_line_count || 0),
       challenge_dossier_delta_movement: challengeDossierDeltaContext.movement_bucket,
       challenge_dossier_new_lines: challengeDossierDeltaContext.new_line_count,
+      challenge_dossier_review_digest_present: challengeDossierReviewDigest.digest_present,
+      challenge_dossier_review_digest_bucket: challengeDossierReviewDigest.digest_bucket,
+      challenge_dossier_review_watchpoints: challengeDossierReviewDigest.watchpoint_count,
       trace_present: reviewTraceContext.trace_present
     },
     raw_review_records: reviewRecords.map(record => ({ ...record })),
