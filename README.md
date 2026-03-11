@@ -19,6 +19,10 @@ aicos-registry/
 ├── index/
 │   ├── INDEX.json    # Lightweight registry index (GENERATED)
 │   └── ALIASES.json  # Old ID → New ID mapping for backward compatibility
+├── docs/
+│   ├── *.md          # Architecture reference layer (human-authored)
+│   ├── session-notes/
+│   └── ARCHITECTURE_CARD_CROSSWALK.md
 ├── human/
 │   └── REGISTRY.md   # Human-readable overview (GENERATED - DO NOT EDIT)
 ├── tools/
@@ -26,6 +30,17 @@ aicos-registry/
 │   └── generate-human-registry.js # Generates REGISTRY.md from INDEX.json
 └── README.md
 ```
+
+## Architecture Reference Layer
+
+The `docs/` directory contains human-authored architecture references, session notes, and system-spec material.
+
+- `cards/**` remains the canonical source for live card truth
+- `index/INDEX.json` remains the generated scan surface for agents
+- `index/ALIASES.json` remains a narrow backward-compatibility layer, not a general interpretation space
+- `docs/ARCHITECTURE_CARD_CROSSWALK.md` explains how to interpret historical aliases, shorthand labels, and phantom references that appear in architecture prose
+
+If an architecture document and a live card disagree, prefer the live card.
 
 ## ID Conventions
 
@@ -38,6 +53,8 @@ All card IDs follow a normalized scheme:
 | Meta | `meta-NNN` | `meta-001`, `meta-006` |
 
 **Note:** Some legacy IDs may not follow this pattern (e.g., `err-dev-01`). These are preserved for stability but new cards should use the normalized format.
+
+For architecture-layer references in `docs/**`, use `docs/ARCHITECTURE_CARD_CROSSWALK.md` before assuming that a historical label maps to a live registry ID.
 
 ## How agents should use this registry
 
