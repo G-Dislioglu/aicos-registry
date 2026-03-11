@@ -2635,6 +2635,166 @@ function buildMecWorkspaceChallengeContext(payload, latestReview = null, sourceL
   };
  }
 
+ function buildMecWorkspaceReviewGateDecisionPacket(payload, reviewSummary, latestReview, evidenceContext = null, challengeContext = null, refutationContext = null, challengeDossierReviewDigest = null, reviewGateSignalSurface = null, reviewGateThresholdTrace = null, decisionPacketContext = null) {
+  const readinessBucket = reviewGateSignalSurface && reviewGateSignalSurface.review_readiness_bucket
+    ? reviewGateSignalSurface.review_readiness_bucket
+    : 'gate_not_ready';
+  const primaryReasonCode = Array.isArray(reviewGateThresholdTrace && reviewGateThresholdTrace.reason_codes) && reviewGateThresholdTrace.reason_codes.length > 0
+    ? reviewGateThresholdTrace.reason_codes[0]
+    : null;
+  const reasonCodeCount = Array.isArray(reviewGateThresholdTrace && reviewGateThresholdTrace.reason_codes)
+    ? reviewGateThresholdTrace.reason_codes.length
+    : 0;
+  const gateFlags = Array.isArray(reviewGateSignalSurface && reviewGateSignalSurface.gate_flags)
+    ? reviewGateSignalSurface.gate_flags
+    : [];
+  const digestWatchpoints = Array.isArray(challengeDossierReviewDigest && challengeDossierReviewDigest.watchpoints)
+    ? challengeDossierReviewDigest.watchpoints
+    : [];
+  const blockerReasons = Array.isArray(reviewGateThresholdTrace && reviewGateThresholdTrace.blocker_reasons)
+    ? reviewGateThresholdTrace.blocker_reasons
+    : [];
+  const concernReasons = Array.isArray(reviewGateThresholdTrace && reviewGateThresholdTrace.concern_reasons)
+    ? reviewGateThresholdTrace.concern_reasons
+    : [];
+  const supportReasons = Array.isArray(reviewGateThresholdTrace && reviewGateThresholdTrace.support_reasons)
+    ? reviewGateThresholdTrace.support_reasons
+    : [];
+  const unresolvedDecisionPoints = Array.from(new Set([
+    ...digestWatchpoints,
+    ...(Array.isArray(decisionPacketContext && decisionPacketContext.missing_signals) ? decisionPacketContext.missing_signals : []),
+    ...(Array.isArray(refutationContext && refutationContext.open_qualifiers) ? refutationContext.open_qualifiers : []),
+    ...(Array.isArray(challengeContext && challengeContext.challenge_signals) ? challengeContext.challenge_signals.slice(0, 2) : []),
+    ...(Array.isArray(refutationContext && refutationContext.qualifying_signals) ? refutationContext.qualifying_signals.slice(0, 2) : [])
+  ])).slice(0, 6);
+  const riskBucket = blockerReasons.length > 0
+    ? 'blocker_weighted'
+    : concernReasons.length > 0
+      ? 'concern_weighted'
+      : supportReasons.length > 0
+        ? 'support_weighted'
+        : 'not_visible';
+  const decisionSnapshot = {
+    review_readiness_bucket: readinessBucket,
+    review_readiness_summary: reviewGateSignalSurface && reviewGateSignalSurface.review_readiness_summary
+      ? reviewGateSignalSurface.review_readiness_summary
+      : 'No stronger review gate signal surface is currently derivable.',
+    primary_reason_code: primaryReasonCode,
+    reason_code_count: reasonCodeCount,
+    gate_flags: gateFlags.slice(0, 6),
+    watchpoints: digestWatchpoints.slice(0, 4),
+    contradiction_pressure_signal: reviewGateSignalSurface && reviewGateSignalSurface.contradiction_pressure_signal
+      ? reviewGateSignalSurface.contradiction_pressure_signal
+      : 'not_visible',
+    stability_signal: reviewGateSignalSurface && reviewGateSignalSurface.stability_signal
+      ? reviewGateSignalSurface.stability_signal
+      : 'not_visible',
+    coverage_signal: reviewGateSignalSurface && reviewGateSignalSurface.coverage_signal
+      ? reviewGateSignalSurface.coverage_signal
+      : 'not_visible',
+    unresolved_watchpoint_signal: reviewGateSignalSurface && reviewGateSignalSurface.unresolved_watchpoint_signal
+      ? reviewGateSignalSurface.unresolved_watchpoint_signal
+      : 'not_visible'
+  };
+  const decisionBasis = {
+    carried_fields: [
+      {
+        source_surface: 'challenge_dossier_review_digest',
+        field: 'digest_bucket',
+        value: challengeDossierReviewDigest && challengeDossierReviewDigest.digest_bucket
+          ? challengeDossierReviewDigest.digest_bucket
+          : 'not_applicable'
+      },
+      {
+        source_surface: 'review_gate_signal_surface',
+        field: 'review_readiness_bucket',
+        value: readinessBucket
+      },
+      {
+        source_surface: 'review_gate_signal_surface',
+        field: 'coverage_signal',
+        value: reviewGateSignalSurface && reviewGateSignalSurface.coverage_signal
+          ? reviewGateSignalSurface.coverage_signal
+          : 'not_visible'
+      },
+      {
+        source_surface: 'review_gate_signal_surface',
+        field: 'stability_signal',
+        value: reviewGateSignalSurface && reviewGateSignalSurface.stability_signal
+          ? reviewGateSignalSurface.stability_signal
+          : 'not_visible'
+      },
+      {
+        source_surface: 'review_gate_threshold_trace',
+        field: 'primary_reason_code',
+        value: primaryReasonCode || 'not_visible'
+      },
+      {
+        source_surface: 'review_gate_threshold_trace',
+        field: 'trace_flags',
+        value: Array.isArray(reviewGateThresholdTrace && reviewGateThresholdTrace.trace_flags)
+          ? reviewGateThresholdTrace.trace_flags.slice(0, 4).join(', ')
+          : 'not_visible'
+      }
+    ],
+    basis_summary: `This packet is carried by 4E digest ${challengeDossierReviewDigest && challengeDossierReviewDigest.digest_bucket ? challengeDossierReviewDigest.digest_bucket : 'not_applicable'}, 4F gate bucket ${readinessBucket}, and ${reasonCodeCount} visible 4G reason code(s).`
+  };
+  const evidenceAnchorRead = {
+    evidence_summary: evidenceContext && evidenceContext.evidence_summary
+      ? evidenceContext.evidence_summary
+      : 'Only minimal lineage signals are available on this workspace item.',
+    source_anchor: evidenceContext && Array.isArray(evidenceContext.source_event_context) && evidenceContext.source_event_context.length > 0
+      ? evidenceContext.source_event_context.slice(0, 2).map(item => `${item.event_id}${item.summary ? ` | ${item.summary}` : ''}`)
+      : [],
+    challenge_anchor: challengeContext && challengeContext.challenge_summary
+      ? challengeContext.challenge_summary
+      : 'No stronger challenge anchor is currently visible.',
+    refutation_anchor: refutationContext && refutationContext.refutation_summary
+      ? refutationContext.refutation_summary
+      : 'No stronger refutation anchor is currently visible.',
+    digest_anchor: challengeDossierReviewDigest && challengeDossierReviewDigest.digest_summary
+      ? challengeDossierReviewDigest.digest_summary
+      : 'No stronger digest anchor is currently visible.'
+  };
+  const decisionRiskRead = {
+    risk_bucket: riskBucket,
+    blocker_count: blockerReasons.length,
+    concern_count: concernReasons.length,
+    support_count: supportReasons.length,
+    blocker_read: blockerReasons.slice(0, 3).map(item => item.label),
+    concern_read: concernReasons.slice(0, 3).map(item => item.label),
+    support_read: supportReasons.slice(0, 3).map(item => item.label),
+    risk_summary: blockerReasons.length > 0
+      ? `Decision risk currently reads blocker-weighted with ${blockerReasons.length} blocker reason(s) still visible.`
+      : concernReasons.length > 0
+        ? `Decision risk currently reads concern-weighted with ${concernReasons.length} concern reason(s) still qualifying the packet.`
+        : `Decision risk currently reads support-weighted with ${supportReasons.length} support reason(s) and no stronger blocker pressure.`
+  };
+  const packetFlags = [];
+  if (readinessBucket === 'gate_closed') packetFlags.push('decision_packet_closed');
+  if (readinessBucket === 'gate_restricted') packetFlags.push('decision_packet_restricted');
+  if (readinessBucket === 'gate_clear_read') packetFlags.push('decision_packet_clear_read');
+  if (blockerReasons.length > 0) packetFlags.push('blocker_weighted_packet');
+  if (concernReasons.length > 0) packetFlags.push('concern_weighted_packet');
+  if (supportReasons.length > 0) packetFlags.push('support_weighted_packet');
+  if (unresolvedDecisionPoints.length > 0) packetFlags.push('open_decision_points_visible');
+  if (evidenceContext && evidenceContext.integrity_state === 'degraded') packetFlags.push('evidence_integrity_degraded');
+  const decisionPacketSummary = blockerReasons.length > 0
+    ? `Decision packet reads ${readinessBucket} with ${primaryReasonCode || 'no primary reason code'} as the leading explanation, ${digestWatchpoints.length} visible watchpoint(s), and ${unresolvedDecisionPoints.length} open decision point(s) still in view.`
+    : `Decision packet reads ${readinessBucket} with ${reasonCodeCount} visible reason code(s), ${supportReasons.length} support reason(s), and ${unresolvedDecisionPoints.length} open decision point(s).`;
+  return {
+    packet_present: Boolean((reviewGateSignalSurface && reviewGateSignalSurface.gate_surface_present) || reasonCodeCount > 0 || unresolvedDecisionPoints.length > 0),
+    decision_snapshot: decisionSnapshot,
+    decision_basis: decisionBasis,
+    evidence_anchor_read: evidenceAnchorRead,
+    decision_risk_read: decisionRiskRead,
+    unresolved_decision_points: unresolvedDecisionPoints,
+    packet_flags: Array.from(new Set(packetFlags)).slice(0, 8),
+    decision_packet_summary: decisionPacketSummary,
+    review_gate_decision_packet_surface_version: 'phase4h-mec-review-gate-decision-packet/v1'
+  };
+ }
+
  function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) {
   if (!payload) {
     return null;
@@ -2665,6 +2825,7 @@ function buildMecWorkspaceChallengeContext(payload, latestReview = null, sourceL
   const challengeDossierReviewDigest = buildMecWorkspaceChallengeDossierReviewDigest(payload, reviewSummary, latestReview, sourceLinkage, unresolvedRuntimeReferences, evidenceContext, reviewHistoryContext, relatedCandidates, deltaContext, contradictionContext, decisionPacketContext, challengeContext, refutationContext, challengeDossierContext, challengeDossierDeltaContext, reviewTraceContext, candidateMap, reviewMap);
   const reviewGateSignalSurface = buildMecWorkspaceReviewGateSignalSurface(payload, reviewSummary, latestReview, contradictionContext, decisionPacketContext, challengeContext, refutationContext, challengeDossierContext, challengeDossierDeltaContext, challengeDossierReviewDigest);
   const reviewGateThresholdTrace = buildMecWorkspaceReviewGateThresholdTrace(payload, reviewSummary, latestReview, challengeDossierReviewDigest, reviewGateSignalSurface, challengeDossierContext, challengeDossierDeltaContext, contradictionContext, decisionPacketContext);
+  const reviewGateDecisionPacket = buildMecWorkspaceReviewGateDecisionPacket(payload, reviewSummary, latestReview, evidenceContext, challengeContext, refutationContext, challengeDossierReviewDigest, reviewGateSignalSurface, reviewGateThresholdTrace, decisionPacketContext);
   return {
     workspace_kind: 'mec_review_workspace',
     workspace_version: 'phase3c-mec-review-workspace/v1',
@@ -2716,6 +2877,7 @@ function buildMecWorkspaceChallengeContext(payload, latestReview = null, sourceL
     challenge_dossier_review_digest: challengeDossierReviewDigest,
     review_gate_signal_surface: reviewGateSignalSurface,
     review_gate_threshold_trace: reviewGateThresholdTrace,
+    review_gate_decision_packet: reviewGateDecisionPacket,
     review_trace_context: reviewTraceContext,
     workspace_summary: {
       review_count: reviewSummary.review_count,
@@ -2744,6 +2906,8 @@ function buildMecWorkspaceChallengeContext(payload, latestReview = null, sourceL
       review_gate_watchpoint_signal: reviewGateSignalSurface.unresolved_watchpoint_signal,
       review_gate_reason_code_count: Array.isArray(reviewGateThresholdTrace.reason_codes) ? reviewGateThresholdTrace.reason_codes.length : 0,
       review_gate_primary_reason_code: Array.isArray(reviewGateThresholdTrace.reason_codes) && reviewGateThresholdTrace.reason_codes.length > 0 ? reviewGateThresholdTrace.reason_codes[0] : null,
+      review_gate_decision_risk_bucket: reviewGateDecisionPacket && reviewGateDecisionPacket.decision_risk_read ? reviewGateDecisionPacket.decision_risk_read.risk_bucket : 'not_visible',
+      review_gate_decision_open_point_count: reviewGateDecisionPacket && Array.isArray(reviewGateDecisionPacket.unresolved_decision_points) ? reviewGateDecisionPacket.unresolved_decision_points.length : 0,
       trace_present: reviewTraceContext.trace_present
     },
     raw_review_records: reviewRecords.map(record => ({ ...record })),

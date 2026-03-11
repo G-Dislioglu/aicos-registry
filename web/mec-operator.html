@@ -1017,6 +1017,11 @@
                 <div id="detail-review-gate-threshold-trace" class="compact-list"></div>
               </div>
               <div class="detail-section">
+                <h3>Review gate decision packet</h3>
+                <div class="panel-sub">Compact reviewer-taugliche decision packet read over 4E, 4F and 4G without creating a new truth, recommendation, or automation layer.</div>
+                <div id="detail-review-gate-decision-packet" class="compact-list"></div>
+              </div>
+              <div class="detail-section">
                 <h3>Review action trace</h3>
                 <div class="panel-sub">What was visible when the latest review action was written.</div>
                 <div id="detail-trace" class="compact-list"></div>
@@ -1244,6 +1249,7 @@
     const detailChallengeDossierDigestEl = document.getElementById('detail-challenge-dossier-digest');
     const detailReviewGateSignalsEl = document.getElementById('detail-review-gate-signals');
     const detailReviewGateThresholdTraceEl = document.getElementById('detail-review-gate-threshold-trace');
+    const detailReviewGateDecisionPacketEl = document.getElementById('detail-review-gate-decision-packet');
     const detailTraceEl = document.getElementById('detail-trace');
     const reviewActionsEl = document.getElementById('review-actions');
     const reviewMessageEl = document.getElementById('review-message');
@@ -1656,6 +1662,10 @@
 
     function getReviewGateThresholdTrace(item) {
       return item && item.review_gate_threshold_trace ? item.review_gate_threshold_trace : null;
+    }
+
+    function getReviewGateDecisionPacket(item) {
+      return item && item.review_gate_decision_packet ? item.review_gate_decision_packet : null;
     }
 
     function getDecisionPacketContext(item) {
@@ -3461,6 +3471,83 @@
       `;
     }
 
+    function renderReviewGateDecisionPacket(payload) {
+      const packet = getReviewGateDecisionPacket(payload);
+      if (!packet) {
+        detailReviewGateDecisionPacketEl.innerHTML = '<div class="empty">No review gate decision packet is available for this workspace item.</div>';
+        return;
+      }
+      const snapshot = packet.decision_snapshot || {};
+      const basis = packet.decision_basis || {};
+      const anchors = packet.evidence_anchor_read || {};
+      const risk = packet.decision_risk_read || {};
+      const unresolved = Array.isArray(packet.unresolved_decision_points) ? packet.unresolved_decision_points : [];
+      const packetFlags = Array.isArray(packet.packet_flags) ? packet.packet_flags : [];
+      const carriedFields = Array.isArray(basis.carried_fields) ? basis.carried_fields : [];
+      detailReviewGateDecisionPacketEl.innerHTML = `
+        <div class="detail-card">
+          <strong>Decision packet summary</strong>
+          <span>${escapeHtml(packet.decision_packet_summary || '-')}</span>
+          <div class="row-meta">
+            <span class="badge">${escapeHtml(snapshot.review_readiness_bucket || 'gate_not_ready')}</span>
+            <span class="badge">primary reason ${escapeHtml(snapshot.primary_reason_code || 'not_visible')}</span>
+            <span class="badge">open points ${escapeHtml(String(unresolved.length))}</span>
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Decision snapshot</strong>
+          <div style="display:grid; gap:6px; margin-top:4px;">
+            <div class="tiny">review_readiness_summary | ${escapeHtml(snapshot.review_readiness_summary || '-')}</div>
+            <div class="tiny">reason_code_count | ${escapeHtml(String(snapshot.reason_code_count || 0))}</div>
+            <div class="tiny">coverage_signal | ${escapeHtml(snapshot.coverage_signal || 'not_visible')}</div>
+            <div class="tiny">stability_signal | ${escapeHtml(snapshot.stability_signal || 'not_visible')}</div>
+            <div class="tiny">contradiction_pressure_signal | ${escapeHtml(snapshot.contradiction_pressure_signal || 'not_visible')}</div>
+            <div class="tiny">unresolved_watchpoint_signal | ${escapeHtml(snapshot.unresolved_watchpoint_signal || 'not_visible')}</div>
+            ${(Array.isArray(snapshot.watchpoints) ? snapshot.watchpoints : []).length > 0
+              ? (snapshot.watchpoints || []).map(item => `<div class="tiny">watchpoint | ${escapeHtml(item)}</div>`).join('')
+              : '<div class="tiny">No stronger packet watchpoint is currently visible.</div>'}
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Decision basis</strong>
+          <div class="tiny" style="margin-top:4px;">${escapeHtml(basis.basis_summary || '-')}</div>
+          <div style="display:grid; gap:6px; margin-top:8px;">
+            ${carriedFields.length > 0
+              ? carriedFields.map(item => `<div class="tiny">basis | ${escapeHtml(item.source_surface || '-')}::${escapeHtml(item.field || '-')} | ${escapeHtml(item.value || '-')}</div>`).join('')
+              : '<div class="tiny">No carried decision basis field is currently visible.</div>'}
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Evidence anchor read</strong>
+          <div style="display:grid; gap:6px; margin-top:4px;">
+            <div class="tiny">evidence | ${escapeHtml(anchors.evidence_summary || '-')}</div>
+            <div class="tiny">challenge | ${escapeHtml(anchors.challenge_anchor || '-')}</div>
+            <div class="tiny">refutation | ${escapeHtml(anchors.refutation_anchor || '-')}</div>
+            <div class="tiny">digest | ${escapeHtml(anchors.digest_anchor || '-')}</div>
+            ${Array.isArray(anchors.source_anchor) && anchors.source_anchor.length > 0
+              ? anchors.source_anchor.map(item => `<div class="tiny">source | ${escapeHtml(item)}</div>`).join('')
+              : '<div class="tiny">No stronger source anchor is currently visible.</div>'}
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Decision risk / unresolved points</strong>
+          <div style="display:grid; gap:6px; margin-top:4px;">
+            <div class="tiny">risk_bucket | ${escapeHtml(risk.risk_bucket || 'not_visible')}</div>
+            <div class="tiny">risk_summary | ${escapeHtml(risk.risk_summary || '-')}</div>
+            ${(Array.isArray(risk.blocker_read) ? risk.blocker_read : []).map(item => `<div class="tiny">blocker | ${escapeHtml(item)}</div>`).join('')}
+            ${(Array.isArray(risk.concern_read) ? risk.concern_read : []).map(item => `<div class="tiny">concern | ${escapeHtml(item)}</div>`).join('')}
+            ${(Array.isArray(risk.support_read) ? risk.support_read : []).map(item => `<div class="tiny">support | ${escapeHtml(item)}</div>`).join('')}
+            ${unresolved.length > 0
+              ? unresolved.map(item => `<div class="tiny">open | ${escapeHtml(item)}</div>`).join('')
+              : '<div class="tiny">No stronger unresolved decision point is currently visible.</div>'}
+            ${packetFlags.length > 0
+              ? packetFlags.map(item => `<div class="tiny">flag | ${escapeHtml(item)}</div>`).join('')
+              : '<div class="tiny">No stronger decision packet flag is currently visible.</div>'}
+          </div>
+        </div>
+      `;
+    }
+
     function renderReviewTraceContext(payload) {
       const trace = getReviewTraceContext(payload);
       if (!trace) {
@@ -3719,6 +3806,7 @@
       renderChallengeDossierReviewDigest(payload);
       renderReviewGateSignalSurface(payload);
       renderReviewGateThresholdTrace(payload);
+      renderReviewGateDecisionPacket(payload);
       renderReviewTraceContext(payload);
       renderRawReviewRecords(payload);
       candidateDetailEl.textContent = JSON.stringify(rawCandidate, null, 2);

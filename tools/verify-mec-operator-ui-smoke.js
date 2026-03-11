@@ -228,6 +228,7 @@ function buildUiScriptHarness() {
     'detail-challenge-dossier-digest',
     'detail-review-gate-signals',
     'detail-review-gate-threshold-trace',
+    'detail-review-gate-decision-packet',
     'detail-trace',
     'review-actions',
     'review-message',
@@ -1611,6 +1612,140 @@ function buildUiScriptHarness() {
     };
   }
 
+  function buildHarnessReviewGateDecisionPacket(rawCandidate, reviewSummary, evidenceContext, challengeContext, refutationContext, challengeDossierReviewDigest, reviewGateSignalSurface, reviewGateThresholdTrace, decisionPacketContext) {
+    const readinessBucket = reviewGateSignalSurface && reviewGateSignalSurface.review_readiness_bucket
+      ? reviewGateSignalSurface.review_readiness_bucket
+      : 'gate_not_ready';
+    const primaryReasonCode = Array.isArray(reviewGateThresholdTrace && reviewGateThresholdTrace.reason_codes) && reviewGateThresholdTrace.reason_codes.length > 0
+      ? reviewGateThresholdTrace.reason_codes[0]
+      : null;
+    const reasonCodeCount = Array.isArray(reviewGateThresholdTrace && reviewGateThresholdTrace.reason_codes)
+      ? reviewGateThresholdTrace.reason_codes.length
+      : 0;
+    const gateFlags = Array.isArray(reviewGateSignalSurface && reviewGateSignalSurface.gate_flags)
+      ? reviewGateSignalSurface.gate_flags
+      : [];
+    const digestWatchpoints = Array.isArray(challengeDossierReviewDigest && challengeDossierReviewDigest.watchpoints)
+      ? challengeDossierReviewDigest.watchpoints
+      : [];
+    const blockerReasons = Array.isArray(reviewGateThresholdTrace && reviewGateThresholdTrace.blocker_reasons)
+      ? reviewGateThresholdTrace.blocker_reasons
+      : [];
+    const concernReasons = Array.isArray(reviewGateThresholdTrace && reviewGateThresholdTrace.concern_reasons)
+      ? reviewGateThresholdTrace.concern_reasons
+      : [];
+    const supportReasons = Array.isArray(reviewGateThresholdTrace && reviewGateThresholdTrace.support_reasons)
+      ? reviewGateThresholdTrace.support_reasons
+      : [];
+    const unresolvedDecisionPoints = Array.from(new Set([
+      ...digestWatchpoints,
+      ...(Array.isArray(decisionPacketContext && decisionPacketContext.missing_signals) ? decisionPacketContext.missing_signals : []),
+      ...(Array.isArray(refutationContext && refutationContext.open_qualifiers) ? refutationContext.open_qualifiers : []),
+      ...(Array.isArray(challengeContext && challengeContext.challenge_signals) ? challengeContext.challenge_signals.slice(0, 2) : []),
+      ...(Array.isArray(refutationContext && refutationContext.qualifying_signals) ? refutationContext.qualifying_signals.slice(0, 2) : [])
+    ])).slice(0, 6);
+    const riskBucket = blockerReasons.length > 0
+      ? 'blocker_weighted'
+      : concernReasons.length > 0
+        ? 'concern_weighted'
+        : supportReasons.length > 0
+          ? 'support_weighted'
+          : 'not_visible';
+    return {
+      packet_present: Boolean((reviewGateSignalSurface && reviewGateSignalSurface.gate_surface_present) || reasonCodeCount > 0 || unresolvedDecisionPoints.length > 0),
+      decision_snapshot: {
+        review_readiness_bucket: readinessBucket,
+        review_readiness_summary: reviewGateSignalSurface && reviewGateSignalSurface.review_readiness_summary
+          ? reviewGateSignalSurface.review_readiness_summary
+          : 'No stronger review gate signal surface is currently derivable.',
+        primary_reason_code: primaryReasonCode,
+        reason_code_count: reasonCodeCount,
+        gate_flags: gateFlags.slice(0, 6),
+        watchpoints: digestWatchpoints.slice(0, 4),
+        contradiction_pressure_signal: reviewGateSignalSurface && reviewGateSignalSurface.contradiction_pressure_signal
+          ? reviewGateSignalSurface.contradiction_pressure_signal
+          : 'not_visible',
+        stability_signal: reviewGateSignalSurface && reviewGateSignalSurface.stability_signal
+          ? reviewGateSignalSurface.stability_signal
+          : 'not_visible',
+        coverage_signal: reviewGateSignalSurface && reviewGateSignalSurface.coverage_signal
+          ? reviewGateSignalSurface.coverage_signal
+          : 'not_visible',
+        unresolved_watchpoint_signal: reviewGateSignalSurface && reviewGateSignalSurface.unresolved_watchpoint_signal
+          ? reviewGateSignalSurface.unresolved_watchpoint_signal
+          : 'not_visible'
+      },
+      decision_basis: {
+        carried_fields: [
+          {
+            source_surface: 'challenge_dossier_review_digest',
+            field: 'digest_bucket',
+            value: challengeDossierReviewDigest && challengeDossierReviewDigest.digest_bucket
+              ? challengeDossierReviewDigest.digest_bucket
+              : 'not_applicable'
+          },
+          {
+            source_surface: 'review_gate_signal_surface',
+            field: 'review_readiness_bucket',
+            value: readinessBucket
+          },
+          {
+            source_surface: 'review_gate_threshold_trace',
+            field: 'primary_reason_code',
+            value: primaryReasonCode || 'not_visible'
+          }
+        ],
+        basis_summary: `This packet is carried by 4E digest ${challengeDossierReviewDigest && challengeDossierReviewDigest.digest_bucket ? challengeDossierReviewDigest.digest_bucket : 'not_applicable'}, 4F gate bucket ${readinessBucket}, and ${reasonCodeCount} visible 4G reason code(s).`
+      },
+      evidence_anchor_read: {
+        evidence_summary: evidenceContext && evidenceContext.evidence_summary
+          ? evidenceContext.evidence_summary
+          : 'Only minimal lineage signals are available on this workspace item.',
+        source_anchor: evidenceContext && Array.isArray(evidenceContext.source_event_context) && evidenceContext.source_event_context.length > 0
+          ? evidenceContext.source_event_context.slice(0, 2).map(item => `${item.event_id}${item.summary ? ` | ${item.summary}` : ''}`)
+          : [],
+        challenge_anchor: challengeContext && challengeContext.challenge_summary
+          ? challengeContext.challenge_summary
+          : 'No stronger challenge anchor is currently visible.',
+        refutation_anchor: refutationContext && refutationContext.refutation_summary
+          ? refutationContext.refutation_summary
+          : 'No stronger refutation anchor is currently visible.',
+        digest_anchor: challengeDossierReviewDigest && challengeDossierReviewDigest.digest_summary
+          ? challengeDossierReviewDigest.digest_summary
+          : 'No stronger digest anchor is currently visible.'
+      },
+      decision_risk_read: {
+        risk_bucket: riskBucket,
+        blocker_count: blockerReasons.length,
+        concern_count: concernReasons.length,
+        support_count: supportReasons.length,
+        blocker_read: blockerReasons.slice(0, 3).map(item => item.label),
+        concern_read: concernReasons.slice(0, 3).map(item => item.label),
+        support_read: supportReasons.slice(0, 3).map(item => item.label),
+        risk_summary: blockerReasons.length > 0
+          ? `Decision risk currently reads blocker-weighted with ${blockerReasons.length} blocker reason(s) still visible.`
+          : concernReasons.length > 0
+            ? `Decision risk currently reads concern-weighted with ${concernReasons.length} concern reason(s) still qualifying the packet.`
+            : `Decision risk currently reads support-weighted with ${supportReasons.length} support reason(s) and no stronger blocker pressure.`
+      },
+      unresolved_decision_points: unresolvedDecisionPoints,
+      packet_flags: Array.from(new Set([
+        readinessBucket === 'gate_closed' ? 'decision_packet_closed' : null,
+        readinessBucket === 'gate_restricted' ? 'decision_packet_restricted' : null,
+        readinessBucket === 'gate_clear_read' ? 'decision_packet_clear_read' : null,
+        blockerReasons.length > 0 ? 'blocker_weighted_packet' : null,
+        concernReasons.length > 0 ? 'concern_weighted_packet' : null,
+        supportReasons.length > 0 ? 'support_weighted_packet' : null,
+        unresolvedDecisionPoints.length > 0 ? 'open_decision_points_visible' : null,
+        evidenceContext && evidenceContext.integrity_state === 'degraded' ? 'evidence_integrity_degraded' : null
+      ].filter(Boolean))).slice(0, 8),
+      decision_packet_summary: blockerReasons.length > 0
+        ? `Decision packet reads ${readinessBucket} with ${primaryReasonCode || 'no primary reason code'} as the leading explanation, ${digestWatchpoints.length} visible watchpoint(s), and ${unresolvedDecisionPoints.length} open decision point(s) still in view.`
+        : `Decision packet reads ${readinessBucket} with ${reasonCodeCount} visible reason code(s), ${supportReasons.length} support reason(s), and ${unresolvedDecisionPoints.length} open decision point(s).`,
+      review_gate_decision_packet_surface_version: 'phase4h-mec-review-gate-decision-packet/v1'
+    };
+  }
+
   function buildHarnessChallengeDossierContext(rawCandidate, reviewSummary, latestReview, unresolvedRuntimeReferences, decisionPacketContext, challengeContext, refutationContext) {
     const candidateId = rawCandidate && rawCandidate.id ? rawCandidate.id : null;
     const candidateType = rawCandidate && rawCandidate.candidate_type ? rawCandidate.candidate_type : null;
@@ -1904,6 +2039,9 @@ function buildUiScriptHarness() {
     const reviewGateThresholdTrace = rawCandidate && rawCandidate.review_gate_threshold_trace
       ? rawCandidate.review_gate_threshold_trace
       : buildHarnessReviewGateThresholdTrace(rawCandidate, reviewSummary, challengeDossierReviewDigest, reviewGateSignalSurface, challengeDossierContext, challengeDossierDeltaContext, contradictionContext, decisionPacketContext);
+    const reviewGateDecisionPacket = rawCandidate && rawCandidate.review_gate_decision_packet
+      ? rawCandidate.review_gate_decision_packet
+      : buildHarnessReviewGateDecisionPacket(rawCandidate, reviewSummary, evidenceContext, challengeContext, refutationContext, challengeDossierReviewDigest, reviewGateSignalSurface, reviewGateThresholdTrace, decisionPacketContext);
     return {
       workspace_kind: 'mec_review_workspace',
       workspace_version: 'phase3c-mec-review-workspace/v1',
@@ -1940,6 +2078,7 @@ function buildUiScriptHarness() {
       challenge_dossier_review_digest: challengeDossierReviewDigest,
       review_gate_signal_surface: reviewGateSignalSurface,
       review_gate_threshold_trace: reviewGateThresholdTrace,
+      review_gate_decision_packet: reviewGateDecisionPacket,
       review_trace_context: reviewTraceContext,
       state_explanation: stateExplanation,
       workspace_summary: {
@@ -1967,6 +2106,8 @@ function buildUiScriptHarness() {
         review_gate_watchpoint_signal: reviewGateSignalSurface.unresolved_watchpoint_signal,
         review_gate_reason_code_count: Array.isArray(reviewGateThresholdTrace.reason_codes) ? reviewGateThresholdTrace.reason_codes.length : 0,
         review_gate_primary_reason_code: Array.isArray(reviewGateThresholdTrace.reason_codes) && reviewGateThresholdTrace.reason_codes.length > 0 ? reviewGateThresholdTrace.reason_codes[0] : null,
+        review_gate_decision_risk_bucket: reviewGateDecisionPacket && reviewGateDecisionPacket.decision_risk_read ? reviewGateDecisionPacket.decision_risk_read.risk_bucket : 'not_visible',
+        review_gate_decision_open_point_count: reviewGateDecisionPacket && Array.isArray(reviewGateDecisionPacket.unresolved_decision_points) ? reviewGateDecisionPacket.unresolved_decision_points.length : 0,
         trace_present: reviewTraceContext.trace_present,
         pair_role: rawCandidate.candidate_type === 'invariant_candidate'
           ? 'invariant'
@@ -2304,6 +2445,7 @@ async function verifyEmbeddedUiWriteSemantics() {
   const detailChallengeDossierDigestEl = elements.get('detail-challenge-dossier-digest');
   const detailReviewGateSignalsEl = elements.get('detail-review-gate-signals');
   const detailReviewGateThresholdTraceEl = elements.get('detail-review-gate-threshold-trace');
+  const detailReviewGateDecisionPacketEl = elements.get('detail-review-gate-decision-packet');
   const detailTraceEl = elements.get('detail-trace');
   const challengeMessageEl = elements.get('challenge-message');
   const rawReviewRecordsEl = elements.get('raw-review-records');
@@ -2484,6 +2626,8 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(detailReviewGateSignalsEl.innerHTML.includes('coverage_signal'), 'Expected desk detail to render normalized Phase 4F gate signals');
   assert(detailReviewGateThresholdTraceEl.innerHTML.includes('Bucket explanation summary'), 'Expected desk detail to render the Phase 4G gate threshold trace surface');
   assert(detailReviewGateThresholdTraceEl.innerHTML.includes('Reason codes'), 'Expected desk detail to render structured Phase 4G reason codes');
+  assert(detailReviewGateDecisionPacketEl.innerHTML.includes('Decision packet summary'), 'Expected desk detail to render the Phase 4H review gate decision packet surface');
+  assert(detailReviewGateDecisionPacketEl.innerHTML.includes('Decision basis'), 'Expected desk detail to render compact Phase 4H decision basis fields');
   assert(detailTraceEl.innerHTML.includes('Review action trace'), 'Expected desk detail to render review trace surface');
   assert(detailTraceEl.innerHTML.includes('No review action has been written yet') || detailTraceEl.innerHTML.includes('no action rationale trace'), 'Expected desk detail to explain missing review trace before any write');
   assert(rawReviewRecordsEl.innerHTML.includes('No raw review records stored yet for this workspace item.'), 'Expected desk detail to render an empty raw review record state');
@@ -2512,6 +2656,7 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(detailChallengeDossierDigestEl.innerHTML.includes('counterexample_contribution_review_digest') || detailChallengeDossierDigestEl.innerHTML.includes('contributes into the consolidated review digest'), 'Expected counterexample detail to expose contribution readability in the consolidated review digest');
   assert(detailReviewGateSignalsEl.innerHTML.includes('Gate flags'), 'Expected counterexample detail to expose Phase 4F gate flags');
   assert(detailReviewGateThresholdTraceEl.innerHTML.includes('Threshold trace'), 'Expected counterexample detail to expose Phase 4G threshold trace readability');
+  assert(detailReviewGateDecisionPacketEl.innerHTML.includes('Decision risk / unresolved points'), 'Expected counterexample detail to expose Phase 4H decision packet risk readability');
 
   await context.selectCandidate('candidate-curiosity');
 
