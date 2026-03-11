@@ -1012,6 +1012,11 @@
                 <div id="detail-review-gate-signals" class="compact-list"></div>
               </div>
               <div class="detail-section">
+                <h3>Gate threshold trace / reason codes</h3>
+                <div class="panel-sub">Structured reason codes and threshold trace showing why the current gate bucket reads as it does, without introducing any recommendation layer.</div>
+                <div id="detail-review-gate-threshold-trace" class="compact-list"></div>
+              </div>
+              <div class="detail-section">
                 <h3>Review action trace</h3>
                 <div class="panel-sub">What was visible when the latest review action was written.</div>
                 <div id="detail-trace" class="compact-list"></div>
@@ -1238,6 +1243,7 @@
     const detailChallengeDossierDeltaEl = document.getElementById('detail-challenge-dossier-delta');
     const detailChallengeDossierDigestEl = document.getElementById('detail-challenge-dossier-digest');
     const detailReviewGateSignalsEl = document.getElementById('detail-review-gate-signals');
+    const detailReviewGateThresholdTraceEl = document.getElementById('detail-review-gate-threshold-trace');
     const detailTraceEl = document.getElementById('detail-trace');
     const reviewActionsEl = document.getElementById('review-actions');
     const reviewMessageEl = document.getElementById('review-message');
@@ -1646,6 +1652,10 @@
 
     function getReviewGateSignalSurface(item) {
       return item && item.review_gate_signal_surface ? item.review_gate_signal_surface : null;
+    }
+
+    function getReviewGateThresholdTrace(item) {
+      return item && item.review_gate_threshold_trace ? item.review_gate_threshold_trace : null;
     }
 
     function getDecisionPacketContext(item) {
@@ -3384,6 +3394,73 @@
       `;
     }
 
+    function renderReviewGateThresholdTrace(payload) {
+      const trace = getReviewGateThresholdTrace(payload);
+      if (!trace) {
+        detailReviewGateThresholdTraceEl.innerHTML = '<div class="empty">No review gate threshold trace is available for this workspace item.</div>';
+        return;
+      }
+      const reasonCodes = Array.isArray(trace.reason_codes) ? trace.reason_codes : [];
+      const blockerReasons = Array.isArray(trace.blocker_reasons) ? trace.blocker_reasons : [];
+      const concernReasons = Array.isArray(trace.concern_reasons) ? trace.concern_reasons : [];
+      const supportReasons = Array.isArray(trace.support_reasons) ? trace.support_reasons : [];
+      const thresholdTrace = Array.isArray(trace.threshold_trace) ? trace.threshold_trace : [];
+      const provenance = Array.isArray(trace.signal_provenance_read) ? trace.signal_provenance_read : [];
+      const traceFlags = Array.isArray(trace.trace_flags) ? trace.trace_flags : [];
+      detailReviewGateThresholdTraceEl.innerHTML = `
+        <div class="detail-card">
+          <strong>Bucket explanation summary</strong>
+          <span>${escapeHtml(trace.bucket_explanation_summary || '-')}</span>
+          <div class="row-meta">
+            <span class="badge">${escapeHtml(trace.review_readiness_bucket || 'gate_not_ready')}</span>
+            <span class="badge">reason-codes ${escapeHtml(String(reasonCodes.length))}</span>
+            <span class="badge">trace ${escapeHtml(trace.trace_present ? 'present' : 'not_visible')}</span>
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Reason codes</strong>
+          <div style="display:grid; gap:6px; margin-top:4px;">
+            ${reasonCodes.length > 0
+              ? reasonCodes.map(code => `<div class="tiny">code | ${escapeHtml(code)}</div>`).join('')
+              : '<div class="tiny">No structured reason code is currently visible.</div>'}
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Blockers / concerns / supports</strong>
+          <div style="display:grid; gap:6px; margin-top:4px;">
+            ${blockerReasons.length > 0
+              ? blockerReasons.map(item => `<div class="tiny">blocker | ${escapeHtml(item.code || '-')} | ${escapeHtml(item.label || '-')}</div>`).join('')
+              : '<div class="tiny">No blocker reason is currently visible.</div>'}
+            ${concernReasons.length > 0
+              ? concernReasons.map(item => `<div class="tiny">concern | ${escapeHtml(item.code || '-')} | ${escapeHtml(item.label || '-')}</div>`).join('')
+              : '<div class="tiny">No concern reason is currently visible.</div>'}
+            ${supportReasons.length > 0
+              ? supportReasons.map(item => `<div class="tiny">support | ${escapeHtml(item.code || '-')} | ${escapeHtml(item.label || '-')}</div>`).join('')
+              : '<div class="tiny">No support reason is currently visible.</div>'}
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Threshold trace</strong>
+          <div style="display:grid; gap:6px; margin-top:4px;">
+            ${thresholdTrace.length > 0
+              ? thresholdTrace.map(item => `<div class="tiny">trace | ${escapeHtml(item.reason_code || '-')} | ${escapeHtml(item.bucket || '-')} | ${escapeHtml(item.effect_on_review_bucket || '-')}</div>`).join('')
+              : '<div class="tiny">No threshold trace item is currently visible.</div>'}
+          </div>
+        </div>
+        <div class="detail-card">
+          <strong>Signal provenance</strong>
+          <div style="display:grid; gap:6px; margin-top:4px;">
+            ${provenance.length > 0
+              ? provenance.map(item => `<div class="tiny">provenance | ${escapeHtml(item.field || '-')} <= ${escapeHtml(item.source_surface || '-')}::${escapeHtml(item.source_field || '-')} (${escapeHtml(item.value || '-')} )</div>`).join('')
+              : '<div class="tiny">No signal provenance is currently visible.</div>'}
+            ${traceFlags.length > 0
+              ? traceFlags.map(item => `<div class="tiny">flag | ${escapeHtml(item)}</div>`).join('')
+              : '<div class="tiny">No stronger trace flag is currently visible.</div>'}
+          </div>
+        </div>
+      `;
+    }
+
     function renderReviewTraceContext(payload) {
       const trace = getReviewTraceContext(payload);
       if (!trace) {
@@ -3641,6 +3718,7 @@
       renderChallengeDossierDeltaContext(payload);
       renderChallengeDossierReviewDigest(payload);
       renderReviewGateSignalSurface(payload);
+      renderReviewGateThresholdTrace(payload);
       renderReviewTraceContext(payload);
       renderRawReviewRecords(payload);
       candidateDetailEl.textContent = JSON.stringify(rawCandidate, null, 2);

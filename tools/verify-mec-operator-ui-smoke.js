@@ -227,6 +227,7 @@ function buildUiScriptHarness() {
     'detail-challenge-dossier-delta',
     'detail-challenge-dossier-digest',
     'detail-review-gate-signals',
+    'detail-review-gate-threshold-trace',
     'detail-trace',
     'review-actions',
     'review-message',
@@ -1467,6 +1468,149 @@ function buildUiScriptHarness() {
     };
   }
 
+  function buildHarnessReviewGateThresholdTrace(rawCandidate, reviewSummary, challengeDossierReviewDigest, reviewGateSignalSurface, challengeDossierContext, challengeDossierDeltaContext, contradictionContext, decisionPacketContext) {
+    const readinessBucket = reviewGateSignalSurface && reviewGateSignalSurface.review_readiness_bucket
+      ? reviewGateSignalSurface.review_readiness_bucket
+      : 'gate_not_ready';
+    const coverageSignal = reviewGateSignalSurface && reviewGateSignalSurface.coverage_signal
+      ? reviewGateSignalSurface.coverage_signal
+      : 'no_visible_dossier';
+    const stabilitySignal = reviewGateSignalSurface && reviewGateSignalSurface.stability_signal
+      ? reviewGateSignalSurface.stability_signal
+      : 'anchor_not_derivable';
+    const contradictionPressureSignal = reviewGateSignalSurface && reviewGateSignalSurface.contradiction_pressure_signal
+      ? reviewGateSignalSurface.contradiction_pressure_signal
+      : 'not_visible';
+    const unresolvedWatchpointSignal = reviewGateSignalSurface && reviewGateSignalSurface.unresolved_watchpoint_signal
+      ? reviewGateSignalSurface.unresolved_watchpoint_signal
+      : 'not_visible';
+    const watchpoints = Array.isArray(challengeDossierReviewDigest && challengeDossierReviewDigest.watchpoints)
+      ? challengeDossierReviewDigest.watchpoints
+      : [];
+    const movementBucket = challengeDossierDeltaContext && challengeDossierDeltaContext.movement_bucket
+      ? challengeDossierDeltaContext.movement_bucket
+      : 'not_derivable';
+    const challengePostureBucket = challengeDossierContext && challengeDossierContext.challenge_posture_bucket
+      ? challengeDossierContext.challenge_posture_bucket
+      : 'no_visible_challenge_dossier';
+    const decisionReadiness = decisionPacketContext && decisionPacketContext.decision_readiness
+      ? decisionPacketContext.decision_readiness
+      : 'decision_underconstrained';
+    const contradictionSignals = Array.isArray(contradictionContext && contradictionContext.contradiction_signals)
+      ? contradictionContext.contradiction_signals
+      : [];
+    const reasonCodes = [];
+    const blockerReasons = [];
+    const concernReasons = [];
+    const supportReasons = [];
+    const thresholdTrace = [];
+    const signalProvenanceRead = [];
+    const pushReason = (code, bucket, label, provenance) => {
+      const entry = {
+        code,
+        bucket,
+        label,
+        provenance: Array.isArray(provenance) ? provenance.slice(0, 4) : []
+      };
+      reasonCodes.push(code);
+      if (bucket === 'blocker') {
+        blockerReasons.push(entry);
+      } else if (bucket === 'support') {
+        supportReasons.push(entry);
+      } else {
+        concernReasons.push(entry);
+      }
+      thresholdTrace.push({
+        reason_code: code,
+        bucket,
+        label,
+        carried_signals: entry.provenance,
+        effect_on_review_bucket: readinessBucket
+      });
+    };
+    const pushProvenance = (field, value, sourceField, sourceSurface) => {
+      signalProvenanceRead.push({
+        field,
+        value,
+        source_field: sourceField,
+        source_surface: sourceSurface
+      });
+    };
+    pushProvenance('coverage_signal', coverageSignal, 'challenge_posture_bucket', 'challenge_dossier_context');
+    pushProvenance('stability_signal', stabilitySignal, 'movement_bucket', 'challenge_dossier_delta_context');
+    pushProvenance('contradiction_pressure_signal', contradictionPressureSignal, 'contradiction_signals', 'contradiction_context');
+    pushProvenance('unresolved_watchpoint_signal', unresolvedWatchpointSignal, 'watchpoints', 'challenge_dossier_review_digest');
+    pushProvenance('review_readiness_bucket', readinessBucket, 'decision_readiness', 'review_gate_signal_surface');
+    if (coverageSignal === 'pressure_without_counterexample_coverage') {
+      pushReason('coverage_thin_counterexample_missing', 'blocker', 'Challenge pressure is visible but counterexample coverage is still missing.', ['coverage_signal:pressure_without_counterexample_coverage', `challenge_posture:${challengePostureBucket}`]);
+    } else if (coverageSignal === 'coverage_gaps_visible' || coverageSignal === 'contribution_with_open_gaps') {
+      pushReason('coverage_thin_open_gaps_visible', 'concern', 'Visible coverage gaps still qualify the current gate read.', ['coverage_signal:' + coverageSignal, `movement_bucket:${movementBucket}`]);
+    } else if (coverageSignal === 'reinforced_coverage_visible' || coverageSignal === 'multi_line_coverage_visible') {
+      pushReason('coverage_reinforced_visible', 'support', 'Coverage is carried by multiple or reinforcing visible challenge lines.', ['coverage_signal:' + coverageSignal, `challenge_posture:${challengePostureBucket}`]);
+    } else if (coverageSignal === 'single_line_coverage_visible' || coverageSignal === 'counterexample_contribution_visible') {
+      pushReason('coverage_visible_single_line', 'support', 'At least one visible counterexample contribution is available for gate reading.', ['coverage_signal:' + coverageSignal, `challenge_posture:${challengePostureBucket}`]);
+    }
+    if (stabilitySignal === 'expanding_since_anchor') {
+      pushReason('stability_unstable_expanding', 'blocker', 'The dossier is still expanding relative to the active review anchor.', ['stability_signal:expanding_since_anchor', `movement_bucket:${movementBucket}`]);
+    } else if (stabilitySignal === 'changed_since_anchor') {
+      pushReason('stability_changed_since_anchor', 'concern', 'The dossier changed across the active review anchor and still qualifies the current read.', ['stability_signal:changed_since_anchor', `movement_bucket:${movementBucket}`]);
+    } else if (stabilitySignal === 'pressure_without_coverage') {
+      pushReason('stability_unreadable_without_coverage', 'concern', 'Stability cannot be read cleanly because pressure is visible without coverage.', ['stability_signal:pressure_without_coverage', `movement_bucket:${movementBucket}`]);
+    } else if (stabilitySignal === 'stable_since_anchor') {
+      pushReason('stability_stable_since_anchor', 'support', 'The visible dossier reads as stable relative to the active anchor.', ['stability_signal:stable_since_anchor', `movement_bucket:${movementBucket}`]);
+    }
+    if (contradictionPressureSignal === 'high_pressure_visible') {
+      pushReason('contradiction_pressure_elevated', 'blocker', 'Contradiction pressure is elevated and directly constrains the readiness bucket.', ['contradiction_pressure_signal:high_pressure_visible', `contradiction_count:${contradictionSignals.length}`]);
+    } else if (contradictionPressureSignal === 'moderate_pressure_visible') {
+      pushReason('contradiction_pressure_present', 'concern', 'Contradiction pressure remains visibly present in the current gate read.', ['contradiction_pressure_signal:moderate_pressure_visible', `contradiction_count:${contradictionSignals.length}`]);
+    } else if (contradictionPressureSignal === 'low_pressure_visible') {
+      pushReason('contradiction_pressure_low_visible', 'support', 'Only low visible contradiction pressure is currently exposed.', ['contradiction_pressure_signal:low_pressure_visible']);
+    }
+    if (unresolvedWatchpointSignal === 'watchpoints_elevated') {
+      pushReason('watchpoint_elevated', 'blocker', 'Multiple unresolved watchpoints are still driving the current gate bucket.', ['unresolved_watchpoint_signal:watchpoints_elevated', `watchpoint_count:${watchpoints.length}`]);
+    } else if (unresolvedWatchpointSignal === 'watchpoints_present') {
+      pushReason('watchpoint_present', 'concern', 'Unresolved watchpoints remain visible in the current gate read.', ['unresolved_watchpoint_signal:watchpoints_present', `watchpoint_count:${watchpoints.length}`]);
+    } else if (unresolvedWatchpointSignal === 'watchpoints_clear') {
+      pushReason('watchpoint_clear', 'support', 'No unresolved watchpoint remains visible in the current gate read.', ['unresolved_watchpoint_signal:watchpoints_clear']);
+    }
+    if (decisionReadiness === 'decision_fragile') {
+      pushReason('decision_packet_fragile', 'concern', 'Decision readiness remains fragile in the carried-through decision packet.', ['decision_readiness:' + decisionReadiness]);
+    } else if (decisionReadiness === 'decision_ready') {
+      pushReason('decision_packet_ready', 'support', 'Decision readiness currently reads as ready in the carried-through packet.', ['decision_readiness:' + decisionReadiness]);
+    } else if (decisionReadiness === 'decision_underconstrained') {
+      pushReason('decision_packet_underconstrained', 'concern', 'Decision readiness still reads as underconstrained.', ['decision_readiness:' + decisionReadiness]);
+    }
+    if (reviewSummary && reviewSummary.terminal) {
+      pushReason('review_terminal_state_visible', 'blocker', 'The current review state is already terminal and closes the gate bucket.', ['review_state:' + reviewSummary.current_state]);
+    }
+    const traceFlags = [];
+    if (blockerReasons.length > 0) traceFlags.push('blockers_present');
+    if (concernReasons.length > 0) traceFlags.push('concerns_present');
+    if (supportReasons.length > 0) traceFlags.push('supports_present');
+    if (watchpoints.length > 0) traceFlags.push('watchpoint_provenance_visible');
+    if (contradictionSignals.length > 0) traceFlags.push('contradiction_provenance_visible');
+    if (readinessBucket === 'gate_closed') traceFlags.push('gate_closed');
+    if (readinessBucket === 'gate_restricted') traceFlags.push('gate_restricted');
+    if (readinessBucket === 'gate_clear_read') traceFlags.push('gate_clear_read');
+    return {
+      trace_present: Boolean(thresholdTrace.length > 0 || signalProvenanceRead.length > 0),
+      review_readiness_bucket: readinessBucket,
+      threshold_trace: thresholdTrace.slice(0, 10),
+      reason_codes: Array.from(new Set(reasonCodes)).slice(0, 12),
+      blocker_reasons: blockerReasons.slice(0, 6),
+      concern_reasons: concernReasons.slice(0, 6),
+      support_reasons: supportReasons.slice(0, 6),
+      signal_provenance_read: signalProvenanceRead.slice(0, 8),
+      bucket_explanation_summary: blockerReasons.length > 0
+        ? `Review readiness bucket ${readinessBucket} is primarily carried by ${blockerReasons.length} blocker reason(s), with ${concernReasons.length} concern reason(s) and ${supportReasons.length} support reason(s).`
+        : concernReasons.length > 0
+          ? `Review readiness bucket ${readinessBucket} is qualified by ${concernReasons.length} concern reason(s) while ${supportReasons.length} support reason(s) remain visible.`
+          : `Review readiness bucket ${readinessBucket} is currently carried by ${supportReasons.length} support reason(s) without stronger blocker pressure.`,
+      trace_flags: Array.from(new Set(traceFlags)).slice(0, 8),
+      review_gate_threshold_trace_surface_version: 'phase4g-mec-review-gate-threshold-trace/v1'
+    };
+  }
+
   function buildHarnessChallengeDossierContext(rawCandidate, reviewSummary, latestReview, unresolvedRuntimeReferences, decisionPacketContext, challengeContext, refutationContext) {
     const candidateId = rawCandidate && rawCandidate.id ? rawCandidate.id : null;
     const candidateType = rawCandidate && rawCandidate.candidate_type ? rawCandidate.candidate_type : null;
@@ -1757,6 +1901,9 @@ function buildUiScriptHarness() {
     const reviewGateSignalSurface = rawCandidate && rawCandidate.review_gate_signal_surface
       ? rawCandidate.review_gate_signal_surface
       : buildHarnessReviewGateSignalSurface(rawCandidate, reviewSummary, contradictionContext, decisionPacketContext, challengeContext, refutationContext, challengeDossierContext, challengeDossierDeltaContext, challengeDossierReviewDigest);
+    const reviewGateThresholdTrace = rawCandidate && rawCandidate.review_gate_threshold_trace
+      ? rawCandidate.review_gate_threshold_trace
+      : buildHarnessReviewGateThresholdTrace(rawCandidate, reviewSummary, challengeDossierReviewDigest, reviewGateSignalSurface, challengeDossierContext, challengeDossierDeltaContext, contradictionContext, decisionPacketContext);
     return {
       workspace_kind: 'mec_review_workspace',
       workspace_version: 'phase3c-mec-review-workspace/v1',
@@ -1792,6 +1939,7 @@ function buildUiScriptHarness() {
       challenge_dossier_delta_context: challengeDossierDeltaContext,
       challenge_dossier_review_digest: challengeDossierReviewDigest,
       review_gate_signal_surface: reviewGateSignalSurface,
+      review_gate_threshold_trace: reviewGateThresholdTrace,
       review_trace_context: reviewTraceContext,
       state_explanation: stateExplanation,
       workspace_summary: {
@@ -1817,6 +1965,8 @@ function buildUiScriptHarness() {
         review_gate_readiness_bucket: reviewGateSignalSurface.review_readiness_bucket,
         review_gate_coverage_signal: reviewGateSignalSurface.coverage_signal,
         review_gate_watchpoint_signal: reviewGateSignalSurface.unresolved_watchpoint_signal,
+        review_gate_reason_code_count: Array.isArray(reviewGateThresholdTrace.reason_codes) ? reviewGateThresholdTrace.reason_codes.length : 0,
+        review_gate_primary_reason_code: Array.isArray(reviewGateThresholdTrace.reason_codes) && reviewGateThresholdTrace.reason_codes.length > 0 ? reviewGateThresholdTrace.reason_codes[0] : null,
         trace_present: reviewTraceContext.trace_present,
         pair_role: rawCandidate.candidate_type === 'invariant_candidate'
           ? 'invariant'
@@ -2153,6 +2303,7 @@ async function verifyEmbeddedUiWriteSemantics() {
   const detailChallengeDossierEl = elements.get('detail-challenge-dossier');
   const detailChallengeDossierDigestEl = elements.get('detail-challenge-dossier-digest');
   const detailReviewGateSignalsEl = elements.get('detail-review-gate-signals');
+  const detailReviewGateThresholdTraceEl = elements.get('detail-review-gate-threshold-trace');
   const detailTraceEl = elements.get('detail-trace');
   const challengeMessageEl = elements.get('challenge-message');
   const rawReviewRecordsEl = elements.get('raw-review-records');
@@ -2331,6 +2482,8 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(detailChallengeDossierDigestEl.innerHTML.includes('Chronology'), 'Expected desk detail to render compact challenge chronology in the digest surface');
   assert(detailReviewGateSignalsEl.innerHTML.includes('Review readiness summary'), 'Expected desk detail to render the Phase 4F review gate signal surface');
   assert(detailReviewGateSignalsEl.innerHTML.includes('coverage_signal'), 'Expected desk detail to render normalized Phase 4F gate signals');
+  assert(detailReviewGateThresholdTraceEl.innerHTML.includes('Bucket explanation summary'), 'Expected desk detail to render the Phase 4G gate threshold trace surface');
+  assert(detailReviewGateThresholdTraceEl.innerHTML.includes('Reason codes'), 'Expected desk detail to render structured Phase 4G reason codes');
   assert(detailTraceEl.innerHTML.includes('Review action trace'), 'Expected desk detail to render review trace surface');
   assert(detailTraceEl.innerHTML.includes('No review action has been written yet') || detailTraceEl.innerHTML.includes('no action rationale trace'), 'Expected desk detail to explain missing review trace before any write');
   assert(rawReviewRecordsEl.innerHTML.includes('No raw review records stored yet for this workspace item.'), 'Expected desk detail to render an empty raw review record state');
@@ -2358,6 +2511,7 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(detailChallengeDossierEl.innerHTML.includes('counterexample_contribution') || detailChallengeDossierEl.innerHTML.includes('contributes one visible challenge line'), 'Expected counterexample detail to expose contribution readability in challenge dossier context');
   assert(detailChallengeDossierDigestEl.innerHTML.includes('counterexample_contribution_review_digest') || detailChallengeDossierDigestEl.innerHTML.includes('contributes into the consolidated review digest'), 'Expected counterexample detail to expose contribution readability in the consolidated review digest');
   assert(detailReviewGateSignalsEl.innerHTML.includes('Gate flags'), 'Expected counterexample detail to expose Phase 4F gate flags');
+  assert(detailReviewGateThresholdTraceEl.innerHTML.includes('Threshold trace'), 'Expected counterexample detail to expose Phase 4G threshold trace readability');
 
   await context.selectCandidate('candidate-curiosity');
 
