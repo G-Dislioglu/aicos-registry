@@ -1027,6 +1027,11 @@
                 <div id="detail-review-action-posture" class="compact-list"></div>
               </div>
               <div class="detail-section">
+                <h3>Review action obligations</h3>
+                <div class="panel-sub">Structured manual review obligation read over the 4I posture: visible proof burden, evidence expectations, blocking gaps, contradiction watchpoints, and defer reads without recommendation or automation.</div>
+                <div id="detail-review-action-obligation" class="compact-list"></div>
+              </div>
+              <div class="detail-section">
                 <h3>Review action trace</h3>
                 <div class="panel-sub">What was visible when the latest review action was written.</div>
                 <div id="detail-trace" class="compact-list"></div>
@@ -1256,6 +1261,7 @@
     const detailReviewGateThresholdTraceEl = document.getElementById('detail-review-gate-threshold-trace');
     const detailReviewGateDecisionPacketEl = document.getElementById('detail-review-gate-decision-packet');
     const detailReviewActionPostureEl = document.getElementById('detail-review-action-posture');
+    const detailReviewActionObligationEl = document.getElementById('detail-review-action-obligation');
     const detailTraceEl = document.getElementById('detail-trace');
     const reviewActionsEl = document.getElementById('review-actions');
     const reviewMessageEl = document.getElementById('review-message');
@@ -1676,6 +1682,10 @@
 
     function getReviewActionPostureSurface(item) {
       return item && item.review_action_posture_surface ? item.review_action_posture_surface : null;
+    }
+
+    function getReviewActionObligationSurface(item) {
+      return item && item.review_action_obligation_surface ? item.review_action_obligation_surface : null;
     }
 
     function getDecisionPacketContext(item) {
@@ -3620,6 +3630,72 @@
         '</div>';
     }
 
+    function renderReviewActionObligationSurface(payload) {
+      const obligation = getReviewActionObligationSurface(payload);
+      if (!obligation) {
+        detailReviewActionObligationEl.innerHTML = '<div class="empty">No review action obligation surface is available for this workspace item.</div>';
+        return;
+      }
+      const obligations = Array.isArray(obligation.manual_action_obligations) ? obligation.manual_action_obligations : [];
+      const evidence = Array.isArray(obligation.required_evidence_by_action) ? obligation.required_evidence_by_action : [];
+      const gaps = Array.isArray(obligation.blocking_gaps_by_action) ? obligation.blocking_gaps_by_action : [];
+      const attention = Array.isArray(obligation.reviewer_attention_points) ? obligation.reviewer_attention_points : [];
+      const watchpoints = Array.isArray(obligation.contradiction_watchpoints) ? obligation.contradiction_watchpoints : [];
+      const riskNotes = Array.isArray(obligation.action_risk_notes) ? obligation.action_risk_notes : [];
+      const deferReasons = Array.isArray(obligation.defer_reasons) ? obligation.defer_reasons : [];
+      detailReviewActionObligationEl.innerHTML =
+        '<div class="detail-card">' +
+          '<strong>Action readiness summary</strong>' +
+          '<span>' + escapeHtml(obligation.action_readiness_summary || '-') + '</span>' +
+          '<div class="row-meta">' +
+            '<span class="badge">obligations ' + escapeHtml(String(obligations.length)) + '</span>' +
+            '<span class="badge">gaps ' + escapeHtml(String(gaps.filter(item => item && item.gap_bucket === 'gaps_visible').length)) + '</span>' +
+            '<span class="badge">defer ' + escapeHtml(String(deferReasons.length)) + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="detail-card">' +
+          '<strong>Manual action obligations</strong>' +
+          '<div style="display:grid; gap:6px; margin-top:4px;">' +
+            (obligations.length > 0
+              ? obligations.map(item => '<div class="tiny">obligation | ' + escapeHtml(item.action || '-') + ' | ' + escapeHtml(item.obligation_bucket || '-') + ' | ' + escapeHtml(item.obligation_summary || '-') + '</div>').join('')
+              : '<div class="tiny">No stronger manual action obligation is currently visible.</div>') +
+          '</div>' +
+        '</div>' +
+        '<div class="detail-card">' +
+          '<strong>Required evidence by action</strong>' +
+          '<div style="display:grid; gap:6px; margin-top:4px;">' +
+            (evidence.length > 0
+              ? evidence.map(item => '<div class="tiny">evidence | ' + escapeHtml(item.action || '-') + ' | ' + escapeHtml(item.evidence_status || '-') + ' | ' + escapeHtml(Array.isArray(item.evidence_requirements) ? item.evidence_requirements.join(' | ') : '-') + '</div>').join('')
+              : '<div class="tiny">No stronger required evidence read is currently visible.</div>') +
+          '</div>' +
+        '</div>' +
+        '<div class="detail-card">' +
+          '<strong>Blocking gaps by action</strong>' +
+          '<div style="display:grid; gap:6px; margin-top:4px;">' +
+            (gaps.length > 0
+              ? gaps.map(item => '<div class="tiny">gap | ' + escapeHtml(item.action || '-') + ' | ' + escapeHtml(item.gap_bucket || '-') + ' | ' + escapeHtml(Array.isArray(item.gaps) && item.gaps.length > 0 ? item.gaps.join(' | ') : 'No stronger gap is currently visible.') + '</div>').join('')
+              : '<div class="tiny">No stronger blocking gap is currently visible.</div>') +
+          '</div>' +
+        '</div>' +
+        '<div class="detail-card">' +
+          '<strong>Attention / contradiction / defer reads</strong>' +
+          '<div style="display:grid; gap:6px; margin-top:4px;">' +
+            (attention.length > 0
+              ? attention.map(item => '<div class="tiny">attention | ' + escapeHtml(item) + '</div>').join('')
+              : '<div class="tiny">No stronger reviewer attention point is currently visible.</div>') +
+            (watchpoints.length > 0
+              ? watchpoints.map(item => '<div class="tiny">watchpoint | ' + escapeHtml(item) + '</div>').join('')
+              : '<div class="tiny">No stronger contradiction watchpoint is currently visible.</div>') +
+            (riskNotes.length > 0
+              ? riskNotes.map(item => '<div class="tiny">risk | ' + escapeHtml(item.action || '-') + ' | ' + escapeHtml(item.risk_bucket || '-') + ' | ' + escapeHtml(Array.isArray(item.notes) && item.notes.length > 0 ? item.notes.join(' | ') : '-') + '</div>').join('')
+              : '<div class="tiny">No stronger action risk note is currently visible.</div>') +
+            (deferReasons.length > 0
+              ? deferReasons.map(item => '<div class="tiny">defer | ' + escapeHtml(item) + '</div>').join('')
+              : '<div class="tiny">No stronger defer reason is currently visible.</div>') +
+          '</div>' +
+        '</div>';
+    }
+
     function renderReviewTraceContext(payload) {
       const trace = getReviewTraceContext(payload);
       if (!trace) {
@@ -3880,6 +3956,7 @@
       renderReviewGateThresholdTrace(payload);
       renderReviewGateDecisionPacket(payload);
       renderReviewActionPostureSurface(payload);
+      renderReviewActionObligationSurface(payload);
       renderReviewTraceContext(payload);
       renderRawReviewRecords(payload);
       candidateDetailEl.textContent = JSON.stringify(rawCandidate, null, 2);

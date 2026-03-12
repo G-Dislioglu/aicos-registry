@@ -2993,6 +2993,180 @@ function buildMecWorkspaceChallengeContext(payload, latestReview = null, sourceL
   };
  }
 
+ function buildMecWorkspaceReviewActionObligationSurface(payload, reviewSummary, latestReview, controlReadiness = null, evidenceContext = null, challengeContext = null, refutationContext = null, challengeDossierReviewDigest = null, reviewGateSignalSurface = null, reviewGateThresholdTrace = null, reviewGateDecisionPacket = null, reviewActionPostureSurface = null, reviewTraceContext = null) {
+  const posture = reviewActionPostureSurface && typeof reviewActionPostureSurface === 'object'
+    ? reviewActionPostureSurface
+    : null;
+  const allowedManualActions = Array.isArray(posture && posture.allowed_manual_actions)
+    ? posture.allowed_manual_actions
+    : [];
+  const blockedManualActions = Array.isArray(posture && posture.blocked_manual_actions)
+    ? posture.blocked_manual_actions
+    : [];
+  const actionPreconditions = Array.isArray(posture && posture.action_preconditions)
+    ? posture.action_preconditions
+    : [];
+  const blockerReasons = Array.isArray(reviewGateThresholdTrace && reviewGateThresholdTrace.blocker_reasons)
+    ? reviewGateThresholdTrace.blocker_reasons
+    : [];
+  const concernReasons = Array.isArray(reviewGateThresholdTrace && reviewGateThresholdTrace.concern_reasons)
+    ? reviewGateThresholdTrace.concern_reasons
+    : [];
+  const watchpoints = Array.isArray(challengeDossierReviewDigest && challengeDossierReviewDigest.watchpoints)
+    ? challengeDossierReviewDigest.watchpoints
+    : [];
+  const unresolvedDecisionPoints = Array.isArray(reviewGateDecisionPacket && reviewGateDecisionPacket.unresolved_decision_points)
+    ? reviewGateDecisionPacket.unresolved_decision_points
+    : [];
+  const contradictionPressureSignal = reviewGateDecisionPacket && reviewGateDecisionPacket.decision_snapshot && reviewGateDecisionPacket.decision_snapshot.contradiction_pressure_signal
+    ? reviewGateDecisionPacket.decision_snapshot.contradiction_pressure_signal
+    : reviewGateSignalSurface && reviewGateSignalSurface.contradiction_pressure_signal
+      ? reviewGateSignalSurface.contradiction_pressure_signal
+      : 'not_visible';
+  const readinessBucket = reviewGateDecisionPacket && reviewGateDecisionPacket.decision_snapshot && reviewGateDecisionPacket.decision_snapshot.review_readiness_bucket
+    ? reviewGateDecisionPacket.decision_snapshot.review_readiness_bucket
+    : reviewGateSignalSurface && reviewGateSignalSurface.review_readiness_bucket
+      ? reviewGateSignalSurface.review_readiness_bucket
+      : 'gate_not_ready';
+  const reviewable = Boolean(controlReadiness && controlReadiness.reviewable);
+  const terminal = Boolean(controlReadiness && controlReadiness.terminal);
+  const evidenceDegraded = Boolean(evidenceContext && evidenceContext.integrity_state === 'degraded');
+  const tracePresent = Boolean(reviewTraceContext && reviewTraceContext.trace_present);
+  const refutationPresent = Boolean(refutationContext && refutationContext.refutation_present);
+  const deferReasons = [];
+  if (!reviewable || terminal) {
+    deferReasons.push(`Manual action obligations remain deferred because the workspace currently reads as ${reviewSummary && reviewSummary.current_state ? reviewSummary.current_state : 'not_reviewable'}.`);
+  }
+  if (readinessBucket === 'gate_closed') {
+    deferReasons.push('The 4H packet remains gate_closed, so any stronger write obligation remains deferred to read-only inspection.');
+  }
+  if (blockerReasons.length > 0) {
+    deferReasons.push(`${blockerReasons.length} blocker reason(s) still hold the obligation surface in a deferred state.`);
+  }
+  if (evidenceDegraded) {
+    deferReasons.push('Evidence integrity remains degraded, so stronger write obligations stay qualified by unresolved reference integrity.');
+  }
+  if (posture && posture.posture_bucket === 'manual_hold') {
+    deferReasons.push('The 4I posture bucket remains manual_hold, so proof burden stays visible without selecting any action.');
+  }
+  if (contradictionPressureSignal !== 'not_visible' && contradictionPressureSignal !== 'low_visible_pressure') {
+    deferReasons.push(`Contradiction pressure still reads as ${contradictionPressureSignal}, so stronger obligations stay explicitly qualified.`);
+  }
+  const reviewerAttentionPoints = Array.from(new Set([
+    evidenceDegraded ? 'Reference integrity is degraded and should be inspected before any stronger manual write.' : null,
+    blockerReasons.length > 0 ? `${blockerReasons.length} blocker reason(s) remain visible in the gate threshold trace.` : null,
+    concernReasons.length > 0 ? `${concernReasons.length} concern reason(s) still qualify the current gate state.` : null,
+    watchpoints.length > 0 ? `${watchpoints.length} digest watchpoint(s) remain visible in the consolidated review read.` : null,
+    unresolvedDecisionPoints.length > 0 ? `${unresolvedDecisionPoints.length} open decision point(s) remain unresolved in the 4H packet.` : null,
+    !tracePresent ? 'No stronger review trace is visible yet for prior manual writes.' : 'A prior review trace is visible and should be compared against the current obligation state.',
+    refutationPresent ? 'Visible refutation context remains in scope for any stronger manual write.' : null
+  ].filter(Boolean))).slice(0, 8);
+  const contradictionWatchpoints = Array.from(new Set([
+    contradictionPressureSignal !== 'not_visible' ? `Contradiction pressure reads ${contradictionPressureSignal}.` : null,
+    ...watchpoints,
+    ...unresolvedDecisionPoints,
+    ...blockerReasons.map(item => item && item.label ? item.label : null),
+    ...concernReasons.map(item => item && item.label ? item.label : null)
+  ].filter(Boolean))).slice(0, 8);
+  const preconditionMap = new Map(actionPreconditions.map(item => [item.action, item]));
+  const combinedActions = Array.from(new Map([
+    ...allowedManualActions.map(item => [item.action, { ...item, blocked: false }]),
+    ...blockedManualActions.map(item => [item.action, { ...item, blocked: true }])
+  ]).values());
+  const manualActionObligations = [];
+  const requiredEvidenceByAction = [];
+  const blockingGapsByAction = [];
+  const actionRiskNotes = [];
+  function registerObligation(entry) {
+    const action = entry && entry.action ? entry.action : 'not_visible';
+    const actionClass = entry && entry.action_class ? entry.action_class : 'manual_read';
+    const precondition = preconditionMap.get(action);
+    const requirements = Array.isArray(precondition && precondition.requirements)
+      ? precondition.requirements.slice(0, 4)
+      : Array.isArray(entry && entry.requirements)
+        ? entry.requirements.slice(0, 4)
+        : [];
+    const evidenceRequirements = Array.from(new Set([
+      action === 'inspect_decision_packet' ? 'Visible 4H decision packet summary and reason-code context.' : null,
+      action === 'inspect_evidence_lineage' ? 'Visible evidence lineage and runtime reference integrity read.' : null,
+      action === 'inspect_watchpoints' ? 'Visible consolidated digest watchpoints and contradiction qualifiers.' : null,
+      action === 'inspect_open_decision_points' ? 'Visible open decision points from the 4H packet.' : null,
+      action === 'inspect_refutation_context' ? 'Visible refutation or counterexample context.' : null,
+      action === 'inspect_review_trace' ? 'Visible review trace or clear absence of a prior trace.' : null,
+      action === 'write_stabilize_review' ? 'Clear-read gate bucket, readable evidence integrity, and manually written rationale.' : null,
+      action === 'write_reject_review' ? 'Readable contradiction/refutation context and manually written rationale.' : null,
+      ...requirements
+    ].filter(Boolean))).slice(0, 5);
+    const gaps = Array.from(new Set([
+      ...(entry && Array.isArray(entry.blocked_by) ? entry.blocked_by : []),
+      action === 'write_stabilize_review' && blockerReasons.length > 0 ? `${blockerReasons.length} blocker reason(s) still qualify the gate trace.` : null,
+      action === 'write_stabilize_review' && evidenceDegraded ? 'Evidence integrity is degraded by unresolved runtime references.' : null,
+      action === 'write_stabilize_review' && readinessBucket !== 'gate_clear_read' ? `Gate bucket currently reads ${readinessBucket}.` : null,
+      action === 'write_reject_review' && (!reviewable || terminal) ? 'Workspace is no longer reviewable for a manual reject write.' : null,
+      action === 'inspect_watchpoints' && watchpoints.length < 1 ? 'No stronger digest watchpoint is currently visible.' : null,
+      action === 'inspect_open_decision_points' && unresolvedDecisionPoints.length < 1 ? 'No stronger open decision point is currently visible.' : null,
+      action === 'inspect_refutation_context' && !refutationPresent ? 'No stronger refutation context is currently visible.' : null,
+      action === 'inspect_review_trace' && !tracePresent ? 'No stronger review trace is currently visible.' : null
+    ].filter(Boolean))).slice(0, 6);
+    const riskNotes = Array.from(new Set([
+      actionClass === 'manual_write' && contradictionPressureSignal !== 'not_visible' ? `Contradiction pressure remains ${contradictionPressureSignal}.` : null,
+      actionClass === 'manual_write' && concernReasons.length > 0 ? `${concernReasons.length} concern reason(s) remain visible for human judgment.` : null,
+      actionClass === 'manual_write' && unresolvedDecisionPoints.length > 0 ? `${unresolvedDecisionPoints.length} unresolved decision point(s) remain in view.` : null,
+      action === 'inspect_evidence_lineage' && evidenceDegraded ? 'Evidence integrity remains degraded.' : null,
+      action === 'inspect_refutation_context' && refutationPresent ? 'Refutation context remains materially relevant to the current action posture.' : null,
+      action === 'write_reject_review' && watchpoints.length > 0 ? `${watchpoints.length} watchpoint(s) remain visible while rejection is considered manually.` : null
+    ].filter(Boolean))).slice(0, 4);
+    manualActionObligations.push({
+      action,
+      action_class: actionClass,
+      obligation_bucket: entry && entry.blocked ? 'blocked_obligation' : actionClass === 'manual_write' ? 'proof_before_write' : 'inspection_obligation',
+      obligation_summary: entry && entry.blocked
+        ? `This action remains blocked by ${gaps.length} visible obligation gap(s).`
+        : actionClass === 'manual_write'
+          ? 'This visible manual write remains human-controlled and carries explicit proof burden before any decision is written.'
+          : 'This visible inspection action remains readable so the reviewer can inspect burden before any write.',
+      obligation_lines: Array.from(new Set([...requirements, ...evidenceRequirements.slice(0, 2), ...gaps.slice(0, 2)])).slice(0, 6)
+    });
+    requiredEvidenceByAction.push({
+      action,
+      action_class: actionClass,
+      evidence_status: evidenceRequirements.length < 1 ? 'not_required' : gaps.length > 0 ? 'qualified_visible' : 'readable_visible',
+      evidence_requirements: evidenceRequirements
+    });
+    blockingGapsByAction.push({
+      action,
+      action_class: actionClass,
+      gap_bucket: gaps.length > 0 ? 'gaps_visible' : 'no_stronger_gap',
+      gaps
+    });
+    actionRiskNotes.push({
+      action,
+      action_class: actionClass,
+      risk_bucket: actionClass === 'manual_write'
+        ? (gaps.length > 0 ? 'write_qualified_risk' : 'write_visible_risk')
+        : (riskNotes.length > 0 ? 'inspection_qualified_risk' : 'inspection_visible_risk'),
+      notes: riskNotes
+    });
+  }
+  combinedActions.forEach(registerObligation);
+  const actionReadinessSummary = deferReasons.length > 0
+    ? `Manual action obligations remain deferred by ${deferReasons.length} visible defer reason(s), while ${manualActionObligations.length} obligation read(s) remain available.`
+    : blockerReasons.length > 0 || concernReasons.length > 0 || unresolvedDecisionPoints.length > 0
+      ? `Manual action obligations remain qualified: ${concernReasons.length} concern reason(s), ${unresolvedDecisionPoints.length} open decision point(s), and ${manualActionObligations.length} obligation read(s) stay visible.`
+      : `Manual action obligations remain readable with ${manualActionObligations.length} visible action obligation read(s) and no stronger defer reason.`;
+  return {
+    manual_action_obligations: manualActionObligations.slice(0, 10),
+    required_evidence_by_action: requiredEvidenceByAction.slice(0, 10),
+    blocking_gaps_by_action: blockingGapsByAction.slice(0, 10),
+    reviewer_attention_points: reviewerAttentionPoints,
+    contradiction_watchpoints: contradictionWatchpoints,
+    action_risk_notes: actionRiskNotes.slice(0, 10),
+    action_readiness_summary: actionReadinessSummary,
+    defer_reasons: deferReasons.slice(0, 6),
+    review_action_obligation_surface_version: 'phase4j-mec-review-action-obligation/v1'
+  };
+ }
+
  function buildMecReviewWorkspaceItem(payload, reviewRecords = [], context = {}) {
   if (!payload) {
     return null;
@@ -3025,6 +3199,7 @@ function buildMecWorkspaceChallengeContext(payload, latestReview = null, sourceL
   const reviewGateThresholdTrace = buildMecWorkspaceReviewGateThresholdTrace(payload, reviewSummary, latestReview, challengeDossierReviewDigest, reviewGateSignalSurface, challengeDossierContext, challengeDossierDeltaContext, contradictionContext, decisionPacketContext);
   const reviewGateDecisionPacket = buildMecWorkspaceReviewGateDecisionPacket(payload, reviewSummary, latestReview, evidenceContext, challengeContext, refutationContext, challengeDossierReviewDigest, reviewGateSignalSurface, reviewGateThresholdTrace, decisionPacketContext);
   const reviewActionPostureSurface = buildMecWorkspaceReviewActionPostureSurface(payload, reviewSummary, latestReview, controlReadiness, evidenceContext, challengeContext, refutationContext, challengeDossierReviewDigest, reviewGateSignalSurface, reviewGateThresholdTrace, reviewGateDecisionPacket, reviewTraceContext);
+  const reviewActionObligationSurface = buildMecWorkspaceReviewActionObligationSurface(payload, reviewSummary, latestReview, controlReadiness, evidenceContext, challengeContext, refutationContext, challengeDossierReviewDigest, reviewGateSignalSurface, reviewGateThresholdTrace, reviewGateDecisionPacket, reviewActionPostureSurface, reviewTraceContext);
   return {
     workspace_kind: 'mec_review_workspace',
     workspace_version: 'phase3c-mec-review-workspace/v1',
@@ -3078,6 +3253,7 @@ function buildMecWorkspaceChallengeContext(payload, latestReview = null, sourceL
     review_gate_threshold_trace: reviewGateThresholdTrace,
     review_gate_decision_packet: reviewGateDecisionPacket,
     review_action_posture_surface: reviewActionPostureSurface,
+    review_action_obligation_surface: reviewActionObligationSurface,
     review_trace_context: reviewTraceContext,
     workspace_summary: {
       review_count: reviewSummary.review_count,
@@ -3113,6 +3289,10 @@ function buildMecWorkspaceChallengeContext(payload, latestReview = null, sourceL
       review_action_blocked_count: reviewActionPostureSurface && Array.isArray(reviewActionPostureSurface.blocked_manual_actions) ? reviewActionPostureSurface.blocked_manual_actions.length : 0,
       review_action_hold_count: reviewActionPostureSurface && Array.isArray(reviewActionPostureSurface.hold_reasons) ? reviewActionPostureSurface.hold_reasons.length : 0,
       review_action_escalation_count: reviewActionPostureSurface && Array.isArray(reviewActionPostureSurface.escalation_reasons) ? reviewActionPostureSurface.escalation_reasons.length : 0,
+      review_action_obligation_count: reviewActionObligationSurface && Array.isArray(reviewActionObligationSurface.manual_action_obligations) ? reviewActionObligationSurface.manual_action_obligations.length : 0,
+      review_action_gap_count: reviewActionObligationSurface && Array.isArray(reviewActionObligationSurface.blocking_gaps_by_action) ? reviewActionObligationSurface.blocking_gaps_by_action.filter(item => item && item.gap_bucket === 'gaps_visible').length : 0,
+      review_action_attention_count: reviewActionObligationSurface && Array.isArray(reviewActionObligationSurface.reviewer_attention_points) ? reviewActionObligationSurface.reviewer_attention_points.length : 0,
+      review_action_defer_count: reviewActionObligationSurface && Array.isArray(reviewActionObligationSurface.defer_reasons) ? reviewActionObligationSurface.defer_reasons.length : 0,
       trace_present: reviewTraceContext.trace_present
     },
     raw_review_records: reviewRecords.map(record => ({ ...record })),
