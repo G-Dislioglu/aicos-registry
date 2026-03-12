@@ -1022,6 +1022,11 @@
                 <div id="detail-review-gate-decision-packet" class="compact-list"></div>
               </div>
               <div class="detail-section">
+                <h3>Review action posture</h3>
+                <div class="panel-sub">Structured manual review posture over the 4H packet: visible manual actions, blocked actions, preconditions, and hold/escalation reads without recommendation or automation.</div>
+                <div id="detail-review-action-posture" class="compact-list"></div>
+              </div>
+              <div class="detail-section">
                 <h3>Review action trace</h3>
                 <div class="panel-sub">What was visible when the latest review action was written.</div>
                 <div id="detail-trace" class="compact-list"></div>
@@ -1250,6 +1255,7 @@
     const detailReviewGateSignalsEl = document.getElementById('detail-review-gate-signals');
     const detailReviewGateThresholdTraceEl = document.getElementById('detail-review-gate-threshold-trace');
     const detailReviewGateDecisionPacketEl = document.getElementById('detail-review-gate-decision-packet');
+    const detailReviewActionPostureEl = document.getElementById('detail-review-action-posture');
     const detailTraceEl = document.getElementById('detail-trace');
     const reviewActionsEl = document.getElementById('review-actions');
     const reviewMessageEl = document.getElementById('review-message');
@@ -1666,6 +1672,10 @@
 
     function getReviewGateDecisionPacket(item) {
       return item && item.review_gate_decision_packet ? item.review_gate_decision_packet : null;
+    }
+
+    function getReviewActionPostureSurface(item) {
+      return item && item.review_action_posture_surface ? item.review_action_posture_surface : null;
     }
 
     function getDecisionPacketContext(item) {
@@ -3548,6 +3558,68 @@
       `;
     }
 
+    function renderReviewActionPostureSurface(payload) {
+      const posture = getReviewActionPostureSurface(payload);
+      if (!posture) {
+        detailReviewActionPostureEl.innerHTML = '<div class="empty">No review action posture surface is available for this workspace item.</div>';
+        return;
+      }
+      const allowed = Array.isArray(posture.allowed_manual_actions) ? posture.allowed_manual_actions : [];
+      const blocked = Array.isArray(posture.blocked_manual_actions) ? posture.blocked_manual_actions : [];
+      const preconditions = Array.isArray(posture.action_preconditions) ? posture.action_preconditions : [];
+      const postureFlags = Array.isArray(posture.posture_flags) ? posture.posture_flags : [];
+      const holdReasons = Array.isArray(posture.hold_reasons) ? posture.hold_reasons : [];
+      const escalationReasons = Array.isArray(posture.escalation_reasons) ? posture.escalation_reasons : [];
+      detailReviewActionPostureEl.innerHTML =
+        '<div class="detail-card">' +
+          '<strong>Manual posture summary</strong>' +
+          '<span>' + escapeHtml(posture.manual_next_step_read || '-') + '</span>' +
+          '<div class="row-meta">' +
+            '<span class="badge">' + escapeHtml(posture.posture_bucket || 'not_visible') + '</span>' +
+            '<span class="badge">allowed ' + escapeHtml(String(allowed.length)) + '</span>' +
+            '<span class="badge">blocked ' + escapeHtml(String(blocked.length)) + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="detail-card">' +
+          '<strong>Allowed manual actions</strong>' +
+          '<div style="display:grid; gap:6px; margin-top:4px;">' +
+            (allowed.length > 0
+              ? allowed.map(item => '<div class="tiny">allowed | ' + escapeHtml(item.action || '-') + ' | ' + escapeHtml(item.basis || '-') + '</div>').join('')
+              : '<div class="tiny">No stronger allowed manual action is currently visible.</div>') +
+          '</div>' +
+        '</div>' +
+        '<div class="detail-card">' +
+          '<strong>Blocked manual actions</strong>' +
+          '<div style="display:grid; gap:6px; margin-top:4px;">' +
+            (blocked.length > 0
+              ? blocked.map(item => '<div class="tiny">blocked | ' + escapeHtml(item.action || '-') + ' | ' + escapeHtml(Array.isArray(item.blocked_by) && item.blocked_by.length > 0 ? item.blocked_by.join(' | ') : item.basis || '-') + '</div>').join('')
+              : '<div class="tiny">No stronger blocked manual action is currently visible.</div>') +
+          '</div>' +
+        '</div>' +
+        '<div class="detail-card">' +
+          '<strong>Action preconditions</strong>' +
+          '<div style="display:grid; gap:6px; margin-top:4px;">' +
+            (preconditions.length > 0
+              ? preconditions.map(item => '<div class="tiny">precondition | ' + escapeHtml(item.action || '-') + ' | ' + escapeHtml(item.status || '-') + ' | ' + escapeHtml(Array.isArray(item.requirements) ? item.requirements.join(' | ') : '-') + '</div>').join('')
+              : '<div class="tiny">No stronger action precondition is currently visible.</div>') +
+          '</div>' +
+        '</div>' +
+        '<div class="detail-card">' +
+          '<strong>Hold / escalation reads</strong>' +
+          '<div style="display:grid; gap:6px; margin-top:4px;">' +
+            (holdReasons.length > 0
+              ? holdReasons.map(item => '<div class="tiny">hold | ' + escapeHtml(item) + '</div>').join('')
+              : '<div class="tiny">No stronger hold reason is currently visible.</div>') +
+            (escalationReasons.length > 0
+              ? escalationReasons.map(item => '<div class="tiny">escalation | ' + escapeHtml(item) + '</div>').join('')
+              : '<div class="tiny">No stronger escalation reason is currently visible.</div>') +
+            (postureFlags.length > 0
+              ? postureFlags.map(item => '<div class="tiny">flag | ' + escapeHtml(item) + '</div>').join('')
+              : '<div class="tiny">No stronger posture flag is currently visible.</div>') +
+          '</div>' +
+        '</div>';
+    }
+
     function renderReviewTraceContext(payload) {
       const trace = getReviewTraceContext(payload);
       if (!trace) {
@@ -3807,6 +3879,7 @@
       renderReviewGateSignalSurface(payload);
       renderReviewGateThresholdTrace(payload);
       renderReviewGateDecisionPacket(payload);
+      renderReviewActionPostureSurface(payload);
       renderReviewTraceContext(payload);
       renderRawReviewRecords(payload);
       candidateDetailEl.textContent = JSON.stringify(rawCandidate, null, 2);

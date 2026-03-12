@@ -229,6 +229,7 @@ function buildUiScriptHarness() {
     'detail-review-gate-signals',
     'detail-review-gate-threshold-trace',
     'detail-review-gate-decision-packet',
+    'detail-review-action-posture',
     'detail-trace',
     'review-actions',
     'review-message',
@@ -1746,6 +1747,142 @@ function buildUiScriptHarness() {
     };
   }
 
+  function buildHarnessReviewActionPostureSurface(rawCandidate, reviewSummary, controlReadiness, evidenceContext, challengeContext, refutationContext, challengeDossierReviewDigest, reviewGateSignalSurface, reviewGateThresholdTrace, reviewGateDecisionPacket, reviewTraceContext) {
+    const readinessBucket = reviewGateDecisionPacket && reviewGateDecisionPacket.decision_snapshot && reviewGateDecisionPacket.decision_snapshot.review_readiness_bucket
+      ? reviewGateDecisionPacket.decision_snapshot.review_readiness_bucket
+      : reviewGateSignalSurface && reviewGateSignalSurface.review_readiness_bucket
+        ? reviewGateSignalSurface.review_readiness_bucket
+        : 'gate_not_ready';
+    const blockerReasons = Array.isArray(reviewGateThresholdTrace && reviewGateThresholdTrace.blocker_reasons)
+      ? reviewGateThresholdTrace.blocker_reasons
+      : [];
+    const concernReasons = Array.isArray(reviewGateThresholdTrace && reviewGateThresholdTrace.concern_reasons)
+      ? reviewGateThresholdTrace.concern_reasons
+      : [];
+    const watchpoints = Array.isArray(challengeDossierReviewDigest && challengeDossierReviewDigest.watchpoints)
+      ? challengeDossierReviewDigest.watchpoints
+      : [];
+    const unresolvedDecisionPoints = Array.isArray(reviewGateDecisionPacket && reviewGateDecisionPacket.unresolved_decision_points)
+      ? reviewGateDecisionPacket.unresolved_decision_points
+      : [];
+    const contradictionPressureSignal = reviewGateDecisionPacket && reviewGateDecisionPacket.decision_snapshot && reviewGateDecisionPacket.decision_snapshot.contradiction_pressure_signal
+      ? reviewGateDecisionPacket.decision_snapshot.contradiction_pressure_signal
+      : reviewGateSignalSurface && reviewGateSignalSurface.contradiction_pressure_signal
+        ? reviewGateSignalSurface.contradiction_pressure_signal
+        : 'not_visible';
+    const reviewable = Boolean(controlReadiness && controlReadiness.reviewable);
+    const terminal = Boolean(controlReadiness && controlReadiness.terminal);
+    const evidenceDegraded = Boolean(evidenceContext && evidenceContext.integrity_state === 'degraded');
+    const tracePresent = Boolean(reviewTraceContext && reviewTraceContext.trace_present);
+    const holdReasons = [];
+    const escalationReasons = [];
+    if (!reviewable || terminal) {
+      holdReasons.push('Manual review writes are not currently available because the workspace reads as ' + (reviewSummary && reviewSummary.current_state ? reviewSummary.current_state : 'not_reviewable') + '.');
+    }
+    if (readinessBucket === 'gate_closed') {
+      holdReasons.push('The current 4H packet reads gate_closed, so manual write posture remains on hold.');
+    }
+    if (blockerReasons.length > 0) {
+      holdReasons.push(String(blockerReasons.length) + ' blocker reason(s) remain visible in the 4G threshold trace.');
+    }
+    if (evidenceDegraded) {
+      holdReasons.push('Evidence integrity is degraded, so manual write posture remains qualified by unresolved runtime references.');
+    }
+    if (watchpoints.length > 0) {
+      escalationReasons.push(String(watchpoints.length) + ' digest watchpoint(s) remain visible in the consolidated review read.');
+    }
+    if (concernReasons.length > 0) {
+      escalationReasons.push(String(concernReasons.length) + ' concern reason(s) remain visible in the 4G threshold trace.');
+    }
+    if (unresolvedDecisionPoints.length > 0) {
+      escalationReasons.push(String(unresolvedDecisionPoints.length) + ' open decision point(s) remain visible in the 4H packet.');
+    }
+    if (contradictionPressureSignal !== 'not_visible' && contradictionPressureSignal !== 'low_visible_pressure') {
+      escalationReasons.push('Contradiction pressure still reads as ' + contradictionPressureSignal + '.');
+    }
+    const postureBucket = !reviewable || terminal
+      ? 'manual_locked'
+      : holdReasons.length > 0
+        ? 'manual_hold'
+        : escalationReasons.length > 0 && concernReasons.length > 0
+          ? 'manual_escalation_read'
+          : readinessBucket === 'gate_restricted' || unresolvedDecisionPoints.length > 0
+            ? 'manual_qualified_read'
+            : readinessBucket === 'gate_clear_read'
+              ? 'manual_clear_read'
+              : 'manual_reviewable_read';
+    const allowedManualActions = [];
+    const blockedManualActions = [];
+    const actionPreconditions = [];
+    function registerAction(action, actionClass, requirements, satisfied, basis, blockedBy) {
+      const normalizedRequirements = requirements.slice(0, 4);
+      actionPreconditions.push({
+        action,
+        action_class: actionClass,
+        status: satisfied ? 'satisfied' : 'blocked',
+        requirements: normalizedRequirements
+      });
+      const entry = {
+        action,
+        action_class: actionClass,
+        basis,
+        requirements: normalizedRequirements
+      };
+      if (satisfied) {
+        allowedManualActions.push(entry);
+        return;
+      }
+      blockedManualActions.push({
+        ...entry,
+        blocked_by: (blockedBy || []).slice(0, 4)
+      });
+    }
+    registerAction('inspect_decision_packet', 'manual_read', ['4H decision packet is visible in the canonical workspace'], Boolean(reviewGateDecisionPacket && reviewGateDecisionPacket.packet_present), 'Read the compact 4H packet without selecting or automating any action.', ['No stronger decision packet is currently visible on this workspace item.']);
+    registerAction('inspect_evidence_lineage', 'manual_read', ['Evidence context remains visible in the canonical workspace'], Boolean(evidenceContext), 'Inspect evidence anchors and runtime reference integrity before any manual write.', ['No stronger evidence context is currently visible.']);
+    registerAction('inspect_watchpoints', 'manual_read', ['One or more consolidated digest watchpoints remain visible'], watchpoints.length > 0, 'Inspect watchpoints that still qualify the current manual review posture.', ['No stronger watchpoint is currently visible.']);
+    registerAction('inspect_open_decision_points', 'manual_read', ['One or more open decision points remain visible'], unresolvedDecisionPoints.length > 0, 'Inspect open decision points that remain unresolved in the current packet read.', ['No stronger open decision point is currently visible.']);
+    registerAction('inspect_refutation_context', 'manual_read', ['Refutation or counterexample context remains visible'], Boolean(refutationContext && refutationContext.refutation_present), 'Inspect visible refutation context before changing the manual review posture.', ['No stronger refutation context is currently visible.']);
+    registerAction('inspect_review_trace', 'manual_read', ['A latest review trace is visible on the workspace'], tracePresent, 'Inspect what was visible when the latest manual review write occurred.', ['No stronger review trace is currently visible.']);
+    registerAction('write_stabilize_review', 'manual_write', ['workspace remains reviewable', 'gate bucket reads gate_clear_read', 'no blocker reason remains visible', 'evidence integrity is not degraded'], reviewable && !terminal && readinessBucket === 'gate_clear_read' && blockerReasons.length < 1 && !evidenceDegraded, 'A manual stabilize write remains visible only when the canonical read is clear enough to support it without automation.', !reviewable || terminal ? ['The workspace is no longer reviewable for a manual stabilize write.'] : readinessBucket !== 'gate_clear_read' ? ['The current gate bucket reads ' + readinessBucket + ', not gate_clear_read.'] : blockerReasons.length > 0 ? [String(blockerReasons.length) + ' blocker reason(s) still qualify the gate trace.'] : ['Evidence integrity is degraded by unresolved runtime references.']);
+    registerAction('write_reject_review', 'manual_write', ['workspace remains reviewable', 'no terminal review state is present', 'review rationale must be written manually'], reviewable && !terminal, 'A manual reject write stays visible as a human action, not as an automatic recommendation.', ['The workspace is no longer reviewable for a manual reject write.']);
+    const postureFlags = [];
+    if (postureBucket === 'manual_locked') postureFlags.push('manual_posture_locked');
+    if (postureBucket === 'manual_hold') postureFlags.push('manual_posture_hold');
+    if (postureBucket === 'manual_escalation_read') postureFlags.push('manual_posture_escalation_read');
+    if (postureBucket === 'manual_qualified_read') postureFlags.push('manual_posture_qualified_read');
+    if (postureBucket === 'manual_clear_read') postureFlags.push('manual_posture_clear_read');
+    if (allowedManualActions.some(item => item.action === 'write_stabilize_review')) postureFlags.push('stabilize_write_visible');
+    if (allowedManualActions.some(item => item.action === 'write_reject_review')) postureFlags.push('reject_write_visible');
+    if (watchpoints.length > 0) postureFlags.push('watchpoints_visible');
+    if (unresolvedDecisionPoints.length > 0) postureFlags.push('open_points_visible');
+    if (blockerReasons.length > 0) postureFlags.push('blockers_visible');
+    if (concernReasons.length > 0) postureFlags.push('concerns_visible');
+    if (evidenceDegraded) postureFlags.push('evidence_integrity_degraded');
+    if (tracePresent) postureFlags.push('review_trace_visible');
+    const manualNextStepRead = postureBucket === 'manual_locked'
+      ? 'Manual posture is locked; the workspace remains readable, but no further manual review write is currently visible.'
+      : postureBucket === 'manual_hold'
+        ? 'Manual posture is hold-weighted; ' + String(holdReasons.length) + ' hold reason(s) remain visible while read-only inspection actions stay available.'
+        : postureBucket === 'manual_escalation_read'
+          ? 'Manual posture is escalation-weighted; ' + String(escalationReasons.length) + ' escalation reason(s) remain visible for human judgment before any write.'
+          : postureBucket === 'manual_qualified_read'
+            ? 'Manual posture is qualified rather than blocked; ' + String(unresolvedDecisionPoints.length) + ' open decision point(s) and ' + String(concernReasons.length) + ' concern reason(s) remain visible.'
+            : postureBucket === 'manual_clear_read'
+              ? 'Manual posture is clear-read; manual write actions remain visible, but no action is selected automatically.'
+              : 'Manual posture remains readable with mixed inspection and write visibility.';
+    return {
+      posture_bucket: postureBucket,
+      allowed_manual_actions: allowedManualActions.slice(0, 8),
+      blocked_manual_actions: blockedManualActions.slice(0, 8),
+      action_preconditions: actionPreconditions.slice(0, 10),
+      posture_flags: Array.from(new Set(postureFlags)).slice(0, 10),
+      manual_next_step_read: manualNextStepRead,
+      hold_reasons: holdReasons.slice(0, 6),
+      escalation_reasons: escalationReasons.slice(0, 6),
+      review_action_posture_surface_version: 'phase4i-mec-review-action-posture/v1'
+    };
+  }
+
   function buildHarnessChallengeDossierContext(rawCandidate, reviewSummary, latestReview, unresolvedRuntimeReferences, decisionPacketContext, challengeContext, refutationContext) {
     const candidateId = rawCandidate && rawCandidate.id ? rawCandidate.id : null;
     const candidateType = rawCandidate && rawCandidate.candidate_type ? rawCandidate.candidate_type : null;
@@ -2042,6 +2179,9 @@ function buildUiScriptHarness() {
     const reviewGateDecisionPacket = rawCandidate && rawCandidate.review_gate_decision_packet
       ? rawCandidate.review_gate_decision_packet
       : buildHarnessReviewGateDecisionPacket(rawCandidate, reviewSummary, evidenceContext, challengeContext, refutationContext, challengeDossierReviewDigest, reviewGateSignalSurface, reviewGateThresholdTrace, decisionPacketContext);
+    const reviewActionPostureSurface = rawCandidate && rawCandidate.review_action_posture_surface
+      ? rawCandidate.review_action_posture_surface
+      : buildHarnessReviewActionPostureSurface(rawCandidate, reviewSummary, { reviewable: Boolean(reviewSummary.reviewable), terminal: Boolean(reviewSummary.terminal) }, evidenceContext, challengeContext, refutationContext, challengeDossierReviewDigest, reviewGateSignalSurface, reviewGateThresholdTrace, reviewGateDecisionPacket, reviewTraceContext);
     return {
       workspace_kind: 'mec_review_workspace',
       workspace_version: 'phase3c-mec-review-workspace/v1',
@@ -2079,6 +2219,7 @@ function buildUiScriptHarness() {
       review_gate_signal_surface: reviewGateSignalSurface,
       review_gate_threshold_trace: reviewGateThresholdTrace,
       review_gate_decision_packet: reviewGateDecisionPacket,
+      review_action_posture_surface: reviewActionPostureSurface,
       review_trace_context: reviewTraceContext,
       state_explanation: stateExplanation,
       workspace_summary: {
@@ -2108,6 +2249,11 @@ function buildUiScriptHarness() {
         review_gate_primary_reason_code: Array.isArray(reviewGateThresholdTrace.reason_codes) && reviewGateThresholdTrace.reason_codes.length > 0 ? reviewGateThresholdTrace.reason_codes[0] : null,
         review_gate_decision_risk_bucket: reviewGateDecisionPacket && reviewGateDecisionPacket.decision_risk_read ? reviewGateDecisionPacket.decision_risk_read.risk_bucket : 'not_visible',
         review_gate_decision_open_point_count: reviewGateDecisionPacket && Array.isArray(reviewGateDecisionPacket.unresolved_decision_points) ? reviewGateDecisionPacket.unresolved_decision_points.length : 0,
+        review_action_posture_bucket: reviewActionPostureSurface ? reviewActionPostureSurface.posture_bucket : 'not_visible',
+        review_action_allowed_count: reviewActionPostureSurface && Array.isArray(reviewActionPostureSurface.allowed_manual_actions) ? reviewActionPostureSurface.allowed_manual_actions.length : 0,
+        review_action_blocked_count: reviewActionPostureSurface && Array.isArray(reviewActionPostureSurface.blocked_manual_actions) ? reviewActionPostureSurface.blocked_manual_actions.length : 0,
+        review_action_hold_count: reviewActionPostureSurface && Array.isArray(reviewActionPostureSurface.hold_reasons) ? reviewActionPostureSurface.hold_reasons.length : 0,
+        review_action_escalation_count: reviewActionPostureSurface && Array.isArray(reviewActionPostureSurface.escalation_reasons) ? reviewActionPostureSurface.escalation_reasons.length : 0,
         trace_present: reviewTraceContext.trace_present,
         pair_role: rawCandidate.candidate_type === 'invariant_candidate'
           ? 'invariant'
@@ -2446,6 +2592,7 @@ async function verifyEmbeddedUiWriteSemantics() {
   const detailReviewGateSignalsEl = elements.get('detail-review-gate-signals');
   const detailReviewGateThresholdTraceEl = elements.get('detail-review-gate-threshold-trace');
   const detailReviewGateDecisionPacketEl = elements.get('detail-review-gate-decision-packet');
+  const detailReviewActionPostureEl = elements.get('detail-review-action-posture');
   const detailTraceEl = elements.get('detail-trace');
   const challengeMessageEl = elements.get('challenge-message');
   const rawReviewRecordsEl = elements.get('raw-review-records');
@@ -2628,6 +2775,8 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(detailReviewGateThresholdTraceEl.innerHTML.includes('Reason codes'), 'Expected desk detail to render structured Phase 4G reason codes');
   assert(detailReviewGateDecisionPacketEl.innerHTML.includes('Decision packet summary'), 'Expected desk detail to render the Phase 4H review gate decision packet surface');
   assert(detailReviewGateDecisionPacketEl.innerHTML.includes('Decision basis'), 'Expected desk detail to render compact Phase 4H decision basis fields');
+  assert(detailReviewActionPostureEl.innerHTML.includes('Manual posture summary'), 'Expected desk detail to render the Phase 4I review action posture surface');
+  assert(detailReviewActionPostureEl.innerHTML.includes('Allowed manual actions'), 'Expected desk detail to render readable Phase 4I allowed manual actions');
   assert(detailTraceEl.innerHTML.includes('Review action trace'), 'Expected desk detail to render review trace surface');
   assert(detailTraceEl.innerHTML.includes('No review action has been written yet') || detailTraceEl.innerHTML.includes('no action rationale trace'), 'Expected desk detail to explain missing review trace before any write');
   assert(rawReviewRecordsEl.innerHTML.includes('No raw review records stored yet for this workspace item.'), 'Expected desk detail to render an empty raw review record state');
@@ -2657,6 +2806,7 @@ async function verifyEmbeddedUiWriteSemantics() {
   assert(detailReviewGateSignalsEl.innerHTML.includes('Gate flags'), 'Expected counterexample detail to expose Phase 4F gate flags');
   assert(detailReviewGateThresholdTraceEl.innerHTML.includes('Threshold trace'), 'Expected counterexample detail to expose Phase 4G threshold trace readability');
   assert(detailReviewGateDecisionPacketEl.innerHTML.includes('Decision risk / unresolved points'), 'Expected counterexample detail to expose Phase 4H decision packet risk readability');
+  assert(detailReviewActionPostureEl.innerHTML.includes('Hold / escalation reads'), 'Expected counterexample detail to expose Phase 4I posture hold/escalation readability');
 
   await context.selectCandidate('candidate-curiosity');
 
