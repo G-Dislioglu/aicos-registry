@@ -15,6 +15,24 @@
       "theme:env_diagnosis"
     ],
     "status": "active",
+    "impact": {
+      "value": 86,
+      "risk": 65,
+      "confidence": 90
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 77,
+      "trust_score": 71,
+      "learning_score": 74,
+      "promotion_readiness": 70
+    },
     "fixes": [
       "sol-dev-006"
     ]
@@ -33,6 +51,24 @@
       "risk:runtime_error"
     ],
     "status": "active",
+    "impact": {
+      "value": 88,
+      "risk": 60,
+      "confidence": 70
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 72,
+      "trust_score": 60,
+      "learning_score": 72,
+      "promotion_readiness": 63
+    },
     "fixes": [
       "sol-api-01"
     ]
@@ -51,6 +87,24 @@
       "theme:provider_routing"
     ],
     "status": "active",
+    "impact": {
+      "value": 70,
+      "risk": 60,
+      "confidence": 85
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 69,
+      "trust_score": 69,
+      "learning_score": 66,
+      "promotion_readiness": 66
+    },
     "fixes": [
       "sol-api-02"
     ]
@@ -69,7 +123,25 @@
       "risk:no_product",
       "theme:focus"
     ],
-    "status": "active"
+    "status": "active",
+    "impact": {
+      "value": 88,
+      "risk": 75,
+      "confidence": 92
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 77,
+      "trust_score": 69,
+      "learning_score": 73,
+      "promotion_readiness": 68
+    }
   },
   {
     "id": "err-astro-01",
@@ -85,6 +157,24 @@
       "theme:timeout"
     ],
     "status": "active",
+    "impact": {
+      "value": 50,
+      "risk": 65,
+      "confidence": 80
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 58,
+      "trust_score": 64,
+      "learning_score": 54,
+      "promotion_readiness": 58
+    },
     "fixes": [
       "sol-astro-01"
     ]
@@ -105,6 +195,24 @@
       "theme:state_machine"
     ],
     "status": "active",
+    "impact": {
+      "value": 92,
+      "risk": 75,
+      "confidence": 80
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 74,
+      "trust_score": 61,
+      "learning_score": 72,
+      "promotion_readiness": 63
+    },
     "fixes": [
       "sol-audio-01"
     ]
@@ -123,6 +231,24 @@
       "theme:audio_fallback"
     ],
     "status": "active",
+    "impact": {
+      "value": 85,
+      "risk": 70,
+      "confidence": 90
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 76,
+      "trust_score": 69,
+      "learning_score": 73,
+      "promotion_readiness": 68
+    },
     "fixes": [
       "sol-audio-02"
     ]
@@ -141,6 +267,24 @@
       "theme:api_keys"
     ],
     "status": "active",
+    "impact": {
+      "value": 90,
+      "risk": 95,
+      "confidence": 80
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 70,
+      "trust_score": 54,
+      "learning_score": 66,
+      "promotion_readiness": 56
+    },
     "fixes": [
       "sol-auth-01"
     ]
@@ -159,6 +303,24 @@
       "theme:data_persistence"
     ],
     "status": "active",
+    "impact": {
+      "value": 40,
+      "risk": 30,
+      "confidence": 85
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 62,
+      "trust_score": 80,
+      "learning_score": 59,
+      "promotion_readiness": 71
+    },
     "fixes": [
       "sol-db-01"
     ]
@@ -177,7 +339,25 @@
       "tech:overlay",
       "risk:ux_blocker"
     ],
-    "status": "active"
+    "status": "active",
+    "impact": {
+      "value": 82,
+      "risk": 70,
+      "confidence": 88
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 74,
+      "trust_score": 68,
+      "learning_score": 71,
+      "promotion_readiness": 67
+    }
   },
   {
     "id": "err-dev-003",
@@ -194,6 +374,24 @@
       "tech:windsurf"
     ],
     "status": "active",
+    "impact": {
+      "value": 78,
+      "risk": 45,
+      "confidence": 88
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 77,
+      "trust_score": 76,
+      "learning_score": 75,
+      "promotion_readiness": 74
+    },
     "fixes": [
       "sol-dev-006"
     ]
@@ -213,6 +411,24 @@
       "risk:stale_assets"
     ],
     "status": "active",
+    "impact": {
+      "value": 85,
+      "risk": 70,
+      "confidence": 85
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 74,
+      "trust_score": 66,
+      "learning_score": 71,
+      "promotion_readiness": 66
+    },
     "fixes": [
       "sol-dev-01"
     ]
@@ -231,6 +447,24 @@
       "theme:deployment"
     ],
     "status": "active",
+    "impact": {
+      "value": 55,
+      "risk": 60,
+      "confidence": 90
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 64,
+      "trust_score": 73,
+      "learning_score": 60,
+      "promotion_readiness": 66
+    },
     "fixes": [
       "sol-dev-02"
     ]
@@ -249,6 +483,24 @@
       "theme:parsing"
     ],
     "status": "active",
+    "impact": {
+      "value": 75,
+      "risk": 70,
+      "confidence": 95
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 73,
+      "trust_score": 72,
+      "learning_score": 69,
+      "promotion_readiness": 68
+    },
     "fixes": [
       "sol-frontend-01"
     ]
@@ -267,6 +519,24 @@
       "risk:analysis_paralysis"
     ],
     "status": "active",
+    "impact": {
+      "value": 85,
+      "risk": 60,
+      "confidence": 90
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 78,
+      "trust_score": 73,
+      "learning_score": 75,
+      "promotion_readiness": 72
+    },
     "fixes": [
       "sol-trading-001"
     ]
@@ -285,6 +555,24 @@
       "theme:race_condition"
     ],
     "status": "active",
+    "impact": {
+      "value": 60,
+      "risk": 55,
+      "confidence": 75
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 62,
+      "trust_score": 65,
+      "learning_score": 60,
+      "promotion_readiness": 62
+    },
     "fixes": [
       "sol-ui-01"
     ]
@@ -303,6 +591,24 @@
       "theme:memory_leak"
     ],
     "status": "active",
+    "impact": {
+      "value": 65,
+      "risk": 50,
+      "confidence": 95
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 73,
+      "trust_score": 79,
+      "learning_score": 69,
+      "promotion_readiness": 73
+    },
     "fixes": [
       "sol-ws-01"
     ]
@@ -322,7 +628,25 @@
       "theme:anti_hallucination"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 90,
+      "risk": 10,
+      "confidence": 85
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 88,
+      "trust_score": 87,
+      "learning_score": 89,
+      "promotion_readiness": 88
+    }
   },
   {
     "id": "meta-002",
@@ -339,7 +663,25 @@
       "theme:debuggability"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 85,
+      "risk": 15,
+      "confidence": 90
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 87,
+      "trust_score": 88,
+      "learning_score": 86,
+      "promotion_readiness": 87
+    }
   },
   {
     "id": "meta-003",
@@ -356,7 +698,25 @@
       "theme:regime_control"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 95,
+      "risk": 5,
+      "confidence": 95
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 95,
+      "trust_score": 95,
+      "learning_score": 95,
+      "promotion_readiness": 95
+    }
   },
   {
     "id": "meta-004",
@@ -373,7 +733,25 @@
       "theme:verification"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 80,
+      "risk": 20,
+      "confidence": 85
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 82,
+      "trust_score": 83,
+      "learning_score": 81,
+      "promotion_readiness": 82
+    }
   },
   {
     "id": "meta-005",
@@ -390,7 +768,25 @@
       "theme:anti_hallucination"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 88,
+      "risk": 12,
+      "confidence": 90
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 89,
+      "trust_score": 89,
+      "learning_score": 89,
+      "promotion_readiness": 89
+    }
   },
   {
     "id": "meta-006",
@@ -411,7 +807,25 @@
       "theme:anti_entropy"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 100,
+      "risk": 0,
+      "confidence": 100
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 100,
+      "trust_score": 100,
+      "learning_score": 100,
+      "promotion_readiness": 100
+    }
   },
   {
     "id": "meta-007",
@@ -434,7 +848,25 @@
       "meta:gürcan_dna"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 92,
+      "risk": 34,
+      "confidence": 76
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 81,
+      "trust_score": 73,
+      "learning_score": 82,
+      "promotion_readiness": 76
+    }
   },
   {
     "id": "sol-api-02",
@@ -450,6 +882,24 @@
     ],
     "status": "active",
     "copy_ready": true,
+    "impact": {
+      "value": 70,
+      "risk": 15,
+      "confidence": 90
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 80,
+      "trust_score": 88,
+      "learning_score": 79,
+      "promotion_readiness": 84
+    },
     "fixes": [
       "err-api-02"
     ]
@@ -469,7 +919,25 @@
       "theme:agent_protocol"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 92,
+      "risk": 20,
+      "confidence": 85
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 87,
+      "trust_score": 83,
+      "learning_score": 87,
+      "promotion_readiness": 85
+    }
   },
   {
     "id": "sol-arch-002",
@@ -486,7 +954,25 @@
       "theme:audit"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 88,
+      "risk": 25,
+      "confidence": 82
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 83,
+      "trust_score": 80,
+      "learning_score": 83,
+      "promotion_readiness": 81
+    }
   },
   {
     "id": "sol-arch-003",
@@ -503,7 +989,25 @@
       "theme:card_system"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 85,
+      "risk": 28,
+      "confidence": 78
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 80,
+      "trust_score": 76,
+      "learning_score": 80,
+      "promotion_readiness": 77
+    }
   },
   {
     "id": "sol-arch-004",
@@ -521,6 +1025,24 @@
     ],
     "status": "active",
     "copy_ready": true,
+    "impact": {
+      "value": 90,
+      "risk": 10,
+      "confidence": 92
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 91,
+      "trust_score": 91,
+      "learning_score": 91,
+      "promotion_readiness": 91
+    },
     "fixes": [
       "err-arch-001"
     ]
@@ -539,6 +1061,24 @@
     ],
     "status": "active",
     "copy_ready": true,
+    "impact": {
+      "value": 50,
+      "risk": 10,
+      "confidence": 85
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 70,
+      "trust_score": 87,
+      "learning_score": 69,
+      "promotion_readiness": 80
+    },
     "fixes": [
       "err-astro-01"
     ]
@@ -559,7 +1099,25 @@
       "theme:cooldown"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 95,
+      "risk": 25,
+      "confidence": 75
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 84,
+      "trust_score": 75,
+      "learning_score": 85,
+      "promotion_readiness": 79
+    }
   },
   {
     "id": "sol-audio-02",
@@ -575,6 +1133,24 @@
     ],
     "status": "active",
     "copy_ready": true,
+    "impact": {
+      "value": 85,
+      "risk": 20,
+      "confidence": 95
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 88,
+      "trust_score": 90,
+      "learning_score": 86,
+      "promotion_readiness": 88
+    },
     "fixes": [
       "err-audio-02"
     ]
@@ -593,6 +1169,24 @@
     ],
     "status": "active",
     "copy_ready": true,
+    "impact": {
+      "value": 90,
+      "risk": 10,
+      "confidence": 85
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 88,
+      "trust_score": 87,
+      "learning_score": 89,
+      "promotion_readiness": 88
+    },
     "fixes": [
       "err-auth-01"
     ]
@@ -615,7 +1209,25 @@
       "theme:pheromon",
       "theme:dezentral"
     ],
-    "status": "active"
+    "status": "active",
+    "impact": {
+      "value": 88,
+      "risk": 10,
+      "confidence": 90
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 89,
+      "trust_score": 90,
+      "learning_score": 89,
+      "promotion_readiness": 90
+    }
   },
   {
     "id": "sol-bio-048",
@@ -625,8 +1237,7 @@
     "domain": [
       "systems",
       "g_mind",
-      "biology",
-      "optimization"
+      "biology"
     ],
     "tags": [
       "theme:slime_mold",
@@ -635,7 +1246,25 @@
       "theme:netzwerk_optimierung",
       "theme:dezentral"
     ],
-    "status": "active"
+    "status": "active",
+    "impact": {
+      "value": 90,
+      "risk": 8,
+      "confidence": 88
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 90,
+      "trust_score": 89,
+      "learning_score": 90,
+      "promotion_readiness": 90
+    }
   },
   {
     "id": "sol-bio-049",
@@ -646,8 +1275,7 @@
       "systems",
       "g_mind",
       "biology",
-      "aicos",
-      "memory"
+      "aicos"
     ],
     "tags": [
       "theme:epigenetik",
@@ -655,7 +1283,25 @@
       "theme:generationen_gedaechtnis",
       "theme:aktivierung_decay"
     ],
-    "status": "active"
+    "status": "active",
+    "impact": {
+      "value": 92,
+      "risk": 10,
+      "confidence": 85
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 89,
+      "trust_score": 87,
+      "learning_score": 90,
+      "promotion_readiness": 88
+    }
   },
   {
     "id": "sol-bio-050",
@@ -665,8 +1311,7 @@
     "domain": [
       "systems",
       "g_mind",
-      "biology",
-      "memory"
+      "biology"
     ],
     "tags": [
       "theme:immunsystem",
@@ -674,7 +1319,25 @@
       "theme:verteiltes_gedaechtnis",
       "theme:fitness_scoring"
     ],
-    "status": "active"
+    "status": "active",
+    "impact": {
+      "value": 87,
+      "risk": 10,
+      "confidence": 85
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 87,
+      "trust_score": 87,
+      "learning_score": 87,
+      "promotion_readiness": 87
+    }
   },
   {
     "id": "sol-bio-051",
@@ -684,8 +1347,7 @@
     "domain": [
       "systems",
       "g_mind",
-      "biology",
-      "learning"
+      "biology"
     ],
     "tags": [
       "theme:hebbsche_regel",
@@ -693,7 +1355,25 @@
       "theme:emergente_cluster",
       "theme:lernrate"
     ],
-    "status": "active"
+    "status": "active",
+    "impact": {
+      "value": 93,
+      "risk": 8,
+      "confidence": 90
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 92,
+      "trust_score": 91,
+      "learning_score": 92,
+      "promotion_readiness": 91
+    }
   },
   {
     "id": "sol-bio-052",
@@ -712,7 +1392,25 @@
       "theme:kollektiver_trigger",
       "theme:signal_akkumulation"
     ],
-    "status": "active"
+    "status": "active",
+    "impact": {
+      "value": 89,
+      "risk": 12,
+      "confidence": 87
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 88,
+      "trust_score": 87,
+      "learning_score": 88,
+      "promotion_readiness": 88
+    }
   },
   {
     "id": "sol-cross-007",
@@ -732,6 +1430,24 @@
     ],
     "status": "proposed",
     "copy_ready": false,
+    "impact": {
+      "value": 100,
+      "risk": 10,
+      "confidence": 95
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 96,
+      "trust_score": 93,
+      "learning_score": 96,
+      "promotion_readiness": 94
+    },
     "fixes": [
       "err-dev-003",
       "err-arch-001"
@@ -755,6 +1471,24 @@
     ],
     "status": "proposed",
     "copy_ready": false,
+    "impact": {
+      "value": 95,
+      "risk": 30,
+      "confidence": 80
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 85,
+      "trust_score": 77,
+      "learning_score": 85,
+      "promotion_readiness": 80
+    },
     "fixes": [
       "err-dev-002"
     ]
@@ -775,7 +1509,25 @@
       "theme:agent_workflow"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 90,
+      "risk": 15,
+      "confidence": 85
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 87,
+      "trust_score": 85,
+      "learning_score": 88,
+      "promotion_readiness": 86
+    }
   },
   {
     "id": "sol-cross-010",
@@ -794,7 +1546,25 @@
       "theme:provider_drift"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 85,
+      "risk": 15,
+      "confidence": 90
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 87,
+      "trust_score": 88,
+      "learning_score": 86,
+      "promotion_readiness": 87
+    }
   },
   {
     "id": "sol-cross-011",
@@ -812,7 +1582,25 @@
       "theme:debuggability"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 90,
+      "risk": 10,
+      "confidence": 92
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 91,
+      "trust_score": 91,
+      "learning_score": 91,
+      "promotion_readiness": 91
+    }
   },
   {
     "id": "sol-cross-012",
@@ -833,6 +1621,24 @@
     ],
     "status": "proposed",
     "copy_ready": false,
+    "impact": {
+      "value": 90,
+      "risk": 10,
+      "confidence": 92
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 91,
+      "trust_score": 91,
+      "learning_score": 91,
+      "promotion_readiness": 91
+    },
     "fixes": [
       "err-arch-001",
       "err-trading-001"
@@ -855,7 +1661,25 @@
       "theme:anti_loop"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 93,
+      "risk": 18,
+      "confidence": 86
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 88,
+      "trust_score": 85,
+      "learning_score": 89,
+      "promotion_readiness": 86
+    }
   },
   {
     "id": "sol-cross-014",
@@ -874,7 +1698,25 @@
       "theme:autonomy"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 91,
+      "risk": 20,
+      "confidence": 85
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 87,
+      "trust_score": 83,
+      "learning_score": 87,
+      "promotion_readiness": 84
+    }
   },
   {
     "id": "sol-cross-015",
@@ -894,7 +1736,25 @@
       "theme:anti_loop"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 92,
+      "risk": 15,
+      "confidence": 88
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 89,
+      "trust_score": 87,
+      "learning_score": 89,
+      "promotion_readiness": 88
+    }
   },
   {
     "id": "sol-cross-016",
@@ -913,7 +1773,25 @@
       "theme:provenance"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 95,
+      "risk": 25,
+      "confidence": 82
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 86,
+      "trust_score": 80,
+      "learning_score": 87,
+      "promotion_readiness": 82
+    }
   },
   {
     "id": "sol-cross-017",
@@ -933,7 +1811,25 @@
       "theme:pre_flight"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 91,
+      "risk": 12,
+      "confidence": 90
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 90,
+      "trust_score": 89,
+      "learning_score": 90,
+      "promotion_readiness": 90
+    }
   },
   {
     "id": "sol-cross-018",
@@ -953,6 +1849,24 @@
     ],
     "status": "proposed",
     "copy_ready": false,
+    "impact": {
+      "value": 85,
+      "risk": 15,
+      "confidence": 88
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 86,
+      "trust_score": 87,
+      "learning_score": 86,
+      "promotion_readiness": 86
+    },
     "fixes": [
       "err-api-004"
     ]
@@ -975,7 +1889,25 @@
       "theme:graceful_degradation"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 92,
+      "risk": 15,
+      "confidence": 88
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 89,
+      "trust_score": 87,
+      "learning_score": 89,
+      "promotion_readiness": 88
+    }
   },
   {
     "id": "sol-cross-020",
@@ -994,7 +1926,25 @@
       "theme:async_stability"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 88,
+      "risk": 20,
+      "confidence": 85
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 85,
+      "trust_score": 83,
+      "learning_score": 85,
+      "promotion_readiness": 84
+    }
   },
   {
     "id": "sol-cross-021",
@@ -1013,7 +1963,25 @@
       "theme:escape_hatch"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 90,
+      "risk": 18,
+      "confidence": 88
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 88,
+      "trust_score": 86,
+      "learning_score": 88,
+      "promotion_readiness": 86
+    }
   },
   {
     "id": "sol-cross-022",
@@ -1033,7 +2001,25 @@
       "theme:security"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 85,
+      "risk": 15,
+      "confidence": 90
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 87,
+      "trust_score": 88,
+      "learning_score": 86,
+      "promotion_readiness": 87
+    }
   },
   {
     "id": "sol-cross-023",
@@ -1052,7 +2038,25 @@
       "theme:prioritization"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 86,
+      "risk": 20,
+      "confidence": 82
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 83,
+      "trust_score": 81,
+      "learning_score": 84,
+      "promotion_readiness": 82
+    }
   },
   {
     "id": "sol-cross-024",
@@ -1071,7 +2075,25 @@
       "theme:provider_routing"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 84,
+      "risk": 20,
+      "confidence": 85
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 84,
+      "trust_score": 83,
+      "learning_score": 83,
+      "promotion_readiness": 83
+    }
   },
   {
     "id": "sol-cross-025",
@@ -1092,6 +2114,24 @@
     ],
     "status": "proposed",
     "copy_ready": false,
+    "impact": {
+      "value": 90,
+      "risk": 12,
+      "confidence": 92
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 90,
+      "trust_score": 91,
+      "learning_score": 90,
+      "promotion_readiness": 90
+    },
     "fixes": [
       "err-arch-001"
     ]
@@ -1114,7 +2154,25 @@
       "theme:verification"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 88,
+      "risk": 20,
+      "confidence": 85
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 85,
+      "trust_score": 83,
+      "learning_score": 85,
+      "promotion_readiness": 84
+    }
   },
   {
     "id": "sol-cross-027",
@@ -1134,7 +2192,25 @@
       "theme:resilience"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 82,
+      "risk": 15,
+      "confidence": 88
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 85,
+      "trust_score": 87,
+      "learning_score": 84,
+      "promotion_readiness": 86
+    }
   },
   {
     "id": "sol-cross-028",
@@ -1152,7 +2228,25 @@
       "theme:routing"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 84,
+      "risk": 28,
+      "confidence": 78
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 80,
+      "trust_score": 76,
+      "learning_score": 80,
+      "promotion_readiness": 77
+    }
   },
   {
     "id": "sol-cross-029",
@@ -1171,6 +2265,24 @@
     ],
     "status": "proposed",
     "copy_ready": false,
+    "impact": {
+      "value": 89,
+      "risk": 20,
+      "confidence": 85
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 86,
+      "trust_score": 83,
+      "learning_score": 86,
+      "promotion_readiness": 84
+    },
     "fixes": [
       "err-ui-02"
     ]
@@ -1192,6 +2304,24 @@
     ],
     "status": "proposed",
     "copy_ready": false,
+    "impact": {
+      "value": 92,
+      "risk": 10,
+      "confidence": 90
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 91,
+      "trust_score": 90,
+      "learning_score": 91,
+      "promotion_readiness": 90
+    },
     "fixes": [
       "err-arch-001"
     ]
@@ -1212,7 +2342,25 @@
       "theme:pattern_recognition"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 87,
+      "risk": 25,
+      "confidence": 78
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 81,
+      "trust_score": 77,
+      "learning_score": 82,
+      "promotion_readiness": 79
+    }
   },
   {
     "id": "sol-cross-032",
@@ -1231,7 +2379,25 @@
       "theme:blocking_prevention"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 82,
+      "risk": 10,
+      "confidence": 92
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 87,
+      "trust_score": 91,
+      "learning_score": 87,
+      "promotion_readiness": 89
+    }
   },
   {
     "id": "sol-cross-033",
@@ -1251,7 +2417,25 @@
       "theme:provider_routing"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 88,
+      "risk": 22,
+      "confidence": 84
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 85,
+      "trust_score": 82,
+      "learning_score": 85,
+      "promotion_readiness": 83
+    }
   },
   {
     "id": "sol-cross-034",
@@ -1271,7 +2455,25 @@
       "theme:explainability"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 89,
+      "risk": 28,
+      "confidence": 80
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 82,
+      "trust_score": 77,
+      "learning_score": 83,
+      "promotion_readiness": 79
+    }
   },
   {
     "id": "sol-cross-035",
@@ -1291,7 +2493,25 @@
       "theme:defensive_programming"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 85,
+      "risk": 8,
+      "confidence": 94
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 90,
+      "trust_score": 93,
+      "learning_score": 89,
+      "promotion_readiness": 92
+    }
   },
   {
     "id": "sol-cross-036",
@@ -1311,7 +2531,25 @@
       "theme:pipeline"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 87,
+      "risk": 25,
+      "confidence": 78
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 81,
+      "trust_score": 77,
+      "learning_score": 82,
+      "promotion_readiness": 79
+    }
   },
   {
     "id": "sol-cross-037",
@@ -1328,7 +2566,25 @@
       "theme:adaptive_strategy"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 82,
+      "risk": 35,
+      "confidence": 78
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 77,
+      "trust_score": 73,
+      "learning_score": 77,
+      "promotion_readiness": 74
+    }
   },
   {
     "id": "sol-cross-038",
@@ -1346,7 +2602,25 @@
       "theme:contracts"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 86,
+      "risk": 18,
+      "confidence": 82
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 84,
+      "trust_score": 82,
+      "learning_score": 84,
+      "promotion_readiness": 83
+    }
   },
   {
     "id": "sol-cross-039",
@@ -1364,7 +2638,25 @@
       "theme:genealogy"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 78,
+      "risk": 18,
+      "confidence": 75
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 78,
+      "trust_score": 77,
+      "learning_score": 78,
+      "promotion_readiness": 78
+    }
   },
   {
     "id": "sol-cross-040",
@@ -1382,7 +2674,25 @@
       "theme:ai_benchmarking"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 90,
+      "risk": 5,
+      "confidence": 88
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 90,
+      "trust_score": 90,
+      "learning_score": 91,
+      "promotion_readiness": 91
+    }
   },
   {
     "id": "sol-cross-041",
@@ -1399,7 +2709,25 @@
       "theme:reusability"
     ],
     "status": "proposed",
-    "copy_ready": false
+    "copy_ready": false,
+    "impact": {
+      "value": 85,
+      "risk": 15,
+      "confidence": 88
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 86,
+      "trust_score": 87,
+      "learning_score": 86,
+      "promotion_readiness": 86
+    }
   },
   {
     "id": "sol-cross-042",
@@ -1418,7 +2746,25 @@
       "theme:reactive_agents"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 88,
+      "risk": 22,
+      "confidence": 82
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 84,
+      "trust_score": 81,
+      "learning_score": 84,
+      "promotion_readiness": 82
+    }
   },
   {
     "id": "sol-cross-043",
@@ -1440,7 +2786,25 @@
       "theme:formeln",
       "meta:gürcan_dna"
     ],
-    "status": "active"
+    "status": "active",
+    "impact": {
+      "value": 92,
+      "risk": 12,
+      "confidence": 85
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 89,
+      "trust_score": 86,
+      "learning_score": 89,
+      "promotion_readiness": 87
+    }
   },
   {
     "id": "sol-cross-044",
@@ -1460,7 +2824,25 @@
       "theme:graceful_degradation"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 90,
+      "risk": 10,
+      "confidence": 90
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 90,
+      "trust_score": 90,
+      "learning_score": 90,
+      "promotion_readiness": 90
+    }
   },
   {
     "id": "sol-cross-045",
@@ -1482,7 +2864,25 @@
       "meta:gürcan_dna"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 90,
+      "risk": 10,
+      "confidence": 80
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 87,
+      "trust_score": 84,
+      "learning_score": 88,
+      "promotion_readiness": 86
+    }
   },
   {
     "id": "sol-cross-046",
@@ -1505,7 +2905,25 @@
       "meta:gürcan_dna"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 92,
+      "risk": 12,
+      "confidence": 85
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 89,
+      "trust_score": 86,
+      "learning_score": 89,
+      "promotion_readiness": 87
+    }
   },
   {
     "id": "sol-cross-053",
@@ -1528,7 +2946,25 @@
       "meta:gürcan_dna"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 90,
+      "risk": 32,
+      "confidence": 80
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 82,
+      "trust_score": 76,
+      "learning_score": 82,
+      "promotion_readiness": 78
+    }
   },
   {
     "id": "sol-cross-054",
@@ -1551,7 +2987,25 @@
       "meta:gürcan_dna"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 95,
+      "risk": 37,
+      "confidence": 82
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 84,
+      "trust_score": 75,
+      "learning_score": 84,
+      "promotion_readiness": 78
+    }
   },
   {
     "id": "sol-cross-055",
@@ -1574,7 +3028,25 @@
       "theme:anti_loop",
       "meta:gürcan_dna"
     ],
-    "status": "active"
+    "status": "active",
+    "impact": {
+      "value": 94,
+      "risk": 35,
+      "confidence": 83
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 84,
+      "trust_score": 77,
+      "learning_score": 84,
+      "promotion_readiness": 79
+    }
   },
   {
     "id": "sol-db-01",
@@ -1590,6 +3062,24 @@
     ],
     "status": "active",
     "copy_ready": true,
+    "impact": {
+      "value": 40,
+      "risk": 5,
+      "confidence": 80
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 65,
+      "trust_score": 85,
+      "learning_score": 64,
+      "promotion_readiness": 77
+    },
     "fixes": [
       "err-db-01"
     ]
@@ -1610,6 +3100,24 @@
     ],
     "status": "active",
     "copy_ready": true,
+    "impact": {
+      "value": 88,
+      "risk": 12,
+      "confidence": 85
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 87,
+      "trust_score": 86,
+      "learning_score": 87,
+      "promotion_readiness": 87
+    },
     "fixes": [
       "err-dev-01"
     ]
@@ -1630,7 +3138,25 @@
       "tech:proof_core"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 86,
+      "risk": 18,
+      "confidence": 84
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 85,
+      "trust_score": 83,
+      "learning_score": 85,
+      "promotion_readiness": 84
+    }
   },
   {
     "id": "sol-dev-01",
@@ -1647,7 +3173,25 @@
       "theme:cache"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 90,
+      "risk": 20,
+      "confidence": 80
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 85,
+      "trust_score": 80,
+      "learning_score": 85,
+      "promotion_readiness": 82
+    }
   },
   {
     "id": "sol-dev-02",
@@ -1663,6 +3207,24 @@
     ],
     "status": "active",
     "copy_ready": true,
+    "impact": {
+      "value": 55,
+      "risk": 15,
+      "confidence": 90
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 73,
+      "trust_score": 88,
+      "learning_score": 71,
+      "promotion_readiness": 81
+    },
     "fixes": [
       "err-dev-02"
     ]
@@ -1681,6 +3243,24 @@
     ],
     "status": "active",
     "copy_ready": true,
+    "impact": {
+      "value": 75,
+      "risk": 5,
+      "confidence": 95
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 86,
+      "trust_score": 95,
+      "learning_score": 85,
+      "promotion_readiness": 91
+    },
     "fixes": [
       "err-frontend-01"
     ]
@@ -1700,7 +3280,25 @@
       "theme:cost_efficiency"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 85,
+      "risk": 22,
+      "confidence": 80
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 82,
+      "trust_score": 79,
+      "learning_score": 82,
+      "promotion_readiness": 80
+    }
   },
   {
     "id": "sol-trading-001",
@@ -1716,7 +3314,25 @@
       "theme:entry_timing"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 78,
+      "risk": 40,
+      "confidence": 72
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 72,
+      "trust_score": 68,
+      "learning_score": 72,
+      "promotion_readiness": 69
+    }
   },
   {
     "id": "sol-ui-01",
@@ -1732,6 +3348,24 @@
     ],
     "status": "active",
     "copy_ready": true,
+    "impact": {
+      "value": 60,
+      "risk": 10,
+      "confidence": 85
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 75,
+      "trust_score": 87,
+      "learning_score": 74,
+      "promotion_readiness": 82
+    },
     "fixes": [
       "err-ui-01"
     ]
@@ -1752,7 +3386,25 @@
       "theme:accessibility"
     ],
     "status": "active",
-    "copy_ready": true
+    "copy_ready": true,
+    "impact": {
+      "value": 84,
+      "risk": 35,
+      "confidence": 76
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 77,
+      "trust_score": 72,
+      "learning_score": 77,
+      "promotion_readiness": 74
+    }
   },
   {
     "id": "sol-ux-002",
@@ -1770,6 +3422,24 @@
     ],
     "status": "active",
     "copy_ready": true,
+    "impact": {
+      "value": 87,
+      "risk": 15,
+      "confidence": 86
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 86,
+      "trust_score": 86,
+      "learning_score": 86,
+      "promotion_readiness": 86
+    },
     "fixes": [
       "err-ui-02"
     ]
@@ -1788,6 +3458,24 @@
     ],
     "status": "active",
     "copy_ready": true,
+    "impact": {
+      "value": 65,
+      "risk": 10,
+      "confidence": 95
+    },
+    "score_summary": {
+      "schema_version": "aicos-score-summary/v1",
+      "source": "impact_seed_only",
+      "derivation_basis": [
+        "impact.value",
+        "impact.risk",
+        "impact.confidence"
+      ],
+      "scan_score": 81,
+      "trust_score": 93,
+      "learning_score": 79,
+      "promotion_readiness": 87
+    },
     "fixes": [
       "err-ws-01"
     ]

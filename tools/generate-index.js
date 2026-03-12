@@ -7,6 +7,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { deriveScoreSummary, normalizeImpact } = require('./score-lib');
 
 const ROOT_DIR = path.join(__dirname, '..');
 const CARDS_DIR = path.join(ROOT_DIR, 'cards');
@@ -85,6 +86,14 @@ function buildIndexEntry(card) {
     if (field in card) {
       entry[field] = card[field];
     }
+  }
+  const impact = normalizeImpact(card.impact);
+  if (impact) {
+    entry.impact = impact;
+  }
+  const scoreSummary = deriveScoreSummary(card);
+  if (scoreSummary) {
+    entry.score_summary = scoreSummary;
   }
   if (card.links && Array.isArray(card.links.fixes) && card.links.fixes.length > 0) {
     entry.fixes = card.links.fixes;
