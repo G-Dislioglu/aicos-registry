@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node tools/arena-server.js"
+    "start": "node tools/arena-server.js",
+    "check:scoring-hygiene": "node tools/check-card-scoring-hygiene.js"
   },
   "engines": {
     "node": ">=20"

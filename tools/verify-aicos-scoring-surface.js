@@ -7,8 +7,11 @@ const { deriveScoreSummary, normalizeImpact } = require('./score-lib');
 const ROOT_DIR = path.join(__dirname, '..');
 const REQUIRED_FILES = [
   path.join(ROOT_DIR, 'AICOS_SCORING_CHARTER.md'),
+  path.join(ROOT_DIR, 'AICOS_SCORING_AUDIT_INTERPRETATION.md'),
+  path.join(ROOT_DIR, 'AICOS_SCORING_AUTHOR_GUIDELINES.md'),
   path.join(ROOT_DIR, 'tools', 'score-lib.js'),
   path.join(ROOT_DIR, 'tools', 'audit-card-scoring.js'),
+  path.join(ROOT_DIR, 'tools', 'check-card-scoring-hygiene.js'),
   path.join(ROOT_DIR, 'tools', 'generate-index.js'),
   path.join(ROOT_DIR, 'tools', 'verify-aicos-scoring-surface.js'),
   path.join(ROOT_DIR, 'index', 'INDEX.json')
@@ -17,6 +20,17 @@ const REQUIRED_FILES = [
 function assert(condition, message) {
   if (!condition) {
     throw new Error(message);
+  }
+}
+
+function verifySupportingDocs() {
+  const interpretation = fs.readFileSync(path.join(ROOT_DIR, 'AICOS_SCORING_AUDIT_INTERPRETATION.md'), 'utf-8');
+  const guidelines = fs.readFileSync(path.join(ROOT_DIR, 'AICOS_SCORING_AUTHOR_GUIDELINES.md'), 'utf-8');
+  for (const expected of ['top-compressed', 'scan surface, but not yet valid as a strong governance or truth-quality surface', 'semantic calibration']) {
+    assert(interpretation.includes(expected), `Expected audit interpretation text missing: ${expected}`);
+  }
+  for (const expected of ['do not treat all three fields as praise', '`95+` should be rare', 'High `value` does not require high `confidence`']) {
+    assert(guidelines.includes(expected), `Expected author guideline text missing: ${expected}`);
   }
 }
 
@@ -84,13 +98,24 @@ function verifyAudit() {
   assert(Array.isArray(audit.top_scan_scores) && audit.top_scan_scores.length > 0, 'Expected audit to expose top_scan_scores');
 }
 
+function verifyHygieneCheck() {
+  const output = runNodeScript(path.join('tools', 'check-card-scoring-hygiene.js'), ['--json']);
+  const hygiene = JSON.parse(output);
+  assert(hygiene.schema_version === 'aicos-card-scoring-hygiene/v1', 'Expected scoring hygiene schema version');
+  assert(hygiene.checked_cards > 0, 'Expected scoring hygiene check to inspect cards');
+  assert(hygiene.hard_failure_count === 0, 'Expected scoring hygiene check to report no hard failures for current registry cards');
+  assert(hygiene.flag_definitions && typeof hygiene.flag_definitions === 'object', 'Expected scoring hygiene check to expose flag definitions');
+}
+
 function main() {
   verifyFilesExist();
   verifyCharterCopy();
+  verifySupportingDocs();
   verifyScoreLib();
   runNodeScript(path.join('tools', 'generate-index.js'));
   verifyGeneratedIndex();
   verifyAudit();
+  verifyHygieneCheck();
   console.log('AICOS scoring surface verification passed.');
 }
 
