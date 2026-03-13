@@ -1,0 +1,20 @@
+{
+  "artifact_type": "studio_intake_packet",
+  "source_mode": "maya_council",
+  "participants": [
+    "maya:moderator"
+  ],
+  "topic": "TODO: topic",
+  "proposal_type": "idea_probe",
+  "claim_status": "insufficiently_formed",
+  "evidence_status": "needs_evidence",
+  "challenge_status": "unchallenged",
+  "drift_risk": "medium",
+  "recommendation_scope": "proposal_only",
+  "promotion_state": "proposal_only",
+  "distilled_summary": "TODO: distilled summary",
+  "open_conflicts": [
+    "TODO: add open conflict or missing evidence"
+  ],
+  "next_review_target": "none"
+}

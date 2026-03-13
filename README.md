@@ -129,8 +129,12 @@ It exists to structure debate, challenge, and distillation outputs without direc
 - Schema notes: `AICOS_STUDIO_SCHEMA_NOTES.md`
 - Machine-readable schemas: `schemas/studio/*.schema.json`
 - Validation corpus: `examples/studio/valid/*.json`, `examples/studio/invalid/*.json`
+- Scaffolded examples: `examples/studio/scaffolded/*.json`
 - Doc verifier: `tools/verify-aicos-studio-intake-docs.js`
 - Schema verifier: `tools/verify-aicos-studio-schemas.js`
+- Scaffold CLI: `tools/studio-scaffold.js`
+- Lint CLI: `tools/studio-lint.js`
+- Tooling verifier: `tools/verify-aicos-studio-tooling.js`
 
 Boundary rule:
 
@@ -138,10 +142,24 @@ Boundary rule:
 - no silent conversion into runtime review state
 - no auto-promotion path from studio output to canon
 
+Local prep tools only:
+
+- `tools/studio-scaffold.js` scaffolds local proposal-layer or nomination-layer JSON only
+- `tools/studio-lint.js` checks local JSON against Studio schemas and boundary lints only
+- these tools do not execute runtime work, provider calls, registry mutation, or review forwarding
+
 Normal command:
 
 ```bash
 npm run verify:studio-intake
+```
+
+Useful local commands:
+
+```bash
+npm run scaffold:studio -- proposal-artifact
+npm run lint:studio -- examples/studio/scaffolded
+npm run verify:studio
 ```
 
 ## Authoring Rules
