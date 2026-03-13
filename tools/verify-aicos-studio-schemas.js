@@ -12,7 +12,9 @@ const REQUIRED_SCHEMA_FILES = [
   'proposal-artifact.schema.json',
   'handoff-artifact.schema.json',
   'reference-artifact.schema.json',
-  'card-review-target-artifact.schema.json'
+  'card-review-target-artifact.schema.json',
+  'review-record.schema.json',
+  'gate-report.schema.json'
 ].map((name) => path.join(SCHEMA_DIR, name));
 
 const VALID_EXAMPLES = [
@@ -47,6 +49,22 @@ const VALID_EXAMPLES = [
   {
     file: path.join(EXAMPLES_DIR, 'valid', 'card-review-target-artifact.valid.json'),
     schema: path.join(SCHEMA_DIR, 'card-review-target-artifact.schema.json')
+  },
+  {
+    file: path.join(EXAMPLES_DIR, 'valid', 'review-record-forward.valid.json'),
+    schema: path.join(SCHEMA_DIR, 'review-record.schema.json')
+  },
+  {
+    file: path.join(EXAMPLES_DIR, 'valid', 'review-record-hold.valid.json'),
+    schema: path.join(SCHEMA_DIR, 'review-record.schema.json')
+  },
+  {
+    file: path.join(EXAMPLES_DIR, 'valid', 'gate-report-pass.valid.json'),
+    schema: path.join(SCHEMA_DIR, 'gate-report.schema.json')
+  },
+  {
+    file: path.join(EXAMPLES_DIR, 'valid', 'gate-report-hard-stop.valid.json'),
+    schema: path.join(SCHEMA_DIR, 'gate-report.schema.json')
   }
 ];
 
@@ -66,6 +84,22 @@ const INVALID_EXAMPLES = [
   {
     file: path.join(EXAMPLES_DIR, 'invalid', 'runtime-write-attempt.invalid.json'),
     schema: path.join(SCHEMA_DIR, 'handoff-artifact.schema.json')
+  },
+  {
+    file: path.join(EXAMPLES_DIR, 'invalid', 'review-record-unknown-decision-code.invalid.json'),
+    schema: path.join(SCHEMA_DIR, 'review-record.schema.json')
+  },
+  {
+    file: path.join(EXAMPLES_DIR, 'invalid', 'gate-report-forbidden-outcome.invalid.json'),
+    schema: path.join(SCHEMA_DIR, 'gate-report.schema.json')
+  },
+  {
+    file: path.join(EXAMPLES_DIR, 'invalid', 'review-record-runtime-write-attempt.invalid.json'),
+    schema: path.join(SCHEMA_DIR, 'review-record.schema.json')
+  },
+  {
+    file: path.join(EXAMPLES_DIR, 'invalid', 'gate-report-truth-mutation-attempt.invalid.json'),
+    schema: path.join(SCHEMA_DIR, 'gate-report.schema.json')
   }
 ];
 

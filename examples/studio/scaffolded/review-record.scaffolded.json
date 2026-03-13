@@ -1,0 +1,16 @@
+{
+  "artifact_type": "review_record",
+  "review_record_id": "TODO: review-record-id",
+  "subject_artifact_type": "proposal_artifact",
+  "subject_ref": "examples/studio/scaffolded/proposal-artifact.scaffolded.json",
+  "topic": "TODO: topic",
+  "lifecycle_state": "gated",
+  "decision_type": "hold",
+  "decision_codes": [
+    "proposal_only_keep"
+  ],
+  "review_summary": "TODO: review summary",
+  "user_gate_status": "not_required",
+  "resulting_next_posture": "retain_in_review_layer",
+  "record_scope": "review_layer_only"
+}

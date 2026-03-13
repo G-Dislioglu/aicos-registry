@@ -1,0 +1,16 @@
+{
+  "artifact_type": "gate_report",
+  "gate_report_id": "gate-report-invalid-002",
+  "subject_artifact_type": "card_review_target_artifact",
+  "subject_ref": "examples/studio/valid/card-review-target-artifact.valid.json",
+  "topic": "Invalid gate report with truth mutation attempt",
+  "gate_name": "no_truth_mutation_gate",
+  "gate_outcome": "hard_stop",
+  "gate_summary": "This should fail because the gate report encodes a direct truth mutation target.",
+  "decision_codes": [
+    "truth_mutation_forbidden"
+  ],
+  "approval_requirement": "cannot_override_failure",
+  "record_scope": "review_layer_only",
+  "truth_mutation_target": "cards/errors/err-api-004.json"
+}

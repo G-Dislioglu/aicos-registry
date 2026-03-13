@@ -24,6 +24,14 @@ const ARTIFACT_KINDS = {
   'card-review-target-artifact': {
     artifactType: 'card_review_target_artifact',
     schemaFile: 'card-review-target-artifact.schema.json'
+  },
+  'review-record': {
+    artifactType: 'review_record',
+    schemaFile: 'review-record.schema.json'
+  },
+  'gate-report': {
+    artifactType: 'gate_report',
+    schemaFile: 'gate-report.schema.json'
   }
 };
 
@@ -44,7 +52,13 @@ const ARTIFACT_KIND_ALIASES = {
   'card-review-target-artifact': 'card-review-target-artifact',
   'card-review-target': 'card-review-target-artifact',
   'card-target': 'card-review-target-artifact',
-  card_review_target_artifact: 'card-review-target-artifact'
+  card_review_target_artifact: 'card-review-target-artifact',
+  'review-record': 'review-record',
+  review_record: 'review-record',
+  review: 'review-record',
+  'gate-report': 'gate-report',
+  gate_report: 'gate-report',
+  gate: 'gate-report'
 };
 
 const SCHEMA_FILE_BY_ARTIFACT_TYPE = Object.fromEntries(
@@ -70,6 +84,23 @@ const NEXT_REVIEW_TARGETS = [
 ];
 
 const FORBIDDEN_NEXT_REVIEW_TARGETS = ['future_mec_context_review'];
+
+const DECISION_CODES = [
+  'insufficient_evidence',
+  'unresolved_conflict',
+  'proposal_only_keep',
+  'handoff_ready',
+  'reference_draft_only',
+  'registry_review_nomination_only',
+  'runtime_forbidden',
+  'truth_mutation_forbidden',
+  'user_gate_required',
+  'archive_preferred',
+  'split_required'
+];
+
+const GATE_OUTCOMES = ['pass', 'soft_fail', 'hard_stop'];
+const FORBIDDEN_GATE_OUTCOMES = ['runtime_write_authorized', 'truth_mutation_authorized'];
 
 const FORBIDDEN_PROPERTY_CODE = {
   runtime_review_object: 'runtime_write_attempt',
@@ -289,11 +320,27 @@ function lintArtifact(artifact) {
       pushBoundaryLint(boundaryLints, 'unknown_proposal_type', `Unknown proposal_type: ${artifact.proposal_type}`, ['proposal_type']);
     }
 
+    if (Array.isArray(artifact.decision_codes)) {
+      artifact.decision_codes.forEach((code, index) => {
+        if (!DECISION_CODES.includes(code)) {
+          pushBoundaryLint(boundaryLints, 'unknown_decision_code', `Unknown decision code: ${code}`, ['decision_codes', String(index)]);
+        }
+      });
+    }
+
     if (Object.prototype.hasOwnProperty.call(artifact, 'next_review_target')) {
       if (FORBIDDEN_NEXT_REVIEW_TARGETS.includes(artifact.next_review_target)) {
         pushBoundaryLint(boundaryLints, 'forbidden_target', `Forbidden next_review_target: ${artifact.next_review_target}`, ['next_review_target']);
       } else if (!NEXT_REVIEW_TARGETS.includes(artifact.next_review_target)) {
         pushBoundaryLint(boundaryLints, 'unknown_next_review_target', `Unknown next_review_target: ${artifact.next_review_target}`, ['next_review_target']);
+      }
+    }
+
+    if (Object.prototype.hasOwnProperty.call(artifact, 'gate_outcome')) {
+      if (FORBIDDEN_GATE_OUTCOMES.includes(artifact.gate_outcome)) {
+        pushBoundaryLint(boundaryLints, 'forbidden_gate_outcome', `Forbidden gate_outcome: ${artifact.gate_outcome}`, ['gate_outcome']);
+      } else if (!GATE_OUTCOMES.includes(artifact.gate_outcome)) {
+        pushBoundaryLint(boundaryLints, 'unknown_gate_outcome', `Unknown gate_outcome: ${artifact.gate_outcome}`, ['gate_outcome']);
       }
     }
 
@@ -381,6 +428,39 @@ function buildScaffoldArtifact(kindInput) {
     };
   }
 
+  if (kind === 'review-record') {
+    return {
+      artifact_type: 'review_record',
+      review_record_id: 'TODO: review-record-id',
+      subject_artifact_type: 'proposal_artifact',
+      subject_ref: 'examples/studio/scaffolded/proposal-artifact.scaffolded.json',
+      topic: 'TODO: topic',
+      lifecycle_state: 'gated',
+      decision_type: 'hold',
+      decision_codes: ['proposal_only_keep'],
+      review_summary: 'TODO: review summary',
+      user_gate_status: 'not_required',
+      resulting_next_posture: 'retain_in_review_layer',
+      record_scope: 'review_layer_only'
+    };
+  }
+
+  if (kind === 'gate-report') {
+    return {
+      artifact_type: 'gate_report',
+      gate_report_id: 'TODO: gate-report-id',
+      subject_artifact_type: 'proposal_artifact',
+      subject_ref: 'examples/studio/scaffolded/proposal-artifact.scaffolded.json',
+      topic: 'TODO: topic',
+      gate_name: 'proposal_only_gate',
+      gate_outcome: 'pass',
+      gate_summary: 'TODO: gate summary',
+      decision_codes: ['proposal_only_keep'],
+      approval_requirement: 'not_required',
+      record_scope: 'review_layer_only'
+    };
+  }
+
   return {
     artifact_type: 'card_review_target_artifact',
     review_target_type: 'review_priority_nomination',
@@ -403,6 +483,9 @@ module.exports = {
   PROPOSAL_TYPES,
   NEXT_REVIEW_TARGETS,
   FORBIDDEN_NEXT_REVIEW_TARGETS,
+  DECISION_CODES,
+  GATE_OUTCOMES,
+  FORBIDDEN_GATE_OUTCOMES,
   ARTIFACT_KINDS,
   resolveArtifactKind,
   getArtifactKinds,

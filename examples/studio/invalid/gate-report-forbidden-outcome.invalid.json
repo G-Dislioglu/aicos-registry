@@ -1,0 +1,15 @@
+{
+  "artifact_type": "gate_report",
+  "gate_report_id": "gate-report-invalid-001",
+  "subject_artifact_type": "proposal_artifact",
+  "subject_ref": "examples/studio/valid/proposal-artifact.valid.json",
+  "topic": "Invalid gate report with forbidden gate outcome",
+  "gate_name": "no_runtime_write_gate",
+  "gate_outcome": "runtime_write_authorized",
+  "gate_summary": "This should fail because a gate report must never authorize runtime writes.",
+  "decision_codes": [
+    "runtime_forbidden"
+  ],
+  "approval_requirement": "cannot_override_failure",
+  "record_scope": "review_layer_only"
+}

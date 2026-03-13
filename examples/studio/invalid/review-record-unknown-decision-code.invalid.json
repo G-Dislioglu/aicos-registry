@@ -1,0 +1,16 @@
+{
+  "artifact_type": "review_record",
+  "review_record_id": "review-record-invalid-001",
+  "subject_artifact_type": "proposal_artifact",
+  "subject_ref": "examples/studio/valid/proposal-artifact.valid.json",
+  "topic": "Invalid review record with unknown decision code",
+  "lifecycle_state": "gated",
+  "decision_type": "forward",
+  "decision_codes": [
+    "auto_approve"
+  ],
+  "review_summary": "This should fail because the decision code is not part of the bounded Studio vocabulary.",
+  "user_gate_status": "required_and_granted",
+  "resulting_next_posture": "request_human_decision",
+  "record_scope": "review_layer_only"
+}

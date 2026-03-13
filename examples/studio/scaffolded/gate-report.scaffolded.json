@@ -1,0 +1,15 @@
+{
+  "artifact_type": "gate_report",
+  "gate_report_id": "TODO: gate-report-id",
+  "subject_artifact_type": "proposal_artifact",
+  "subject_ref": "examples/studio/scaffolded/proposal-artifact.scaffolded.json",
+  "topic": "TODO: topic",
+  "gate_name": "proposal_only_gate",
+  "gate_outcome": "pass",
+  "gate_summary": "TODO: gate summary",
+  "decision_codes": [
+    "proposal_only_keep"
+  ],
+  "approval_requirement": "not_required",
+  "record_scope": "review_layer_only"
+}

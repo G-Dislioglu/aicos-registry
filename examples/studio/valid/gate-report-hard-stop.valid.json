@@ -1,0 +1,16 @@
+{
+  "artifact_type": "gate_report",
+  "gate_report_id": "gate-report-002",
+  "subject_artifact_type": "card_review_target_artifact",
+  "subject_ref": "examples/studio/valid/card-review-target-artifact.valid.json",
+  "topic": "Preserve nomination-only posture before registry review",
+  "gate_name": "no_truth_mutation_gate",
+  "gate_outcome": "hard_stop",
+  "gate_summary": "Any direct card or index mutation language would be a hard stop even if later registry review remains a valid nomination posture.",
+  "decision_codes": [
+    "truth_mutation_forbidden"
+  ],
+  "approval_requirement": "cannot_override_failure",
+  "record_scope": "review_layer_only",
+  "review_notes": "User approval cannot bypass truth-mutation violations."
+}

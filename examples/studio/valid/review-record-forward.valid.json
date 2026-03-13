@@ -1,0 +1,24 @@
+{
+  "artifact_type": "review_record",
+  "review_record_id": "review-record-001",
+  "subject_artifact_type": "card_review_target_artifact",
+  "subject_ref": "examples/studio/valid/card-review-target-artifact.valid.json",
+  "topic": "Nominate a bounded registry card review target",
+  "lifecycle_state": "gated",
+  "decision_type": "forward",
+  "decision_codes": [
+    "handoff_ready",
+    "registry_review_nomination_only",
+    "user_gate_required"
+  ],
+  "review_summary": "The review target remains nomination-only and may be forwarded to later human registry review under an explicit user gate.",
+  "user_gate_status": "required_and_granted",
+  "resulting_next_posture": "human_registry_review",
+  "record_scope": "review_layer_only",
+  "gate_report_refs": [
+    "gate-report-001"
+  ],
+  "open_conflicts": [
+    "Need later human review to assess final card boundary."
+  ]
+}

@@ -10,11 +10,14 @@
     "verify:scoring-surface": "node tools/verify-aicos-scoring-surface.js",
     "check:scoring-s1": "node tools/check-card-scoring-hygiene.js && node tools/audit-card-scoring.js && node tools/generate-index.js && node tools/verify-aicos-scoring-surface.js",
     "scaffold:studio": "node tools/studio-scaffold.js",
+    "scaffold:studio-review-record": "node tools/studio-review-record.js",
+    "scaffold:studio-gate-report": "node tools/studio-gate-report.js",
     "lint:studio": "node tools/studio-lint.js",
     "verify:studio-schemas": "node tools/verify-aicos-studio-schemas.js",
     "verify:studio-tooling": "node tools/verify-aicos-studio-tooling.js",
-    "verify:studio-intake": "node tools/verify-aicos-studio-intake-docs.js && node tools/verify-aicos-studio-schemas.js && node tools/verify-aicos-studio-tooling.js",
-    "verify:studio": "node tools/verify-aicos-studio-intake-docs.js && node tools/verify-aicos-studio-schemas.js && node tools/verify-aicos-studio-tooling.js"
+    "verify:studio-review": "node tools/verify-aicos-studio-review-layer.js",
+    "verify:studio-intake": "node tools/verify-aicos-studio-intake-docs.js && node tools/verify-aicos-studio-schemas.js && node tools/verify-aicos-studio-tooling.js && node tools/verify-aicos-studio-review-layer.js",
+    "verify:studio": "node tools/verify-aicos-studio-intake-docs.js && node tools/verify-aicos-studio-schemas.js && node tools/verify-aicos-studio-tooling.js && node tools/verify-aicos-studio-review-layer.js"
   },
   "engines": {
     "node": ">=20"

@@ -126,6 +126,8 @@ It exists to structure debate, challenge, and distillation outputs without direc
 - Lifecycle state model: `AICOS_STUDIO_LIFECYCLE_STATE_MODEL.md`
 - Review procedure: `AICOS_STUDIO_REVIEW_PROCEDURE.md`
 - Decision codes: `AICOS_STUDIO_DECISION_CODES.md`
+- Review record spec: `AICOS_STUDIO_REVIEW_RECORD_SPEC.md`
+- Gate report spec: `AICOS_STUDIO_GATE_REPORT_SPEC.md`
 - Schema notes: `AICOS_STUDIO_SCHEMA_NOTES.md`
 - Machine-readable schemas: `schemas/studio/*.schema.json`
 - Validation corpus: `examples/studio/valid/*.json`, `examples/studio/invalid/*.json`
@@ -135,6 +137,9 @@ It exists to structure debate, challenge, and distillation outputs without direc
 - Scaffold CLI: `tools/studio-scaffold.js`
 - Lint CLI: `tools/studio-lint.js`
 - Tooling verifier: `tools/verify-aicos-studio-tooling.js`
+- Review record CLI: `tools/studio-review-record.js`
+- Gate report CLI: `tools/studio-gate-report.js`
+- Review-layer verifier: `tools/verify-aicos-studio-review-layer.js`
 
 Boundary rule:
 
@@ -146,6 +151,8 @@ Local prep tools only:
 
 - `tools/studio-scaffold.js` scaffolds local proposal-layer or nomination-layer JSON only
 - `tools/studio-lint.js` checks local JSON against Studio schemas and boundary lints only
+- `tools/studio-review-record.js` scaffolds local review-layer review records only
+- `tools/studio-gate-report.js` scaffolds local review-layer gate reports only
 - these tools do not execute runtime work, provider calls, registry mutation, or review forwarding
 
 Normal command:
@@ -159,6 +166,9 @@ Useful local commands:
 ```bash
 npm run scaffold:studio -- proposal-artifact
 npm run lint:studio -- examples/studio/scaffolded
+npm run scaffold:studio-review-record
+npm run scaffold:studio-gate-report
+npm run verify:studio-review
 npm run verify:studio
 ```
 

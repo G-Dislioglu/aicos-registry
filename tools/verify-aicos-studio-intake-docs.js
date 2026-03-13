@@ -15,6 +15,8 @@ const REQUIRED_FILES = [
   path.join(ROOT_DIR, 'AICOS_STUDIO_LIFECYCLE_STATE_MODEL.md'),
   path.join(ROOT_DIR, 'AICOS_STUDIO_REVIEW_PROCEDURE.md'),
   path.join(ROOT_DIR, 'AICOS_STUDIO_DECISION_CODES.md'),
+  path.join(ROOT_DIR, 'AICOS_STUDIO_REVIEW_RECORD_SPEC.md'),
+  path.join(ROOT_DIR, 'AICOS_STUDIO_GATE_REPORT_SPEC.md'),
   path.join(ROOT_DIR, 'tools', 'verify-aicos-studio-intake-docs.js')
 ];
 
@@ -275,6 +277,58 @@ function verifyDecisionCodes() {
   }
 }
 
+function verifyReviewRecordSpec() {
+  const content = fs.readFileSync(path.join(ROOT_DIR, 'AICOS_STUDIO_REVIEW_RECORD_SPEC.md'), 'utf-8');
+  for (const expected of [
+    '## Purpose',
+    '## Artifact boundary',
+    '## Required fields',
+    '## Optional fields',
+    '## Forbidden fields',
+    '## Allowed decision types',
+    '## Allowed decision codes',
+    '`review_record_id`',
+    '`subject_artifact_type`',
+    '`decision_type`',
+    '`decision_codes`',
+    '`user_gate_status`',
+    '`resulting_next_posture`',
+    '`record_scope`',
+    'runtime_review_object',
+    'truth_mutation_target',
+    'review_layer_only'
+  ]) {
+    assert(content.includes(expected), `Expected review record spec text missing: ${expected}`);
+  }
+}
+
+function verifyGateReportSpec() {
+  const content = fs.readFileSync(path.join(ROOT_DIR, 'AICOS_STUDIO_GATE_REPORT_SPEC.md'), 'utf-8');
+  for (const expected of [
+    '## Purpose',
+    '## Artifact boundary',
+    '## Required fields',
+    '## Optional fields',
+    '## Forbidden fields',
+    '## Allowed gate names',
+    '## Allowed gate outcomes',
+    '## Allowed decision codes',
+    '`gate_report_id`',
+    '`gate_name`',
+    '`gate_outcome`',
+    '`approval_requirement`',
+    '`record_scope`',
+    '`pass`',
+    '`soft_fail`',
+    '`hard_stop`',
+    'runtime_review_object',
+    'truth_mutation_target',
+    'review_layer_only'
+  ]) {
+    assert(content.includes(expected), `Expected gate report spec text missing: ${expected}`);
+  }
+}
+
 function main() {
   verifyFilesExist();
   verifyCharter();
@@ -288,6 +342,8 @@ function main() {
   verifyLifecycleStateModel();
   verifyReviewProcedure();
   verifyDecisionCodes();
+  verifyReviewRecordSpec();
+  verifyGateReportSpec();
   console.log('AICOS studio intake docs verification passed.');
 }
 

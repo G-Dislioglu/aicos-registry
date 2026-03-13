@@ -1,0 +1,18 @@
+{
+  "artifact_type": "gate_report",
+  "gate_report_id": "gate-report-001",
+  "subject_artifact_type": "proposal_artifact",
+  "subject_ref": "examples/studio/valid/proposal-artifact.valid.json",
+  "topic": "Proposal-only wording remains bounded",
+  "gate_name": "proposal_only_gate",
+  "gate_outcome": "pass",
+  "gate_summary": "The proposal artifact stays clearly inside proposal-only language and does not claim truth or approval.",
+  "decision_codes": [
+    "proposal_only_keep"
+  ],
+  "approval_requirement": "not_required",
+  "record_scope": "review_layer_only",
+  "observed_issues": [
+    "No major boundary issues observed."
+  ]
+}

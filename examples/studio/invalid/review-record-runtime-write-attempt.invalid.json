@@ -1,0 +1,17 @@
+{
+  "artifact_type": "review_record",
+  "review_record_id": "review-record-invalid-002",
+  "subject_artifact_type": "proposal_artifact",
+  "subject_ref": "examples/studio/valid/proposal-artifact.valid.json",
+  "topic": "Invalid review record with runtime write attempt",
+  "lifecycle_state": "gated",
+  "decision_type": "discard",
+  "decision_codes": [
+    "runtime_forbidden"
+  ],
+  "review_summary": "This should fail because runtime-facing write state must not be encoded in a Studio review record.",
+  "user_gate_status": "not_required",
+  "resulting_next_posture": "discarded",
+  "record_scope": "review_layer_only",
+  "runtime_review_object": "runtime/arena-runs/review-object.json"
+}

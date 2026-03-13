@@ -1,0 +1,18 @@
+{
+  "artifact_type": "review_record",
+  "review_record_id": "review-record-002",
+  "subject_artifact_type": "proposal_artifact",
+  "subject_ref": "examples/studio/valid/proposal-artifact.valid.json",
+  "topic": "Keep an early design direction proposal inside review",
+  "lifecycle_state": "held",
+  "decision_type": "hold",
+  "decision_codes": [
+    "insufficient_evidence",
+    "proposal_only_keep"
+  ],
+  "review_summary": "The proposal remains useful but evidence is still too thin for stronger forwarding.",
+  "user_gate_status": "not_required",
+  "resulting_next_posture": "retain_in_review_layer",
+  "record_scope": "review_layer_only",
+  "notes": "Retain as review-layer material until stronger evidence exists."
+}
