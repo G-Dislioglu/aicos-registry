@@ -7,7 +7,7 @@
   "domain": ["api", "audio", "devserver", "cross_app"],
   "scope": ["cross_app"],
   "tags": ["theme:timeout", "theme:resource_management", "theme:blocking_prevention"],
-  "impact": { "value": 82, "risk": 10, "confidence": 92 },
+  "impact": { "value": 82, "risk": 10, "confidence": 80 },
   "status": "proposed",
   "applies_to": ["Alle externen API Calls", "Native Module Probes", "Speech Recognition", "Astro Calculations"],
   "steps": [

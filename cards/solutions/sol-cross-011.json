@@ -7,7 +7,7 @@
   "domain": ["ai_governance", "meta_cognition"],
   "scope": ["cross_app"],
   "tags": ["theme:calibration", "theme:anti_hallucination", "theme:provenance", "theme:debuggability"],
-  "impact": { "value": 90, "risk": 10, "confidence": 92 },
+  "impact": { "value": 90, "risk": 10, "confidence": 84 },
   "status": "proposed",
   "applies_to": ["AI Agents in Regulatory Environments", "Debug-intensive AI Systems", "Trust-critical Applications"],
   "steps": [

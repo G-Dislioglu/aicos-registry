@@ -7,7 +7,7 @@
   "domain": ["trading", "ai_governance", "devserver"],
   "scope": ["cross_app"],
   "tags": ["theme:psychology", "theme:prompt_engineering", "theme:minimalism", "theme:anti_over_engineering"],
-  "impact": { "value": 100, "risk": 10, "confidence": 95 },
+  "impact": { "value": 100, "risk": 10, "confidence": 84 },
   "status": "proposed",
   "applies_to": ["Prompt Engineering", "Trading Strategy Design", "Architecture Planning"],
   "steps": [

@@ -7,7 +7,7 @@
   "domain": ["frontend", "api", "meta_cognition"],
   "scope": ["cross_app"],
   "tags": ["theme:parsing", "theme:assumptions", "theme:anti_hallucination", "theme:provider_drift"],
-  "impact": { "value": 85, "risk": 15, "confidence": 90 },
+  "impact": { "value": 85, "risk": 15, "confidence": 82 },
   "status": "proposed",
   "applies_to": ["LLM Response Handling", "API Integration", "Data Validation Layers"],
   "steps": [

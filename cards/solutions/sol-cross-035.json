@@ -7,7 +7,7 @@
   "domain": ["frontend", "auth", "api", "cross_app"],
   "scope": ["cross_app"],
   "tags": ["theme:input_validation", "theme:security", "theme:sanitization", "theme:defensive_programming"],
-  "impact": { "value": 85, "risk": 8, "confidence": 94 },
+  "impact": { "value": 85, "risk": 8, "confidence": 82 },
   "status": "proposed",
   "applies_to": ["Alle External API Calls", "LLM Response Handling", "User Input Verarbeitung"],
   "steps": [

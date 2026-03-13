@@ -7,7 +7,7 @@
   "domain": ["ai_governance", "meta_cognition", "auth", "db"],
   "scope": ["cross_app"],
   "tags": ["theme:provenance", "theme:temporal_awareness", "theme:verification", "theme:security"],
-  "impact": { "value": 85, "risk": 15, "confidence": 90 },
+  "impact": { "value": 85, "risk": 15, "confidence": 82 },
   "status": "proposed",
   "applies_to": ["AI Reasoning Systems", "Data Pipelines", "Audit-critical Applications"],
   "steps": [

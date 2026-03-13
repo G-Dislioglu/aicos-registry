@@ -1433,7 +1433,7 @@
     "impact": {
       "value": 100,
       "risk": 10,
-      "confidence": 95
+      "confidence": 84
     },
     "score_summary": {
       "schema_version": "aicos-score-summary/v1",
@@ -1443,10 +1443,10 @@
         "impact.risk",
         "impact.confidence"
       ],
-      "scan_score": 96,
-      "trust_score": 93,
-      "learning_score": 96,
-      "promotion_readiness": 94
+      "scan_score": 92,
+      "trust_score": 86,
+      "learning_score": 94,
+      "promotion_readiness": 89
     },
     "fixes": [
       "err-dev-003",
@@ -1550,7 +1550,7 @@
     "impact": {
       "value": 85,
       "risk": 15,
-      "confidence": 90
+      "confidence": 82
     },
     "score_summary": {
       "schema_version": "aicos-score-summary/v1",
@@ -1560,10 +1560,10 @@
         "impact.risk",
         "impact.confidence"
       ],
-      "scan_score": 87,
-      "trust_score": 88,
-      "learning_score": 86,
-      "promotion_readiness": 87
+      "scan_score": 84,
+      "trust_score": 83,
+      "learning_score": 84,
+      "promotion_readiness": 84
     }
   },
   {
@@ -1586,7 +1586,7 @@
     "impact": {
       "value": 90,
       "risk": 10,
-      "confidence": 92
+      "confidence": 84
     },
     "score_summary": {
       "schema_version": "aicos-score-summary/v1",
@@ -1596,10 +1596,10 @@
         "impact.risk",
         "impact.confidence"
       ],
-      "scan_score": 91,
-      "trust_score": 91,
-      "learning_score": 91,
-      "promotion_readiness": 91
+      "scan_score": 88,
+      "trust_score": 86,
+      "learning_score": 89,
+      "promotion_readiness": 87
     }
   },
   {
@@ -2005,7 +2005,7 @@
     "impact": {
       "value": 85,
       "risk": 15,
-      "confidence": 90
+      "confidence": 82
     },
     "score_summary": {
       "schema_version": "aicos-score-summary/v1",
@@ -2015,10 +2015,10 @@
         "impact.risk",
         "impact.confidence"
       ],
-      "scan_score": 87,
-      "trust_score": 88,
-      "learning_score": 86,
-      "promotion_readiness": 87
+      "scan_score": 84,
+      "trust_score": 83,
+      "learning_score": 84,
+      "promotion_readiness": 84
     }
   },
   {
@@ -2117,7 +2117,7 @@
     "impact": {
       "value": 90,
       "risk": 12,
-      "confidence": 92
+      "confidence": 84
     },
     "score_summary": {
       "schema_version": "aicos-score-summary/v1",
@@ -2127,10 +2127,10 @@
         "impact.risk",
         "impact.confidence"
       ],
-      "scan_score": 90,
-      "trust_score": 91,
-      "learning_score": 90,
-      "promotion_readiness": 90
+      "scan_score": 88,
+      "trust_score": 85,
+      "learning_score": 88,
+      "promotion_readiness": 87
     },
     "fixes": [
       "err-arch-001"
@@ -2383,7 +2383,7 @@
     "impact": {
       "value": 82,
       "risk": 10,
-      "confidence": 92
+      "confidence": 80
     },
     "score_summary": {
       "schema_version": "aicos-score-summary/v1",
@@ -2393,10 +2393,10 @@
         "impact.risk",
         "impact.confidence"
       ],
-      "scan_score": 87,
-      "trust_score": 91,
-      "learning_score": 87,
-      "promotion_readiness": 89
+      "scan_score": 83,
+      "trust_score": 84,
+      "learning_score": 84,
+      "promotion_readiness": 84
     }
   },
   {
@@ -2497,7 +2497,7 @@
     "impact": {
       "value": 85,
       "risk": 8,
-      "confidence": 94
+      "confidence": 82
     },
     "score_summary": {
       "schema_version": "aicos-score-summary/v1",
@@ -2507,10 +2507,10 @@
         "impact.risk",
         "impact.confidence"
       ],
-      "scan_score": 90,
-      "trust_score": 93,
-      "learning_score": 89,
-      "promotion_readiness": 92
+      "scan_score": 85,
+      "trust_score": 86,
+      "learning_score": 86,
+      "promotion_readiness": 86
     }
   },
   {
