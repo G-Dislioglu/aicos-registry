@@ -1,0 +1,7 @@
+{
+  "artifact_type": "perspective_pass",
+  "pass_id": "skeptic",
+  "notes": "Just act skeptical and improvise.",
+  "shadow_only": true,
+  "evaluation_only": true
+}

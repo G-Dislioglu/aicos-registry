@@ -1,0 +1,31 @@
+{
+  "artifact_type": "frame_preflight",
+  "preflight_id": "frame-preflight-false-consensus-001",
+  "subject_ref": "examples/studio/frame-delta/scenarios/contradiction-to-review-shadow.scenario.json",
+  "task_frame_summary": "The baseline path appears actionable, but the surrounding language may be compressing disagreement into artificial consensus.",
+  "assumed_goal": "Check whether the current frame closes too early around a superficially stable interpretation.",
+  "explicit_constraints": [
+    "Respect the existing contradiction-to-review baseline artifacts.",
+    "Do not add truth or runtime authority.",
+    "Treat the result as comparison-only."
+  ],
+  "latent_frame_risks": [
+    "The frame may underweight unresolved disagreement because the baseline already feels coherent.",
+    "Thin evidence may be carrying too much certainty about the next move."
+  ],
+  "missing_but_decisive_questions": [
+    "Which disagreement remains real even if the baseline summary reads cleanly?",
+    "What missing signal would materially change the confidence of the current frame?"
+  ],
+  "frame_risk_band": "high",
+  "frame_risk_signals": [
+    "fast convergence around an incomplete evidence story",
+    "unresolved contradiction is described as mostly settled"
+  ],
+  "decomposition_readiness": "caution",
+  "recommended_next_move": "challenge",
+  "proposal_only": true,
+  "shadow_only": true,
+  "non_authoritative": true,
+  "notes": "The core risk is false consensus, not malformed syntax or missing structure."
+}

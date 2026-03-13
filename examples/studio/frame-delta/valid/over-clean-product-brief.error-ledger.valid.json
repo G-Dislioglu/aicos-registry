@@ -1,0 +1,18 @@
+{
+  "artifact_type": "error_ledger_entry",
+  "entry_id": "error-ledger-over-clean-001",
+  "subject_ref": "examples/studio/frame-delta/scenarios/review-to-bundle-shadow.scenario.json",
+  "phase": "decomposition",
+  "error_class": "invalid_constraint_inference",
+  "symptom": "Missing scope boundaries were inferred as settled just because the brief looked polished.",
+  "why_plausible": "A clean brief often signals readiness, so the reasoning process borrowed confidence from presentation quality instead of explicit constraints.",
+  "detected_by": [
+    "perspective_pass"
+  ],
+  "impact_band": "medium",
+  "recovery_action": "Reduce decomposition scope to the explicitly grounded boundaries and mark the rest as unresolved.",
+  "status": "mitigated",
+  "notes": "This is not a forbidden ask; it is a misleadingly complete one.",
+  "evaluation_only": true,
+  "non_authoritative": true
+}

@@ -1,0 +1,21 @@
+{
+  "artifact_type": "frame_challenge_result",
+  "result_id": "frame-challenge-invalid-authority-001",
+  "subject_ref": "examples/studio/frame-delta/scenarios/ambiguous-governance-ask-shadow.scenario.json",
+  "input_preflight_ref": "examples/studio/frame-delta/valid/ambiguous-governance-ask.preflight.valid.json",
+  "passes_run": [
+    "constraint_skeptic"
+  ],
+  "challenge_findings": [
+    "Invalid challenge result claims authority."
+  ],
+  "challenge_outcome": "blocked",
+  "frame_risk_band_after_challenge": "high",
+  "residual_risks": [
+    "authority leak"
+  ],
+  "recommended_next_move": "stop",
+  "approval_authority": "delta challenge may authorize Studio replacement",
+  "shadow_only": true,
+  "non_authoritative": true
+}

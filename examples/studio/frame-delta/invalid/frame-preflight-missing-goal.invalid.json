@@ -1,0 +1,24 @@
+{
+  "artifact_type": "frame_preflight",
+  "preflight_id": "frame-preflight-invalid-missing-goal-001",
+  "subject_ref": "examples/studio/frame-delta/scenarios/contradiction-to-review-shadow.scenario.json",
+  "task_frame_summary": "Invalid preflight is missing the assumed goal.",
+  "explicit_constraints": [
+    "Stay local"
+  ],
+  "latent_frame_risks": [
+    "goal is absent"
+  ],
+  "missing_but_decisive_questions": [
+    "what is the goal"
+  ],
+  "frame_risk_band": "low",
+  "frame_risk_signals": [
+    "required field missing"
+  ],
+  "decomposition_readiness": "ready",
+  "recommended_next_move": "proceed",
+  "proposal_only": true,
+  "shadow_only": true,
+  "non_authoritative": true
+}

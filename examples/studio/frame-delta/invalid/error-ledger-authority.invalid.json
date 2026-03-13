@@ -1,0 +1,18 @@
+{
+  "artifact_type": "error_ledger_entry",
+  "entry_id": "error-ledger-invalid-authority-001",
+  "subject_ref": "examples/studio/frame-delta/scenarios/review-to-bundle-shadow.scenario.json",
+  "phase": "evaluation",
+  "error_class": "pseudo_certainty",
+  "symptom": "Invalid ledger entry claims approval authority.",
+  "why_plausible": "Someone confused local evaluation with authority.",
+  "detected_by": [
+    "comparison"
+  ],
+  "impact_band": "medium",
+  "recovery_action": "Remove authority language.",
+  "status": "accepted",
+  "approval_authority": "delta ledger may approve replacement of baseline",
+  "evaluation_only": true,
+  "non_authoritative": true
+}

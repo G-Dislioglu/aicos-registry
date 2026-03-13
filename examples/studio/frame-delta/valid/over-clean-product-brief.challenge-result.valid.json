@@ -1,0 +1,24 @@
+{
+  "artifact_type": "frame_challenge_result",
+  "result_id": "frame-challenge-over-clean-001",
+  "subject_ref": "examples/studio/frame-delta/scenarios/review-to-bundle-shadow.scenario.json",
+  "input_preflight_ref": "examples/studio/frame-delta/valid/over-clean-product-brief.preflight.valid.json",
+  "passes_run": [
+    "constraint_skeptic",
+    "signal_gap_probe"
+  ],
+  "challenge_findings": [
+    "The baseline path remains usable, but several constraints were inferred from polish rather than explicit grounding.",
+    "The frame should stay narrower than the brief initially suggested."
+  ],
+  "challenge_outcome": "narrowed",
+  "frame_risk_band_after_challenge": "medium",
+  "residual_risks": [
+    "Future readers may still over-trust the clean brief.",
+    "Bundle-ready language can still hide scope inflation."
+  ],
+  "recommended_next_move": "proceed_with_caution",
+  "notes": "Delta does not reject the case; it reduces unjustified breadth.",
+  "shadow_only": true,
+  "non_authoritative": true
+}

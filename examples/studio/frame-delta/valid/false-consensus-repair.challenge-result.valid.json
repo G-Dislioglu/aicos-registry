@@ -1,0 +1,23 @@
+{
+  "artifact_type": "frame_challenge_result",
+  "result_id": "frame-challenge-false-consensus-001",
+  "subject_ref": "examples/studio/frame-delta/scenarios/contradiction-to-review-shadow.scenario.json",
+  "input_preflight_ref": "examples/studio/frame-delta/valid/false-consensus-repair.preflight.valid.json",
+  "passes_run": [
+    "counterframe_probe",
+    "signal_gap_probe"
+  ],
+  "challenge_findings": [
+    "The baseline read compresses active disagreement into a smoother hold posture than the evidence supports.",
+    "Missing signals remain material enough that the frame should retain visible contradiction rather than implied closure."
+  ],
+  "challenge_outcome": "confirmed",
+  "frame_risk_band_after_challenge": "medium",
+  "residual_risks": [
+    "Readers may still mistake a coherent review path for evidence completeness."
+  ],
+  "recommended_next_move": "proceed_with_caution",
+  "notes": "The frame mostly holds, but only if the contradiction remains visibly unresolved.",
+  "shadow_only": true,
+  "non_authoritative": true
+}

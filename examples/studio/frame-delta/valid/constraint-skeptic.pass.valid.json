@@ -1,0 +1,30 @@
+{
+  "artifact_type": "perspective_pass",
+  "pass_id": "constraint_skeptic",
+  "trigger_conditions": [
+    "many implicit assumptions appear in the frame",
+    "scope expansion is plausible but not grounded",
+    "the forbidden zone is described vaguely"
+  ],
+  "required_questions": [
+    "Which restriction was silently added rather than explicitly grounded?",
+    "Which restriction is only plausible rather than evidenced?",
+    "Where is the current frame narrowing scope more than the input justifies?"
+  ],
+  "allowed_outputs": [
+    "constraint-grounding findings",
+    "boundary uncertainty notes",
+    "scope narrowing proposals"
+  ],
+  "forbidden_outputs": [
+    "runtime actions",
+    "registry writes",
+    "approval grants"
+  ],
+  "failure_modes": [
+    "inventing impossible constraints",
+    "confusing healthy caution with blanket refusal"
+  ],
+  "shadow_only": true,
+  "evaluation_only": true
+}

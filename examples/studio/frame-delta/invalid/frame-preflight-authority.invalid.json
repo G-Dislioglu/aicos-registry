@@ -1,0 +1,26 @@
+{
+  "artifact_type": "frame_preflight",
+  "preflight_id": "frame-preflight-invalid-authority-001",
+  "subject_ref": "examples/studio/frame-delta/scenarios/review-to-bundle-shadow.scenario.json",
+  "task_frame_summary": "Invalid preflight claims authority.",
+  "assumed_goal": "Demonstrate that authority fields are forbidden.",
+  "explicit_constraints": [
+    "Stay local"
+  ],
+  "latent_frame_risks": [
+    "authority leak"
+  ],
+  "missing_but_decisive_questions": [
+    "why does preflight approve anything"
+  ],
+  "frame_risk_band": "medium",
+  "frame_risk_signals": [
+    "approval language"
+  ],
+  "decomposition_readiness": "caution",
+  "recommended_next_move": "narrow",
+  "approval_authority": "delta-track may approve baseline replacement",
+  "proposal_only": true,
+  "shadow_only": true,
+  "non_authoritative": true
+}

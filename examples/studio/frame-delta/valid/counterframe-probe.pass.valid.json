@@ -1,0 +1,30 @@
+{
+  "artifact_type": "perspective_pass",
+  "pass_id": "counterframe_probe",
+  "trigger_conditions": [
+    "the dominant interpretation arrives unusually early",
+    "the problem feels too neat",
+    "consensus forms before rival frames are tested"
+  ],
+  "required_questions": [
+    "Which alternative frame explains the same evidence?",
+    "What interpretation was excluded too early?",
+    "What is the most dangerous plausible counterframe?"
+  ],
+  "allowed_outputs": [
+    "alternative frame proposals",
+    "early-exclusion findings",
+    "counterframe risk notes"
+  ],
+  "forbidden_outputs": [
+    "persona theater",
+    "truth authority",
+    "automatic baseline replacement"
+  ],
+  "failure_modes": [
+    "manufacturing exotic alternatives with no evidence",
+    "reframing everything even when the original frame is stable"
+  ],
+  "shadow_only": true,
+  "evaluation_only": true
+}

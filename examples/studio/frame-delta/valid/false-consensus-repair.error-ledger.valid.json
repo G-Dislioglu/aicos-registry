@@ -1,0 +1,19 @@
+{
+  "artifact_type": "error_ledger_entry",
+  "entry_id": "error-ledger-false-consensus-001",
+  "subject_ref": "examples/studio/frame-delta/scenarios/contradiction-to-review-shadow.scenario.json",
+  "phase": "evaluation",
+  "error_class": "pseudo_certainty",
+  "symptom": "The case was summarized as mostly settled even though decisive signals were still absent.",
+  "why_plausible": "The baseline path had already organized the case into a readable flow, which made the remaining disagreement look smaller than it was.",
+  "detected_by": [
+    "comparison",
+    "human_review"
+  ],
+  "impact_band": "high",
+  "recovery_action": "Keep the contradiction visible and lower confidence until the missing signal boundary is made explicit.",
+  "status": "open",
+  "notes": "The drift came from premature closure, not from bad syntax or missing files.",
+  "evaluation_only": true,
+  "non_authoritative": true
+}

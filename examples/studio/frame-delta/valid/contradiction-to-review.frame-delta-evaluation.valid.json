@@ -1,0 +1,42 @@
+{
+  "artifact_type": "frame_delta_evaluation",
+  "scenario_id": "contradiction-to-review-shadow",
+  "subject_ref": "examples/studio/scenarios/contradiction-to-review/scenario.json",
+  "baseline_summary": "Baseline correctly routes the contradiction into review, but its readability can still make the disagreement feel more settled than the evidence warrants.",
+  "delta_summary": "Delta preflight marked high framing risk, challenge outcome confirmed, and 1 ledger entry preserved why coherent flow could still imply false consensus.",
+  "comparison_axes": [
+    {
+      "axis": "misframing_detection",
+      "winner": "tie",
+      "reason": "Baseline already recognizes the contradiction, and Delta mostly corrects the degree of closure around it."
+    },
+    {
+      "axis": "constraint_fidelity",
+      "winner": "tie",
+      "reason": "Both tracks respect the no-runtime and no-truth boundaries."
+    },
+    {
+      "axis": "premature_closure_resistance",
+      "winner": "delta",
+      "reason": "Delta is better at keeping unresolved disagreement visible instead of letting coherence imply closure."
+    },
+    {
+      "axis": "signal_gap_awareness",
+      "winner": "delta",
+      "reason": "Delta names the missing signals that still limit confidence."
+    },
+    {
+      "axis": "actionability_after_challenge",
+      "winner": "tie",
+      "reason": "Both tracks still produce a usable hold posture once the contradiction stays explicit."
+    }
+  ],
+  "overall_result": "mixed",
+  "integration_signal": "none",
+  "delta_refs": {
+    "preflight_ref": "examples/studio/frame-delta/valid/false-consensus-repair.preflight.valid.json",
+    "challenge_result_ref": "examples/studio/frame-delta/valid/false-consensus-repair.challenge-result.valid.json"
+  },
+  "shadow_only": true,
+  "non_authoritative": true
+}

@@ -1,0 +1,26 @@
+{
+  "artifact_type": "frame_preflight",
+  "preflight_id": "frame-preflight-invalid-score-001",
+  "subject_ref": "examples/studio/frame-delta/scenarios/ambiguous-governance-ask-shadow.scenario.json",
+  "task_frame_summary": "Invalid preflight uses a forbidden numeric rollup.",
+  "assumed_goal": "Demonstrate that frame_risk_score is forbidden.",
+  "explicit_constraints": [
+    "Stay local"
+  ],
+  "latent_frame_risks": [
+    "forbidden score"
+  ],
+  "missing_but_decisive_questions": [
+    "why is a score here"
+  ],
+  "frame_risk_band": "high",
+  "frame_risk_signals": [
+    "score appears"
+  ],
+  "frame_risk_score": 91,
+  "decomposition_readiness": "blocked",
+  "recommended_next_move": "challenge",
+  "proposal_only": true,
+  "shadow_only": true,
+  "non_authoritative": true
+}

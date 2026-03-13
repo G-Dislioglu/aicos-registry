@@ -18,6 +18,7 @@
     "convert:studio": "node tools/studio-convert.js",
     "dossier:studio": "node tools/studio-dossier.js",
     "summary:studio": "node tools/studio-summary-report.js",
+    "eval:frame-delta": "node tools/frame-delta-eval.js",
     "verify:studio-schemas": "node tools/verify-aicos-studio-schemas.js",
     "verify:studio-tooling": "node tools/verify-aicos-studio-tooling.js",
     "verify:studio-review": "node tools/verify-aicos-studio-review-layer.js",
@@ -25,6 +26,7 @@
     "verify:studio-conversion": "node tools/verify-aicos-studio-conversion.js",
     "verify:studio-pipeline": "node tools/verify-aicos-studio-pipeline.js",
     "verify:studio-dossiers": "node tools/verify-aicos-studio-dossiers.js",
+    "verify:frame-delta": "node tools/verify-aicos-frame-delta.js",
     "verify:studio-bundles": "node tools/verify-aicos-studio-bundles.js && node tools/verify-aicos-studio-bundle-trace.js",
     "verify:studio-intake": "node tools/verify-aicos-studio-intake-docs.js && node tools/verify-aicos-studio-schemas.js && node tools/verify-aicos-studio-tooling.js && node tools/verify-aicos-studio-review-layer.js && node tools/verify-aicos-studio-bundles.js && node tools/verify-aicos-studio-bundle-trace.js && node tools/verify-aicos-studio-conversion.js && node tools/verify-aicos-studio-pipeline.js && node tools/verify-aicos-studio-dossiers.js",
     "verify:studio": "node tools/verify-aicos-studio-intake-docs.js && node tools/verify-aicos-studio-schemas.js && node tools/verify-aicos-studio-tooling.js && node tools/verify-aicos-studio-review-layer.js && node tools/verify-aicos-studio-bundles.js && node tools/verify-aicos-studio-bundle-trace.js && node tools/verify-aicos-studio-conversion.js && node tools/verify-aicos-studio-pipeline.js && node tools/verify-aicos-studio-dossiers.js"

@@ -1,0 +1,42 @@
+{
+  "artifact_type": "frame_delta_evaluation",
+  "scenario_id": "ambiguous-governance-ask-shadow",
+  "subject_ref": "examples/studio/frame-delta/scenarios/ambiguous-governance-ask-shadow.scenario.json",
+  "baseline_summary": "Baseline would likely proceed with a local documentation-style reading unless the hidden truth-facing intent becomes explicit earlier.",
+  "delta_summary": "Delta preflight marked high framing risk, challenge outcome reframed, and 1 ledger entry preserved why the benign reading looked plausible.",
+  "comparison_axes": [
+    {
+      "axis": "misframing_detection",
+      "winner": "delta",
+      "reason": "Delta reframes the ask as a hidden authority problem instead of a harmless local cleanup request."
+    },
+    {
+      "axis": "constraint_fidelity",
+      "winner": "delta",
+      "reason": "Delta keeps the no-truth-mutation boundary active before decomposition starts."
+    },
+    {
+      "axis": "premature_closure_resistance",
+      "winner": "delta",
+      "reason": "Delta blocks early closure on a benign framing that would hide the real governance target."
+    },
+    {
+      "axis": "signal_gap_awareness",
+      "winner": "delta",
+      "reason": "Delta makes the missing decisive governance question explicit."
+    },
+    {
+      "axis": "actionability_after_challenge",
+      "winner": "tie",
+      "reason": "Both tracks can still yield a bounded next step, but Delta narrows it more safely."
+    }
+  ],
+  "overall_result": "delta_better",
+  "integration_signal": "promising",
+  "delta_refs": {
+    "preflight_ref": "examples/studio/frame-delta/valid/ambiguous-governance-ask.preflight.valid.json",
+    "challenge_result_ref": "examples/studio/frame-delta/valid/ambiguous-governance-ask.challenge-result.valid.json"
+  },
+  "shadow_only": true,
+  "non_authoritative": true
+}

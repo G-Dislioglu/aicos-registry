@@ -1,0 +1,45 @@
+{
+  "scenario_id": "review-to-bundle-shadow",
+  "title": "Review-to-bundle case with an over-clean product brief",
+  "subject_ref": "examples/studio/scenarios/review-to-bundle/scenario.json",
+  "baseline_summary": "Baseline already keeps the case inside the bounded review-to-bundle path, but the brief still looks cleaner and broader than its explicit constraints justify.",
+  "delta_summary_tail": "recorded how polish encouraged invalid constraint inference.",
+  "preflight_ref": "examples/studio/frame-delta/valid/over-clean-product-brief.preflight.valid.json",
+  "challenge_result_ref": "examples/studio/frame-delta/valid/over-clean-product-brief.challenge-result.valid.json",
+  "ledger_refs": [
+    "examples/studio/frame-delta/valid/over-clean-product-brief.error-ledger.valid.json"
+  ],
+  "pass_refs": [
+    "examples/studio/frame-delta/valid/constraint-skeptic.pass.valid.json",
+    "examples/studio/frame-delta/valid/signal-gap-probe.pass.valid.json"
+  ],
+  "comparison_axes": [
+    {
+      "axis": "misframing_detection",
+      "winner": "tie",
+      "reason": "The baseline frame is largely right, and Delta mainly narrows rather than replacing it."
+    },
+    {
+      "axis": "constraint_fidelity",
+      "winner": "delta",
+      "reason": "Delta distinguishes grounded constraints from constraints borrowed from polish."
+    },
+    {
+      "axis": "premature_closure_resistance",
+      "winner": "delta",
+      "reason": "Delta resists treating a clean brief as proof of complete scope alignment."
+    },
+    {
+      "axis": "signal_gap_awareness",
+      "winner": "delta",
+      "reason": "Delta keeps thin-evidence concerns visible even though the baseline path remains usable."
+    },
+    {
+      "axis": "actionability_after_challenge",
+      "winner": "tie",
+      "reason": "Both tracks remain actionable after challenge, but Delta adds caution rather than a different route."
+    }
+  ],
+  "overall_result": "mixed",
+  "integration_signal": "promising"
+}

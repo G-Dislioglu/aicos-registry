@@ -184,6 +184,13 @@ Local prep tools only:
 - bundle review context and trace consistency remain a local review packaging discipline only
 - these tools do not execute runtime work, provider calls, registry mutation, or review forwarding
 
+Parallel experimental tracks:
+
+- Frame Delta is a parallel experimental shadow-only track under `examples/studio/frame-delta/`
+- Frame Delta artifacts are local, non-authoritative, and evaluation-only
+- Frame Delta is not a replacement for the Studio baseline
+- Frame Delta does not authorize truth mutation, registry mutation, or runtime action
+
 Normal command:
 
 ```bash
@@ -202,11 +209,13 @@ npm run normalize:studio -- examples/studio/valid/proposal-artifact-normalize-so
 npm run convert:studio -- examples/studio/valid/intake-convert-proposal-source.valid.json --to proposal-artifact
 npm run dossier:studio -- examples/studio/scenarios/review-to-bundle/intake.packet.json examples/studio/scenarios/review-to-bundle/proposal.artifact.json examples/studio/scenarios/review-to-bundle/card-review-target.artifact.json examples/studio/scenarios/review-to-bundle/review-record.forward.json examples/studio/scenarios/review-to-bundle/gate-report.pass.json --bundle-manifest examples/studio/scenarios/review-to-bundle/bundle.manifest.json
 npm run summary:studio -- examples/studio/valid/studio-dossier-review.valid.json
+npm run eval:frame-delta -- examples/studio/frame-delta/scenarios/ambiguous-governance-ask-shadow.scenario.json
 npm run verify:studio-review
 npm run verify:studio-bundle-trace
 npm run verify:studio-conversion
 npm run verify:studio-pipeline
 npm run verify:studio-dossiers
+npm run verify:frame-delta
 npm run verify:studio-bundles
 npm run verify:studio
 ```

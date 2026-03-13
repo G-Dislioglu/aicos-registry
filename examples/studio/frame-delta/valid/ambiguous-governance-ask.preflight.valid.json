@@ -1,0 +1,31 @@
+{
+  "artifact_type": "frame_preflight",
+  "preflight_id": "frame-preflight-ambiguous-governance-001",
+  "subject_ref": "examples/studio/frame-delta/scenarios/ambiguous-governance-ask-shadow.scenario.json",
+  "task_frame_summary": "The request sounds like harmless governance wording cleanup but may actually ask for direct truth-facing mutation through softer language.",
+  "assumed_goal": "Clarify how a governance request should stay local and proposal-safe before any decomposition work begins.",
+  "explicit_constraints": [
+    "No registry, index, or alias mutation is allowed.",
+    "No runtime or operator write is allowed.",
+    "The output must remain shadow-only and non-authoritative."
+  ],
+  "latent_frame_risks": [
+    "The ask can be misread as a documentation cleanup while actually seeking a truth-surface change.",
+    "Convenience framing could smuggle in approval semantics."
+  ],
+  "missing_but_decisive_questions": [
+    "Is the real target a local review aid or a truth-facing governance change?",
+    "Which part of the ask would become invalid if registry mutation remains forbidden?"
+  ],
+  "frame_risk_band": "high",
+  "frame_risk_signals": [
+    "governance language hides authority expectations",
+    "the phrasing blurs documentation and truth mutation"
+  ],
+  "decomposition_readiness": "blocked",
+  "recommended_next_move": "challenge",
+  "proposal_only": true,
+  "shadow_only": true,
+  "non_authoritative": true,
+  "notes": "The key risk is misframing a truth request as benign local refinement."
+}

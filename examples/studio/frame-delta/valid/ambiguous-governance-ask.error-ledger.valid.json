@@ -1,0 +1,19 @@
+{
+  "artifact_type": "error_ledger_entry",
+  "entry_id": "error-ledger-ambiguous-governance-001",
+  "subject_ref": "examples/studio/frame-delta/scenarios/ambiguous-governance-ask-shadow.scenario.json",
+  "phase": "framing",
+  "error_class": "misframing",
+  "symptom": "A truth-facing governance request was initially treated like harmless local wording cleanup.",
+  "why_plausible": "The user-facing language emphasized cleanup and consistency, which made a local-documentation frame feel superficially safe.",
+  "detected_by": [
+    "preflight",
+    "comparison"
+  ],
+  "impact_band": "high",
+  "recovery_action": "Separate local review wording from any truth-facing governance request before decomposition.",
+  "status": "open",
+  "notes": "The important lesson is why the benign reading felt attractive at first.",
+  "evaluation_only": true,
+  "non_authoritative": true
+}

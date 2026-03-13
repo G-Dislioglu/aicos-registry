@@ -1,0 +1,16 @@
+{
+  "artifact_type": "error_ledger_entry",
+  "entry_id": "error-ledger-invalid-missing-why-001",
+  "subject_ref": "examples/studio/frame-delta/scenarios/ambiguous-governance-ask-shadow.scenario.json",
+  "phase": "framing",
+  "error_class": "misframing",
+  "symptom": "Invalid ledger entry omits why the failure looked plausible.",
+  "detected_by": [
+    "preflight"
+  ],
+  "impact_band": "high",
+  "recovery_action": "Add the missing explanation.",
+  "status": "open",
+  "evaluation_only": true,
+  "non_authoritative": true
+}

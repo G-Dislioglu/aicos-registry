@@ -1,0 +1,30 @@
+{
+  "artifact_type": "perspective_pass",
+  "pass_id": "signal_gap_probe",
+  "trigger_conditions": [
+    "strong conclusions appear on thin evidence",
+    "normative wording dominates the synthesis",
+    "the final writeup feels smoother than the evidence supports"
+  ],
+  "required_questions": [
+    "Which missing signals matter for this confidence level?",
+    "Which non-observation is relevant here?",
+    "Where does the current frame treat missing evidence as if it were evidence?"
+  ],
+  "allowed_outputs": [
+    "signal-gap findings",
+    "confidence-limiting notes",
+    "evidence sufficiency concerns"
+  ],
+  "forbidden_outputs": [
+    "approval language",
+    "runtime commands",
+    "registry mutation proposals"
+  ],
+  "failure_modes": [
+    "indiscriminate skepticism that blocks all action",
+    "listing missing signals without explaining why they matter"
+  ],
+  "shadow_only": true,
+  "evaluation_only": true
+}

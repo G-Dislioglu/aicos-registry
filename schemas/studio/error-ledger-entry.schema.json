@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AICOS Error Ledger Entry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "entry_id",
+    "subject_ref",
+    "phase",
+    "error_class",
+    "symptom",
+    "why_plausible",
+    "detected_by",
+    "impact_band",
+    "recovery_action",
+    "status",
+    "evaluation_only",
+    "non_authoritative"
+  ],
+  "properties": {
+    "artifact_type": { "const": "error_ledger_entry" },
+    "entry_id": { "type": "string", "minLength": 1 },
+    "subject_ref": { "type": "string", "minLength": 1 },
+    "phase": {
+      "type": "string",
+      "enum": ["framing", "decomposition", "evaluation", "synthesis"]
+    },
+    "error_class": {
+      "type": "string",
+      "enum": ["misframing", "premature_closure", "false_assumption", "missed_signal", "invalid_constraint_inference", "pseudo_certainty"]
+    },
+    "symptom": { "type": "string", "minLength": 1 },
+    "why_plausible": { "type": "string", "minLength": 1 },
+    "detected_by": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": ["preflight", "perspective_pass", "comparison", "human_review"]
+      }
+    },
+    "impact_band": {
+      "type": "string",
+      "enum": ["low", "medium", "high"]
+    },
+    "recovery_action": { "type": "string", "minLength": 1 },
+    "status": {
+      "type": "string",
+      "enum": ["open", "mitigated", "accepted"]
+    },
+    "notes": { "type": "string", "minLength": 1 },
+    "evaluation_only": { "const": true },
+    "non_authoritative": { "const": true }
+  }
+}

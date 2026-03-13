@@ -1,0 +1,31 @@
+{
+  "artifact_type": "frame_preflight",
+  "preflight_id": "frame-preflight-over-clean-001",
+  "subject_ref": "examples/studio/frame-delta/scenarios/review-to-bundle-shadow.scenario.json",
+  "task_frame_summary": "The product brief looks crisp and implementation-ready, but the apparent cleanliness may be hiding under-specified forbidden zones and stakeholder expectations.",
+  "assumed_goal": "Assess whether the brief can safely enter decomposition without inventing extra certainty.",
+  "explicit_constraints": [
+    "Stay inside the existing Studio proposal layer.",
+    "Do not infer missing approval or rollout semantics.",
+    "Keep the result local and evaluative."
+  ],
+  "latent_frame_risks": [
+    "The brief looks complete enough to suppress missing constraints.",
+    "A neat summary may hide scope expansion into adjacent authority layers."
+  ],
+  "missing_but_decisive_questions": [
+    "Which constraints are explicit versus merely conventional?",
+    "What would count as out of scope even if the brief sounds broad?"
+  ],
+  "frame_risk_band": "medium",
+  "frame_risk_signals": [
+    "low visible friction despite multiple implied boundaries",
+    "high polish with low evidence density"
+  ],
+  "decomposition_readiness": "caution",
+  "recommended_next_move": "narrow",
+  "proposal_only": true,
+  "shadow_only": true,
+  "non_authoritative": true,
+  "notes": "This is a classic premature-cleanliness case rather than an overtly invalid ask."
+}

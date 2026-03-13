@@ -1,0 +1,23 @@
+{
+  "artifact_type": "frame_challenge_result",
+  "result_id": "frame-challenge-ambiguous-governance-001",
+  "subject_ref": "examples/studio/frame-delta/scenarios/ambiguous-governance-ask-shadow.scenario.json",
+  "input_preflight_ref": "examples/studio/frame-delta/valid/ambiguous-governance-ask.preflight.valid.json",
+  "passes_run": [
+    "constraint_skeptic",
+    "counterframe_probe"
+  ],
+  "challenge_findings": [
+    "The apparently harmless wording-cleanup frame collapses once truth mutation stays forbidden.",
+    "A governance-change frame explains the hidden authority expectations better than a documentation frame."
+  ],
+  "challenge_outcome": "reframed",
+  "frame_risk_band_after_challenge": "high",
+  "residual_risks": [
+    "The requester may still expect a truth-facing change even after reframing."
+  ],
+  "recommended_next_move": "revise_frame",
+  "notes": "Delta blocks decomposition until the ask is reframed into a local or truth-facing path explicitly.",
+  "shadow_only": true,
+  "non_authoritative": true
+}
