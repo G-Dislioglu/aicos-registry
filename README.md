@@ -132,6 +132,8 @@ It exists to structure debate, challenge, and distillation outputs without direc
 - Manifest spec: `AICOS_STUDIO_MANIFEST_SPEC.md`
 - Bundle review context: `AICOS_STUDIO_BUNDLE_REVIEW_CONTEXT.md`
 - Trace consistency rules: `AICOS_STUDIO_TRACE_CONSISTENCY_RULES.md`
+- Normalization rules: `AICOS_STUDIO_NORMALIZATION_RULES.md`
+- Conversion matrix: `AICOS_STUDIO_CONVERSION_MATRIX.md`
 - Schema notes: `AICOS_STUDIO_SCHEMA_NOTES.md`
 - Machine-readable schemas: `schemas/studio/*.schema.json`
 - Validation corpus: `examples/studio/valid/*.json`, `examples/studio/invalid/*.json`
@@ -147,6 +149,9 @@ It exists to structure debate, challenge, and distillation outputs without direc
 - Bundle CLI: `tools/studio-bundle.js`
 - Bundle verifier: `tools/verify-aicos-studio-bundles.js`
 - Bundle trace verifier: `tools/verify-aicos-studio-bundle-trace.js`
+- Normalize CLI: `tools/studio-normalize.js`
+- Convert CLI: `tools/studio-convert.js`
+- Normalization/conversion verifier: `tools/verify-aicos-studio-conversion.js`
 
 Boundary rule:
 
@@ -161,6 +166,8 @@ Local prep tools only:
 - `tools/studio-review-record.js` scaffolds local review-layer review records only
 - `tools/studio-gate-report.js` scaffolds local review-layer gate reports only
 - `tools/studio-bundle.js` scaffolds or summarizes bundle manifests as a local packaging layer only
+- `tools/studio-normalize.js` normalizes bounded Studio JSON into canonical local form only
+- `tools/studio-convert.js` performs only explicitly allowed local Studio conversions
 - bundle review context and trace consistency remain a local review packaging discipline only
 - these tools do not execute runtime work, provider calls, registry mutation, or review forwarding
 
@@ -178,8 +185,11 @@ npm run lint:studio -- examples/studio/scaffolded
 npm run scaffold:studio-review-record
 npm run scaffold:studio-gate-report
 npm run scaffold:studio-bundle
+npm run normalize:studio -- examples/studio/valid/proposal-artifact-normalize-source.valid.json
+npm run convert:studio -- examples/studio/valid/intake-convert-proposal-source.valid.json --to proposal-artifact
 npm run verify:studio-review
 npm run verify:studio-bundle-trace
+npm run verify:studio-conversion
 npm run verify:studio-bundles
 npm run verify:studio
 ```

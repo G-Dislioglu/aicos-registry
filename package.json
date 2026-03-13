@@ -14,13 +14,16 @@
     "scaffold:studio-gate-report": "node tools/studio-gate-report.js",
     "scaffold:studio-bundle": "node tools/studio-bundle.js",
     "lint:studio": "node tools/studio-lint.js",
+    "normalize:studio": "node tools/studio-normalize.js",
+    "convert:studio": "node tools/studio-convert.js",
     "verify:studio-schemas": "node tools/verify-aicos-studio-schemas.js",
     "verify:studio-tooling": "node tools/verify-aicos-studio-tooling.js",
     "verify:studio-review": "node tools/verify-aicos-studio-review-layer.js",
     "verify:studio-bundle-trace": "node tools/verify-aicos-studio-bundle-trace.js",
+    "verify:studio-conversion": "node tools/verify-aicos-studio-conversion.js",
     "verify:studio-bundles": "node tools/verify-aicos-studio-bundles.js && node tools/verify-aicos-studio-bundle-trace.js",
-    "verify:studio-intake": "node tools/verify-aicos-studio-intake-docs.js && node tools/verify-aicos-studio-schemas.js && node tools/verify-aicos-studio-tooling.js && node tools/verify-aicos-studio-review-layer.js && node tools/verify-aicos-studio-bundles.js && node tools/verify-aicos-studio-bundle-trace.js",
-    "verify:studio": "node tools/verify-aicos-studio-intake-docs.js && node tools/verify-aicos-studio-schemas.js && node tools/verify-aicos-studio-tooling.js && node tools/verify-aicos-studio-review-layer.js && node tools/verify-aicos-studio-bundles.js && node tools/verify-aicos-studio-bundle-trace.js"
+    "verify:studio-intake": "node tools/verify-aicos-studio-intake-docs.js && node tools/verify-aicos-studio-schemas.js && node tools/verify-aicos-studio-tooling.js && node tools/verify-aicos-studio-review-layer.js && node tools/verify-aicos-studio-bundles.js && node tools/verify-aicos-studio-bundle-trace.js && node tools/verify-aicos-studio-conversion.js",
+    "verify:studio": "node tools/verify-aicos-studio-intake-docs.js && node tools/verify-aicos-studio-schemas.js && node tools/verify-aicos-studio-tooling.js && node tools/verify-aicos-studio-review-layer.js && node tools/verify-aicos-studio-bundles.js && node tools/verify-aicos-studio-bundle-trace.js && node tools/verify-aicos-studio-conversion.js"
   },
   "engines": {
     "node": ">=20"

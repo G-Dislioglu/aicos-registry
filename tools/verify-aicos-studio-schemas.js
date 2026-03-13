@@ -40,6 +40,10 @@ const VALID_EXAMPLES = [
     schema: path.join(SCHEMA_DIR, 'proposal-artifact.schema.json')
   },
   {
+    file: path.join(EXAMPLES_DIR, 'valid', 'proposal-artifact-normalize-source.valid.json'),
+    schema: path.join(SCHEMA_DIR, 'proposal-artifact.schema.json')
+  },
+  {
     file: path.join(EXAMPLES_DIR, 'valid', 'handoff-artifact.valid.json'),
     schema: path.join(SCHEMA_DIR, 'handoff-artifact.schema.json')
   },
@@ -74,6 +78,18 @@ const VALID_EXAMPLES = [
   {
     file: path.join(EXAMPLES_DIR, 'valid', 'studio-bundle-manifest-handoff.valid.json'),
     schema: path.join(SCHEMA_DIR, 'studio-bundle-manifest.schema.json')
+  },
+  {
+    file: path.join(EXAMPLES_DIR, 'valid', 'bundle-normalize-source.valid.json'),
+    schema: path.join(SCHEMA_DIR, 'studio-bundle-manifest.schema.json')
+  },
+  {
+    file: path.join(EXAMPLES_DIR, 'valid', 'intake-convert-proposal-source.valid.json'),
+    schema: path.join(SCHEMA_DIR, 'studio-intake-packet.schema.json')
+  },
+  {
+    file: path.join(EXAMPLES_DIR, 'valid', 'intake-convert-handoff-source.valid.json'),
+    schema: path.join(SCHEMA_DIR, 'studio-intake-packet.schema.json')
   }
 ];
 
@@ -117,6 +133,18 @@ const INVALID_EXAMPLES = [
   {
     file: path.join(EXAMPLES_DIR, 'invalid', 'studio-bundle-manifest-missing-boundary.invalid.json'),
     schema: path.join(SCHEMA_DIR, 'studio-bundle-manifest.schema.json')
+  },
+  {
+    file: path.join(EXAMPLES_DIR, 'invalid', 'proposal-artifact-illegal-promotion.invalid.json'),
+    schema: path.join(SCHEMA_DIR, 'proposal-artifact.schema.json')
+  },
+  {
+    file: path.join(EXAMPLES_DIR, 'invalid', 'bundle-normalize-truth-field.invalid.json'),
+    schema: path.join(SCHEMA_DIR, 'studio-bundle-manifest.schema.json')
+  },
+  {
+    file: path.join(EXAMPLES_DIR, 'invalid', 'intake-missing-summary.invalid.json'),
+    schema: path.join(SCHEMA_DIR, 'studio-intake-packet.schema.json')
   }
 ];
 

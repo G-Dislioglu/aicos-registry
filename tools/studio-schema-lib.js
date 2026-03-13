@@ -72,6 +72,9 @@ const ARTIFACT_KIND_ALIASES = {
 const SCHEMA_FILE_BY_ARTIFACT_TYPE = Object.fromEntries(
   Object.values(ARTIFACT_KINDS).map((entry) => [entry.artifactType, entry.schemaFile])
 );
+const ARTIFACT_KIND_BY_TYPE = Object.fromEntries(
+  Object.entries(ARTIFACT_KINDS).map(([kind, entry]) => [entry.artifactType, kind])
+);
 
 const PROPOSAL_TYPES = [
   'idea_probe',
@@ -127,6 +130,260 @@ const BUNDLE_MEMBER_TYPES = [
   'review_record',
   'gate_report'
 ];
+const REQUIRED_GATE_STATES = [
+  'user_gate',
+  'evidence_gate',
+  'conflict_visibility_gate',
+  'proposal_only_gate',
+  'no_truth_mutation_gate',
+  'no_runtime_write_gate',
+  'handoff_quality_gate',
+  'card_review_target_gate'
+];
+const NORMALIZATION_DEFAULTS = {
+  'studio-intake-packet': {
+    source_mode: 'maya_council',
+    claim_status: 'insufficiently_formed',
+    evidence_status: 'needs_evidence',
+    challenge_status: 'unchallenged',
+    drift_risk: 'medium',
+    recommendation_scope: 'proposal_only',
+    promotion_state: 'proposal_only',
+    next_review_target: 'none'
+  },
+  'proposal-artifact': {
+    claim_status: 'insufficiently_formed',
+    evidence_status: 'needs_evidence',
+    challenge_status: 'unchallenged',
+    drift_risk: 'medium',
+    recommendation_scope: 'proposal_only',
+    promotion_state: 'proposal_only',
+    next_review_target: 'none'
+  },
+  'handoff-artifact': {
+    origin_artifact_type: 'proposal_artifact',
+    required_gate_state: ['user_gate'],
+    next_review_target: 'manual_design_followup',
+    proposal_status: 'proposal_only'
+  },
+  'reference-artifact': {
+    proposal_status: 'reference_only'
+  },
+  'card-review-target-artifact': {
+    proposal_type: 'review_target_candidate',
+    required_gate_state: ['user_gate', 'card_review_target_gate'],
+    next_review_target: 'human_registry_review',
+    promotion_state: 'not_promoted'
+  },
+  'review-record': {
+    record_scope: 'review_layer_only'
+  },
+  'gate-report': {
+    record_scope: 'review_layer_only'
+  },
+  'studio-bundle-manifest': {
+    review_refs: [],
+    gate_report_refs: [],
+    consistency_status: 'incomplete',
+    intended_next_step: 'retain_in_review_layer',
+    proposal_only: true,
+    no_truth_mutation: true,
+    no_runtime_write: true
+  }
+};
+const CANONICAL_FIELD_ORDER = {
+  'studio-intake-packet': [
+    'artifact_type',
+    'packet_id',
+    'created_at',
+    'source_mode',
+    'participants',
+    'topic',
+    'proposal_type',
+    'claim_status',
+    'evidence_status',
+    'challenge_status',
+    'drift_risk',
+    'recommendation_scope',
+    'promotion_state',
+    'distilled_summary',
+    'open_conflicts',
+    'next_review_target',
+    'source_refs',
+    'moderator_notes',
+    'distillator_notes',
+    'challenge_notes',
+    'user_gate_decision'
+  ],
+  'proposal-artifact': [
+    'artifact_type',
+    'packet_id',
+    'created_at',
+    'topic',
+    'participants',
+    'proposal_type',
+    'claim_status',
+    'evidence_status',
+    'challenge_status',
+    'drift_risk',
+    'recommendation_scope',
+    'promotion_state',
+    'distilled_summary',
+    'open_conflicts',
+    'next_review_target',
+    'source_refs',
+    'distillator_notes',
+    'user_gate_decision',
+    'handoff_notes'
+  ],
+  'handoff-artifact': [
+    'artifact_type',
+    'packet_id',
+    'created_at',
+    'handoff_scope',
+    'origin_artifact_type',
+    'topic',
+    'proposal_type',
+    'evidence_status',
+    'challenge_status',
+    'open_conflicts',
+    'handoff_reason',
+    'required_gate_state',
+    'next_review_target',
+    'proposal_status',
+    'source_refs',
+    'user_gate_decision',
+    'handoff_notes',
+    'reader_notes'
+  ],
+  'reference-artifact': [
+    'artifact_type',
+    'packet_id',
+    'created_at',
+    'reference_scope',
+    'topic',
+    'artifact_source',
+    'summary',
+    'evidence_status',
+    'open_conflicts',
+    'proposal_status',
+    'source_refs',
+    'comparison_notes',
+    'reader_notes',
+    'user_gate_decision'
+  ],
+  'card-review-target-artifact': [
+    'artifact_type',
+    'packet_id',
+    'created_at',
+    'review_target_type',
+    'topic',
+    'proposal_type',
+    'target_scope',
+    'evidence_status',
+    'challenge_status',
+    'open_conflicts',
+    'review_reason',
+    'required_gate_state',
+    'next_review_target',
+    'promotion_state',
+    'source_refs',
+    'user_gate_decision',
+    'review_notes',
+    'distillator_notes'
+  ],
+  'review-record': [
+    'artifact_type',
+    'review_record_id',
+    'reviewed_at',
+    'subject_artifact_type',
+    'subject_ref',
+    'topic',
+    'lifecycle_state',
+    'decision_type',
+    'decision_codes',
+    'review_summary',
+    'user_gate_status',
+    'resulting_next_posture',
+    'record_scope',
+    'gate_report_refs',
+    'open_conflicts',
+    'notes'
+  ],
+  'gate-report': [
+    'artifact_type',
+    'gate_report_id',
+    'reviewed_at',
+    'subject_artifact_type',
+    'subject_ref',
+    'topic',
+    'gate_name',
+    'gate_outcome',
+    'gate_summary',
+    'decision_codes',
+    'approval_requirement',
+    'record_scope',
+    'observed_issues',
+    'review_notes'
+  ],
+  'studio-bundle-manifest': [
+    'artifact_type',
+    'bundle_id',
+    'bundle_type',
+    'included_artifacts',
+    'source_packet_ref',
+    'review_refs',
+    'gate_report_refs',
+    'consistency_status',
+    'intended_next_step',
+    'proposal_only',
+    'no_truth_mutation',
+    'no_runtime_write',
+    'topic',
+    'bundle_summary',
+    'notes'
+  ]
+};
+const NORMALIZE_ONLY_KINDS = new Set([
+  'studio-intake-packet',
+  'proposal-artifact',
+  'handoff-artifact',
+  'reference-artifact',
+  'card-review-target-artifact',
+  'review-record',
+  'gate-report',
+  'studio-bundle-manifest'
+]);
+const CONVERSION_MATRIX = {
+  'studio-intake-packet': {
+    'proposal-artifact': { mode: 'allowed' },
+    'handoff-artifact': { mode: 'gated' },
+    'reference-artifact': { mode: 'allowed' },
+    'card-review-target-artifact': { mode: 'gated' }
+  },
+  'proposal-artifact': {
+    'proposal-artifact': { mode: 'normalize_only' }
+  },
+  'handoff-artifact': {
+    'handoff-artifact': { mode: 'normalize_only' }
+  },
+  'reference-artifact': {
+    'reference-artifact': { mode: 'normalize_only' }
+  },
+  'card-review-target-artifact': {
+    'card-review-target-artifact': { mode: 'normalize_only' }
+  },
+  'review-record': {
+    'review-record': { mode: 'normalize_only' }
+  },
+  'gate-report': {
+    'gate-report': { mode: 'normalize_only' }
+  },
+  'studio-bundle-manifest': {
+    'studio-bundle-manifest': { mode: 'normalize_only' }
+  }
+};
+const FORBIDDEN_CONVERSION_TARGET_HINTS = ['runtime', 'truth', 'registry', 'index', 'alias', 'canon', 'card'];
 
 const FORBIDDEN_PROPERTY_CODE = {
   runtime_review_object: 'runtime_write_attempt',
@@ -360,6 +617,386 @@ function scanBoundaryLints(value, boundaryLints, pathParts = []) {
 
 function normalizeRelativeRef(filePath) {
   return path.relative(ROOT_DIR, filePath).split(path.sep).join('/');
+}
+
+function createStudioOperationError(code, message, details = {}) {
+  const error = new Error(message);
+  error.code = code;
+  error.details = details;
+  return error;
+}
+
+function getKindForArtifactType(artifactType) {
+  return ARTIFACT_KIND_BY_TYPE[artifactType] || null;
+}
+
+function cloneValue(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function normalizeStringArray(values, options = {}) {
+  if (!Array.isArray(values)) {
+    return values;
+  }
+  const seen = new Set();
+  const normalized = [];
+  for (const entry of values) {
+    if (typeof entry !== 'string') {
+      normalized.push(entry);
+      continue;
+    }
+    const trimmed = entry.trim();
+    if (trimmed.length === 0 || seen.has(trimmed)) {
+      continue;
+    }
+    seen.add(trimmed);
+    normalized.push(trimmed);
+  }
+
+  if (Array.isArray(options.valueOrder)) {
+    const orderMap = new Map(options.valueOrder.map((value, index) => [value, index]));
+    normalized.sort((left, right) => {
+      const leftIndex = orderMap.has(left) ? orderMap.get(left) : Number.MAX_SAFE_INTEGER;
+      const rightIndex = orderMap.has(right) ? orderMap.get(right) : Number.MAX_SAFE_INTEGER;
+      if (leftIndex !== rightIndex) {
+        return leftIndex - rightIndex;
+      }
+      return String(left).localeCompare(String(right));
+    });
+  } else if (options.sort === true) {
+    normalized.sort((left, right) => String(left).localeCompare(String(right)));
+  }
+
+  return normalized;
+}
+
+function applyCanonicalFieldOrder(kind, artifact) {
+  const fieldOrder = CANONICAL_FIELD_ORDER[kind] || [];
+  const ordered = {};
+  for (const key of fieldOrder) {
+    if (Object.prototype.hasOwnProperty.call(artifact, key)) {
+      ordered[key] = artifact[key];
+    }
+  }
+  const remainingKeys = Object.keys(artifact)
+    .filter((key) => !fieldOrder.includes(key))
+    .sort((left, right) => left.localeCompare(right));
+  for (const key of remainingKeys) {
+    ordered[key] = artifact[key];
+  }
+  return ordered;
+}
+
+function normalizeIncludedArtifacts(values) {
+  if (!Array.isArray(values)) {
+    return values;
+  }
+  const seen = new Set();
+  const normalized = [];
+  for (const entry of values) {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+      normalized.push(entry);
+      continue;
+    }
+    const nextEntry = {};
+    if (Object.prototype.hasOwnProperty.call(entry, 'artifact_type')) {
+      nextEntry.artifact_type = entry.artifact_type;
+    }
+    if (Object.prototype.hasOwnProperty.call(entry, 'ref')) {
+      nextEntry.ref = typeof entry.ref === 'string' ? entry.ref.trim() : entry.ref;
+    }
+    const extraKeys = Object.keys(entry)
+      .filter((key) => key !== 'artifact_type' && key !== 'ref')
+      .sort((left, right) => left.localeCompare(right));
+    for (const key of extraKeys) {
+      nextEntry[key] = entry[key];
+    }
+    const identity = JSON.stringify(nextEntry);
+    if (seen.has(identity)) {
+      continue;
+    }
+    seen.add(identity);
+    normalized.push(nextEntry);
+  }
+  normalized.sort((left, right) => {
+    const leftRef = left && typeof left.ref === 'string' ? left.ref : '';
+    const rightRef = right && typeof right.ref === 'string' ? right.ref : '';
+    return leftRef.localeCompare(rightRef);
+  });
+  return normalized;
+}
+
+function scanForbiddenNormalizationFields(value, pathParts = []) {
+  const findings = [];
+  if (Array.isArray(value)) {
+    value.forEach((entry, index) => {
+      findings.push(...scanForbiddenNormalizationFields(entry, [...pathParts, String(index)]));
+    });
+    return findings;
+  }
+  if (typeof value === 'object' && value !== null) {
+    for (const [key, nestedValue] of Object.entries(value)) {
+      if (FORBIDDEN_PROPERTY_CODE[key]) {
+        findings.push({
+          code: 'forbidden_normalization_field',
+          message: `${key} is forbidden in normalization and conversion inputs`,
+          path: formatPath([...pathParts, key])
+        });
+      }
+      findings.push(...scanForbiddenNormalizationFields(nestedValue, [...pathParts, key]));
+    }
+  }
+  return findings;
+}
+
+function applyNormalizationDefaults(kind, artifact) {
+  const defaults = NORMALIZATION_DEFAULTS[kind] || {};
+  for (const [key, value] of Object.entries(defaults)) {
+    if (!Object.prototype.hasOwnProperty.call(artifact, key)) {
+      artifact[key] = cloneValue(value);
+    }
+  }
+  return artifact;
+}
+
+function normalizeArtifactShape(kind, artifactInput) {
+  const artifact = cloneValue(artifactInput || {});
+  const artifactType = ARTIFACT_KINDS[kind].artifactType;
+  if (!Object.prototype.hasOwnProperty.call(artifact, 'artifact_type')) {
+    artifact.artifact_type = artifactType;
+  }
+
+  applyNormalizationDefaults(kind, artifact);
+
+  if (Array.isArray(artifact.participants)) {
+    artifact.participants = normalizeStringArray(artifact.participants);
+  }
+  if (Array.isArray(artifact.source_refs)) {
+    artifact.source_refs = normalizeStringArray(artifact.source_refs, { sort: true });
+  }
+  if (Array.isArray(artifact.open_conflicts)) {
+    artifact.open_conflicts = normalizeStringArray(artifact.open_conflicts);
+  }
+  if (Array.isArray(artifact.decision_codes)) {
+    artifact.decision_codes = normalizeStringArray(artifact.decision_codes, { valueOrder: DECISION_CODES });
+  }
+  if (Array.isArray(artifact.required_gate_state)) {
+    artifact.required_gate_state = normalizeStringArray(artifact.required_gate_state, { valueOrder: REQUIRED_GATE_STATES });
+  }
+  if (Array.isArray(artifact.review_refs)) {
+    artifact.review_refs = normalizeStringArray(artifact.review_refs, { sort: true });
+  }
+  if (Array.isArray(artifact.gate_report_refs)) {
+    artifact.gate_report_refs = normalizeStringArray(artifact.gate_report_refs, { sort: true });
+  }
+  if (Array.isArray(artifact.included_artifacts)) {
+    artifact.included_artifacts = normalizeIncludedArtifacts(artifact.included_artifacts);
+  }
+
+  return applyCanonicalFieldOrder(kind, artifact);
+}
+
+function normalizeArtifact(kindInput, artifactInput) {
+  const inferredKind = resolveArtifactKind(kindInput)
+    || getKindForArtifactType(artifactInput && artifactInput.artifact_type);
+  if (!inferredKind || !NORMALIZE_ONLY_KINDS.has(inferredKind)) {
+    throw createStudioOperationError('normalize_unsupported_kind', `Unsupported Studio normalization kind: ${kindInput || (artifactInput && artifactInput.artifact_type) || '<unknown>'}`);
+  }
+
+  const forbiddenFindings = scanForbiddenNormalizationFields(artifactInput);
+  if (forbiddenFindings.length > 0) {
+    throw createStudioOperationError('forbidden_normalization_field', forbiddenFindings[0].message, {
+      findings: forbiddenFindings
+    });
+  }
+
+  if (Object.prototype.hasOwnProperty.call(artifactInput || {}, 'promotion_state')) {
+    const promotionState = artifactInput.promotion_state;
+    if (promotionState !== 'proposal_only' && promotionState !== 'not_promoted') {
+      throw createStudioOperationError('illegal_promotion_state_carryover', `Illegal promotion_state carryover: ${promotionState}`);
+    }
+  }
+
+  const normalized = normalizeArtifactShape(inferredKind, artifactInput);
+  const lintResult = lintArtifact(normalized);
+  if (lintResult.schemaErrors.length > 0) {
+    throw createStudioOperationError('normalize_schema_error', `Normalized artifact failed schema validation for ${inferredKind}`, {
+      schema_errors: lintResult.schemaErrors
+    });
+  }
+  if (lintResult.boundaryLints.length > 0) {
+    throw createStudioOperationError('normalize_boundary_lint', `Normalized artifact failed boundary lint for ${inferredKind}`, {
+      boundary_lints: lintResult.boundaryLints
+    });
+  }
+
+  return normalized;
+}
+
+function isForbiddenConversionTarget(targetInput) {
+  const normalized = String(targetInput || '').toLowerCase();
+  return FORBIDDEN_CONVERSION_TARGET_HINTS.some((entry) => normalized.includes(entry));
+}
+
+function requireSourceFields(sourceArtifact, fieldNames) {
+  const missing = [];
+  for (const fieldName of fieldNames) {
+    const value = sourceArtifact[fieldName];
+    if (value === undefined || value === null || value === '' || (Array.isArray(value) && value.length === 0)) {
+      missing.push(fieldName);
+    }
+  }
+  if (missing.length > 0) {
+    throw createStudioOperationError('missing_required_source_field', `Missing required source field(s): ${missing.join(', ')}`, {
+      missing_fields: missing
+    });
+  }
+}
+
+function buildProposalArtifactFromIntake(sourceArtifact) {
+  requireSourceFields(sourceArtifact, ['topic', 'participants', 'proposal_type', 'distilled_summary', 'open_conflicts']);
+  return {
+    artifact_type: 'proposal_artifact',
+    packet_id: sourceArtifact.packet_id,
+    created_at: sourceArtifact.created_at,
+    topic: sourceArtifact.topic,
+    participants: sourceArtifact.participants,
+    proposal_type: sourceArtifact.proposal_type,
+    claim_status: sourceArtifact.claim_status,
+    evidence_status: sourceArtifact.evidence_status,
+    challenge_status: sourceArtifact.challenge_status,
+    drift_risk: sourceArtifact.drift_risk,
+    recommendation_scope: sourceArtifact.recommendation_scope,
+    promotion_state: sourceArtifact.promotion_state,
+    distilled_summary: sourceArtifact.distilled_summary,
+    open_conflicts: sourceArtifact.open_conflicts,
+    next_review_target: sourceArtifact.next_review_target,
+    source_refs: sourceArtifact.source_refs,
+    distillator_notes: sourceArtifact.distillator_notes,
+    user_gate_decision: sourceArtifact.user_gate_decision
+  };
+}
+
+function buildReferenceArtifactFromIntake(sourceArtifact) {
+  requireSourceFields(sourceArtifact, ['topic', 'distilled_summary', 'open_conflicts']);
+  return {
+    artifact_type: 'reference_artifact',
+    packet_id: sourceArtifact.packet_id,
+    created_at: sourceArtifact.created_at,
+    reference_scope: 'normalized reference view of one bounded Studio intake packet',
+    topic: sourceArtifact.topic,
+    artifact_source: 'studio_intake_packet',
+    summary: sourceArtifact.distilled_summary,
+    evidence_status: sourceArtifact.evidence_status,
+    open_conflicts: sourceArtifact.open_conflicts,
+    proposal_status: 'reference_only',
+    source_refs: sourceArtifact.source_refs,
+    reader_notes: sourceArtifact.distillator_notes
+  };
+}
+
+function buildHandoffArtifactFromIntake(sourceArtifact) {
+  requireSourceFields(sourceArtifact, ['topic', 'proposal_type', 'distilled_summary', 'open_conflicts', 'next_review_target']);
+  if (!['manual_design_followup', 'request_human_decision', 'human_registry_review'].includes(sourceArtifact.next_review_target)) {
+    throw createStudioOperationError('conversion_gate_failed', `studio_intake_packet -> handoff_artifact requires a later human review target, got: ${sourceArtifact.next_review_target}`);
+  }
+  if (sourceArtifact.recommendation_scope === 'archive_only') {
+    throw createStudioOperationError('conversion_gate_failed', 'studio_intake_packet -> handoff_artifact may not originate from archive_only recommendation scope');
+  }
+  return {
+    artifact_type: 'handoff_artifact',
+    packet_id: sourceArtifact.packet_id,
+    created_at: sourceArtifact.created_at,
+    handoff_scope: `bounded Studio handoff for ${sourceArtifact.next_review_target}`,
+    origin_artifact_type: 'studio_intake_packet',
+    topic: sourceArtifact.topic,
+    proposal_type: sourceArtifact.proposal_type,
+    evidence_status: sourceArtifact.evidence_status,
+    challenge_status: sourceArtifact.challenge_status,
+    open_conflicts: sourceArtifact.open_conflicts,
+    handoff_reason: sourceArtifact.distilled_summary,
+    required_gate_state: ['user_gate', 'conflict_visibility_gate', 'handoff_quality_gate', 'no_runtime_write_gate'],
+    next_review_target: sourceArtifact.next_review_target,
+    proposal_status: sourceArtifact.next_review_target === 'human_registry_review' ? 'nomination_only' : 'proposal_only',
+    source_refs: sourceArtifact.source_refs,
+    handoff_notes: sourceArtifact.distillator_notes || sourceArtifact.moderator_notes
+  };
+}
+
+function buildCardReviewTargetArtifactFromIntake(sourceArtifact) {
+  requireSourceFields(sourceArtifact, ['topic', 'distilled_summary', 'open_conflicts', 'next_review_target']);
+  if (sourceArtifact.next_review_target !== 'human_registry_review') {
+    throw createStudioOperationError('conversion_gate_failed', `studio_intake_packet -> card_review_target_artifact requires next_review_target human_registry_review, got: ${sourceArtifact.next_review_target}`);
+  }
+  return {
+    artifact_type: 'card_review_target_artifact',
+    packet_id: sourceArtifact.packet_id,
+    created_at: sourceArtifact.created_at,
+    review_target_type: 'existing_card_boundary',
+    topic: sourceArtifact.topic,
+    proposal_type: sourceArtifact.proposal_type || 'review_target_candidate',
+    target_scope: sourceArtifact.distilled_summary,
+    evidence_status: sourceArtifact.evidence_status,
+    challenge_status: sourceArtifact.challenge_status,
+    open_conflicts: sourceArtifact.open_conflicts,
+    review_reason: sourceArtifact.distilled_summary,
+    required_gate_state: ['user_gate', 'evidence_gate', 'conflict_visibility_gate', 'card_review_target_gate'],
+    next_review_target: 'human_registry_review',
+    promotion_state: sourceArtifact.promotion_state,
+    source_refs: sourceArtifact.source_refs,
+    review_notes: sourceArtifact.distillator_notes
+  };
+}
+
+function convertArtifact(sourceArtifactInput, targetKindInput) {
+  const sourceArtifact = cloneValue(sourceArtifactInput || {});
+  const sourceKind = getKindForArtifactType(sourceArtifact.artifact_type);
+  if (!sourceKind) {
+    throw createStudioOperationError('unknown_source_kind', `Unknown Studio source artifact_type: ${sourceArtifact.artifact_type || '<missing>'}`);
+  }
+
+  if (scanForbiddenNormalizationFields(sourceArtifact).length > 0) {
+    throw createStudioOperationError('forbidden_normalization_field', 'Conversion input contains forbidden Studio fields');
+  }
+  if (Object.prototype.hasOwnProperty.call(sourceArtifact, 'promotion_state')) {
+    const promotionState = sourceArtifact.promotion_state;
+    if (promotionState !== 'proposal_only' && promotionState !== 'not_promoted') {
+      throw createStudioOperationError('illegal_promotion_state_carryover', `Illegal promotion_state carryover: ${promotionState}`);
+    }
+  }
+
+  const resolvedTargetKind = resolveArtifactKind(targetKindInput);
+  if (!resolvedTargetKind) {
+    if (isForbiddenConversionTarget(targetKindInput)) {
+      throw createStudioOperationError('conversion_forbidden_target', `Forbidden Studio conversion target: ${targetKindInput}`);
+    }
+    throw createStudioOperationError('conversion_unknown_target', `Unknown Studio conversion target: ${targetKindInput}`);
+  }
+
+  const sourceRules = CONVERSION_MATRIX[sourceKind] || {};
+  const rule = sourceRules[resolvedTargetKind];
+  if (!rule) {
+    throw createStudioOperationError('conversion_not_allowed', `Conversion not allowed: ${sourceKind} -> ${resolvedTargetKind}`);
+  }
+
+  if (rule.mode === 'normalize_only') {
+    return normalizeArtifact(resolvedTargetKind, sourceArtifact);
+  }
+
+  let converted;
+  if (sourceKind === 'studio-intake-packet' && resolvedTargetKind === 'proposal-artifact') {
+    converted = buildProposalArtifactFromIntake(sourceArtifact);
+  } else if (sourceKind === 'studio-intake-packet' && resolvedTargetKind === 'reference-artifact') {
+    converted = buildReferenceArtifactFromIntake(sourceArtifact);
+  } else if (sourceKind === 'studio-intake-packet' && resolvedTargetKind === 'handoff-artifact') {
+    converted = buildHandoffArtifactFromIntake(sourceArtifact);
+  } else if (sourceKind === 'studio-intake-packet' && resolvedTargetKind === 'card-review-target-artifact') {
+    converted = buildCardReviewTargetArtifactFromIntake(sourceArtifact);
+  } else {
+    throw createStudioOperationError('conversion_not_implemented', `Conversion rule exists but is not implemented: ${sourceKind} -> ${resolvedTargetKind}`);
+  }
+
+  return normalizeArtifact(resolvedTargetKind, converted);
 }
 
 function findBundleManifestConsistencyIssues(artifact) {
@@ -923,6 +1560,8 @@ module.exports = {
   validateSchema,
   readJson,
   writeJson,
+  normalizeArtifact,
+  convertArtifact,
   findBundleManifestConsistencyIssues,
   buildBundleManifestFromArtifacts,
   lintArtifact,

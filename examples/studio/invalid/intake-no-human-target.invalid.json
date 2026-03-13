@@ -1,0 +1,22 @@
+{
+  "artifact_type": "studio_intake_packet",
+  "packet_id": "studio-packet-invalid-convert-004",
+  "created_at": "2026-03-13T19:19:00Z",
+  "source_mode": "single_model_session",
+  "participants": [
+    "maya:moderator"
+  ],
+  "topic": "handoff conversion without later human target",
+  "proposal_type": "design_direction",
+  "claim_status": "bounded_proposal",
+  "evidence_status": "needs_evidence",
+  "challenge_status": "challenge_in_progress",
+  "drift_risk": "medium",
+  "recommendation_scope": "proposal_only",
+  "promotion_state": "proposal_only",
+  "distilled_summary": "This packet remains local exploration only and should not pass into handoff conversion.",
+  "open_conflicts": [
+    "not ready for human relay"
+  ],
+  "next_review_target": "none"
+}

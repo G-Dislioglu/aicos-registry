@@ -1,0 +1,27 @@
+{
+  "artifact_type": "studio_intake_packet",
+  "packet_id": "studio-packet-convert-001",
+  "created_at": "2026-03-13T19:10:00Z",
+  "source_mode": "maya_council",
+  "participants": [
+    "maya:moderator",
+    "maya:distillator",
+    "human:operator"
+  ],
+  "topic": "whether proposal-layer normalization should stay separate from runtime work",
+  "proposal_type": "design_direction",
+  "claim_status": "bounded_proposal",
+  "evidence_status": "example_supported",
+  "challenge_status": "challenge_passed_for_proposal_use",
+  "drift_risk": "low",
+  "recommendation_scope": "proposal_only",
+  "promotion_state": "proposal_only",
+  "distilled_summary": "normalization and conversion should remain local prep tools rather than runtime or truth interfaces",
+  "open_conflicts": [
+    "some readers still prefer richer operational automation than the Studio layer currently allows"
+  ],
+  "next_review_target": "manual_design_followup",
+  "source_refs": [
+    "AICOS_STUDIO_NORMALIZATION_RULES.md#purpose"
+  ]
+}

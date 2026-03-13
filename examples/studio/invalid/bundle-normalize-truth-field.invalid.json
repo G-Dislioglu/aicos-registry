@@ -1,0 +1,20 @@
+{
+  "artifact_type": "studio_bundle_manifest",
+  "bundle_id": "studio-bundle-invalid-normalize-001",
+  "bundle_type": "reference_package",
+  "included_artifacts": [
+    {
+      "artifact_type": "studio_intake_packet",
+      "ref": "examples/studio/valid/idea-origin-packet.valid.json"
+    }
+  ],
+  "source_packet_ref": "examples/studio/valid/idea-origin-packet.valid.json",
+  "review_refs": [],
+  "gate_report_refs": [],
+  "consistency_status": "incomplete",
+  "intended_next_step": "archive_only",
+  "proposal_only": true,
+  "no_truth_mutation": true,
+  "no_runtime_write": true,
+  "truth_mutation_target": "cards/solutions/sol-api-02.json"
+}
