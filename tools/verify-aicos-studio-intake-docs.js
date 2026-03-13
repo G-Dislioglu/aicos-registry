@@ -12,6 +12,9 @@ const REQUIRED_FILES = [
   path.join(ROOT_DIR, 'AICOS_STUDIO_REVIEW_TARGET_MAPPING.md'),
   path.join(ROOT_DIR, 'AICOS_STUDIO_ARTIFACT_TEMPLATES.md'),
   path.join(ROOT_DIR, 'AICOS_STUDIO_GATE_CHECKLISTS.md'),
+  path.join(ROOT_DIR, 'AICOS_STUDIO_LIFECYCLE_STATE_MODEL.md'),
+  path.join(ROOT_DIR, 'AICOS_STUDIO_REVIEW_PROCEDURE.md'),
+  path.join(ROOT_DIR, 'AICOS_STUDIO_DECISION_CODES.md'),
   path.join(ROOT_DIR, 'tools', 'verify-aicos-studio-intake-docs.js')
 ];
 
@@ -209,6 +212,69 @@ function verifyGateChecklists() {
   }
 }
 
+function verifyLifecycleStateModel() {
+  const content = fs.readFileSync(path.join(ROOT_DIR, 'AICOS_STUDIO_LIFECYCLE_STATE_MODEL.md'), 'utf-8');
+  for (const expected of [
+    '`captured`',
+    '`normalized`',
+    '`challenged`',
+    '`gated`',
+    '`forwarded`',
+    '`held`',
+    '`split`',
+    '`archived`',
+    '`discarded`',
+    'proposal-layer only',
+    'None of them means registry truth or runtime review state',
+    'No state in this lifecycle model implies',
+    'registry truth',
+    'runtime review object creation'
+  ]) {
+    assert(content.includes(expected), `Expected studio lifecycle text missing: ${expected}`);
+  }
+}
+
+function verifyReviewProcedure() {
+  const content = fs.readFileSync(path.join(ROOT_DIR, 'AICOS_STUDIO_REVIEW_PROCEDURE.md'), 'utf-8');
+  for (const expected of [
+    '## Review sequence',
+    '## Minimum review questions',
+    '## Decision types',
+    '`forward`',
+    '`hold`',
+    '`split`',
+    '`downgrade`',
+    '`archive`',
+    '`discard`',
+    '## When user gate is mandatory',
+    '## When conflict visibility gate is mandatory',
+    '## When evidence gate is mandatory',
+    '## When nothing may be forwarded'
+  ]) {
+    assert(content.includes(expected), `Expected studio review procedure text missing: ${expected}`);
+  }
+}
+
+function verifyDecisionCodes() {
+  const content = fs.readFileSync(path.join(ROOT_DIR, 'AICOS_STUDIO_DECISION_CODES.md'), 'utf-8');
+  for (const expected of [
+    '## Decision and outcome codes',
+    '`insufficient_evidence`',
+    '`unresolved_conflict`',
+    '`proposal_only_keep`',
+    '`handoff_ready`',
+    '`reference_draft_only`',
+    '`registry_review_nomination_only`',
+    '`runtime_forbidden`',
+    '`truth_mutation_forbidden`',
+    '- meaning:',
+    '- typical use:',
+    '- forbidden interpretation:'
+  ]) {
+    assert(content.includes(expected), `Expected studio decision code text missing: ${expected}`);
+  }
+}
+
 function main() {
   verifyFilesExist();
   verifyCharter();
@@ -219,6 +285,9 @@ function main() {
   verifyReviewTargetMapping();
   verifyArtifactTemplates();
   verifyGateChecklists();
+  verifyLifecycleStateModel();
+  verifyReviewProcedure();
+  verifyDecisionCodes();
   console.log('AICOS studio intake docs verification passed.');
 }
 

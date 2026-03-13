@@ -123,6 +123,9 @@ It exists to structure debate, challenge, and distillation outputs without direc
 - Review target mapping: `AICOS_STUDIO_REVIEW_TARGET_MAPPING.md`
 - Artifact templates: `AICOS_STUDIO_ARTIFACT_TEMPLATES.md`
 - Gate checklists: `AICOS_STUDIO_GATE_CHECKLISTS.md`
+- Lifecycle state model: `AICOS_STUDIO_LIFECYCLE_STATE_MODEL.md`
+- Review procedure: `AICOS_STUDIO_REVIEW_PROCEDURE.md`
+- Decision codes: `AICOS_STUDIO_DECISION_CODES.md`
 - Doc verifier: `tools/verify-aicos-studio-intake-docs.js`
 
 Boundary rule:
