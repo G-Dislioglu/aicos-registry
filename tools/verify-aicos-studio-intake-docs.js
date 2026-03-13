@@ -8,6 +8,8 @@ const REQUIRED_FILES = [
   path.join(ROOT_DIR, 'AICOS_STUDIO_INTAKE_PACKET_SPEC.md'),
   path.join(ROOT_DIR, 'AICOS_STUDIO_EXAMPLE_PACKETS.md'),
   path.join(ROOT_DIR, 'AICOS_STUDIO_ROLE_PROMPT_CONTRACTS.md'),
+  path.join(ROOT_DIR, 'AICOS_STUDIO_ROUTING_MATRIX.md'),
+  path.join(ROOT_DIR, 'AICOS_STUDIO_REVIEW_TARGET_MAPPING.md'),
   path.join(ROOT_DIR, 'tools', 'verify-aicos-studio-intake-docs.js')
 ];
 
@@ -107,12 +109,72 @@ function verifyRolePromptContracts() {
   }
 }
 
+function verifyRoutingMatrix() {
+  const content = fs.readFileSync(path.join(ROOT_DIR, 'AICOS_STUDIO_ROUTING_MATRIX.md'), 'utf-8');
+  for (const expected of [
+    '## Artifact classes',
+    '### Conversation artifact',
+    '### Studio intake packet',
+    '### Proposal artifact',
+    '### Handoff artifact',
+    '### Reference artifact',
+    '### Card candidate / review target',
+    '### Runtime review object',
+    '### Registry truth',
+    '`allowed`',
+    '`allowed with gate`',
+    '`forbidden`',
+    '### User gate',
+    '### Evidence gate',
+    '### Conflict visibility gate',
+    '### No-silent-promotion gate',
+    '### No-runtime-write gate',
+    '### No-truth-mutation gate',
+    '### Studio packet -> proposal artifact',
+    '### Studio packet -> handoff artifact',
+    '### Studio packet -> reference draft',
+    '### Studio packet -> card review target',
+    '### Studio packet -> runtime review object',
+    '### Proposal artifact -> registry truth',
+    '### Reference artifact -> registry truth',
+    '### Handoff -> runtime review object',
+    '### Any Studio output -> direct index/alias mutation'
+  ]) {
+    assert(content.includes(expected), `Expected studio routing matrix text missing: ${expected}`);
+  }
+}
+
+function verifyReviewTargetMapping() {
+  const content = fs.readFileSync(path.join(ROOT_DIR, 'AICOS_STUDIO_REVIEW_TARGET_MAPPING.md'), 'utf-8');
+  for (const expected of [
+    'proposal_type',
+    'next_review_target',
+    '`normal`',
+    '`gated`',
+    '`forbidden`',
+    '### `idea_probe`',
+    '### `card_review`',
+    '### `situation_analysis`',
+    '### `contradiction_packet`',
+    '### User gate',
+    '### Evidence gate',
+    '### Conflict visibility gate',
+    '### No-silent-promotion gate',
+    '### No-runtime-write gate',
+    '### No-truth-mutation gate'
+  ]) {
+    assert(content.includes(expected), `Expected studio review target mapping text missing: ${expected}`);
+  }
+}
+
 function main() {
   verifyFilesExist();
   verifyCharter();
   verifyPacketSpec();
   verifyExamplePackets();
   verifyRolePromptContracts();
+  verifyRoutingMatrix();
+  verifyReviewTargetMapping();
   console.log('AICOS studio intake docs verification passed.');
 }
 

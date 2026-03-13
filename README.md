@@ -119,6 +119,8 @@ It exists to structure debate, challenge, and distillation outputs without direc
 - Packet spec: `AICOS_STUDIO_INTAKE_PACKET_SPEC.md`
 - Example packets: `AICOS_STUDIO_EXAMPLE_PACKETS.md`
 - Role prompt contracts: `AICOS_STUDIO_ROLE_PROMPT_CONTRACTS.md`
+- Routing matrix: `AICOS_STUDIO_ROUTING_MATRIX.md`
+- Review target mapping: `AICOS_STUDIO_REVIEW_TARGET_MAPPING.md`
 - Doc verifier: `tools/verify-aicos-studio-intake-docs.js`
 
 Boundary rule:
