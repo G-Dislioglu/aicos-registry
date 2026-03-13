@@ -7,7 +7,7 @@
   "domain": ["ai_governance","meta_cognition","cross_app"],
   "scope": ["cross_app"],
   "tags": ["theme:anti_loop","theme:regime_control"],
-  "impact": { "value": 95, "risk": 5, "confidence": 95 },
+  "impact": { "value": 93, "risk": 5, "confidence": 92 },
   "status": "active",
   "applies_to": [],
   "steps": [

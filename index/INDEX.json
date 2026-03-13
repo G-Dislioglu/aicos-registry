@@ -700,9 +700,9 @@
     "status": "active",
     "copy_ready": true,
     "impact": {
-      "value": 95,
+      "value": 93,
       "risk": 5,
-      "confidence": 95
+      "confidence": 92
     },
     "score_summary": {
       "schema_version": "aicos-score-summary/v1",
@@ -712,10 +712,10 @@
         "impact.risk",
         "impact.confidence"
       ],
-      "scan_score": 95,
-      "trust_score": 95,
-      "learning_score": 95,
-      "promotion_readiness": 95
+      "scan_score": 93,
+      "trust_score": 93,
+      "learning_score": 93,
+      "promotion_readiness": 93
     }
   },
   {
