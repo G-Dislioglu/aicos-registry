@@ -49,6 +49,7 @@ function verifyScaffoldCli() {
 function verifyBundleBuildCli() {
   const artifactPaths = [
     path.join('examples', 'studio', 'valid', 'card-review-packet.valid.json'),
+    path.join('examples', 'studio', 'valid', 'proposal-artifact.valid.json'),
     path.join('examples', 'studio', 'valid', 'card-review-target-artifact.valid.json'),
     path.join('examples', 'studio', 'valid', 'review-record-forward.valid.json'),
     path.join('examples', 'studio', 'valid', 'gate-report-pass.valid.json')
@@ -59,16 +60,16 @@ function verifyBundleBuildCli() {
     '--bundle-id', 'studio-bundle-review-001',
     '--bundle-type', 'review_package',
     '--intended-next-step', 'human_registry_review',
-    '--topic', 'Nomination bundle for later bounded human registry review',
-    '--bundle-summary', 'Keeps the source packet, target nomination, review record, and gate report together as one local reviewable package.'
+    '--topic', 'Proposal-only nomination review package for bounded registry review',
+    '--bundle-summary', 'Keeps proposal-only wording, target nomination, review record, and gate report together as one local reviewable package.'
   ]);
   const report = JSON.parse(stdout);
   const expected = buildBundleManifestFromArtifacts(artifactPaths.map((entry) => path.join(ROOT_DIR, entry)), {
     bundleId: 'studio-bundle-review-001',
     bundleType: 'review_package',
     intendedNextStep: 'human_registry_review',
-    topic: 'Nomination bundle for later bounded human registry review',
-    bundleSummary: 'Keeps the source packet, target nomination, review record, and gate report together as one local reviewable package.'
+    topic: 'Proposal-only nomination review package for bounded registry review',
+    bundleSummary: 'Keeps proposal-only wording, target nomination, review record, and gate report together as one local reviewable package.'
   });
   assert.deepStrictEqual(report.manifest, expected.manifest, 'Bundle CLI manifest output drifted');
   assert.deepStrictEqual(report.consistency_issues, expected.consistencyIssues, 'Bundle CLI consistency issue output drifted');

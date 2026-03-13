@@ -130,6 +130,8 @@ It exists to structure debate, challenge, and distillation outputs without direc
 - Gate report spec: `AICOS_STUDIO_GATE_REPORT_SPEC.md`
 - Bundle spec: `AICOS_STUDIO_BUNDLE_SPEC.md`
 - Manifest spec: `AICOS_STUDIO_MANIFEST_SPEC.md`
+- Bundle review context: `AICOS_STUDIO_BUNDLE_REVIEW_CONTEXT.md`
+- Trace consistency rules: `AICOS_STUDIO_TRACE_CONSISTENCY_RULES.md`
 - Schema notes: `AICOS_STUDIO_SCHEMA_NOTES.md`
 - Machine-readable schemas: `schemas/studio/*.schema.json`
 - Validation corpus: `examples/studio/valid/*.json`, `examples/studio/invalid/*.json`
@@ -144,6 +146,7 @@ It exists to structure debate, challenge, and distillation outputs without direc
 - Review-layer verifier: `tools/verify-aicos-studio-review-layer.js`
 - Bundle CLI: `tools/studio-bundle.js`
 - Bundle verifier: `tools/verify-aicos-studio-bundles.js`
+- Bundle trace verifier: `tools/verify-aicos-studio-bundle-trace.js`
 
 Boundary rule:
 
@@ -158,6 +161,7 @@ Local prep tools only:
 - `tools/studio-review-record.js` scaffolds local review-layer review records only
 - `tools/studio-gate-report.js` scaffolds local review-layer gate reports only
 - `tools/studio-bundle.js` scaffolds or summarizes bundle manifests as a local packaging layer only
+- bundle review context and trace consistency remain a local review packaging discipline only
 - these tools do not execute runtime work, provider calls, registry mutation, or review forwarding
 
 Normal command:
@@ -175,6 +179,7 @@ npm run scaffold:studio-review-record
 npm run scaffold:studio-gate-report
 npm run scaffold:studio-bundle
 npm run verify:studio-review
+npm run verify:studio-bundle-trace
 npm run verify:studio-bundles
 npm run verify:studio
 ```

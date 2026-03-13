@@ -19,6 +19,8 @@ const REQUIRED_FILES = [
   path.join(ROOT_DIR, 'AICOS_STUDIO_GATE_REPORT_SPEC.md'),
   path.join(ROOT_DIR, 'AICOS_STUDIO_BUNDLE_SPEC.md'),
   path.join(ROOT_DIR, 'AICOS_STUDIO_MANIFEST_SPEC.md'),
+  path.join(ROOT_DIR, 'AICOS_STUDIO_BUNDLE_REVIEW_CONTEXT.md'),
+  path.join(ROOT_DIR, 'AICOS_STUDIO_TRACE_CONSISTENCY_RULES.md'),
   path.join(ROOT_DIR, 'tools', 'verify-aicos-studio-intake-docs.js')
 ];
 
@@ -380,6 +382,42 @@ function verifyManifestSpec() {
   }
 }
 
+function verifyBundleReviewContext() {
+  const content = fs.readFileSync(path.join(ROOT_DIR, 'AICOS_STUDIO_BUNDLE_REVIEW_CONTEXT.md'), 'utf-8');
+  for (const expected of [
+    '## Purpose',
+    '## How review records are interpreted inside a bundle',
+    '## How gate reports are interpreted inside a bundle',
+    '## Allowed cross-reference patterns',
+    '## Forbidden trace patterns',
+    '## Topic and trace discipline',
+    '`subject_ref`',
+    '`subject_artifact_type`',
+    '`review_refs`',
+    '`gate_report_refs`'
+  ]) {
+    assert(content.includes(expected), `Expected bundle review context text missing: ${expected}`);
+  }
+}
+
+function verifyTraceConsistencyRules() {
+  const content = fs.readFileSync(path.join(ROOT_DIR, 'AICOS_STUDIO_TRACE_CONSISTENCY_RULES.md'), 'utf-8');
+  for (const expected of [
+    '## Purpose',
+    '## Rule 1 — Included subject rule',
+    '## Rule 2 — Subject type match rule',
+    '## Rule 3 — Topic legibility rule',
+    '## Rule 4 — No implicit approval rule',
+    '## Rule 5 — No runtime or truth trace rule',
+    '## Rule 6 — Review/gate trace pairing rule',
+    '`consistent`',
+    '`needs_review`',
+    '`conflict_present`'
+  ]) {
+    assert(content.includes(expected), `Expected trace consistency rules text missing: ${expected}`);
+  }
+}
+
 function main() {
   verifyFilesExist();
   verifyCharter();
@@ -397,6 +435,8 @@ function main() {
   verifyGateReportSpec();
   verifyBundleSpec();
   verifyManifestSpec();
+  verifyBundleReviewContext();
+  verifyTraceConsistencyRules();
   console.log('AICOS studio intake docs verification passed.');
 }
 

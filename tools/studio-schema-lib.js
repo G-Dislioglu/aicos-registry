@@ -139,6 +139,38 @@ const FORBIDDEN_PROPERTY_CODE = {
 
 const TRUTH_SURFACE_STRINGS = ['cards/', 'index/INDEX.json', 'index/ALIASES.json'];
 const RUNTIME_STRINGS = ['runtime review object', 'runtime_write', 'mec state'];
+const TRACE_RUNTIME_STRINGS = ['runtime/', 'runtime review object', 'runtime_review_object'];
+const TRACE_TRUTH_STRINGS = ['cards/', 'index/index.json', 'index/aliases.json'];
+const IMPLICIT_APPROVAL_TERMS = ['auto-approved', 'approval granted', 'automatically approved', 'forward automatically', 'auto-forward'];
+
+function normalizeTextForTrace(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function tokenizeTraceText(value) {
+  return new Set(
+    normalizeTextForTrace(value)
+      .split(/\s+/)
+      .filter((token) => token.length >= 4)
+  );
+}
+
+function haveTraceTokenOverlap(left, right) {
+  if (!left || !right) {
+    return true;
+  }
+  const leftTokens = tokenizeTraceText(left);
+  const rightTokens = tokenizeTraceText(right);
+  for (const token of leftTokens) {
+    if (rightTokens.has(token)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
@@ -337,6 +369,9 @@ function findBundleManifestConsistencyIssues(artifact) {
   }
 
   const includedRefs = new Map();
+  const includedArtifacts = new Map();
+  const reviewArtifacts = [];
+  const gateArtifacts = [];
   for (const entry of artifact.included_artifacts) {
     if (!entry || typeof entry !== 'object') {
       continue;
@@ -351,6 +386,28 @@ function findBundleManifestConsistencyIssues(artifact) {
         });
       }
       includedRefs.set(entry.ref, entry.artifact_type);
+    }
+
+    if (typeof entry.ref === 'string') {
+      const absoluteRefPath = path.join(ROOT_DIR, entry.ref);
+      if (fs.existsSync(absoluteRefPath)) {
+        try {
+          const nestedArtifact = readJson(absoluteRefPath);
+          includedArtifacts.set(entry.ref, nestedArtifact);
+          if (entry.artifact_type === 'review_record') {
+            reviewArtifacts.push({ ref: entry.ref, artifact: nestedArtifact });
+          }
+          if (entry.artifact_type === 'gate_report') {
+            gateArtifacts.push({ ref: entry.ref, artifact: nestedArtifact });
+          }
+        } catch (error) {
+          issues.push({
+            code: 'unreadable_included_artifact',
+            message: `included artifact could not be read: ${entry.ref}`,
+            path: 'included_artifacts'
+          });
+        }
+      }
     }
 
     if (!BUNDLE_MEMBER_TYPES.includes(entry.artifact_type)) {
@@ -379,6 +436,12 @@ function findBundleManifestConsistencyIssues(artifact) {
       }
     }
   }
+
+  const includedGateIds = new Set(
+    gateArtifacts
+      .map((entry) => entry.artifact && entry.artifact.gate_report_id)
+      .filter((value) => typeof value === 'string' && value.length > 0)
+  );
 
   if (artifact.proposal_only !== true) {
     issues.push({
@@ -454,6 +517,102 @@ function findBundleManifestConsistencyIssues(artifact) {
         });
       }
     });
+  }
+
+  for (const reviewEntry of reviewArtifacts) {
+    const reviewArtifact = reviewEntry.artifact || {};
+    const subjectRef = reviewArtifact.subject_ref;
+    if (typeof subjectRef === 'string') {
+      if (!includedRefs.has(subjectRef)) {
+        issues.push({
+          code: 'review_subject_outside_bundle',
+          message: `review record subject_ref is outside included_artifacts: ${subjectRef}`,
+          path: `included_artifacts.${reviewEntry.ref}`
+        });
+      } else if (includedRefs.get(subjectRef) !== reviewArtifact.subject_artifact_type) {
+        issues.push({
+          code: 'review_subject_type_mismatch',
+          message: `review record subject_artifact_type does not match bundled subject for ${subjectRef}`,
+          path: `included_artifacts.${reviewEntry.ref}`
+        });
+      }
+    }
+
+    if (Array.isArray(reviewArtifact.gate_report_refs)) {
+      reviewArtifact.gate_report_refs.forEach((gateId, index) => {
+        if (!includedGateIds.has(gateId)) {
+          issues.push({
+            code: 'review_gate_id_outside_bundle',
+            message: `review record gate_report_refs entry is not represented by an included gate report id: ${gateId}`,
+            path: `included_artifacts.${reviewEntry.ref}.gate_report_refs.${index}`
+          });
+        }
+      });
+    }
+
+    if (typeof artifact.topic === 'string' && typeof reviewArtifact.topic === 'string' && !haveTraceTokenOverlap(artifact.topic, reviewArtifact.topic)) {
+      issues.push({
+        code: 'bundle_topic_drift',
+        message: `bundle topic drifts from review record topic: ${reviewEntry.ref}`,
+        path: `included_artifacts.${reviewEntry.ref}.topic`
+      });
+    }
+  }
+
+  for (const gateEntry of gateArtifacts) {
+    const gateArtifact = gateEntry.artifact || {};
+    const subjectRef = gateArtifact.subject_ref;
+    if (typeof subjectRef === 'string') {
+      if (!includedRefs.has(subjectRef)) {
+        issues.push({
+          code: 'gate_subject_outside_bundle',
+          message: `gate report subject_ref is outside included_artifacts: ${subjectRef}`,
+          path: `included_artifacts.${gateEntry.ref}`
+        });
+      } else if (includedRefs.get(subjectRef) !== gateArtifact.subject_artifact_type) {
+        issues.push({
+          code: 'gate_subject_type_mismatch',
+          message: `gate report subject_artifact_type does not match bundled subject for ${subjectRef}`,
+          path: `included_artifacts.${gateEntry.ref}`
+        });
+      }
+    }
+
+    if (typeof artifact.topic === 'string' && typeof gateArtifact.topic === 'string' && !haveTraceTokenOverlap(artifact.topic, gateArtifact.topic)) {
+      issues.push({
+        code: 'bundle_topic_drift',
+        message: `bundle topic drifts from gate report topic: ${gateEntry.ref}`,
+        path: `included_artifacts.${gateEntry.ref}.topic`
+      });
+    }
+  }
+
+  for (const [key, value] of Object.entries(artifact)) {
+    if (typeof value !== 'string') {
+      continue;
+    }
+    const lowerValue = value.toLowerCase();
+    if (IMPLICIT_APPROVAL_TERMS.some((term) => lowerValue.includes(term))) {
+      issues.push({
+        code: 'implicit_approval_claim',
+        message: `bundle manifest text must not imply approval or automatic forwarding: ${value}`,
+        path: key
+      });
+    }
+    if (TRACE_RUNTIME_STRINGS.some((term) => lowerValue.includes(term))) {
+      issues.push({
+        code: 'trace_points_to_runtime',
+        message: `bundle trace must not point into runtime-facing surfaces: ${value}`,
+        path: key
+      });
+    }
+    if (TRACE_TRUTH_STRINGS.some((term) => lowerValue.includes(term))) {
+      issues.push({
+        code: 'trace_points_to_truth',
+        message: `bundle trace must not point into truth-facing surfaces: ${value}`,
+        path: key
+      });
+    }
   }
 
   return issues;

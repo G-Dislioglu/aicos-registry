@@ -17,9 +17,10 @@
     "verify:studio-schemas": "node tools/verify-aicos-studio-schemas.js",
     "verify:studio-tooling": "node tools/verify-aicos-studio-tooling.js",
     "verify:studio-review": "node tools/verify-aicos-studio-review-layer.js",
-    "verify:studio-bundles": "node tools/verify-aicos-studio-bundles.js",
-    "verify:studio-intake": "node tools/verify-aicos-studio-intake-docs.js && node tools/verify-aicos-studio-schemas.js && node tools/verify-aicos-studio-tooling.js && node tools/verify-aicos-studio-review-layer.js && node tools/verify-aicos-studio-bundles.js",
-    "verify:studio": "node tools/verify-aicos-studio-intake-docs.js && node tools/verify-aicos-studio-schemas.js && node tools/verify-aicos-studio-tooling.js && node tools/verify-aicos-studio-review-layer.js && node tools/verify-aicos-studio-bundles.js"
+    "verify:studio-bundle-trace": "node tools/verify-aicos-studio-bundle-trace.js",
+    "verify:studio-bundles": "node tools/verify-aicos-studio-bundles.js && node tools/verify-aicos-studio-bundle-trace.js",
+    "verify:studio-intake": "node tools/verify-aicos-studio-intake-docs.js && node tools/verify-aicos-studio-schemas.js && node tools/verify-aicos-studio-tooling.js && node tools/verify-aicos-studio-review-layer.js && node tools/verify-aicos-studio-bundles.js && node tools/verify-aicos-studio-bundle-trace.js",
+    "verify:studio": "node tools/verify-aicos-studio-intake-docs.js && node tools/verify-aicos-studio-schemas.js && node tools/verify-aicos-studio-tooling.js && node tools/verify-aicos-studio-review-layer.js && node tools/verify-aicos-studio-bundles.js && node tools/verify-aicos-studio-bundle-trace.js"
   },
   "engines": {
     "node": ">=20"
