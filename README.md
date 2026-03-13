@@ -121,6 +121,8 @@ It exists to structure debate, challenge, and distillation outputs without direc
 - Role prompt contracts: `AICOS_STUDIO_ROLE_PROMPT_CONTRACTS.md`
 - Routing matrix: `AICOS_STUDIO_ROUTING_MATRIX.md`
 - Review target mapping: `AICOS_STUDIO_REVIEW_TARGET_MAPPING.md`
+- Artifact templates: `AICOS_STUDIO_ARTIFACT_TEMPLATES.md`
+- Gate checklists: `AICOS_STUDIO_GATE_CHECKLISTS.md`
 - Doc verifier: `tools/verify-aicos-studio-intake-docs.js`
 
 Boundary rule:

@@ -10,6 +10,8 @@ const REQUIRED_FILES = [
   path.join(ROOT_DIR, 'AICOS_STUDIO_ROLE_PROMPT_CONTRACTS.md'),
   path.join(ROOT_DIR, 'AICOS_STUDIO_ROUTING_MATRIX.md'),
   path.join(ROOT_DIR, 'AICOS_STUDIO_REVIEW_TARGET_MAPPING.md'),
+  path.join(ROOT_DIR, 'AICOS_STUDIO_ARTIFACT_TEMPLATES.md'),
+  path.join(ROOT_DIR, 'AICOS_STUDIO_GATE_CHECKLISTS.md'),
   path.join(ROOT_DIR, 'tools', 'verify-aicos-studio-intake-docs.js')
 ];
 
@@ -167,6 +169,46 @@ function verifyReviewTargetMapping() {
   }
 }
 
+function verifyArtifactTemplates() {
+  const content = fs.readFileSync(path.join(ROOT_DIR, 'AICOS_STUDIO_ARTIFACT_TEMPLATES.md'), 'utf-8');
+  for (const expected of [
+    '## Template 1 — Conversation artifact',
+    '## Template 2 — Proposal artifact',
+    '## Template 3 — Handoff artifact',
+    '## Template 4 — Reference artifact',
+    '## Template 5 — Card review target artifact',
+    '### Purpose',
+    '### Required fields',
+    '### Optional fields',
+    '### Forbidden content',
+    '### Truth/proposal status',
+    '### Allowed next destinations',
+    '### Forbidden destinations'
+  ]) {
+    assert(content.includes(expected), `Expected studio artifact template text missing: ${expected}`);
+  }
+}
+
+function verifyGateChecklists() {
+  const content = fs.readFileSync(path.join(ROOT_DIR, 'AICOS_STUDIO_GATE_CHECKLISTS.md'), 'utf-8');
+  for (const expected of [
+    '## Checklist 1 — Intake completeness gate',
+    '## Checklist 2 — Evidence gate',
+    '## Checklist 3 — Contradiction visibility gate',
+    '## Checklist 4 — Proposal-only gate',
+    '## Checklist 5 — No-truth-mutation gate',
+    '## Checklist 6 — No-runtime-write gate',
+    '## Checklist 7 — Handoff quality gate',
+    '## Checklist 8 — Card-review-target gate',
+    '### Pass criteria',
+    '### Soft-fail criteria',
+    '### Hard-stop criteria',
+    '### Required user approval if applicable'
+  ]) {
+    assert(content.includes(expected), `Expected studio gate checklist text missing: ${expected}`);
+  }
+}
+
 function main() {
   verifyFilesExist();
   verifyCharter();
@@ -175,6 +217,8 @@ function main() {
   verifyRolePromptContracts();
   verifyRoutingMatrix();
   verifyReviewTargetMapping();
+  verifyArtifactTemplates();
+  verifyGateChecklists();
   console.log('AICOS studio intake docs verification passed.');
 }
 
