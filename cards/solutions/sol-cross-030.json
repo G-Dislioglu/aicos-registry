@@ -7,7 +7,7 @@
   "domain": ["ai_governance", "cross_app"],
   "scope": ["cross_app"],
   "tags": ["theme:solo_dev", "theme:prioritization", "theme:focus", "theme:cashflow"],
-  "impact": { "value": 92, "risk": 10, "confidence": 90 },
+  "impact": { "value": 92, "risk": 10, "confidence": 85 },
   "status": "proposed",
   "applies_to": ["Solo Developer mit Familie und begrenztem Budget", "Vor jeder neuen Projekt-Idee"],
   "steps": [

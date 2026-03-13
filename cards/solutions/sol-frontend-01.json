@@ -7,7 +7,7 @@
   "domain": ["frontend"],
   "scope": ["soulmatch"],
   "tags": ["tech:json", "theme:parsing"],
-  "impact": { "value": 75, "risk": 5, "confidence": 95 },
+  "impact": { "value": 75, "risk": 5, "confidence": 93 },
   "status": "active",
   "applies_to": ["err-frontend-01"],
   "steps": [

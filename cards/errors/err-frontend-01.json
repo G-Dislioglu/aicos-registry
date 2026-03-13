@@ -7,7 +7,7 @@
   "domain": ["frontend"],
   "scope": ["soulmatch"],
   "tags": ["tech:json", "risk:high", "theme:parsing"],
-  "impact": { "value": 75, "risk": 70, "confidence": 95 },
+  "impact": { "value": 75, "risk": 70, "confidence": 92 },
   "status": "active",
   "symptoms": [
     "Application crashes on API response parsing",

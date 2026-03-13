@@ -7,7 +7,7 @@
   "domain": ["audio", "frontend"],
   "scope": ["soulmatch", "cross_app"],
   "tags": ["tech:web_speech_api", "tech:react", "theme:guards", "theme:cooldown"],
-  "impact": { "value": 95, "risk": 25, "confidence": 75 },
+  "impact": { "value": 92, "risk": 25, "confidence": 75 },
   "status": "active",
   "applies_to": ["err-audio-01", "risk:race_condition"],
   "steps": ["runningRef/shouldRunRef statt React state für Control Flags", "stop() als Standard; abort vermeiden", "safeStart() Guard: wenn runningRef true → return", "Restart Delay 250–1000ms + Throttle", "Optional: einmal getUserMedia() nur für Permission Prompt dann Tracks stoppen"],

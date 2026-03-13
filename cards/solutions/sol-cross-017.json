@@ -7,7 +7,7 @@
   "domain": ["devserver", "ai_governance", "frontend", "cross_app"],
   "scope": ["cross_app"],
   "tags": ["theme:fail_fast", "theme:viability_check", "theme:cost_control", "theme:pre_flight"],
-  "impact": { "value": 91, "risk": 12, "confidence": 90 },
+  "impact": { "value": 91, "risk": 12, "confidence": 84 },
   "status": "proposed",
   "applies_to": ["Neue Feature-Entwicklung", "Projekt-Entscheidungen", "Agent Task Execution"],
   "steps": [

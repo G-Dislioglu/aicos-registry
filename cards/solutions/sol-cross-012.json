@@ -7,7 +7,7 @@
   "domain": ["trading", "ai_governance", "devserver", "cross_app"],
   "scope": ["cross_app"],
   "tags": ["theme:anti_over_engineering", "theme:focus", "theme:complexity_budget", "theme:shipping"],
-  "impact": { "value": 90, "risk": 10, "confidence": 92 },
+  "impact": { "value": 90, "risk": 10, "confidence": 84 },
   "status": "proposed",
   "applies_to": ["Solo-Developer Projekte", "Startup-Phasen", "Jedes Projekt mit Komplexitätsrisiko"],
   "steps": [

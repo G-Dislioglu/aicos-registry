@@ -7,7 +7,7 @@
   "domain": ["audio"],
   "scope": ["soulmatch"],
   "tags": ["tech:tts", "theme:audio_fallback"],
-  "impact": { "value": 85, "risk": 20, "confidence": 95 },
+  "impact": { "value": 85, "risk": 20, "confidence": 93 },
   "status": "active",
   "applies_to": ["err-audio-02"],
   "steps": [

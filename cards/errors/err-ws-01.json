@@ -7,7 +7,7 @@
   "domain": ["frontend"],
   "scope": ["soulmatch"],
   "tags": ["tech:websocket", "risk:medium", "theme:memory_leak"],
-  "impact": { "value": 65, "risk": 50, "confidence": 95 },
+  "impact": { "value": 65, "risk": 50, "confidence": 92 },
   "status": "active",
   "symptoms": [
     "Browser memory usage increases during long chat sessions",

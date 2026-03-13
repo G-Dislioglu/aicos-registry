@@ -7,7 +7,7 @@
   "domain": ["ai_governance", "meta_cognition", "cross_app"],
   "scope": ["cross_app"],
   "tags": ["theme:agent_protocol", "theme:governance", "theme:audit", "theme:provenance"],
-  "impact": { "value": 95, "risk": 25, "confidence": 82 },
+  "impact": { "value": 92, "risk": 25, "confidence": 82 },
   "status": "proposed",
   "applies_to": ["Agent Marketplace Plattformen", "Multi-Agent Systems", "AI Governance Frameworks"],
   "steps": [

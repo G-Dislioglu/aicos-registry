@@ -7,7 +7,7 @@
   "domain": ["frontend", "meta_cognition", "devserver"],
   "scope": ["cross_app"],
   "tags": ["theme:ux_guard", "theme:fail_fast", "theme:automation", "theme:tdd"],
-  "impact": { "value": 95, "risk": 30, "confidence": 80 },
+  "impact": { "value": 90, "risk": 30, "confidence": 80 },
   "status": "proposed",
   "applies_to": ["Frontend Agent Workflows", "UI-intensive Features", "Regression Prevention"],
   "steps": [
