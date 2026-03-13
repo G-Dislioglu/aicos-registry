@@ -1,0 +1,22 @@
+{
+  "artifact_type": "proposal_artifact",
+  "packet_id": "studio-invalid-003",
+  "topic": "invalid proposal that tries to mutate registry truth",
+  "participants": [
+    "maya:distillator",
+    "human:operator"
+  ],
+  "proposal_type": "review_target_candidate",
+  "claim_status": "bounded_proposal",
+  "evidence_status": "cross_reference_supported",
+  "challenge_status": "challenge_passed_for_proposal_use",
+  "drift_risk": "low",
+  "recommendation_scope": "request_human_decision",
+  "promotion_state": "not_promoted",
+  "distilled_summary": "this should fail because it adds a direct truth mutation field",
+  "open_conflicts": [
+    "nomination must stay separate from mutation"
+  ],
+  "next_review_target": "human_registry_review",
+  "truth_mutation_target": "cards/solutions/sol-cross-012.json"
+}

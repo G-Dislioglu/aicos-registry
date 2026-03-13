@@ -1,0 +1,18 @@
+{
+  "artifact_type": "reference_artifact",
+  "packet_id": "studio-reference-001",
+  "created_at": "2026-03-13T18:45:00Z",
+  "reference_scope": "repo-near reading aid for the current studio boundary line",
+  "topic": "how the proposal-only Studio line differs from registry truth and runtime review",
+  "artifact_source": "AICOS studio review consolidation notes",
+  "summary": "this reference keeps comparison notes and boundary reminders near the repo without acting as a truth surface or runtime object",
+  "evidence_status": "example_supported",
+  "open_conflicts": [
+    "some readers still prefer richer lifecycle metadata than the current reference layer provides"
+  ],
+  "proposal_status": "reference_only",
+  "source_refs": [
+    "AICOS_STUDIO_ARTIFACT_TEMPLATES.md#template-4"
+  ],
+  "comparison_notes": "Reference material may inform proposals but may not silently promote them."
+}

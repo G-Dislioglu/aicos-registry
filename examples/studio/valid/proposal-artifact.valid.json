@@ -1,0 +1,27 @@
+{
+  "artifact_type": "proposal_artifact",
+  "packet_id": "studio-proposal-001",
+  "created_at": "2026-03-13T18:35:00Z",
+  "topic": "keep studio outputs repo-near and proposal-only during future Maya implementation work",
+  "participants": [
+    "maya:distillator",
+    "provider:claude_sonnet",
+    "human:operator"
+  ],
+  "proposal_type": "design_direction",
+  "claim_status": "bounded_proposal",
+  "evidence_status": "example_supported",
+  "challenge_status": "challenged_with_open_conflicts",
+  "drift_risk": "medium",
+  "recommendation_scope": "review_later",
+  "promotion_state": "proposal_only",
+  "distilled_summary": "future Studio implementation work should remain bounded by proposal-only artifacts and later human review gates rather than silent runtime or truth promotion",
+  "open_conflicts": [
+    "future audit metadata depth is still debated"
+  ],
+  "next_review_target": "manual_design_followup",
+  "source_refs": [
+    "AICOS_STUDIO_ARTIFACT_TEMPLATES.md#template-2"
+  ],
+  "handoff_notes": "Do not treat this as approval."
+}

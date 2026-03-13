@@ -1,0 +1,26 @@
+{
+  "artifact_type": "handoff_artifact",
+  "packet_id": "studio-handoff-001",
+  "created_at": "2026-03-13T18:40:00Z",
+  "handoff_scope": "carry a bounded studio result into later human decision review without implying approval",
+  "origin_artifact_type": "proposal_artifact",
+  "topic": "whether a later human should explicitly confirm the studio review boundary for provider convergence claims",
+  "proposal_type": "challenge_dossier_seed",
+  "evidence_status": "needs_evidence",
+  "challenge_status": "challenged_with_open_conflicts",
+  "open_conflicts": [
+    "provider convergence remains advisory rather than dispositive"
+  ],
+  "handoff_reason": "the artifact is legible enough for a human-owned decision context but still carries unresolved conflict",
+  "required_gate_state": [
+    "user_gate",
+    "conflict_visibility_gate",
+    "no_runtime_write_gate"
+  ],
+  "next_review_target": "request_human_decision",
+  "proposal_status": "proposal_only",
+  "source_refs": [
+    "AICOS_STUDIO_ARTIFACT_TEMPLATES.md#template-3"
+  ],
+  "handoff_notes": "Forward only as a relay artifact."
+}

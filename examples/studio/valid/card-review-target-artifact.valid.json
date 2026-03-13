@@ -1,0 +1,27 @@
+{
+  "artifact_type": "card_review_target_artifact",
+  "packet_id": "studio-card-target-001",
+  "created_at": "2026-03-13T18:50:00Z",
+  "review_target_type": "existing_card_boundary",
+  "topic": "whether a single registry card should receive later human wording review for scope clarity",
+  "proposal_type": "review_target_candidate",
+  "target_scope": "one existing card boundary with ambiguous scope wording",
+  "evidence_status": "cross_reference_supported",
+  "challenge_status": "challenge_passed_for_proposal_use",
+  "open_conflicts": [
+    "priority timing remains disputed"
+  ],
+  "review_reason": "studio debate found a bounded clarity concern worth later human review without mutating the card directly",
+  "required_gate_state": [
+    "user_gate",
+    "evidence_gate",
+    "conflict_visibility_gate",
+    "card_review_target_gate"
+  ],
+  "next_review_target": "human_registry_review",
+  "promotion_state": "not_promoted",
+  "source_refs": [
+    "AICOS_STUDIO_ARTIFACT_TEMPLATES.md#template-5"
+  ],
+  "review_notes": "Nomination only."
+}

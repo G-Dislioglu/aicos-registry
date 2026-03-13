@@ -1,0 +1,31 @@
+{
+  "artifact_type": "studio_intake_packet",
+  "packet_id": "studio-packet-004",
+  "created_at": "2026-03-13T18:30:00Z",
+  "source_mode": "expert_challenge_round",
+  "participants": [
+    "maya:moderator",
+    "challenge_participant:red_team",
+    "external_expert:systems_reviewer",
+    "provider:claude_sonnet",
+    "provider:gpt_reasoner",
+    "human:operator"
+  ],
+  "topic": "whether multi-provider agreement should ever count as enough support for studio output to bypass a later human gate",
+  "proposal_type": "challenge_dossier_seed",
+  "claim_status": "conflicted",
+  "evidence_status": "needs_evidence",
+  "challenge_status": "challenged_with_open_conflicts",
+  "drift_risk": "high",
+  "recommendation_scope": "request_human_decision",
+  "promotion_state": "proposal_only",
+  "distilled_summary": "the challenge round surfaced a strong boundary risk: provider agreement may improve confidence for later human review, but it must not substitute for the required user gate or become a hidden truth shortcut",
+  "open_conflicts": [
+    "disagreement remains over how much provider convergence should matter for review priority, and there is no accepted standard for treating convergence as anything more than advisory evidence"
+  ],
+  "next_review_target": "request_human_decision",
+  "source_refs": [
+    "AICOS_STUDIO_EXAMPLE_PACKETS.md#example-4"
+  ],
+  "challenge_notes": "Preserve the contradiction rather than summarizing it into false closure."
+}

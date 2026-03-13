@@ -1,0 +1,22 @@
+{
+  "artifact_type": "studio_intake_packet",
+  "packet_id": "studio-invalid-002",
+  "source_mode": "multi_provider_debate",
+  "participants": [
+    "maya:observer",
+    "provider:gpt_reasoner"
+  ],
+  "topic": "invalid example that attempts a forbidden runtime-adjacent review target",
+  "proposal_type": "design_direction",
+  "claim_status": "bounded_proposal",
+  "evidence_status": "example_supported",
+  "challenge_status": "challenged_with_open_conflicts",
+  "drift_risk": "medium",
+  "recommendation_scope": "review_later",
+  "promotion_state": "proposal_only",
+  "distilled_summary": "the schema layer should reject a forbidden future MEC target",
+  "open_conflicts": [
+    "runtime-adjacent follow-up is out of scope"
+  ],
+  "next_review_target": "future_mec_context_review"
+}

@@ -1,0 +1,23 @@
+{
+  "artifact_type": "handoff_artifact",
+  "packet_id": "studio-invalid-004",
+  "handoff_scope": "invalid relay object that smuggles a runtime write",
+  "origin_artifact_type": "proposal_artifact",
+  "topic": "invalid handoff attempting to create runtime review state",
+  "proposal_type": "challenge_dossier_seed",
+  "evidence_status": "needs_evidence",
+  "challenge_status": "challenged_with_open_conflicts",
+  "open_conflicts": [
+    "runtime state creation is forbidden here"
+  ],
+  "handoff_reason": "this object is intentionally malformed to test runtime-write rejection",
+  "required_gate_state": [
+    "user_gate",
+    "no_runtime_write_gate"
+  ],
+  "next_review_target": "request_human_decision",
+  "proposal_status": "proposal_only",
+  "runtime_review_object": {
+    "state": "created"
+  }
+}

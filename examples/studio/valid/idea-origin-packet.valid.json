@@ -1,0 +1,30 @@
+{
+  "artifact_type": "studio_intake_packet",
+  "packet_id": "studio-packet-001",
+  "created_at": "2026-03-13T18:15:00Z",
+  "source_mode": "maya_council",
+  "participants": [
+    "maya:moderator",
+    "maya:observer",
+    "provider:claude_sonnet",
+    "provider:gpt_reasoner",
+    "human:operator"
+  ],
+  "topic": "whether a later studio process should maintain a dedicated pattern for cross-domain contradiction logging before deeper review",
+  "proposal_type": "idea_probe",
+  "claim_status": "exploratory",
+  "evidence_status": "conversation_only",
+  "challenge_status": "challenge_in_progress",
+  "drift_risk": "medium",
+  "recommendation_scope": "review_later",
+  "promotion_state": "proposal_only",
+  "distilled_summary": "a bounded idea emerged that contradiction logging might deserve its own later review target, but current support is still mostly conceptual and should remain proposal-only",
+  "open_conflicts": [
+    "no clear threshold yet for when contradiction logging becomes a separate review object rather than staying a note inside another packet"
+  ],
+  "next_review_target": "manual_design_followup",
+  "source_refs": [
+    "AICOS_STUDIO_EXAMPLE_PACKETS.md#example-1"
+  ],
+  "moderator_notes": "Keep the concept bounded and do not treat provider agreement as proof."
+}

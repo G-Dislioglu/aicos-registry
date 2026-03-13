@@ -126,7 +126,11 @@ It exists to structure debate, challenge, and distillation outputs without direc
 - Lifecycle state model: `AICOS_STUDIO_LIFECYCLE_STATE_MODEL.md`
 - Review procedure: `AICOS_STUDIO_REVIEW_PROCEDURE.md`
 - Decision codes: `AICOS_STUDIO_DECISION_CODES.md`
+- Schema notes: `AICOS_STUDIO_SCHEMA_NOTES.md`
+- Machine-readable schemas: `schemas/studio/*.schema.json`
+- Validation corpus: `examples/studio/valid/*.json`, `examples/studio/invalid/*.json`
 - Doc verifier: `tools/verify-aicos-studio-intake-docs.js`
+- Schema verifier: `tools/verify-aicos-studio-schemas.js`
 
 Boundary rule:
 
