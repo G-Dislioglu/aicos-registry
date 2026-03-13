@@ -1,0 +1,69 @@
+{
+  "artifact_type": "studio_dossier",
+  "dossier_id": "studio-dossier-invalid-approval-001",
+  "title": "Approved registry mutation dossier",
+  "topic": "bounded nomination review package for later human registry wording review",
+  "dossier_scope": "local_human_review_only",
+  "included_artifacts": [
+    {
+      "artifact_type": "card_review_target_artifact",
+      "ref": "examples/studio/scenarios/review-to-bundle/card-review-target.artifact.json"
+    },
+    {
+      "artifact_type": "gate_report",
+      "ref": "examples/studio/scenarios/review-to-bundle/gate-report.pass.json"
+    },
+    {
+      "artifact_type": "studio_intake_packet",
+      "ref": "examples/studio/scenarios/review-to-bundle/intake.packet.json"
+    },
+    {
+      "artifact_type": "proposal_artifact",
+      "ref": "examples/studio/scenarios/review-to-bundle/proposal.artifact.json"
+    },
+    {
+      "artifact_type": "review_record",
+      "ref": "examples/studio/scenarios/review-to-bundle/review-record.forward.json"
+    }
+  ],
+  "source_packet_ref": "examples/studio/scenarios/review-to-bundle/intake.packet.json",
+  "source_packet_summary": "This invalid dossier incorrectly implies approval for registry mutation.",
+  "included_proposal_refs": [
+    "examples/studio/scenarios/review-to-bundle/card-review-target.artifact.json",
+    "examples/studio/scenarios/review-to-bundle/proposal.artifact.json"
+  ],
+  "review_refs": [
+    "examples/studio/scenarios/review-to-bundle/review-record.forward.json"
+  ],
+  "gate_report_refs": [
+    "examples/studio/scenarios/review-to-bundle/gate-report.pass.json"
+  ],
+  "bundle_context_summary": "approval granted for automatic registry update after review.",
+  "open_conflicts": [
+    "Final wording scope still requires human review.",
+    "participants still disagree on review priority timing"
+  ],
+  "gate_outcomes": [
+    {
+      "gate_report_id": "gate-review-bundle-001",
+      "gate_name": "card_review_target_gate",
+      "gate_outcome": "pass",
+      "subject_ref": "examples/studio/scenarios/review-to-bundle/card-review-target.artifact.json",
+      "approval_requirement": "required_before_forward"
+    }
+  ],
+  "recommended_human_next_step": "human_registry_review",
+  "forbidden_automated_next_steps": [
+    "runtime_review_object_creation",
+    "truth_mutation",
+    "card_write",
+    "index_write",
+    "alias_write",
+    "auto_forwarding",
+    "provider_execution"
+  ],
+  "proposal_only": true,
+  "no_truth_mutation": true,
+  "no_runtime_write": true,
+  "notes": "approval granted and auto-forward into card update."
+}

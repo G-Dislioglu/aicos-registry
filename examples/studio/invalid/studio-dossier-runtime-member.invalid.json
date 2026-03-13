@@ -1,0 +1,36 @@
+{
+  "artifact_type": "studio_dossier",
+  "dossier_id": "studio-dossier-invalid-runtime-001",
+  "title": "Invalid runtime member dossier",
+  "topic": "invalid dossier includes runtime-facing material",
+  "dossier_scope": "local_human_review_only",
+  "included_artifacts": [
+    {
+      "artifact_type": "proposal_artifact",
+      "ref": "examples/studio/scenarios/idea-to-proposal/proposal.artifact.json"
+    },
+    {
+      "artifact_type": "review_record",
+      "ref": "runtime/review-object-001.json"
+    }
+  ],
+  "source_packet_ref": "examples/studio/scenarios/idea-to-proposal/intake.packet.json",
+  "source_packet_summary": "Invalid runtime dossier example.",
+  "included_proposal_refs": [
+    "examples/studio/scenarios/idea-to-proposal/proposal.artifact.json"
+  ],
+  "review_refs": [],
+  "gate_report_refs": [],
+  "bundle_context_summary": "No bundle attached.",
+  "open_conflicts": [
+    "runtime inclusion is forbidden"
+  ],
+  "gate_outcomes": [],
+  "recommended_human_next_step": "retain_in_review_layer",
+  "forbidden_automated_next_steps": [
+    "runtime_review_object_creation"
+  ],
+  "proposal_only": true,
+  "no_truth_mutation": true,
+  "no_runtime_write": true
+}

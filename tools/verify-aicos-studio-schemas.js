@@ -15,7 +15,8 @@ const REQUIRED_SCHEMA_FILES = [
   'card-review-target-artifact.schema.json',
   'review-record.schema.json',
   'gate-report.schema.json',
-  'studio-bundle-manifest.schema.json'
+  'studio-bundle-manifest.schema.json',
+  'studio-dossier.schema.json'
 ].map((name) => path.join(SCHEMA_DIR, name));
 
 const VALID_EXAMPLES = [
@@ -84,6 +85,14 @@ const VALID_EXAMPLES = [
     schema: path.join(SCHEMA_DIR, 'studio-bundle-manifest.schema.json')
   },
   {
+    file: path.join(EXAMPLES_DIR, 'valid', 'studio-dossier-review.valid.json'),
+    schema: path.join(SCHEMA_DIR, 'studio-dossier.schema.json')
+  },
+  {
+    file: path.join(EXAMPLES_DIR, 'valid', 'studio-dossier-contradiction.valid.json'),
+    schema: path.join(SCHEMA_DIR, 'studio-dossier.schema.json')
+  },
+  {
     file: path.join(EXAMPLES_DIR, 'valid', 'intake-convert-proposal-source.valid.json'),
     schema: path.join(SCHEMA_DIR, 'studio-intake-packet.schema.json')
   },
@@ -145,6 +154,10 @@ const INVALID_EXAMPLES = [
   {
     file: path.join(EXAMPLES_DIR, 'invalid', 'intake-missing-summary.invalid.json'),
     schema: path.join(SCHEMA_DIR, 'studio-intake-packet.schema.json')
+  },
+  {
+    file: path.join(EXAMPLES_DIR, 'invalid', 'studio-dossier-missing-title.invalid.json'),
+    schema: path.join(SCHEMA_DIR, 'studio-dossier.schema.json')
   }
 ];
 

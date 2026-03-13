@@ -36,6 +36,10 @@ const ARTIFACT_KINDS = {
   'studio-bundle-manifest': {
     artifactType: 'studio_bundle_manifest',
     schemaFile: 'studio-bundle-manifest.schema.json'
+  },
+  'studio-dossier': {
+    artifactType: 'studio_dossier',
+    schemaFile: 'studio-dossier.schema.json'
   }
 };
 
@@ -66,7 +70,10 @@ const ARTIFACT_KIND_ALIASES = {
   'studio-bundle-manifest': 'studio-bundle-manifest',
   'bundle-manifest': 'studio-bundle-manifest',
   bundle: 'studio-bundle-manifest',
-  studio_bundle_manifest: 'studio-bundle-manifest'
+  studio_bundle_manifest: 'studio-bundle-manifest',
+  'studio-dossier': 'studio-dossier',
+  dossier: 'studio-dossier',
+  studio_dossier: 'studio-dossier'
 };
 
 const SCHEMA_FILE_BY_ARTIFACT_TYPE = Object.fromEntries(
@@ -129,6 +136,22 @@ const BUNDLE_MEMBER_TYPES = [
   'card_review_target_artifact',
   'review_record',
   'gate_report'
+];
+const DOSSIER_MEMBER_TYPES = [...BUNDLE_MEMBER_TYPES];
+const DOSSIER_PROPOSAL_MEMBER_TYPES = [
+  'proposal_artifact',
+  'handoff_artifact',
+  'reference_artifact',
+  'card_review_target_artifact'
+];
+const FORBIDDEN_AUTOMATED_NEXT_STEPS = [
+  'runtime_review_object_creation',
+  'truth_mutation',
+  'card_write',
+  'index_write',
+  'alias_write',
+  'auto_forwarding',
+  'provider_execution'
 ];
 const REQUIRED_GATE_STATES = [
   'user_gate',
@@ -1318,6 +1341,412 @@ function buildBundleManifestFromArtifacts(filePaths, options = {}) {
   };
 }
 
+function findStudioDossierConsistencyIssues(artifact) {
+  const issues = [];
+  if (!artifact || artifact.artifact_type !== 'studio_dossier' || !Array.isArray(artifact.included_artifacts)) {
+    return issues;
+  }
+
+  const includedRefs = new Map();
+  const includedArtifacts = new Map();
+  const reviewArtifacts = [];
+  const gateArtifacts = [];
+  const underlyingConflicts = [];
+
+  for (const entry of artifact.included_artifacts) {
+    if (!entry || typeof entry !== 'object') {
+      continue;
+    }
+
+    if (typeof entry.ref === 'string') {
+      if (includedRefs.has(entry.ref) && includedRefs.get(entry.ref) !== entry.artifact_type) {
+        issues.push({
+          code: 'duplicate_dossier_ref',
+          message: `dossier ref ${entry.ref} is associated with multiple artifact types`,
+          path: `included_artifacts.${entry.ref}`
+        });
+      }
+      includedRefs.set(entry.ref, entry.artifact_type);
+    }
+
+    if (!DOSSIER_MEMBER_TYPES.includes(entry.artifact_type)) {
+      issues.push({
+        code: 'forbidden_dossier_member',
+        message: `Forbidden dossier member type: ${entry.artifact_type}`,
+        path: 'included_artifacts'
+      });
+    }
+
+    if (typeof entry.ref === 'string') {
+      const lowerRef = entry.ref.toLowerCase();
+      if (lowerRef.includes('runtime/') || lowerRef.includes('runtime_review_object')) {
+        issues.push({
+          code: 'runtime_write_attempt',
+          message: `runtime-facing dossier ref detected: ${entry.ref}`,
+          path: 'included_artifacts'
+        });
+      }
+      if (lowerRef.startsWith('cards/') || lowerRef.startsWith('index/')) {
+        issues.push({
+          code: 'truth_mutation_attempt',
+          message: `truth-facing dossier ref detected: ${entry.ref}`,
+          path: 'included_artifacts'
+        });
+      }
+
+      const absoluteRefPath = path.join(ROOT_DIR, entry.ref);
+      if (fs.existsSync(absoluteRefPath)) {
+        try {
+          const nestedArtifact = readJson(absoluteRefPath);
+          includedArtifacts.set(entry.ref, nestedArtifact);
+          if (Array.isArray(nestedArtifact.open_conflicts)) {
+            underlyingConflicts.push(...nestedArtifact.open_conflicts.filter((value) => typeof value === 'string' && value.length > 0));
+          }
+          if (entry.artifact_type === 'review_record') {
+            reviewArtifacts.push({ ref: entry.ref, artifact: nestedArtifact });
+          }
+          if (entry.artifact_type === 'gate_report') {
+            gateArtifacts.push({ ref: entry.ref, artifact: nestedArtifact });
+          }
+        } catch (error) {
+          issues.push({
+            code: 'unreadable_dossier_artifact',
+            message: `dossier artifact could not be read: ${entry.ref}`,
+            path: 'included_artifacts'
+          });
+        }
+      }
+    }
+  }
+
+  const includedGateIds = new Set(
+    gateArtifacts
+      .map((entry) => entry.artifact && entry.artifact.gate_report_id)
+      .filter((value) => typeof value === 'string' && value.length > 0)
+  );
+
+  if (artifact.dossier_scope !== 'local_human_review_only') {
+    issues.push({
+      code: 'dossier_scope_required',
+      message: 'studio dossiers must keep dossier_scope set to local_human_review_only',
+      path: 'dossier_scope'
+    });
+  }
+
+  if (artifact.proposal_only !== true) {
+    issues.push({
+      code: 'proposal_only_required',
+      message: 'studio dossiers must keep proposal_only set to true',
+      path: 'proposal_only'
+    });
+  }
+
+  if (artifact.no_truth_mutation !== true) {
+    issues.push({
+      code: 'no_truth_mutation_required',
+      message: 'studio dossiers must keep no_truth_mutation set to true',
+      path: 'no_truth_mutation'
+    });
+  }
+
+  if (artifact.no_runtime_write !== true) {
+    issues.push({
+      code: 'no_runtime_write_required',
+      message: 'studio dossiers must keep no_runtime_write set to true',
+      path: 'no_runtime_write'
+    });
+  }
+
+  if (typeof artifact.source_packet_ref === 'string') {
+    if (!includedRefs.has(artifact.source_packet_ref)) {
+      issues.push({
+        code: 'inconsistent_source_packet_ref',
+        message: `source_packet_ref is not present in included_artifacts: ${artifact.source_packet_ref}`,
+        path: 'source_packet_ref'
+      });
+    } else if (includedRefs.get(artifact.source_packet_ref) !== 'studio_intake_packet') {
+      issues.push({
+        code: 'source_packet_not_packet',
+        message: `source_packet_ref must point to a studio_intake_packet: ${artifact.source_packet_ref}`,
+        path: 'source_packet_ref'
+      });
+    }
+  }
+
+  if (Array.isArray(artifact.included_proposal_refs)) {
+    artifact.included_proposal_refs.forEach((ref, index) => {
+      if (!includedRefs.has(ref)) {
+        issues.push({
+          code: 'inconsistent_dossier_proposal_ref',
+          message: `included_proposal_refs entry is not present in included_artifacts: ${ref}`,
+          path: `included_proposal_refs.${index}`
+        });
+      } else if (!DOSSIER_PROPOSAL_MEMBER_TYPES.includes(includedRefs.get(ref))) {
+        issues.push({
+          code: 'dossier_proposal_ref_type_mismatch',
+          message: `included_proposal_refs entry must point to a proposal-like artifact: ${ref}`,
+          path: `included_proposal_refs.${index}`
+        });
+      }
+    });
+  }
+
+  if (Array.isArray(artifact.review_refs)) {
+    artifact.review_refs.forEach((ref, index) => {
+      if (!includedRefs.has(ref)) {
+        issues.push({
+          code: 'inconsistent_review_ref',
+          message: `review_refs entry is not present in included_artifacts: ${ref}`,
+          path: `review_refs.${index}`
+        });
+      } else if (includedRefs.get(ref) !== 'review_record') {
+        issues.push({
+          code: 'review_ref_not_review_record',
+          message: `review_refs entry must point to a review_record: ${ref}`,
+          path: `review_refs.${index}`
+        });
+      }
+    });
+  }
+
+  if (Array.isArray(artifact.gate_report_refs)) {
+    artifact.gate_report_refs.forEach((ref, index) => {
+      if (!includedRefs.has(ref)) {
+        issues.push({
+          code: 'inconsistent_gate_report_ref',
+          message: `gate_report_refs entry is not present in included_artifacts: ${ref}`,
+          path: `gate_report_refs.${index}`
+        });
+      } else if (includedRefs.get(ref) !== 'gate_report') {
+        issues.push({
+          code: 'gate_report_ref_not_gate_report',
+          message: `gate_report_refs entry must point to a gate_report: ${ref}`,
+          path: `gate_report_refs.${index}`
+        });
+      }
+    });
+  }
+
+  if (Array.isArray(artifact.gate_outcomes)) {
+    const gateOutcomeIds = new Set();
+    artifact.gate_outcomes.forEach((entry, index) => {
+      if (typeof entry.gate_report_id === 'string') {
+        gateOutcomeIds.add(entry.gate_report_id);
+      }
+      const matchingGate = gateArtifacts.find((candidate) => candidate.artifact && candidate.artifact.gate_report_id === entry.gate_report_id);
+      if (!matchingGate) {
+        issues.push({
+          code: 'dossier_gate_outcome_outside_refs',
+          message: `gate_outcomes entry is not represented by an included gate report id: ${entry.gate_report_id}`,
+          path: `gate_outcomes.${index}`
+        });
+        return;
+      }
+      if (matchingGate.artifact.gate_name !== entry.gate_name || matchingGate.artifact.gate_outcome !== entry.gate_outcome || matchingGate.artifact.subject_ref !== entry.subject_ref) {
+        issues.push({
+          code: 'dossier_gate_outcome_mismatch',
+          message: `gate_outcomes entry does not match included gate report content: ${entry.gate_report_id}`,
+          path: `gate_outcomes.${index}`
+        });
+      }
+    });
+
+    includedGateIds.forEach((gateId) => {
+      if (!gateOutcomeIds.has(gateId)) {
+        issues.push({
+          code: 'missing_gate_outcome_summary',
+          message: `gate_outcomes must include each included gate report id: ${gateId}`,
+          path: 'gate_outcomes'
+        });
+      }
+    });
+  }
+
+  if (typeof artifact.bundle_manifest_ref === 'string') {
+    const bundlePath = path.join(ROOT_DIR, artifact.bundle_manifest_ref);
+    if (!fs.existsSync(bundlePath)) {
+      issues.push({
+        code: 'missing_bundle_manifest_ref',
+        message: `bundle_manifest_ref does not exist: ${artifact.bundle_manifest_ref}`,
+        path: 'bundle_manifest_ref'
+      });
+    } else {
+      try {
+        const bundleArtifact = readJson(bundlePath);
+        if (bundleArtifact.artifact_type !== 'studio_bundle_manifest') {
+          issues.push({
+            code: 'bundle_manifest_ref_type_mismatch',
+            message: `bundle_manifest_ref must point to a studio_bundle_manifest: ${artifact.bundle_manifest_ref}`,
+            path: 'bundle_manifest_ref'
+          });
+        } else {
+          if (bundleArtifact.source_packet_ref !== artifact.source_packet_ref) {
+            issues.push({
+              code: 'dossier_bundle_source_mismatch',
+              message: 'bundle_manifest_ref source packet does not match dossier source packet',
+              path: 'bundle_manifest_ref'
+            });
+          }
+          for (const ref of artifact.review_refs || []) {
+            if (!Array.isArray(bundleArtifact.review_refs) || !bundleArtifact.review_refs.includes(ref)) {
+              issues.push({
+                code: 'dossier_bundle_review_ref_mismatch',
+                message: `bundle_manifest_ref does not include dossier review ref: ${ref}`,
+                path: 'bundle_manifest_ref'
+              });
+            }
+          }
+          for (const ref of artifact.gate_report_refs || []) {
+            if (!Array.isArray(bundleArtifact.gate_report_refs) || !bundleArtifact.gate_report_refs.includes(ref)) {
+              issues.push({
+                code: 'dossier_bundle_gate_ref_mismatch',
+                message: `bundle_manifest_ref does not include dossier gate report ref: ${ref}`,
+                path: 'bundle_manifest_ref'
+              });
+            }
+          }
+          if (typeof artifact.topic === 'string' && typeof bundleArtifact.topic === 'string' && !haveTraceTokenOverlap(artifact.topic, bundleArtifact.topic)) {
+            issues.push({
+              code: 'dossier_topic_drift',
+              message: 'dossier topic drifts from bundle manifest topic',
+              path: 'bundle_manifest_ref'
+            });
+          }
+        }
+      } catch (error) {
+        issues.push({
+          code: 'unreadable_bundle_manifest_ref',
+          message: `bundle_manifest_ref could not be read: ${artifact.bundle_manifest_ref}`,
+          path: 'bundle_manifest_ref'
+        });
+      }
+    }
+  }
+
+  for (const reviewEntry of reviewArtifacts) {
+    const reviewArtifact = reviewEntry.artifact || {};
+    const subjectRef = reviewArtifact.subject_ref;
+    if (typeof subjectRef === 'string') {
+      if (!includedRefs.has(subjectRef)) {
+        issues.push({
+          code: 'review_subject_outside_dossier',
+          message: `review record subject_ref is outside included_artifacts: ${subjectRef}`,
+          path: `included_artifacts.${reviewEntry.ref}`
+        });
+      } else if (includedRefs.get(subjectRef) !== reviewArtifact.subject_artifact_type) {
+        issues.push({
+          code: 'review_subject_type_mismatch',
+          message: `review record subject_artifact_type does not match dossier subject for ${subjectRef}`,
+          path: `included_artifacts.${reviewEntry.ref}`
+        });
+      }
+    }
+
+    if (Array.isArray(reviewArtifact.gate_report_refs)) {
+      reviewArtifact.gate_report_refs.forEach((gateId, index) => {
+        if (!includedGateIds.has(gateId)) {
+          issues.push({
+            code: 'review_gate_id_outside_dossier',
+            message: `review record gate_report_refs entry is not represented by an included gate report id: ${gateId}`,
+            path: `included_artifacts.${reviewEntry.ref}.gate_report_refs.${index}`
+          });
+        }
+      });
+    }
+
+    if (typeof artifact.topic === 'string' && typeof reviewArtifact.topic === 'string' && !haveTraceTokenOverlap(artifact.topic, reviewArtifact.topic)) {
+      issues.push({
+        code: 'dossier_topic_drift',
+        message: `dossier topic drifts from review record topic: ${reviewEntry.ref}`,
+        path: `included_artifacts.${reviewEntry.ref}.topic`
+      });
+    }
+  }
+
+  for (const gateEntry of gateArtifacts) {
+    const gateArtifact = gateEntry.artifact || {};
+    const subjectRef = gateArtifact.subject_ref;
+    if (typeof subjectRef === 'string') {
+      if (!includedRefs.has(subjectRef)) {
+        issues.push({
+          code: 'gate_subject_outside_dossier',
+          message: `gate report subject_ref is outside included_artifacts: ${subjectRef}`,
+          path: `included_artifacts.${gateEntry.ref}`
+        });
+      } else if (includedRefs.get(subjectRef) !== gateArtifact.subject_artifact_type) {
+        issues.push({
+          code: 'gate_subject_type_mismatch',
+          message: `gate report subject_artifact_type does not match dossier subject for ${subjectRef}`,
+          path: `included_artifacts.${gateEntry.ref}`
+        });
+      }
+    }
+
+    if (typeof artifact.topic === 'string' && typeof gateArtifact.topic === 'string' && !haveTraceTokenOverlap(artifact.topic, gateArtifact.topic)) {
+      issues.push({
+        code: 'dossier_topic_drift',
+        message: `dossier topic drifts from gate report topic: ${gateEntry.ref}`,
+        path: `included_artifacts.${gateEntry.ref}.topic`
+      });
+    }
+  }
+
+  if (Array.isArray(artifact.open_conflicts) && underlyingConflicts.length > 0) {
+    const summarized = new Set(artifact.open_conflicts.filter((value) => typeof value === 'string' && value.length > 0));
+    for (const conflict of underlyingConflicts) {
+      if (!summarized.has(conflict)) {
+        issues.push({
+          code: 'dossier_open_conflict_suppressed',
+          message: `dossier open_conflicts must surface included conflict: ${conflict}`,
+          path: 'open_conflicts'
+        });
+      }
+    }
+  }
+
+  if (Array.isArray(artifact.forbidden_automated_next_steps)) {
+    artifact.forbidden_automated_next_steps.forEach((value, index) => {
+      if (!FORBIDDEN_AUTOMATED_NEXT_STEPS.includes(value)) {
+        issues.push({
+          code: 'unknown_forbidden_automated_next_step',
+          message: `Unknown forbidden automated next step: ${value}`,
+          path: `forbidden_automated_next_steps.${index}`
+        });
+      }
+    });
+  }
+
+  for (const [key, value] of Object.entries(artifact)) {
+    if (typeof value !== 'string') {
+      continue;
+    }
+    const lowerValue = value.toLowerCase();
+    if (IMPLICIT_APPROVAL_TERMS.some((term) => lowerValue.includes(term))) {
+      issues.push({
+        code: 'implicit_approval_claim',
+        message: `studio dossier text must not imply approval or automatic forwarding: ${value}`,
+        path: key
+      });
+    }
+    if (TRACE_RUNTIME_STRINGS.some((term) => lowerValue.includes(term))) {
+      issues.push({
+        code: 'trace_points_to_runtime',
+        message: `studio dossier text must not point into runtime-facing surfaces: ${value}`,
+        path: key
+      });
+    }
+    if (TRACE_TRUTH_STRINGS.some((term) => lowerValue.includes(term))) {
+      issues.push({
+        code: 'trace_points_to_truth',
+        message: `studio dossier text must not point into truth-facing surfaces: ${value}`,
+        path: key
+      });
+    }
+  }
+
+  return issues;
+}
+
 function lintArtifact(artifact) {
   const schemaErrors = [];
   const boundaryLints = [];
@@ -1364,6 +1793,12 @@ function lintArtifact(artifact) {
 
     if (artifactType === 'studio_bundle_manifest') {
       for (const issue of findBundleManifestConsistencyIssues(artifact)) {
+        boundaryLints.push(issue);
+      }
+    }
+
+    if (artifactType === 'studio_dossier') {
+      for (const issue of findStudioDossierConsistencyIssues(artifact)) {
         boundaryLints.push(issue);
       }
     }
@@ -1521,6 +1956,55 @@ function buildScaffoldArtifact(kindInput) {
     };
   }
 
+  if (kind === 'studio-dossier') {
+    return {
+      artifact_type: 'studio_dossier',
+      dossier_id: 'TODO: dossier-id',
+      title: 'TODO: dossier title',
+      topic: 'TODO: topic',
+      dossier_scope: 'local_human_review_only',
+      included_artifacts: [
+        {
+          artifact_type: 'studio_intake_packet',
+          ref: 'examples/studio/scaffolded/studio-intake-packet.scaffolded.json'
+        },
+        {
+          artifact_type: 'proposal_artifact',
+          ref: 'examples/studio/scaffolded/proposal-artifact.scaffolded.json'
+        },
+        {
+          artifact_type: 'review_record',
+          ref: 'examples/studio/scaffolded/review-record.scaffolded.json'
+        },
+        {
+          artifact_type: 'gate_report',
+          ref: 'examples/studio/scaffolded/gate-report.scaffolded.json'
+        }
+      ],
+      source_packet_ref: 'examples/studio/scaffolded/studio-intake-packet.scaffolded.json',
+      source_packet_summary: 'TODO: source packet summary',
+      included_proposal_refs: ['examples/studio/scaffolded/proposal-artifact.scaffolded.json'],
+      review_refs: ['examples/studio/scaffolded/review-record.scaffolded.json'],
+      gate_report_refs: ['examples/studio/scaffolded/gate-report.scaffolded.json'],
+      bundle_context_summary: 'No bundle manifest supplied; dossier remains a local cross-artifact review set only.',
+      open_conflicts: ['TODO: add open conflict or missing evidence'],
+      gate_outcomes: [
+        {
+          gate_report_id: 'TODO: gate-report-id',
+          gate_name: 'proposal_only_gate',
+          gate_outcome: 'pass',
+          subject_ref: 'examples/studio/scaffolded/proposal-artifact.scaffolded.json',
+          approval_requirement: 'not_required'
+        }
+      ],
+      recommended_human_next_step: 'retain_in_review_layer',
+      forbidden_automated_next_steps: [...FORBIDDEN_AUTOMATED_NEXT_STEPS],
+      proposal_only: true,
+      no_truth_mutation: true,
+      no_runtime_write: true
+    };
+  }
+
   return {
     artifact_type: 'card_review_target_artifact',
     review_target_type: 'review_priority_nomination',
@@ -1563,6 +2047,7 @@ module.exports = {
   normalizeArtifact,
   convertArtifact,
   findBundleManifestConsistencyIssues,
+  findStudioDossierConsistencyIssues,
   buildBundleManifestFromArtifacts,
   lintArtifact,
   buildScaffoldArtifact

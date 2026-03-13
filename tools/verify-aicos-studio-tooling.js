@@ -11,9 +11,12 @@ const REQUIRED_FILES = [
   path.join(ROOT_DIR, 'tools', 'studio-lint.js'),
   path.join(ROOT_DIR, 'tools', 'studio-normalize.js'),
   path.join(ROOT_DIR, 'tools', 'studio-convert.js'),
+  path.join(ROOT_DIR, 'tools', 'studio-dossier.js'),
+  path.join(ROOT_DIR, 'tools', 'studio-summary-report.js'),
   path.join(ROOT_DIR, 'tools', 'verify-aicos-studio-tooling.js'),
   path.join(ROOT_DIR, 'examples', 'studio', 'scaffolded', 'studio-intake-packet.scaffolded.json'),
-  path.join(ROOT_DIR, 'examples', 'studio', 'scaffolded', 'proposal-artifact.scaffolded.json')
+  path.join(ROOT_DIR, 'examples', 'studio', 'scaffolded', 'proposal-artifact.scaffolded.json'),
+  path.join(ROOT_DIR, 'examples', 'studio', 'scaffolded', 'studio-dossier.scaffolded.json')
 ];
 
 function verifyFilesExist() {
@@ -38,6 +41,10 @@ function verifyScaffoldExamples() {
     {
       kind: 'proposal-artifact',
       file: path.join(ROOT_DIR, 'examples', 'studio', 'scaffolded', 'proposal-artifact.scaffolded.json')
+    },
+    {
+      kind: 'studio-dossier',
+      file: path.join(ROOT_DIR, 'examples', 'studio', 'scaffolded', 'studio-dossier.scaffolded.json')
     }
   ];
 
@@ -88,17 +95,21 @@ function verifyReadmeAndPackage() {
     'tools/studio-lint.js',
     'tools/studio-normalize.js',
     'tools/studio-convert.js',
+    'tools/studio-dossier.js',
+    'tools/studio-summary-report.js',
     'Local prep tools only',
     'npm run scaffold:studio',
     'npm run lint:studio',
     'npm run normalize:studio',
-    'npm run convert:studio'
+    'npm run convert:studio',
+    'npm run dossier:studio',
+    'npm run summary:studio'
   ]) {
     assert(readme.includes(expected), `Expected studio tooling README text missing: ${expected}`);
   }
 
   const packageJson = readJson(path.join(ROOT_DIR, 'package.json'));
-  for (const scriptName of ['scaffold:studio', 'lint:studio', 'normalize:studio', 'convert:studio', 'verify:studio-tooling', 'verify:studio']) {
+  for (const scriptName of ['scaffold:studio', 'lint:studio', 'normalize:studio', 'convert:studio', 'dossier:studio', 'summary:studio', 'verify:studio-tooling', 'verify:studio']) {
     assert(packageJson.scripts && packageJson.scripts[scriptName], `Missing studio tooling script: ${scriptName}`);
   }
 }

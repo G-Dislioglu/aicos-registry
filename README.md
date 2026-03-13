@@ -135,10 +135,14 @@ It exists to structure debate, challenge, and distillation outputs without direc
 - Normalization rules: `AICOS_STUDIO_NORMALIZATION_RULES.md`
 - Conversion matrix: `AICOS_STUDIO_CONVERSION_MATRIX.md`
 - Pipeline scenarios: `AICOS_STUDIO_PIPELINE_SCENARIOS.md`
+- Dossier spec: `AICOS_STUDIO_DOSSIER_SPEC.md`
+- Summary report spec: `AICOS_STUDIO_SUMMARY_REPORT_SPEC.md`
 - Schema notes: `AICOS_STUDIO_SCHEMA_NOTES.md`
 - Machine-readable schemas: `schemas/studio/*.schema.json`
 - Validation corpus: `examples/studio/valid/*.json`, `examples/studio/invalid/*.json`
 - End-to-end scenario corpus: `examples/studio/scenarios/`
+- Dossier corpus: `examples/studio/valid/studio-dossier-*.json`
+- Summary report corpus: `examples/studio/valid/studio-dossier-*.summary.valid.md`
 - Scaffolded examples: `examples/studio/scaffolded/*.json`
 - Doc verifier: `tools/verify-aicos-studio-intake-docs.js`
 - Schema verifier: `tools/verify-aicos-studio-schemas.js`
@@ -155,6 +159,9 @@ It exists to structure debate, challenge, and distillation outputs without direc
 - Convert CLI: `tools/studio-convert.js`
 - Normalization/conversion verifier: `tools/verify-aicos-studio-conversion.js`
 - Pipeline verifier: `tools/verify-aicos-studio-pipeline.js`
+- Dossier builder: `tools/studio-dossier.js`
+- Summary report renderer: `tools/studio-summary-report.js`
+- Dossier verifier: `tools/verify-aicos-studio-dossiers.js`
 
 Boundary rule:
 
@@ -172,6 +179,8 @@ Local prep tools only:
 - `tools/studio-normalize.js` normalizes bounded Studio JSON into canonical local form only
 - `tools/studio-convert.js` performs only explicitly allowed local Studio conversions
 - `examples/studio/scenarios/` is a local reference pipeline only for end-to-end bounded Studio flows
+- `tools/studio-dossier.js` builds local human-readable dossier JSON only
+- `tools/studio-summary-report.js` renders deterministic local Markdown summaries from valid dossiers only
 - bundle review context and trace consistency remain a local review packaging discipline only
 - these tools do not execute runtime work, provider calls, registry mutation, or review forwarding
 
@@ -191,10 +200,13 @@ npm run scaffold:studio-gate-report
 npm run scaffold:studio-bundle
 npm run normalize:studio -- examples/studio/valid/proposal-artifact-normalize-source.valid.json
 npm run convert:studio -- examples/studio/valid/intake-convert-proposal-source.valid.json --to proposal-artifact
+npm run dossier:studio -- examples/studio/scenarios/review-to-bundle/intake.packet.json examples/studio/scenarios/review-to-bundle/proposal.artifact.json examples/studio/scenarios/review-to-bundle/card-review-target.artifact.json examples/studio/scenarios/review-to-bundle/review-record.forward.json examples/studio/scenarios/review-to-bundle/gate-report.pass.json --bundle-manifest examples/studio/scenarios/review-to-bundle/bundle.manifest.json
+npm run summary:studio -- examples/studio/valid/studio-dossier-review.valid.json
 npm run verify:studio-review
 npm run verify:studio-bundle-trace
 npm run verify:studio-conversion
 npm run verify:studio-pipeline
+npm run verify:studio-dossiers
 npm run verify:studio-bundles
 npm run verify:studio
 ```
