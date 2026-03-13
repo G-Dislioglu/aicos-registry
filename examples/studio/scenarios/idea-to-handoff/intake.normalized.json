@@ -1,0 +1,28 @@
+{
+  "artifact_type": "studio_intake_packet",
+  "packet_id": "studio-scenario-idea-handoff-001",
+  "created_at": "2026-03-13T20:20:00Z",
+  "source_mode": "expert_challenge_round",
+  "participants": [
+    "maya:moderator",
+    "provider:claude_sonnet",
+    "human:operator"
+  ],
+  "topic": "whether a bounded studio packet is ready for later human decision handoff without implying approval",
+  "proposal_type": "challenge_dossier_seed",
+  "claim_status": "bounded_proposal",
+  "evidence_status": "needs_evidence",
+  "challenge_status": "challenged_with_open_conflicts",
+  "drift_risk": "medium",
+  "recommendation_scope": "request_human_decision",
+  "promotion_state": "not_promoted",
+  "distilled_summary": "the packet is legible enough for a later human-owned decision context, but it remains conflict-visible and proposal-only",
+  "open_conflicts": [
+    "the threshold for escalation remains disputed"
+  ],
+  "next_review_target": "request_human_decision",
+  "source_refs": [
+    "AICOS_STUDIO_PIPELINE_SCENARIOS.md#scenario-2-idea-to-handoff-flow"
+  ],
+  "distillator_notes": "Carry forward only as a bounded relay artifact."
+}

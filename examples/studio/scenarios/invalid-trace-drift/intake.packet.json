@@ -1,0 +1,23 @@
+{
+  "artifact_type": "studio_intake_packet",
+  "packet_id": "studio-scenario-invalid-trace-001",
+  "created_at": "2026-03-13T20:56:00Z",
+  "source_mode": "maya_council",
+  "participants": [
+    "maya:moderator",
+    "human:operator"
+  ],
+  "topic": "whether bounded contradiction notes should stay local before deeper review",
+  "proposal_type": "idea_probe",
+  "claim_status": "exploratory",
+  "evidence_status": "conversation_only",
+  "challenge_status": "challenge_in_progress",
+  "drift_risk": "medium",
+  "recommendation_scope": "review_later",
+  "promotion_state": "proposal_only",
+  "distilled_summary": "a bounded contradiction note remains useful, but it should stay local and proposal-only",
+  "open_conflicts": [
+    "the later split threshold remains unclear"
+  ],
+  "next_review_target": "manual_design_followup"
+}

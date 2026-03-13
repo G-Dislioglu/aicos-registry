@@ -1,0 +1,20 @@
+{
+  "artifact_type": "gate_report",
+  "gate_report_id": "gate-review-bundle-001",
+  "reviewed_at": "2026-03-13T20:44:00Z",
+  "subject_artifact_type": "card_review_target_artifact",
+  "subject_ref": "examples/studio/scenarios/review-to-bundle/card-review-target.artifact.json",
+  "topic": "bounded nomination review package for later human registry wording review",
+  "gate_name": "card_review_target_gate",
+  "gate_outcome": "pass",
+  "gate_summary": "The target remains nomination-only and bounded to later human review without implying card mutation.",
+  "decision_codes": [
+    "registry_review_nomination_only",
+    "user_gate_required"
+  ],
+  "approval_requirement": "required_before_forward",
+  "record_scope": "review_layer_only",
+  "observed_issues": [
+    "No truth or runtime shortcut is present."
+  ]
+}

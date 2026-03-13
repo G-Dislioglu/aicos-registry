@@ -1,0 +1,20 @@
+{
+  "artifact_type": "gate_report",
+  "gate_report_id": "gate-contradiction-review-001",
+  "reviewed_at": "2026-03-13T20:34:00Z",
+  "subject_artifact_type": "proposal_artifact",
+  "subject_ref": "examples/studio/scenarios/contradiction-to-review/proposal.artifact.json",
+  "topic": "contradiction review keeps provider convergence advisory and evidence-incomplete",
+  "gate_name": "evidence_gate",
+  "gate_outcome": "soft_fail",
+  "gate_summary": "The contradiction packet remains locally useful, but evidence is still incomplete and the material must stay inside bounded review.",
+  "decision_codes": [
+    "insufficient_evidence",
+    "proposal_only_keep"
+  ],
+  "approval_requirement": "not_required",
+  "record_scope": "review_layer_only",
+  "observed_issues": [
+    "Provider convergence remains advisory only."
+  ]
+}

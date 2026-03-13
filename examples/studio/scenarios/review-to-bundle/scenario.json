@@ -1,0 +1,101 @@
+{
+  "scenario_id": "review-to-bundle",
+  "title": "Review to bundle flow",
+  "valid": true,
+  "start_artifact": "intake.packet.json",
+  "used_gates": [
+    "proposal_only_gate",
+    "card_review_target_gate",
+    "evidence_gate",
+    "conflict_visibility_gate",
+    "user_gate"
+  ],
+  "allowed_conversions": [
+    {
+      "from": "studio_intake_packet",
+      "to": "proposal-artifact"
+    },
+    {
+      "from": "studio_intake_packet",
+      "to": "card-review-target-artifact"
+    }
+  ],
+  "review_artifacts": [
+    "review-record.forward.json"
+  ],
+  "gate_artifacts": [
+    "gate-report.pass.json"
+  ],
+  "bundle_manifest": "bundle.manifest.json",
+  "forbidden_alternative_paths": [
+    "direct registry mutation",
+    "card or index mutation",
+    "trace drift between bundle and review artifacts",
+    "automatic forwarding into runtime or truth surfaces"
+  ],
+  "checks": [
+    {
+      "type": "normalize",
+      "input": "intake.packet.json",
+      "output": "intake.normalized.json"
+    },
+    {
+      "type": "convert",
+      "input": "intake.packet.json",
+      "output": "proposal.artifact.json",
+      "to": "proposal-artifact"
+    },
+    {
+      "type": "convert",
+      "input": "intake.packet.json",
+      "output": "card-review-target.artifact.json",
+      "to": "card-review-target-artifact"
+    },
+    {
+      "type": "lint_clean",
+      "target": "intake.packet.json"
+    },
+    {
+      "type": "lint_clean",
+      "target": "intake.normalized.json"
+    },
+    {
+      "type": "lint_clean",
+      "target": "proposal.artifact.json"
+    },
+    {
+      "type": "lint_clean",
+      "target": "card-review-target.artifact.json"
+    },
+    {
+      "type": "lint_clean",
+      "target": "gate-report.pass.json"
+    },
+    {
+      "type": "lint_clean",
+      "target": "review-record.forward.json"
+    },
+    {
+      "type": "lint_clean",
+      "target": "bundle.manifest.json"
+    },
+    {
+      "type": "bundle_build",
+      "inputs": [
+        "intake.packet.json",
+        "proposal.artifact.json",
+        "card-review-target.artifact.json",
+        "review-record.forward.json",
+        "gate-report.pass.json"
+      ],
+      "output": "bundle.manifest.json",
+      "options": {
+        "bundleId": "studio-scenario-review-bundle-001",
+        "bundleType": "review_package",
+        "intendedNextStep": "human_registry_review",
+        "topic": "bounded nomination review package for later human registry wording review",
+        "bundleSummary": "Keeps the intake packet, proposal, nomination target, review record, and gate report together as one local trace-consistent review package."
+      }
+    }
+  ]
+}

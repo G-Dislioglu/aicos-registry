@@ -1,0 +1,63 @@
+{
+  "scenario_id": "idea-to-handoff",
+  "title": "Idea to handoff flow",
+  "valid": true,
+  "start_artifact": "intake.packet.json",
+  "used_gates": [
+    "handoff_quality_gate",
+    "no_runtime_write_gate",
+    "conflict_visibility_gate",
+    "user_gate"
+  ],
+  "allowed_conversions": [
+    {
+      "from": "studio_intake_packet",
+      "to": "handoff-artifact"
+    }
+  ],
+  "review_artifacts": [
+    "review-record.forward.json"
+  ],
+  "gate_artifacts": [
+    "gate-report.handoff.json"
+  ],
+  "bundle_manifest": null,
+  "forbidden_alternative_paths": [
+    "runtime dispatch",
+    "truth mutation",
+    "approval bypassing the user gate"
+  ],
+  "checks": [
+    {
+      "type": "normalize",
+      "input": "intake.packet.json",
+      "output": "intake.normalized.json"
+    },
+    {
+      "type": "convert",
+      "input": "intake.packet.json",
+      "output": "handoff.artifact.json",
+      "to": "handoff-artifact"
+    },
+    {
+      "type": "lint_clean",
+      "target": "intake.packet.json"
+    },
+    {
+      "type": "lint_clean",
+      "target": "intake.normalized.json"
+    },
+    {
+      "type": "lint_clean",
+      "target": "handoff.artifact.json"
+    },
+    {
+      "type": "lint_clean",
+      "target": "gate-report.handoff.json"
+    },
+    {
+      "type": "lint_clean",
+      "target": "review-record.forward.json"
+    }
+  ]
+}

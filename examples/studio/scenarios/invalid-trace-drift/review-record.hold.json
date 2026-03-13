@@ -1,0 +1,21 @@
+{
+  "artifact_type": "review_record",
+  "review_record_id": "review-invalid-trace-001",
+  "reviewed_at": "2026-03-13T20:59:00Z",
+  "subject_artifact_type": "proposal_artifact",
+  "subject_ref": "examples/studio/scenarios/invalid-trace-drift/proposal.artifact.json",
+  "topic": "keep the contradiction proposal local before deeper review",
+  "lifecycle_state": "held",
+  "decision_type": "hold",
+  "decision_codes": [
+    "insufficient_evidence",
+    "proposal_only_keep"
+  ],
+  "review_summary": "The proposal stays inside local review.",
+  "user_gate_status": "not_required",
+  "resulting_next_posture": "retain_in_review_layer",
+  "record_scope": "review_layer_only",
+  "gate_report_refs": [
+    "gate-invalid-trace-001"
+  ]
+}

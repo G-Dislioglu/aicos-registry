@@ -1,0 +1,25 @@
+{
+  "artifact_type": "review_record",
+  "review_record_id": "review-review-bundle-001",
+  "reviewed_at": "2026-03-13T20:46:00Z",
+  "subject_artifact_type": "card_review_target_artifact",
+  "subject_ref": "examples/studio/scenarios/review-to-bundle/card-review-target.artifact.json",
+  "topic": "bounded nomination review package for later human registry wording review",
+  "lifecycle_state": "gated",
+  "decision_type": "forward",
+  "decision_codes": [
+    "handoff_ready",
+    "registry_review_nomination_only",
+    "user_gate_required"
+  ],
+  "review_summary": "The target remains nomination-only and may move only into later bounded human registry review under an explicit user gate.",
+  "user_gate_status": "required_and_granted",
+  "resulting_next_posture": "human_registry_review",
+  "record_scope": "review_layer_only",
+  "gate_report_refs": [
+    "gate-review-bundle-001"
+  ],
+  "open_conflicts": [
+    "Final wording scope still requires human review."
+  ]
+}

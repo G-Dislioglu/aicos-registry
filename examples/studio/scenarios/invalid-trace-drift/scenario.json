@@ -1,0 +1,46 @@
+{
+  "scenario_id": "invalid-trace-drift",
+  "title": "Invalid bundle trace drift",
+  "valid": false,
+  "start_artifact": "intake.packet.json",
+  "used_gates": [
+    "proposal_only_gate"
+  ],
+  "allowed_conversions": [
+    {
+      "from": "studio_intake_packet",
+      "to": "proposal-artifact"
+    }
+  ],
+  "review_artifacts": [
+    "review-record.hold.json"
+  ],
+  "gate_artifacts": [
+    "gate-report.pass.json"
+  ],
+  "bundle_manifest": "bundle.manifest.json",
+  "forbidden_alternative_paths": [
+    "trace drift inside bundle packaging"
+  ],
+  "checks": [
+    {
+      "type": "convert",
+      "input": "intake.packet.json",
+      "output": "proposal.artifact.json",
+      "to": "proposal-artifact"
+    },
+    {
+      "type": "lint_clean",
+      "target": "intake.packet.json"
+    },
+    {
+      "type": "lint_clean",
+      "target": "proposal.artifact.json"
+    },
+    {
+      "type": "lint_error",
+      "target": "bundle.manifest.json",
+      "code": "bundle_topic_drift"
+    }
+  ]
+}

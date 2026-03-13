@@ -1,0 +1,16 @@
+{
+  "artifact_type": "gate_report",
+  "gate_report_id": "gate-invalid-trace-001",
+  "reviewed_at": "2026-03-13T20:58:00Z",
+  "subject_artifact_type": "proposal_artifact",
+  "subject_ref": "examples/studio/scenarios/invalid-trace-drift/proposal.artifact.json",
+  "topic": "proposal-only contradiction note remains bounded before deeper review",
+  "gate_name": "proposal_only_gate",
+  "gate_outcome": "pass",
+  "gate_summary": "The proposal remains local and bounded.",
+  "decision_codes": [
+    "proposal_only_keep"
+  ],
+  "approval_requirement": "not_required",
+  "record_scope": "review_layer_only"
+}

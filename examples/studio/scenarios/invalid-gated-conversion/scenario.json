@@ -1,0 +1,22 @@
+{
+  "scenario_id": "invalid-gated-conversion",
+  "title": "Invalid gated conversion without required review target",
+  "valid": false,
+  "start_artifact": "intake.packet.json",
+  "used_gates": [],
+  "allowed_conversions": [],
+  "review_artifacts": [],
+  "gate_artifacts": [],
+  "bundle_manifest": null,
+  "forbidden_alternative_paths": [
+    "handoff conversion without later human review posture"
+  ],
+  "checks": [
+    {
+      "type": "convert_error",
+      "input": "intake.packet.json",
+      "to": "handoff-artifact",
+      "code": "conversion_gate_failed"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "artifact_type": "gate_report",
+  "gate_report_id": "gate-idea-proposal-001",
+  "reviewed_at": "2026-03-13T20:08:00Z",
+  "subject_artifact_type": "proposal_artifact",
+  "subject_ref": "examples/studio/scenarios/idea-to-proposal/proposal.artifact.json",
+  "topic": "proposal-only contradiction logging idea remains bounded before deeper review",
+  "gate_name": "proposal_only_gate",
+  "gate_outcome": "pass",
+  "gate_summary": "The proposal artifact stays inside bounded proposal language and does not claim truth, approval, or runtime authority.",
+  "decision_codes": [
+    "proposal_only_keep"
+  ],
+  "approval_requirement": "not_required",
+  "record_scope": "review_layer_only",
+  "observed_issues": [
+    "No truth or runtime language was detected."
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "scenario_id": "idea-to-proposal",
+  "title": "Idea to proposal flow",
+  "valid": true,
+  "start_artifact": "intake.packet.json",
+  "used_gates": [
+    "proposal_only_gate"
+  ],
+  "allowed_conversions": [
+    {
+      "from": "studio_intake_packet",
+      "to": "proposal-artifact"
+    }
+  ],
+  "review_artifacts": [
+    "review-record.hold.json"
+  ],
+  "gate_artifacts": [
+    "gate-report.proposal-only.json"
+  ],
+  "bundle_manifest": null,
+  "forbidden_alternative_paths": [
+    "direct runtime review object creation",
+    "direct truth mutation or card write",
+    "direct bundle-to-truth promotion"
+  ],
+  "checks": [
+    {
+      "type": "normalize",
+      "input": "intake.packet.json",
+      "output": "intake.normalized.json"
+    },
+    {
+      "type": "convert",
+      "input": "intake.packet.json",
+      "output": "proposal.artifact.json",
+      "to": "proposal-artifact"
+    },
+    {
+      "type": "lint_clean",
+      "target": "intake.packet.json"
+    },
+    {
+      "type": "lint_clean",
+      "target": "intake.normalized.json"
+    },
+    {
+      "type": "lint_clean",
+      "target": "proposal.artifact.json"
+    },
+    {
+      "type": "lint_clean",
+      "target": "gate-report.proposal-only.json"
+    },
+    {
+      "type": "lint_clean",
+      "target": "review-record.hold.json"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "artifact_type": "studio_intake_packet",
+  "packet_id": "studio-scenario-invalid-truth-001",
+  "created_at": "2026-03-13T20:50:00Z",
+  "source_mode": "maya_council",
+  "participants": [
+    "maya:moderator",
+    "human:operator"
+  ],
+  "topic": "invalid direct truth path example",
+  "proposal_type": "design_direction",
+  "claim_status": "bounded_proposal",
+  "evidence_status": "example_supported",
+  "challenge_status": "unchallenged",
+  "drift_risk": "low",
+  "recommendation_scope": "proposal_only",
+  "promotion_state": "proposal_only",
+  "distilled_summary": "This packet is locally valid but must never convert into registry truth.",
+  "open_conflicts": [
+    "none"
+  ],
+  "next_review_target": "manual_design_followup"
+}

@@ -134,9 +134,11 @@ It exists to structure debate, challenge, and distillation outputs without direc
 - Trace consistency rules: `AICOS_STUDIO_TRACE_CONSISTENCY_RULES.md`
 - Normalization rules: `AICOS_STUDIO_NORMALIZATION_RULES.md`
 - Conversion matrix: `AICOS_STUDIO_CONVERSION_MATRIX.md`
+- Pipeline scenarios: `AICOS_STUDIO_PIPELINE_SCENARIOS.md`
 - Schema notes: `AICOS_STUDIO_SCHEMA_NOTES.md`
 - Machine-readable schemas: `schemas/studio/*.schema.json`
 - Validation corpus: `examples/studio/valid/*.json`, `examples/studio/invalid/*.json`
+- End-to-end scenario corpus: `examples/studio/scenarios/`
 - Scaffolded examples: `examples/studio/scaffolded/*.json`
 - Doc verifier: `tools/verify-aicos-studio-intake-docs.js`
 - Schema verifier: `tools/verify-aicos-studio-schemas.js`
@@ -152,6 +154,7 @@ It exists to structure debate, challenge, and distillation outputs without direc
 - Normalize CLI: `tools/studio-normalize.js`
 - Convert CLI: `tools/studio-convert.js`
 - Normalization/conversion verifier: `tools/verify-aicos-studio-conversion.js`
+- Pipeline verifier: `tools/verify-aicos-studio-pipeline.js`
 
 Boundary rule:
 
@@ -168,6 +171,7 @@ Local prep tools only:
 - `tools/studio-bundle.js` scaffolds or summarizes bundle manifests as a local packaging layer only
 - `tools/studio-normalize.js` normalizes bounded Studio JSON into canonical local form only
 - `tools/studio-convert.js` performs only explicitly allowed local Studio conversions
+- `examples/studio/scenarios/` is a local reference pipeline only for end-to-end bounded Studio flows
 - bundle review context and trace consistency remain a local review packaging discipline only
 - these tools do not execute runtime work, provider calls, registry mutation, or review forwarding
 
@@ -190,6 +194,7 @@ npm run convert:studio -- examples/studio/valid/intake-convert-proposal-source.v
 npm run verify:studio-review
 npm run verify:studio-bundle-trace
 npm run verify:studio-conversion
+npm run verify:studio-pipeline
 npm run verify:studio-bundles
 npm run verify:studio
 ```

@@ -1,0 +1,26 @@
+{
+  "artifact_type": "proposal_artifact",
+  "packet_id": "studio-scenario-idea-proposal-001",
+  "created_at": "2026-03-13T20:05:00Z",
+  "topic": "whether contradiction logging should remain a bounded proposal artifact before deeper review",
+  "participants": [
+    "maya:moderator",
+    "provider:claude_sonnet",
+    "human:operator"
+  ],
+  "proposal_type": "idea_probe",
+  "claim_status": "exploratory",
+  "evidence_status": "conversation_only",
+  "challenge_status": "challenge_in_progress",
+  "drift_risk": "medium",
+  "recommendation_scope": "review_later",
+  "promotion_state": "proposal_only",
+  "distilled_summary": "a local idea emerged that contradiction logging may deserve a clearer later proposal path, but the current material remains bounded and should stay inside proposal-only review",
+  "open_conflicts": [
+    "the threshold for splitting contradiction logging into its own later artifact is still unclear"
+  ],
+  "next_review_target": "manual_design_followup",
+  "source_refs": [
+    "AICOS_STUDIO_PIPELINE_SCENARIOS.md#scenario-1-idea-to-proposal-flow"
+  ]
+}

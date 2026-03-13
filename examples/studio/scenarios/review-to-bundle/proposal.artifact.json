@@ -1,0 +1,27 @@
+{
+  "artifact_type": "proposal_artifact",
+  "packet_id": "studio-scenario-review-bundle-001",
+  "created_at": "2026-03-13T20:40:00Z",
+  "topic": "whether one existing registry card deserves later bounded human wording review for scope clarity",
+  "participants": [
+    "maya:moderator",
+    "maya:distillator",
+    "human:operator"
+  ],
+  "proposal_type": "review_target_candidate",
+  "claim_status": "bounded_proposal",
+  "evidence_status": "cross_reference_supported",
+  "challenge_status": "challenge_passed_for_proposal_use",
+  "drift_risk": "low",
+  "recommendation_scope": "request_human_decision",
+  "promotion_state": "not_promoted",
+  "distilled_summary": "the discussion does not propose a direct registry change, but it does justify a later bounded human registry review focused on wording and scope clarity",
+  "open_conflicts": [
+    "participants still disagree on review priority timing"
+  ],
+  "next_review_target": "human_registry_review",
+  "source_refs": [
+    "AICOS_STUDIO_PIPELINE_SCENARIOS.md#scenario-4-review-to-bundle-flow"
+  ],
+  "distillator_notes": "Nomination only; no direct card mutation."
+}

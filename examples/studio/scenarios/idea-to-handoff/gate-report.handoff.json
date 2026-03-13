@@ -1,0 +1,20 @@
+{
+  "artifact_type": "gate_report",
+  "gate_report_id": "gate-idea-handoff-001",
+  "reviewed_at": "2026-03-13T20:24:00Z",
+  "subject_artifact_type": "handoff_artifact",
+  "subject_ref": "examples/studio/scenarios/idea-to-handoff/handoff.artifact.json",
+  "topic": "bounded handoff packet remains conflict-visible and non-runtime before later human decision",
+  "gate_name": "handoff_quality_gate",
+  "gate_outcome": "pass",
+  "gate_summary": "The handoff artifact is locally legible, bounded, and does not claim approval or runtime authority.",
+  "decision_codes": [
+    "handoff_ready",
+    "user_gate_required"
+  ],
+  "approval_requirement": "required_before_forward",
+  "record_scope": "review_layer_only",
+  "observed_issues": [
+    "A later human decision still owns the next posture."
+  ]
+}

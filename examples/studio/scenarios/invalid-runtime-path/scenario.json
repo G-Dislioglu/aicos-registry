@@ -1,0 +1,22 @@
+{
+  "scenario_id": "invalid-runtime-path",
+  "title": "Invalid runtime path",
+  "valid": false,
+  "start_artifact": "intake.packet.json",
+  "used_gates": [],
+  "allowed_conversions": [],
+  "review_artifacts": [],
+  "gate_artifacts": [],
+  "bundle_manifest": null,
+  "forbidden_alternative_paths": [
+    "runtime review object creation"
+  ],
+  "checks": [
+    {
+      "type": "convert_error",
+      "input": "intake.packet.json",
+      "to": "runtime-review-object",
+      "code": "conversion_forbidden_target"
+    }
+  ]
+}

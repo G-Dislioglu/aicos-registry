@@ -23,6 +23,7 @@ const REQUIRED_FILES = [
   path.join(ROOT_DIR, 'AICOS_STUDIO_TRACE_CONSISTENCY_RULES.md'),
   path.join(ROOT_DIR, 'AICOS_STUDIO_NORMALIZATION_RULES.md'),
   path.join(ROOT_DIR, 'AICOS_STUDIO_CONVERSION_MATRIX.md'),
+  path.join(ROOT_DIR, 'AICOS_STUDIO_PIPELINE_SCENARIOS.md'),
   path.join(ROOT_DIR, 'tools', 'verify-aicos-studio-intake-docs.js')
 ];
 
@@ -453,6 +454,20 @@ function verifyConversionMatrix() {
   }
 }
 
+function verifyPipelineScenarios() {
+  const content = fs.readFileSync(path.join(ROOT_DIR, 'AICOS_STUDIO_PIPELINE_SCENARIOS.md'), 'utf-8');
+  for (const expected of [
+    '## Scenario 1 — Idea to proposal flow',
+    '## Scenario 2 — Idea to handoff flow',
+    '## Scenario 3 — Contradiction to review flow',
+    '## Scenario 4 — Review to bundle flow',
+    '## Invalid scenario classes',
+    '`examples/studio/scenarios/`'
+  ]) {
+    assert(content.includes(expected), `Expected pipeline scenarios text missing: ${expected}`);
+  }
+}
+
 function main() {
   verifyFilesExist();
   verifyCharter();
@@ -474,6 +489,7 @@ function main() {
   verifyTraceConsistencyRules();
   verifyNormalizationRules();
   verifyConversionMatrix();
+  verifyPipelineScenarios();
   console.log('AICOS studio intake docs verification passed.');
 }
 

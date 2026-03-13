@@ -1,0 +1,41 @@
+{
+  "artifact_type": "studio_bundle_manifest",
+  "bundle_id": "studio-scenario-review-bundle-001",
+  "bundle_type": "review_package",
+  "included_artifacts": [
+    {
+      "artifact_type": "card_review_target_artifact",
+      "ref": "examples/studio/scenarios/review-to-bundle/card-review-target.artifact.json"
+    },
+    {
+      "artifact_type": "gate_report",
+      "ref": "examples/studio/scenarios/review-to-bundle/gate-report.pass.json"
+    },
+    {
+      "artifact_type": "studio_intake_packet",
+      "ref": "examples/studio/scenarios/review-to-bundle/intake.packet.json"
+    },
+    {
+      "artifact_type": "proposal_artifact",
+      "ref": "examples/studio/scenarios/review-to-bundle/proposal.artifact.json"
+    },
+    {
+      "artifact_type": "review_record",
+      "ref": "examples/studio/scenarios/review-to-bundle/review-record.forward.json"
+    }
+  ],
+  "source_packet_ref": "examples/studio/scenarios/review-to-bundle/intake.packet.json",
+  "review_refs": [
+    "examples/studio/scenarios/review-to-bundle/review-record.forward.json"
+  ],
+  "gate_report_refs": [
+    "examples/studio/scenarios/review-to-bundle/gate-report.pass.json"
+  ],
+  "consistency_status": "consistent",
+  "intended_next_step": "human_registry_review",
+  "proposal_only": true,
+  "no_truth_mutation": true,
+  "no_runtime_write": true,
+  "topic": "bounded nomination review package for later human registry wording review",
+  "bundle_summary": "Keeps the intake packet, proposal, nomination target, review record, and gate report together as one local trace-consistent review package."
+}

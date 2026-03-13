@@ -1,0 +1,24 @@
+{
+  "artifact_type": "review_record",
+  "review_record_id": "review-contradiction-review-001",
+  "reviewed_at": "2026-03-13T20:36:00Z",
+  "subject_artifact_type": "proposal_artifact",
+  "subject_ref": "examples/studio/scenarios/contradiction-to-review/proposal.artifact.json",
+  "topic": "contradiction review remains held until evidence and human gate semantics are clearer",
+  "lifecycle_state": "held",
+  "decision_type": "hold",
+  "decision_codes": [
+    "insufficient_evidence",
+    "proposal_only_keep"
+  ],
+  "review_summary": "The contradiction must remain visible and unresolved rather than being collapsed into a stronger posture.",
+  "user_gate_status": "not_required",
+  "resulting_next_posture": "retain_in_review_layer",
+  "record_scope": "review_layer_only",
+  "gate_report_refs": [
+    "gate-contradiction-review-001"
+  ],
+  "open_conflicts": [
+    "No accepted standard exists for upgrading convergence beyond advisory evidence."
+  ]
+}
