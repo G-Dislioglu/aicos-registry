@@ -1,0 +1,27 @@
+{
+  "artifact_type": "studio_bundle_manifest",
+  "bundle_id": "studio-bundle-invalid-003",
+  "bundle_type": "mixed_review_package",
+  "included_artifacts": [
+    {
+      "artifact_type": "studio_intake_packet",
+      "ref": "examples/studio/valid/situation-analysis-packet.valid.json"
+    },
+    {
+      "artifact_type": "gate_report",
+      "ref": "examples/studio/valid/gate-report-pass.valid.json"
+    }
+  ],
+  "source_packet_ref": "examples/studio/valid/review-record-forward.valid.json",
+  "review_refs": [
+    "examples/studio/valid/review-record-forward.valid.json"
+  ],
+  "gate_report_refs": [
+    "examples/studio/valid/gate-report-pass.valid.json"
+  ],
+  "consistency_status": "consistent",
+  "intended_next_step": "request_human_decision",
+  "proposal_only": true,
+  "no_truth_mutation": true,
+  "no_runtime_write": true
+}

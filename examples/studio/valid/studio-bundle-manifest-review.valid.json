@@ -1,0 +1,37 @@
+{
+  "artifact_type": "studio_bundle_manifest",
+  "bundle_id": "studio-bundle-review-001",
+  "bundle_type": "review_package",
+  "included_artifacts": [
+    {
+      "artifact_type": "studio_intake_packet",
+      "ref": "examples/studio/valid/card-review-packet.valid.json"
+    },
+    {
+      "artifact_type": "card_review_target_artifact",
+      "ref": "examples/studio/valid/card-review-target-artifact.valid.json"
+    },
+    {
+      "artifact_type": "review_record",
+      "ref": "examples/studio/valid/review-record-forward.valid.json"
+    },
+    {
+      "artifact_type": "gate_report",
+      "ref": "examples/studio/valid/gate-report-pass.valid.json"
+    }
+  ],
+  "source_packet_ref": "examples/studio/valid/card-review-packet.valid.json",
+  "review_refs": [
+    "examples/studio/valid/review-record-forward.valid.json"
+  ],
+  "gate_report_refs": [
+    "examples/studio/valid/gate-report-pass.valid.json"
+  ],
+  "consistency_status": "consistent",
+  "intended_next_step": "human_registry_review",
+  "proposal_only": true,
+  "no_truth_mutation": true,
+  "no_runtime_write": true,
+  "topic": "Nomination bundle for later bounded human registry review",
+  "bundle_summary": "Keeps the source packet, target nomination, review record, and gate report together as one local reviewable package."
+}

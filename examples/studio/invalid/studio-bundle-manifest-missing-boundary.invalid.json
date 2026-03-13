@@ -1,0 +1,25 @@
+{
+  "artifact_type": "studio_bundle_manifest",
+  "bundle_id": "studio-bundle-invalid-002",
+  "bundle_type": "review_package",
+  "included_artifacts": [
+    {
+      "artifact_type": "studio_intake_packet",
+      "ref": "examples/studio/valid/idea-origin-packet.valid.json"
+    },
+    {
+      "artifact_type": "review_record",
+      "ref": "examples/studio/valid/review-record-hold.valid.json"
+    }
+  ],
+  "source_packet_ref": "examples/studio/valid/idea-origin-packet.valid.json",
+  "review_refs": [
+    "examples/studio/valid/review-record-hold.valid.json"
+  ],
+  "gate_report_refs": [],
+  "consistency_status": "consistent",
+  "intended_next_step": "retain_in_review_layer",
+  "proposal_only": false,
+  "no_truth_mutation": true,
+  "no_runtime_write": true
+}

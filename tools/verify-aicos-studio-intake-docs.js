@@ -17,6 +17,8 @@ const REQUIRED_FILES = [
   path.join(ROOT_DIR, 'AICOS_STUDIO_DECISION_CODES.md'),
   path.join(ROOT_DIR, 'AICOS_STUDIO_REVIEW_RECORD_SPEC.md'),
   path.join(ROOT_DIR, 'AICOS_STUDIO_GATE_REPORT_SPEC.md'),
+  path.join(ROOT_DIR, 'AICOS_STUDIO_BUNDLE_SPEC.md'),
+  path.join(ROOT_DIR, 'AICOS_STUDIO_MANIFEST_SPEC.md'),
   path.join(ROOT_DIR, 'tools', 'verify-aicos-studio-intake-docs.js')
 ];
 
@@ -329,6 +331,55 @@ function verifyGateReportSpec() {
   }
 }
 
+function verifyBundleSpec() {
+  const content = fs.readFileSync(path.join(ROOT_DIR, 'AICOS_STUDIO_BUNDLE_SPEC.md'), 'utf-8');
+  for (const expected of [
+    '## Purpose',
+    '## Bundle boundary',
+    '## Allowed bundle members',
+    '## Forbidden bundle members',
+    '## Proposal-only boundary',
+    '## Relationship to manifests',
+    '`studio_intake_packet`',
+    '`proposal_artifact`',
+    '`review_record`',
+    '`gate_report`',
+    'runtime review objects',
+    'registry truth objects'
+  ]) {
+    assert(content.includes(expected), `Expected bundle spec text missing: ${expected}`);
+  }
+}
+
+function verifyManifestSpec() {
+  const content = fs.readFileSync(path.join(ROOT_DIR, 'AICOS_STUDIO_MANIFEST_SPEC.md'), 'utf-8');
+  for (const expected of [
+    '## Purpose',
+    '## Artifact boundary',
+    '## Required fields',
+    '## Optional fields',
+    '## Forbidden fields',
+    '## Allowed bundle types',
+    '## Allowed bundle members',
+    '## Consistency rules',
+    '## Allowed intended next steps',
+    '`bundle_id`',
+    '`bundle_type`',
+    '`included_artifacts`',
+    '`source_packet_ref`',
+    '`review_refs`',
+    '`gate_report_refs`',
+    '`consistency_status`',
+    '`intended_next_step`',
+    '`proposal_only`',
+    '`no_truth_mutation`',
+    '`no_runtime_write`',
+    '`studio_bundle_manifest`'
+  ]) {
+    assert(content.includes(expected), `Expected manifest spec text missing: ${expected}`);
+  }
+}
+
 function main() {
   verifyFilesExist();
   verifyCharter();
@@ -344,6 +395,8 @@ function main() {
   verifyDecisionCodes();
   verifyReviewRecordSpec();
   verifyGateReportSpec();
+  verifyBundleSpec();
+  verifyManifestSpec();
   console.log('AICOS studio intake docs verification passed.');
 }
 

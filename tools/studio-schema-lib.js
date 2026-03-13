@@ -32,6 +32,10 @@ const ARTIFACT_KINDS = {
   'gate-report': {
     artifactType: 'gate_report',
     schemaFile: 'gate-report.schema.json'
+  },
+  'studio-bundle-manifest': {
+    artifactType: 'studio_bundle_manifest',
+    schemaFile: 'studio-bundle-manifest.schema.json'
   }
 };
 
@@ -58,7 +62,11 @@ const ARTIFACT_KIND_ALIASES = {
   review: 'review-record',
   'gate-report': 'gate-report',
   gate_report: 'gate-report',
-  gate: 'gate-report'
+  gate: 'gate-report',
+  'studio-bundle-manifest': 'studio-bundle-manifest',
+  'bundle-manifest': 'studio-bundle-manifest',
+  bundle: 'studio-bundle-manifest',
+  studio_bundle_manifest: 'studio-bundle-manifest'
 };
 
 const SCHEMA_FILE_BY_ARTIFACT_TYPE = Object.fromEntries(
@@ -101,6 +109,24 @@ const DECISION_CODES = [
 
 const GATE_OUTCOMES = ['pass', 'soft_fail', 'hard_stop'];
 const FORBIDDEN_GATE_OUTCOMES = ['runtime_write_authorized', 'truth_mutation_authorized'];
+const BUNDLE_TYPES = ['review_package', 'handoff_package', 'reference_package', 'mixed_review_package'];
+const CONSISTENCY_STATUSES = ['consistent', 'needs_review', 'incomplete', 'conflict_present'];
+const INTENDED_NEXT_STEPS = [
+  'retain_in_review_layer',
+  'manual_design_followup',
+  'request_human_decision',
+  'human_registry_review',
+  'archive_only'
+];
+const BUNDLE_MEMBER_TYPES = [
+  'studio_intake_packet',
+  'proposal_artifact',
+  'handoff_artifact',
+  'reference_artifact',
+  'card_review_target_artifact',
+  'review_record',
+  'gate_report'
+];
 
 const FORBIDDEN_PROPERTY_CODE = {
   runtime_review_object: 'runtime_write_attempt',
@@ -300,6 +326,202 @@ function scanBoundaryLints(value, boundaryLints, pathParts = []) {
   }
 }
 
+function normalizeRelativeRef(filePath) {
+  return path.relative(ROOT_DIR, filePath).split(path.sep).join('/');
+}
+
+function findBundleManifestConsistencyIssues(artifact) {
+  const issues = [];
+  if (!artifact || artifact.artifact_type !== 'studio_bundle_manifest' || !Array.isArray(artifact.included_artifacts)) {
+    return issues;
+  }
+
+  const includedRefs = new Map();
+  for (const entry of artifact.included_artifacts) {
+    if (!entry || typeof entry !== 'object') {
+      continue;
+    }
+
+    if (typeof entry.ref === 'string') {
+      if (includedRefs.has(entry.ref) && includedRefs.get(entry.ref) !== entry.artifact_type) {
+        issues.push({
+          code: 'duplicate_included_ref',
+          message: `included ref ${entry.ref} is associated with multiple artifact types`,
+          path: `included_artifacts.${entry.ref}`
+        });
+      }
+      includedRefs.set(entry.ref, entry.artifact_type);
+    }
+
+    if (!BUNDLE_MEMBER_TYPES.includes(entry.artifact_type)) {
+      issues.push({
+        code: 'forbidden_bundle_member',
+        message: `Forbidden bundle member type: ${entry.artifact_type}`,
+        path: 'included_artifacts'
+      });
+    }
+
+    if (typeof entry.ref === 'string') {
+      const lowerRef = entry.ref.toLowerCase();
+      if (lowerRef.includes('runtime/') || lowerRef.includes('runtime_review_object')) {
+        issues.push({
+          code: 'runtime_write_attempt',
+          message: `runtime-facing bundle ref detected: ${entry.ref}`,
+          path: 'included_artifacts'
+        });
+      }
+      if (lowerRef.startsWith('cards/') || lowerRef.startsWith('index/')) {
+        issues.push({
+          code: 'truth_mutation_attempt',
+          message: `truth-facing bundle ref detected: ${entry.ref}`,
+          path: 'included_artifacts'
+        });
+      }
+    }
+  }
+
+  if (artifact.proposal_only !== true) {
+    issues.push({
+      code: 'proposal_only_required',
+      message: 'bundle manifests must keep proposal_only set to true',
+      path: 'proposal_only'
+    });
+  }
+
+  if (artifact.no_truth_mutation !== true) {
+    issues.push({
+      code: 'no_truth_mutation_required',
+      message: 'bundle manifests must keep no_truth_mutation set to true',
+      path: 'no_truth_mutation'
+    });
+  }
+
+  if (artifact.no_runtime_write !== true) {
+    issues.push({
+      code: 'no_runtime_write_required',
+      message: 'bundle manifests must keep no_runtime_write set to true',
+      path: 'no_runtime_write'
+    });
+  }
+
+  if (typeof artifact.source_packet_ref === 'string') {
+    if (!includedRefs.has(artifact.source_packet_ref)) {
+      issues.push({
+        code: 'inconsistent_source_packet_ref',
+        message: `source_packet_ref is not present in included_artifacts: ${artifact.source_packet_ref}`,
+        path: 'source_packet_ref'
+      });
+    } else if (includedRefs.get(artifact.source_packet_ref) !== 'studio_intake_packet') {
+      issues.push({
+        code: 'source_packet_not_packet',
+        message: `source_packet_ref must point to a studio_intake_packet: ${artifact.source_packet_ref}`,
+        path: 'source_packet_ref'
+      });
+    }
+  }
+
+  if (Array.isArray(artifact.review_refs)) {
+    artifact.review_refs.forEach((ref, index) => {
+      if (!includedRefs.has(ref)) {
+        issues.push({
+          code: 'inconsistent_review_ref',
+          message: `review_refs entry is not present in included_artifacts: ${ref}`,
+          path: `review_refs.${index}`
+        });
+      } else if (includedRefs.get(ref) !== 'review_record') {
+        issues.push({
+          code: 'review_ref_not_review_record',
+          message: `review_refs entry must point to a review_record: ${ref}`,
+          path: `review_refs.${index}`
+        });
+      }
+    });
+  }
+
+  if (Array.isArray(artifact.gate_report_refs)) {
+    artifact.gate_report_refs.forEach((ref, index) => {
+      if (!includedRefs.has(ref)) {
+        issues.push({
+          code: 'inconsistent_gate_report_ref',
+          message: `gate_report_refs entry is not present in included_artifacts: ${ref}`,
+          path: `gate_report_refs.${index}`
+        });
+      } else if (includedRefs.get(ref) !== 'gate_report') {
+        issues.push({
+          code: 'gate_report_ref_not_gate_report',
+          message: `gate_report_refs entry must point to a gate_report: ${ref}`,
+          path: `gate_report_refs.${index}`
+        });
+      }
+    });
+  }
+
+  return issues;
+}
+
+function buildBundleManifestFromArtifacts(filePaths, options = {}) {
+  const includedArtifacts = [];
+
+  for (const filePath of filePaths) {
+    const artifact = readJson(filePath);
+    includedArtifacts.push({
+      artifact_type: artifact.artifact_type,
+      ref: normalizeRelativeRef(filePath)
+    });
+  }
+
+  includedArtifacts.sort((left, right) => left.ref.localeCompare(right.ref));
+
+  const sourcePacketRef = options.sourcePacketRef
+    || (includedArtifacts.find((entry) => entry.artifact_type === 'studio_intake_packet') || {}).ref
+    || 'examples/studio/scaffolded/studio-intake-packet.scaffolded.json';
+
+  const reviewRefs = includedArtifacts
+    .filter((entry) => entry.artifact_type === 'review_record')
+    .map((entry) => entry.ref);
+
+  const gateReportRefs = includedArtifacts
+    .filter((entry) => entry.artifact_type === 'gate_report')
+    .map((entry) => entry.ref);
+
+  const manifest = {
+    artifact_type: 'studio_bundle_manifest',
+    bundle_id: options.bundleId || 'TODO: bundle-id',
+    bundle_type: options.bundleType || 'review_package',
+    included_artifacts: includedArtifacts,
+    source_packet_ref: sourcePacketRef,
+    review_refs: reviewRefs,
+    gate_report_refs: gateReportRefs,
+    consistency_status: 'consistent',
+    intended_next_step: options.intendedNextStep || 'retain_in_review_layer',
+    proposal_only: true,
+    no_truth_mutation: true,
+    no_runtime_write: true
+  };
+
+  if (options.topic) {
+    manifest.topic = options.topic;
+  }
+
+  if (options.bundleSummary) {
+    manifest.bundle_summary = options.bundleSummary;
+  }
+
+  if (options.notes) {
+    manifest.notes = options.notes;
+  }
+
+  const consistencyIssues = findBundleManifestConsistencyIssues(manifest);
+  if (consistencyIssues.length > 0) {
+    manifest.consistency_status = 'needs_review';
+  }
+
+  return {
+    manifest,
+    consistencyIssues
+  };
+}
+
 function lintArtifact(artifact) {
   const schemaErrors = [];
   const boundaryLints = [];
@@ -341,6 +563,12 @@ function lintArtifact(artifact) {
         pushBoundaryLint(boundaryLints, 'forbidden_gate_outcome', `Forbidden gate_outcome: ${artifact.gate_outcome}`, ['gate_outcome']);
       } else if (!GATE_OUTCOMES.includes(artifact.gate_outcome)) {
         pushBoundaryLint(boundaryLints, 'unknown_gate_outcome', `Unknown gate_outcome: ${artifact.gate_outcome}`, ['gate_outcome']);
+      }
+    }
+
+    if (artifactType === 'studio_bundle_manifest') {
+      for (const issue of findBundleManifestConsistencyIssues(artifact)) {
+        boundaryLints.push(issue);
       }
     }
 
@@ -461,6 +689,42 @@ function buildScaffoldArtifact(kindInput) {
     };
   }
 
+  if (kind === 'studio-bundle-manifest') {
+    return {
+      artifact_type: 'studio_bundle_manifest',
+      bundle_id: 'TODO: bundle-id',
+      bundle_type: 'review_package',
+      included_artifacts: [
+        {
+          artifact_type: 'studio_intake_packet',
+          ref: 'examples/studio/scaffolded/studio-intake-packet.scaffolded.json'
+        },
+        {
+          artifact_type: 'proposal_artifact',
+          ref: 'examples/studio/scaffolded/proposal-artifact.scaffolded.json'
+        },
+        {
+          artifact_type: 'review_record',
+          ref: 'examples/studio/scaffolded/review-record.scaffolded.json'
+        },
+        {
+          artifact_type: 'gate_report',
+          ref: 'examples/studio/scaffolded/gate-report.scaffolded.json'
+        }
+      ],
+      source_packet_ref: 'examples/studio/scaffolded/studio-intake-packet.scaffolded.json',
+      review_refs: ['examples/studio/scaffolded/review-record.scaffolded.json'],
+      gate_report_refs: ['examples/studio/scaffolded/gate-report.scaffolded.json'],
+      consistency_status: 'incomplete',
+      intended_next_step: 'retain_in_review_layer',
+      proposal_only: true,
+      no_truth_mutation: true,
+      no_runtime_write: true,
+      topic: 'TODO: topic',
+      bundle_summary: 'TODO: bundle summary'
+    };
+  }
+
   return {
     artifact_type: 'card_review_target_artifact',
     review_target_type: 'review_priority_nomination',
@@ -486,6 +750,10 @@ module.exports = {
   DECISION_CODES,
   GATE_OUTCOMES,
   FORBIDDEN_GATE_OUTCOMES,
+  BUNDLE_TYPES,
+  CONSISTENCY_STATUSES,
+  INTENDED_NEXT_STEPS,
+  BUNDLE_MEMBER_TYPES,
   ARTIFACT_KINDS,
   resolveArtifactKind,
   getArtifactKinds,
@@ -496,6 +764,8 @@ module.exports = {
   validateSchema,
   readJson,
   writeJson,
+  findBundleManifestConsistencyIssues,
+  buildBundleManifestFromArtifacts,
   lintArtifact,
   buildScaffoldArtifact
 };

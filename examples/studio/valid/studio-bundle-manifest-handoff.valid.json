@@ -1,0 +1,42 @@
+{
+  "artifact_type": "studio_bundle_manifest",
+  "bundle_id": "studio-bundle-handoff-001",
+  "bundle_type": "handoff_package",
+  "included_artifacts": [
+    {
+      "artifact_type": "studio_intake_packet",
+      "ref": "examples/studio/valid/idea-origin-packet.valid.json"
+    },
+    {
+      "artifact_type": "proposal_artifact",
+      "ref": "examples/studio/valid/proposal-artifact.valid.json"
+    },
+    {
+      "artifact_type": "handoff_artifact",
+      "ref": "examples/studio/valid/handoff-artifact.valid.json"
+    },
+    {
+      "artifact_type": "review_record",
+      "ref": "examples/studio/valid/review-record-hold.valid.json"
+    },
+    {
+      "artifact_type": "gate_report",
+      "ref": "examples/studio/valid/gate-report-hard-stop.valid.json"
+    }
+  ],
+  "source_packet_ref": "examples/studio/valid/idea-origin-packet.valid.json",
+  "review_refs": [
+    "examples/studio/valid/review-record-hold.valid.json"
+  ],
+  "gate_report_refs": [
+    "examples/studio/valid/gate-report-hard-stop.valid.json"
+  ],
+  "consistency_status": "needs_review",
+  "intended_next_step": "manual_design_followup",
+  "proposal_only": true,
+  "no_truth_mutation": true,
+  "no_runtime_write": true,
+  "topic": "Bundle for bounded handoff consideration without execution",
+  "bundle_summary": "Keeps proposal and handoff materials together while the package remains in local review due to a hard-stop gate.",
+  "notes": "The package is intentionally not forward-authoritative."
+}

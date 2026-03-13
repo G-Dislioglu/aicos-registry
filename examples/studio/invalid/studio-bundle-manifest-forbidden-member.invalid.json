@@ -1,0 +1,19 @@
+{
+  "artifact_type": "studio_bundle_manifest",
+  "bundle_id": "studio-bundle-invalid-001",
+  "bundle_type": "review_package",
+  "included_artifacts": [
+    {
+      "artifact_type": "runtime_review_object",
+      "ref": "runtime/review/object-001.json"
+    }
+  ],
+  "source_packet_ref": "runtime/review/object-001.json",
+  "review_refs": [],
+  "gate_report_refs": [],
+  "consistency_status": "consistent",
+  "intended_next_step": "retain_in_review_layer",
+  "proposal_only": true,
+  "no_truth_mutation": true,
+  "no_runtime_write": true
+}

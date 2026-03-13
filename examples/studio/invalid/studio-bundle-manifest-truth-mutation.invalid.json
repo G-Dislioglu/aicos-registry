@@ -1,0 +1,23 @@
+{
+  "artifact_type": "studio_bundle_manifest",
+  "bundle_id": "studio-bundle-invalid-004",
+  "bundle_type": "reference_package",
+  "included_artifacts": [
+    {
+      "artifact_type": "studio_intake_packet",
+      "ref": "examples/studio/valid/contradiction-challenge-packet.valid.json"
+    },
+    {
+      "artifact_type": "reference_artifact",
+      "ref": "cards/solutions/sol-api-02.json"
+    }
+  ],
+  "source_packet_ref": "examples/studio/valid/contradiction-challenge-packet.valid.json",
+  "review_refs": [],
+  "gate_report_refs": [],
+  "consistency_status": "consistent",
+  "intended_next_step": "archive_only",
+  "proposal_only": true,
+  "no_truth_mutation": true,
+  "no_runtime_write": true
+}

@@ -14,7 +14,8 @@ const REQUIRED_SCHEMA_FILES = [
   'reference-artifact.schema.json',
   'card-review-target-artifact.schema.json',
   'review-record.schema.json',
-  'gate-report.schema.json'
+  'gate-report.schema.json',
+  'studio-bundle-manifest.schema.json'
 ].map((name) => path.join(SCHEMA_DIR, name));
 
 const VALID_EXAMPLES = [
@@ -65,6 +66,14 @@ const VALID_EXAMPLES = [
   {
     file: path.join(EXAMPLES_DIR, 'valid', 'gate-report-hard-stop.valid.json'),
     schema: path.join(SCHEMA_DIR, 'gate-report.schema.json')
+  },
+  {
+    file: path.join(EXAMPLES_DIR, 'valid', 'studio-bundle-manifest-review.valid.json'),
+    schema: path.join(SCHEMA_DIR, 'studio-bundle-manifest.schema.json')
+  },
+  {
+    file: path.join(EXAMPLES_DIR, 'valid', 'studio-bundle-manifest-handoff.valid.json'),
+    schema: path.join(SCHEMA_DIR, 'studio-bundle-manifest.schema.json')
   }
 ];
 
@@ -100,6 +109,14 @@ const INVALID_EXAMPLES = [
   {
     file: path.join(EXAMPLES_DIR, 'invalid', 'gate-report-truth-mutation-attempt.invalid.json'),
     schema: path.join(SCHEMA_DIR, 'gate-report.schema.json')
+  },
+  {
+    file: path.join(EXAMPLES_DIR, 'invalid', 'studio-bundle-manifest-forbidden-member.invalid.json'),
+    schema: path.join(SCHEMA_DIR, 'studio-bundle-manifest.schema.json')
+  },
+  {
+    file: path.join(EXAMPLES_DIR, 'invalid', 'studio-bundle-manifest-missing-boundary.invalid.json'),
+    schema: path.join(SCHEMA_DIR, 'studio-bundle-manifest.schema.json')
   }
 ];
 
