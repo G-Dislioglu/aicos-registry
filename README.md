@@ -110,6 +110,27 @@ node tools/check-card-scoring-hygiene.js
 npm run check:scoring-s1
 ```
 
+## AICOS Studio Intake
+
+The AICOS Studio intake line is repo-near and proposal-only.
+It exists to structure debate, challenge, and distillation outputs without direct truth mutation.
+
+- Charter: `AICOS_STUDIO_INTAKE_CHARTER.md`
+- Packet spec: `AICOS_STUDIO_INTAKE_PACKET_SPEC.md`
+- Doc verifier: `tools/verify-aicos-studio-intake-docs.js`
+
+Boundary rule:
+
+- no direct mutation of registry truth
+- no silent conversion into runtime review state
+- no auto-promotion path from studio output to canon
+
+Normal command:
+
+```bash
+npm run verify:studio-intake
+```
+
 ## Authoring Rules
 
 - **IDs are stable** and used as primary keys (e.g. `err-...`, `sol-...`, `meta-...`)
