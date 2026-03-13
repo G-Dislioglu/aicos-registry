@@ -9,6 +9,7 @@ const REQUIRED_FILES = [
   path.join(ROOT_DIR, 'AICOS_SCORING_CHARTER.md'),
   path.join(ROOT_DIR, 'AICOS_SCORING_AUDIT_INTERPRETATION.md'),
   path.join(ROOT_DIR, 'AICOS_SCORING_AUTHOR_GUIDELINES.md'),
+  path.join(ROOT_DIR, 'AICOS_SCORING_S1_CLOSURE.md'),
   path.join(ROOT_DIR, 'tools', 'score-lib.js'),
   path.join(ROOT_DIR, 'tools', 'audit-card-scoring.js'),
   path.join(ROOT_DIR, 'tools', 'check-card-scoring-hygiene.js'),
@@ -26,11 +27,15 @@ function assert(condition, message) {
 function verifySupportingDocs() {
   const interpretation = fs.readFileSync(path.join(ROOT_DIR, 'AICOS_SCORING_AUDIT_INTERPRETATION.md'), 'utf-8');
   const guidelines = fs.readFileSync(path.join(ROOT_DIR, 'AICOS_SCORING_AUTHOR_GUIDELINES.md'), 'utf-8');
+  const closure = fs.readFileSync(path.join(ROOT_DIR, 'AICOS_SCORING_S1_CLOSURE.md'), 'utf-8');
   for (const expected of ['top-compressed', 'scan surface, but not yet valid as a strong governance or truth-quality surface', 'semantic calibration']) {
     assert(interpretation.includes(expected), `Expected audit interpretation text missing: ${expected}`);
   }
   for (const expected of ['do not treat all three fields as praise', '`95+` should be rare', 'High `value` does not require high `confidence`']) {
     assert(guidelines.includes(expected), `Expected author guideline text missing: ${expected}`);
+  }
+  for (const expected of ['S1 scoring is complete as a registry-layer calibration and scan-surface workflow', 'one deliberate soft-flag exception remains: `meta-006`', 'S2 has not started']) {
+    assert(closure.includes(expected), `Expected scoring closure text missing: ${expected}`);
   }
 }
 

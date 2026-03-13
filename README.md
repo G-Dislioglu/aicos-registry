@@ -88,6 +88,28 @@ node tools/generate-human-registry.js
 node tools/generate-index.js && node tools/generate-human-registry.js
 ```
 
+## Scoring S1 Workflow
+
+The current registry scoring line is closed as S1.
+
+- Charter and semantics: `AICOS_SCORING_CHARTER.md`
+- Interpretation and guidelines: `AICOS_SCORING_AUDIT_INTERPRETATION.md`, `AICOS_SCORING_AUTHOR_GUIDELINES.md`
+- Hygiene and verification: `tools/check-card-scoring-hygiene.js`, `tools/audit-card-scoring.js`, `tools/verify-aicos-scoring-surface.js`
+- Closure state: `AICOS_SCORING_S1_CLOSURE.md`
+
+Normal scoring commands:
+
+```bash
+# Regenerate the scoring scan surface
+node tools/generate-index.js
+
+# Run the hygiene check
+node tools/check-card-scoring-hygiene.js
+
+# Run the full S1 scoring workflow
+npm run check:scoring-s1
+```
+
 ## Authoring Rules
 
 - **IDs are stable** and used as primary keys (e.g. `err-...`, `sol-...`, `meta-...`)

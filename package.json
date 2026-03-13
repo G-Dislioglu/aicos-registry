@@ -4,7 +4,11 @@
   "private": true,
   "scripts": {
     "start": "node tools/arena-server.js",
-    "check:scoring-hygiene": "node tools/check-card-scoring-hygiene.js"
+    "generate:index": "node tools/generate-index.js",
+    "check:scoring-hygiene": "node tools/check-card-scoring-hygiene.js",
+    "check:scoring-audit": "node tools/audit-card-scoring.js",
+    "verify:scoring-surface": "node tools/verify-aicos-scoring-surface.js",
+    "check:scoring-s1": "node tools/check-card-scoring-hygiene.js && node tools/audit-card-scoring.js && node tools/generate-index.js && node tools/verify-aicos-scoring-surface.js"
   },
   "engines": {
     "node": ">=20"
