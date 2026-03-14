@@ -1,0 +1,25 @@
+{
+  "artifact_type": "review_record",
+  "review_record_id": "review-posture-boundary-003",
+  "reviewed_at": "2026-03-14T14:29:00Z",
+  "subject_artifact_type": "studio_intake_packet",
+  "subject_ref": "examples/studio/scenarios/review-to-bundle/intake.packet.json",
+  "topic": "bounded nomination packet must split registry wording review from priority timing disagreement",
+  "lifecycle_state": "split",
+  "decision_type": "split",
+  "decision_codes": [
+    "unresolved_conflict",
+    "split_required"
+  ],
+  "review_summary": "The packet mixes one bounded registry wording nomination with a separate priority dispute. Those should not travel as a single review surface.",
+  "user_gate_status": "not_required",
+  "resulting_next_posture": "retain_in_review_layer",
+  "record_scope": "review_layer_only",
+  "gate_report_refs": [
+    "gate-review-bundle-001"
+  ],
+  "open_conflicts": [
+    "participants still disagree on review priority timing",
+    "Final wording scope still requires human review."
+  ]
+}

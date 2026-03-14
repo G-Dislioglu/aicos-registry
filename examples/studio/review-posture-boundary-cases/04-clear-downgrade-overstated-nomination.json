@@ -1,0 +1,24 @@
+{
+  "artifact_type": "review_record",
+  "review_record_id": "review-posture-boundary-004",
+  "reviewed_at": "2026-03-14T14:34:00Z",
+  "subject_artifact_type": "card_review_target_artifact",
+  "subject_ref": "examples/studio/scenarios/review-to-bundle/card-review-target.artifact.json",
+  "topic": "bounded nomination review package for later human registry wording review",
+  "lifecycle_state": "challenged",
+  "decision_type": "downgrade",
+  "decision_codes": [
+    "insufficient_evidence",
+    "registry_review_nomination_only"
+  ],
+  "review_summary": "The material may stay as a bounded nomination note, but the present seriousness is too strong for active registry-review pressure. Keep it reference-only until the case is sharper.",
+  "user_gate_status": "not_required",
+  "resulting_next_posture": "reference_only",
+  "record_scope": "review_layer_only",
+  "gate_report_refs": [
+    "gate-review-bundle-001"
+  ],
+  "open_conflicts": [
+    "participants still disagree on review priority timing"
+  ]
+}

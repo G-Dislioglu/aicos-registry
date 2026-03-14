@@ -1,0 +1,21 @@
+{
+  "artifact_type": "review_record",
+  "review_record_id": "review-posture-boundary-005",
+  "reviewed_at": "2026-03-14T14:39:00Z",
+  "subject_artifact_type": "proposal_artifact",
+  "subject_ref": "examples/studio/scenarios/idea-to-proposal/proposal.artifact.json",
+  "topic": "keep the contradiction logging proposal as a bounded historical note without active forwarding pressure",
+  "lifecycle_state": "archived",
+  "decision_type": "archive",
+  "decision_codes": [
+    "proposal_only_keep",
+    "archive_preferred"
+  ],
+  "review_summary": "The proposal is still legible enough to retain as a bounded record, but it no longer deserves active forwarding pressure while stronger local material exists elsewhere.",
+  "user_gate_status": "not_applicable",
+  "resulting_next_posture": "archive_only",
+  "record_scope": "review_layer_only",
+  "open_conflicts": [
+    "the threshold for splitting contradiction logging into its own later artifact is still unclear"
+  ]
+}

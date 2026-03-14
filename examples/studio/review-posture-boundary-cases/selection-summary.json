@@ -1,0 +1,86 @@
+{
+  "boundary_block_version": "v1",
+  "status": "proposal_only",
+  "tested_postures": [
+    "forward",
+    "hold",
+    "split",
+    "downgrade",
+    "archive",
+    "discard"
+  ],
+  "entries": [
+    {
+      "id": "posture-boundary-01",
+      "case_file": "01-clear-forward-later-human-decision.json",
+      "case_group": "clear_forward_or_hold",
+      "boundary_reason": "Der Handoff bleibt bounded und conflict-visible, erfüllt aber mit explizitem User Gate die Schwelle für spätere menschliche Entscheidung statt lokaler Stagnation.",
+      "expected_posture": "forward",
+      "why_not_adjacent_posture": "Nicht hold, weil die Lesefläche schon klar genug ist und das Gate bewusst als later-human boundary eingehalten wird.",
+      "ambiguity_level": "low"
+    },
+    {
+      "id": "posture-boundary-02",
+      "case_file": "02-clear-hold-conflict-visible-proposal.json",
+      "case_group": "clear_forward_or_hold",
+      "boundary_reason": "Die Proposal-Fläche ist nützlich, aber Evidenz und Split-Schwelle sind noch zu dünn für Bewegung nach außen.",
+      "expected_posture": "hold",
+      "why_not_adjacent_posture": "Nicht forward, weil Legibilität hier nicht mit Reife verwechselt werden darf.",
+      "ambiguity_level": "low"
+    },
+    {
+      "id": "posture-boundary-03",
+      "case_file": "03-clear-split-mixed-destination-packet.json",
+      "case_group": "clear_split_or_downgrade",
+      "boundary_reason": "Eine Registry-Nominierung und ein Prioritätsstreit sollten nicht in derselben Review-Fläche weitergetragen werden.",
+      "expected_posture": "split",
+      "why_not_adjacent_posture": "Nicht downgrade, weil das Problem nicht bloß Überstärke ist, sondern vermischte Fragen mit unterschiedlicher Leserichtung.",
+      "ambiguity_level": "low"
+    },
+    {
+      "id": "posture-boundary-04",
+      "case_file": "04-clear-downgrade-overstated-nomination.json",
+      "case_group": "clear_split_or_downgrade",
+      "boundary_reason": "Die Nominierung bleibt als bounded Hinweis brauchbar, trägt aber noch zu viel aktive Registry-Schwere.",
+      "expected_posture": "downgrade",
+      "why_not_adjacent_posture": "Nicht split, weil kein zweiter sauber separierbarer Fallkörper vorliegt, sondern eine zu starke Zielstufe.",
+      "ambiguity_level": "low"
+    },
+    {
+      "id": "posture-boundary-05",
+      "case_file": "05-clear-archive-bounded-superseded-note.json",
+      "case_group": "clear_archive_or_discard",
+      "boundary_reason": "Der Fall bleibt als historischer bounded Verweis lesbar, erzeugt aber keinen sinnvollen aktiven Vorwärtsdruck mehr.",
+      "expected_posture": "archive",
+      "why_not_adjacent_posture": "Nicht discard, weil die Lesefläche nicht irreführend oder semantisch toxisch ist.",
+      "ambiguity_level": "low"
+    },
+    {
+      "id": "posture-boundary-06",
+      "case_file": "06-clear-discard-runtime-drift-attempt.json",
+      "case_group": "clear_archive_or_discard",
+      "boundary_reason": "Sobald Handoff-Wording in Approval- oder Runtime-Druck kippt, ist bounded Retention riskanter als Wegwerfen.",
+      "expected_posture": "discard",
+      "why_not_adjacent_posture": "Nicht archive, weil das Material in dieser Form Drift eher konserviert als diszipliniert.",
+      "ambiguity_level": "low"
+    },
+    {
+      "id": "posture-boundary-07",
+      "case_file": "07-ambiguous-forward-vs-hold-thin-evidence.json",
+      "case_group": "ambiguous_boundary",
+      "boundary_reason": "Die Fläche ist beinahe forward-fähig, aber dünne Evidenz und noch nicht gewährtes Gate machen einen verfrühten Schritt driftanfällig.",
+      "expected_posture": "hold",
+      "why_not_adjacent_posture": "Nicht forward, weil hier gerade die Verwechslung von guter Form mit echter Reife droht.",
+      "ambiguity_level": "high"
+    },
+    {
+      "id": "posture-boundary-08",
+      "case_file": "08-ambiguous-split-vs-downgrade-mixed-seriousness.json",
+      "case_group": "ambiguous_boundary",
+      "boundary_reason": "Advisory-Evidence-Frage und Zielstärken-Frage wirken verwandt, sind aber für spätere Leser zwei getrennte Spannungen.",
+      "expected_posture": "split",
+      "why_not_adjacent_posture": "Nicht downgrade, weil bloßes Abschwächen die zwei Konfliktachsen unsichtbar zusammenzieht.",
+      "ambiguity_level": "high"
+    }
+  ]
+}

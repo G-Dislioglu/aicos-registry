@@ -1,0 +1,25 @@
+{
+  "artifact_type": "review_record",
+  "review_record_id": "review-posture-boundary-008",
+  "reviewed_at": "2026-03-14T14:53:00Z",
+  "subject_artifact_type": "studio_intake_packet",
+  "subject_ref": "examples/studio/scenarios/contradiction-to-review/intake.packet.json",
+  "topic": "contradiction packet mixes one advisory evidence dispute with one destination seriousness dispute",
+  "lifecycle_state": "split",
+  "decision_type": "split",
+  "decision_codes": [
+    "unresolved_conflict",
+    "split_required"
+  ],
+  "review_summary": "Downgrading alone would weaken the whole packet without separating the two distinct tensions. Splitting is cleaner because advisory evidence and destination seriousness are not the same issue.",
+  "user_gate_status": "not_required",
+  "resulting_next_posture": "retain_in_review_layer",
+  "record_scope": "review_layer_only",
+  "gate_report_refs": [
+    "gate-contradiction-review-001"
+  ],
+  "open_conflicts": [
+    "there is no accepted threshold for treating convergence as more than advisory evidence",
+    "No accepted standard exists for upgrading convergence beyond advisory evidence."
+  ]
+}

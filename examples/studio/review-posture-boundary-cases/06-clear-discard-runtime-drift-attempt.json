@@ -1,0 +1,21 @@
+{
+  "artifact_type": "review_record",
+  "review_record_id": "review-posture-boundary-006",
+  "reviewed_at": "2026-03-14T14:43:00Z",
+  "subject_artifact_type": "handoff_artifact",
+  "subject_ref": "examples/studio/scenarios/idea-to-handoff/handoff.artifact.json",
+  "topic": "discard a drift-prone handoff framing that collapses review into execution pressure",
+  "lifecycle_state": "discarded",
+  "decision_type": "discard",
+  "decision_codes": [
+    "runtime_forbidden",
+    "truth_mutation_forbidden"
+  ],
+  "review_summary": "When the handoff framing starts to imply approval, runtime action, or hidden promotion, the safer posture is discard rather than bounded retention.",
+  "user_gate_status": "not_applicable",
+  "resulting_next_posture": "discarded",
+  "record_scope": "review_layer_only",
+  "open_conflicts": [
+    "the threshold for escalation remains disputed"
+  ]
+}

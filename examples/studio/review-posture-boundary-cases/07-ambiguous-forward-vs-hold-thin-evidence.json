@@ -1,0 +1,25 @@
+{
+  "artifact_type": "review_record",
+  "review_record_id": "review-posture-boundary-007",
+  "reviewed_at": "2026-03-14T14:48:00Z",
+  "subject_artifact_type": "handoff_artifact",
+  "subject_ref": "examples/studio/scenarios/idea-to-handoff/handoff.artifact.json",
+  "topic": "legible handoff with thin evidence and unresolved threshold discipline",
+  "lifecycle_state": "held",
+  "decision_type": "hold",
+  "decision_codes": [
+    "insufficient_evidence",
+    "user_gate_required"
+  ],
+  "review_summary": "The artifact is close to a forward posture, but evidence is still thin enough that holding it locally is safer than letting legibility be mistaken for readiness.",
+  "user_gate_status": "required_not_yet_granted",
+  "resulting_next_posture": "retain_in_review_layer",
+  "record_scope": "review_layer_only",
+  "gate_report_refs": [
+    "gate-idea-handoff-001"
+  ],
+  "open_conflicts": [
+    "the threshold for escalation remains disputed",
+    "The escalation threshold remains contested and must stay visible."
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "artifact_type": "studio_dossier",
+  "dossier_id": "studio-dossier-stress-004",
+  "title": "Sicherer Kern gegen offene Unsicherheit im Proposal-Readout",
+  "topic": "proposal-only contradiction logging idea remains bounded inside local review with explicit uncertainty",
+  "dossier_scope": "local_human_review_only",
+  "included_artifacts": [
+    {
+      "artifact_type": "gate_report",
+      "ref": "examples/studio/scenarios/idea-to-proposal/gate-report.proposal-only.json"
+    },
+    {
+      "artifact_type": "studio_intake_packet",
+      "ref": "examples/studio/scenarios/idea-to-proposal/intake.packet.json"
+    },
+    {
+      "artifact_type": "proposal_artifact",
+      "ref": "examples/studio/scenarios/idea-to-proposal/proposal.artifact.json"
+    },
+    {
+      "artifact_type": "review_record",
+      "ref": "examples/studio/scenarios/idea-to-proposal/review-record.hold.json"
+    }
+  ],
+  "source_packet_ref": "examples/studio/scenarios/idea-to-proposal/intake.packet.json",
+  "source_packet_summary": "Der sichere Kern ist klar: proposal-only, bounded und lokal lesbar. Offen bleibt nur, wie weit die spätere Aufspaltung der Widerspruchsfläche überhaupt gehen sollte.",
+  "included_proposal_refs": [
+    "examples/studio/scenarios/idea-to-proposal/proposal.artifact.json"
+  ],
+  "review_refs": [
+    "examples/studio/scenarios/idea-to-proposal/review-record.hold.json"
+  ],
+  "gate_report_refs": [
+    "examples/studio/scenarios/idea-to-proposal/gate-report.proposal-only.json"
+  ],
+  "bundle_context_summary": "Kein Bundle-Kontext. Die Lesefläche ist absichtlich klein, damit gesicherter Kern und offene Unsicherheit nebeneinander sichtbar bleiben.",
+  "open_conflicts": [
+    "the threshold for splitting contradiction logging into its own later artifact is still unclear",
+    "The split threshold for a dedicated contradiction artifact remains unresolved."
+  ],
+  "gate_outcomes": [
+    {
+      "gate_report_id": "gate-idea-proposal-001",
+      "gate_name": "proposal_only_gate",
+      "gate_outcome": "pass",
+      "subject_ref": "examples/studio/scenarios/idea-to-proposal/proposal.artifact.json",
+      "approval_requirement": "not_required"
+    }
+  ],
+  "recommended_human_next_step": "manual_design_followup",
+  "forbidden_automated_next_steps": [
+    "runtime_review_object_creation",
+    "truth_mutation",
+    "card_write",
+    "index_write",
+    "alias_write",
+    "auto_forwarding",
+    "provider_execution"
+  ],
+  "proposal_only": true,
+  "no_truth_mutation": true,
+  "no_runtime_write": true,
+  "notes": "Stress focus: unklare Trennung zwischen sicherem Kern und offener Unsicherheit. Der Readout darf das Stabile nicht mit dem Offenen vermischen."
+}

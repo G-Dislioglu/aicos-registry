@@ -1,0 +1,25 @@
+{
+  "artifact_type": "review_record",
+  "review_record_id": "review-posture-boundary-002",
+  "reviewed_at": "2026-03-14T14:24:00Z",
+  "subject_artifact_type": "proposal_artifact",
+  "subject_ref": "examples/studio/scenarios/idea-to-proposal/proposal.artifact.json",
+  "topic": "keep the contradiction logging proposal inside bounded review",
+  "lifecycle_state": "held",
+  "decision_type": "hold",
+  "decision_codes": [
+    "insufficient_evidence",
+    "proposal_only_keep"
+  ],
+  "review_summary": "The proposal remains locally useful, but the current material is still too thin and too unsettled for stronger movement beyond bounded review.",
+  "user_gate_status": "not_required",
+  "resulting_next_posture": "retain_in_review_layer",
+  "record_scope": "review_layer_only",
+  "gate_report_refs": [
+    "gate-idea-proposal-001"
+  ],
+  "open_conflicts": [
+    "the threshold for splitting contradiction logging into its own later artifact is still unclear",
+    "The split threshold for a dedicated contradiction artifact remains unresolved."
+  ]
+}

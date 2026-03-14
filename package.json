@@ -26,6 +26,7 @@
     "verify:frame-delta-smt-pilot-entry": "node tools/verify-aicos-frame-delta-smt-pilot-entry-criteria.js",
     "verify:mainline-reprioritization": "node tools/verify-aicos-mainline-reprioritization-after-smt-freeze.js",
     "verify:studio-review-target-boundaries": "node tools/verify-aicos-studio-next-review-target-boundary-cases.js",
+    "verify:studio-review-posture-dossier-stress": "node tools/verify-aicos-studio-review-posture-and-dossier-stress.js",
     "verify:studio-schemas": "node tools/verify-aicos-studio-schemas.js",
     "verify:studio-tooling": "node tools/verify-aicos-studio-tooling.js",
     "verify:studio-review": "node tools/verify-aicos-studio-review-layer.js",

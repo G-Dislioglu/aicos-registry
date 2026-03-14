@@ -1,0 +1,64 @@
+{
+  "artifact_type": "studio_dossier",
+  "dossier_id": "studio-dossier-stress-003",
+  "title": "Widerspruchs-Readout mit schlechter Prioritätensicht",
+  "topic": "contradiction review keeps provider convergence advisory and evidence-incomplete for local priority discipline",
+  "dossier_scope": "local_human_review_only",
+  "included_artifacts": [
+    {
+      "artifact_type": "gate_report",
+      "ref": "examples/studio/scenarios/contradiction-to-review/gate-report.soft-fail.json"
+    },
+    {
+      "artifact_type": "studio_intake_packet",
+      "ref": "examples/studio/scenarios/contradiction-to-review/intake.packet.json"
+    },
+    {
+      "artifact_type": "proposal_artifact",
+      "ref": "examples/studio/scenarios/contradiction-to-review/proposal.artifact.json"
+    },
+    {
+      "artifact_type": "review_record",
+      "ref": "examples/studio/scenarios/contradiction-to-review/review-record.hold.json"
+    }
+  ],
+  "source_packet_ref": "examples/studio/scenarios/contradiction-to-review/intake.packet.json",
+  "source_packet_summary": "Das Thema klingt ernst und groß, aber der Readout soll gerade zeigen, dass die Priorität lokal und evidenzgebremst bleibt.",
+  "included_proposal_refs": [
+    "examples/studio/scenarios/contradiction-to-review/proposal.artifact.json"
+  ],
+  "review_refs": [
+    "examples/studio/scenarios/contradiction-to-review/review-record.hold.json"
+  ],
+  "gate_report_refs": [
+    "examples/studio/scenarios/contradiction-to-review/gate-report.soft-fail.json"
+  ],
+  "bundle_context_summary": "Kein Bundle-Kontext. Die Lesefläche bleibt absichtlich lokal, damit Dringlichkeitsrhetorik nicht als echte Priorität gelesen wird.",
+  "open_conflicts": [
+    "there is no accepted threshold for treating convergence as more than advisory evidence",
+    "No accepted standard exists for upgrading convergence beyond advisory evidence."
+  ],
+  "gate_outcomes": [
+    {
+      "gate_report_id": "gate-contradiction-review-001",
+      "gate_name": "evidence_gate",
+      "gate_outcome": "soft_fail",
+      "subject_ref": "examples/studio/scenarios/contradiction-to-review/proposal.artifact.json",
+      "approval_requirement": "not_required"
+    }
+  ],
+  "recommended_human_next_step": "retain_in_review_layer",
+  "forbidden_automated_next_steps": [
+    "runtime_review_object_creation",
+    "truth_mutation",
+    "card_write",
+    "index_write",
+    "alias_write",
+    "auto_forwarding",
+    "provider_execution"
+  ],
+  "proposal_only": true,
+  "no_truth_mutation": true,
+  "no_runtime_write": true,
+  "notes": "Stress focus: schlechte Prioritätensicht. Der Readout muss Seriosität von tatsächlicher Vorwärtspriorität trennen."
+}
