@@ -9,6 +9,7 @@
     "check:scoring-audit": "node tools/audit-card-scoring.js",
     "verify:scoring-surface": "node tools/verify-aicos-scoring-surface.js",
     "check:scoring-s1": "node tools/check-card-scoring-hygiene.js && node tools/audit-card-scoring.js && node tools/generate-index.js && node tools/verify-aicos-scoring-surface.js",
+    "verify:scoring-s2-entry-soft-flags": "node tools/verify-aicos-scoring-s2-entry-and-soft-flag-boundaries.js",
     "scaffold:studio": "node tools/studio-scaffold.js",
     "scaffold:studio-review-record": "node tools/studio-review-record.js",
     "scaffold:studio-gate-report": "node tools/studio-gate-report.js",

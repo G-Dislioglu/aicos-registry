@@ -1,0 +1,36 @@
+{
+  "schema_version": "aicos-scoring-soft-flag-boundary-case/v1",
+  "id": "sf-boundary-01",
+  "status": "proposal_only",
+  "case_group": "clear_likely_overvaluation",
+  "source_card_ref": "cards/solutions/sol-cross-010.json",
+  "source_card_id": "sol-cross-010",
+  "source_card_status": "proposed",
+  "source_card_type": "solution_proof",
+  "soft_flag_signals": [
+    "proposed_high_confidence"
+  ],
+  "expected_classification": "likely_overvaluation",
+  "boundary_reason": "The card presents a strong integrated architecture idea, but its confidence claim still outruns the mostly compositional and cross-link-based evidence style.",
+  "classification_rationale": "The overvaluation signal dominates because proposal-level confidence is already high while the evidence remains synthesis-heavy and non-operational.",
+  "why_not_likely_overvaluation": "Not applicable here because this case is the likely-overvaluation anchor: the overvaluation pressure already dominates the defensibility signal.",
+  "why_not_justified_exception": "There is no bounded operational defect, no repeated validation and no code-level grounding that would justify treating the confidence spike as an exception.",
+  "why_not_adjacent_classification": "This is not a justified exception because there are no concrete code references, no repeated bounded validation and no narrow operational surface. It is stronger than a borderline case because the proposal remains synthesis-heavy while carrying proof-like confidence pressure.",
+  "ambiguity_level": "low",
+  "bounded_reading": "Read as a promising synthesis that likely wants softer confidence if touched later, not as settled proof and not as a reason to open S2 semantics.",
+  "source_snapshot": {
+    "impact": {
+      "value": 85,
+      "risk": 15,
+      "confidence": 90
+    },
+    "overvaluation_signal": "proposal confidence is already at 90 while the card is still cross-link and integration heavy",
+    "defensibility_signal": "the proposal does show coherent architectural integration rather than pure noise",
+    "evidence_shape": [
+      "cross-link based",
+      "conceptual integration",
+      "no code refs"
+    ],
+    "review_anchor": "Existing proposed_high_confidence review treats this cluster as the clearest likely-overvaluation pressure point."
+  }
+}

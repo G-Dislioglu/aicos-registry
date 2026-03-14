@@ -1,0 +1,37 @@
+{
+  "schema_version": "aicos-scoring-soft-flag-boundary-case/v1",
+  "id": "sf-boundary-02",
+  "status": "proposal_only",
+  "case_group": "clear_likely_overvaluation",
+  "source_card_ref": "cards/solutions/sol-cross-007.json",
+  "source_card_id": "sol-cross-007",
+  "source_card_status": "proposed",
+  "source_card_type": "solution_proof",
+  "soft_flag_signals": [
+    "proposed_high_confidence",
+    "value_95_plus"
+  ],
+  "expected_classification": "likely_overvaluation",
+  "boundary_reason": "A broad anti-complexity concept card claims exceptional value and near-proof confidence together while remaining proposal-level and largely pattern-alignment based.",
+  "classification_rationale": "Both exceptional-value pressure and proposal-confidence pressure point toward overvaluation faster than the available evidence can justify.",
+  "why_not_likely_overvaluation": "Not applicable here because this case is meant to anchor the clear overvaluation side of the boundary.",
+  "why_not_justified_exception": "The card stays too broad, too future-facing and too weakly grounded to read as a bounded exception.",
+  "why_not_adjacent_classification": "This does carry meaningful signal, but the combination of proposal status, cross-domain ambition and exceptional scoring is too strong to treat as a justified exception. It is not merely borderline because both value and confidence lean toward exceptional claims without exceptional proof density.",
+  "ambiguity_level": "low",
+  "bounded_reading": "Read as an important proposal that should stay high-signal without being encoded as a settled registry-scale exception.",
+  "source_snapshot": {
+    "impact": {
+      "value": 96,
+      "risk": 10,
+      "confidence": 90
+    },
+    "overvaluation_signal": "exceptional value and proposal confidence are both elevated on a broad concept card without dense proof",
+    "defensibility_signal": "the concept does have real architectural resonance and non-trivial signal",
+    "evidence_shape": [
+      "pattern alignment",
+      "cross-domain resonance",
+      "no dense empirical proof"
+    ],
+    "review_anchor": "Soft-flag review identifies broad future-facing concept cards and proposed high-confidence cards as the clearest inflation zones."
+  }
+}

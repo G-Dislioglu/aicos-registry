@@ -1,0 +1,36 @@
+{
+  "schema_version": "aicos-scoring-soft-flag-boundary-case/v1",
+  "id": "sf-boundary-05",
+  "status": "proposal_only",
+  "case_group": "ambiguous_boundary",
+  "source_card_ref": "cards/solutions/sol-cross-012.json",
+  "source_card_id": "sol-cross-012",
+  "source_card_status": "proposed",
+  "source_card_type": "solution_proof",
+  "soft_flag_signals": [
+    "proposed_high_confidence"
+  ],
+  "expected_classification": "borderline_but_defensible",
+  "boundary_reason": "Concrete numeric thresholds make the proposal read tighter and more operational than a normal synthesis card, but the evidence still does not reach repeated bounded validation.",
+  "classification_rationale": "This stays borderline only because proposal-level overvaluation pressure and genuine operational concreteness are both materially present at the same time.",
+  "why_not_likely_overvaluation": "The proposal is unusually concrete, names numeric gates and is easier to operationalize than a normal synthesis card.",
+  "why_not_justified_exception": "The card still lacks repeated bounded validation and remains a proposal rather than a proven local exception.",
+  "why_not_adjacent_classification": "This is not a clear justified exception because proposal status and heuristic thresholds still matter. It is not a clear likely-overvaluation case because the card is unusually concrete and easier to operationalize than most proposal synthesis cards.",
+  "ambiguity_level": "high",
+  "bounded_reading": "Read as a proposal that may be defensible at the upper edge of S1 review, but still not as settled proof and not as evidence that new S2 axes are needed.",
+  "source_snapshot": {
+    "impact": {
+      "value": 90,
+      "risk": 10,
+      "confidence": 90
+    },
+    "overvaluation_signal": "proposal confidence is already high and still lacks repeated bounded validation",
+    "defensibility_signal": "numeric gates make the proposal more operational and reviewable than a normal synthesis-only card",
+    "evidence_shape": [
+      "numeric heuristics",
+      "proposal-level gate design",
+      "no repeated validation"
+    ],
+    "review_anchor": "Existing proposed_high_confidence review already marks numeric proposal cards as closer to acceptable than the strongest overvaluation cases."
+  }
+}

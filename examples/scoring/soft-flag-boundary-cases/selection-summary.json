@@ -1,0 +1,89 @@
+{
+  "boundary_block_version": "v1",
+  "status": "proposal_only",
+  "tested_soft_flag_signals": [
+    "proposed_high_confidence",
+    "confidence_95_plus",
+    "value_95_plus"
+  ],
+  "review_labels": [
+    "likely_overvaluation",
+    "justified_exception",
+    "borderline_but_defensible"
+  ],
+  "borderline_guardrail": "borderline_but_defensible is allowed only as a narrow exception zone when real overvaluation pressure and real defensibility pressure are both present; it is not a default catch-all for uncertainty.",
+  "entries": [
+    {
+      "id": "sf-boundary-01",
+      "case_file": "01-clear-proposal-synthesis-overvaluation.json",
+      "case_group": "clear_likely_overvaluation",
+      "boundary_reason": "Proposal confidence is already in proof-like territory while evidence is still mostly compositional synthesis.",
+      "classification_rationale": "Overvaluation pressure dominates because confidence is high while evidence remains synthesis-heavy.",
+      "expected_classification": "likely_overvaluation",
+      "why_not_likely_overvaluation": "Not applicable here because this case anchors the clear likely-overvaluation side.",
+      "why_not_justified_exception": "There is no bounded operational surface or repeated implementation-near validation.",
+      "why_not_adjacent_classification": "There is no narrow operational surface, no code-level grounding and no repeated validation that could make the flag defensible.",
+      "ambiguity_level": "low"
+    },
+    {
+      "id": "sf-boundary-02",
+      "case_file": "02-clear-broad-architecture-overvaluation.json",
+      "case_group": "clear_likely_overvaluation",
+      "boundary_reason": "Exceptional value and proposal confidence are claimed together on a broad architecture card without exceptional proof density.",
+      "classification_rationale": "Exceptional-value and proposal-confidence pressure outrun the available evidence.",
+      "expected_classification": "likely_overvaluation",
+      "why_not_likely_overvaluation": "Not applicable here because this case anchors the overvaluation edge.",
+      "why_not_justified_exception": "The case is too broad and future-facing to count as a bounded exception.",
+      "why_not_adjacent_classification": "The case is too scope-expansive and future-facing to read as a justified exception under current S1 review logic.",
+      "ambiguity_level": "low"
+    },
+    {
+      "id": "sf-boundary-03",
+      "case_file": "03-clear-bounded-fix-justified-exception.json",
+      "case_group": "clear_justified_exception",
+      "boundary_reason": "A concrete failure mode with repro steps and code references can justify very high confidence without implying general theory inflation.",
+      "classification_rationale": "The confidence spike is attached to a narrow, testable defect surface with direct evidence.",
+      "expected_classification": "justified_exception",
+      "why_not_likely_overvaluation": "The evidence is bounded and operational rather than synthesis-heavy or future-facing.",
+      "why_not_justified_exception": "Not applicable here because this case anchors the justified-exception side.",
+      "why_not_adjacent_classification": "The flag is not likely overvaluation because the evidence is bounded, concrete and implementation-near rather than conceptual.",
+      "ambiguity_level": "low"
+    },
+    {
+      "id": "sf-boundary-04",
+      "case_file": "04-clear-production-fallback-justified-exception.json",
+      "case_group": "clear_justified_exception",
+      "boundary_reason": "A narrow active fallback solution with production-style notes and code references can plausibly keep a 95 confidence signal.",
+      "classification_rationale": "The confidence remains defensible because the fallback is narrow, operational and implementation-heavy.",
+      "expected_classification": "justified_exception",
+      "why_not_likely_overvaluation": "The card documents an operational fallback instead of a broad conceptual claim.",
+      "why_not_justified_exception": "Not applicable here because this case is already the clear exception anchor.",
+      "why_not_adjacent_classification": "The case is too operationally bounded and too implementation-heavy to treat as proposal-style inflation.",
+      "ambiguity_level": "low"
+    },
+    {
+      "id": "sf-boundary-05",
+      "case_file": "05-ambiguous-numeric-gate-proposal-borderline.json",
+      "case_group": "ambiguous_boundary",
+      "boundary_reason": "Concrete thresholds make the proposal feel tighter than a normal synthesis card, but it still lacks repeated bounded validation.",
+      "classification_rationale": "The case is borderline only because high proposal-confidence pressure and real operational concreteness coexist at once.",
+      "expected_classification": "borderline_but_defensible",
+      "why_not_likely_overvaluation": "Numeric gates and operational specificity make the proposal more defensible than a normal synthesis-only card.",
+      "why_not_justified_exception": "The card still lacks repeated bounded validation and remains proposal-level.",
+      "why_not_adjacent_classification": "It is not a clear justified exception because proposal status still matters, but it is also not a clean overvaluation case because the proposal is unusually concrete.",
+      "ambiguity_level": "high"
+    },
+    {
+      "id": "sf-boundary-06",
+      "case_file": "06-ambiguous-high-value-domain-solution.json",
+      "case_group": "ambiguous_boundary",
+      "boundary_reason": "Very high value on a proven local solution can be defensible inside one domain while still looking too exceptional at registry scale.",
+      "classification_rationale": "The case is borderline only because exceptional-value pressure and concrete local usefulness are both materially present.",
+      "expected_classification": "borderline_but_defensible",
+      "why_not_likely_overvaluation": "The solution is concrete, copy-ready and repeatedly useful in one recurring domain.",
+      "why_not_justified_exception": "The exceptional-value claim stays broader than a clean bounded exception normally allows.",
+      "why_not_adjacent_classification": "It is not a clean justified exception because the exceptional-value claim remains strong, but it is also not clearly inflated because the solution surface is concrete and repeatedly useful.",
+      "ambiguity_level": "medium"
+    }
+  ]
+}

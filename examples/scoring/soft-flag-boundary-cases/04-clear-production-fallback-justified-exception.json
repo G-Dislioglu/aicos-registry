@@ -1,0 +1,36 @@
+{
+  "schema_version": "aicos-scoring-soft-flag-boundary-case/v1",
+  "id": "sf-boundary-04",
+  "status": "proposal_only",
+  "case_group": "clear_justified_exception",
+  "source_card_ref": "cards/solutions/sol-audio-02.json",
+  "source_card_id": "sol-audio-02",
+  "source_card_status": "active",
+  "source_card_type": "solution_proof",
+  "soft_flag_signals": [
+    "confidence_95_plus"
+  ],
+  "expected_classification": "justified_exception",
+  "boundary_reason": "A narrow fallback solution with production-style notes and concrete code references can plausibly justify very high confidence without implying conceptual inflation.",
+  "classification_rationale": "The case remains exception-worthy because the high confidence is attached to a narrow operational fallback with concrete implementation evidence.",
+  "why_not_likely_overvaluation": "The card is not asking for broad conceptual credit; it is documenting a bounded fallback that is already operationally legible.",
+  "why_not_justified_exception": "Not applicable here because this case is intended as a clear justified exception rather than a mid-zone compromise.",
+  "why_not_adjacent_classification": "This is not likely overvaluation because the solution surface is operationally bounded and explicitly proven in production-style notes. It is stronger than borderline because the evidence is concrete and implementation-heavy rather than speculative.",
+  "ambiguity_level": "low",
+  "bounded_reading": "Read as a local, implementation-near exception that does not widen the scoring ontology and does not argue for S2 by itself.",
+  "source_snapshot": {
+    "impact": {
+      "value": 85,
+      "risk": 20,
+      "confidence": 95
+    },
+    "overvaluation_signal": "confidence is still high enough to trigger review pressure on its face",
+    "defensibility_signal": "production-style notes and multiple code references narrow the claim into an operational exception",
+    "evidence_shape": [
+      "fallback procedure",
+      "production-style notes",
+      "multiple code refs"
+    ],
+    "review_anchor": "Existing soft-flag review treats bounded operational solution cards as plausible justified exceptions when confidence is unusually well grounded."
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "schema_version": "aicos-scoring-soft-flag-boundary-case/v1",
+  "id": "sf-boundary-06",
+  "status": "proposal_only",
+  "case_group": "ambiguous_boundary",
+  "source_card_ref": "cards/solutions/sol-audio-01.json",
+  "source_card_id": "sol-audio-01",
+  "source_card_status": "active",
+  "source_card_type": "solution_proof",
+  "soft_flag_signals": [
+    "value_95_plus"
+  ],
+  "expected_classification": "borderline_but_defensible",
+  "boundary_reason": "A repeatedly useful local solution can feel exceptionally valuable inside one domain while still remaining uncertain as a registry-wide exceptional-value case.",
+  "classification_rationale": "This stays borderline because the exceptional-value pressure is real, but so is the concrete local usefulness that keeps the case from collapsing into obvious inflation.",
+  "why_not_likely_overvaluation": "The solution is concrete, copy-ready and tied to a recurring operational problem rather than to a broad speculative claim.",
+  "why_not_justified_exception": "The exceptional-value claim is still broader than the narrow bounded confidence pattern that normally makes an exception clean.",
+  "why_not_adjacent_classification": "This is not a clean justified exception because an exceptional-value claim is stronger than narrow high-confidence groundedness. It is not clearly likely overvaluation because the solution is concrete, copy-ready and tied to a recurring operational problem.",
+  "ambiguity_level": "medium",
+  "bounded_reading": "Read as a local high-signal solution whose exceptional value claim should stay reviewable rather than automatically normalized or automatically defended.",
+  "source_snapshot": {
+    "impact": {
+      "value": 95,
+      "risk": 25,
+      "confidence": 75
+    },
+    "overvaluation_signal": "value is already at exceptional territory and therefore asks for review pressure",
+    "defensibility_signal": "the solution is copy-ready, repeatedly useful and locally grounded in one recurring domain problem",
+    "evidence_shape": [
+      "copy-ready local fix",
+      "recurring operational use",
+      "single-domain strength"
+    ],
+    "review_anchor": "Existing soft-flag review treats high local usefulness with near-exceptional value as a softer and more ambiguous zone than proposal-confidence inflation."
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "schema_version": "aicos-scoring-soft-flag-boundary-case/v1",
+  "id": "sf-boundary-03",
+  "status": "proposal_only",
+  "case_group": "clear_justified_exception",
+  "source_card_ref": "cards/errors/err-frontend-01.json",
+  "source_card_id": "err-frontend-01",
+  "source_card_status": "active",
+  "source_card_type": "error_pattern",
+  "soft_flag_signals": [
+    "confidence_95_plus"
+  ],
+  "expected_classification": "justified_exception",
+  "boundary_reason": "The card is tied to a bounded failure mode with concrete repro steps, concrete symptoms and explicit code references, which makes unusually high confidence understandable.",
+  "classification_rationale": "The exception signal dominates because the confidence spike is attached to a narrow, testable and implementation-near defect surface.",
+  "why_not_likely_overvaluation": "The confidence is not floating above a conceptual proposal; it is pinned to a concrete failure mode with direct operational evidence.",
+  "why_not_justified_exception": "Not applicable here because this case is the justified-exception anchor and the bounded evidence is already strong enough.",
+  "why_not_adjacent_classification": "This is not likely overvaluation because the confidence is grounded in a narrow operational defect rather than in broad conceptual synthesis. It is stronger than borderline because the evidence shape is concrete and repeatedly testable.",
+  "ambiguity_level": "low",
+  "bounded_reading": "Read as a narrow, well-grounded implementation-facing exception, not as a template for generally raising confidence scores.",
+  "source_snapshot": {
+    "impact": {
+      "value": 75,
+      "risk": 70,
+      "confidence": 95
+    },
+    "overvaluation_signal": "confidence is unusually high and therefore still review-worthy in pure scalar terms",
+    "defensibility_signal": "repro steps, clear symptoms and multiple code references make the confidence locally explainable",
+    "evidence_shape": [
+      "repro steps",
+      "clear failure symptoms",
+      "multiple code refs"
+    ],
+    "review_anchor": "Existing soft-flag review treats concrete fix-oriented cards with bounded evidence as the clearest justified-exception zone."
+  }
+}
