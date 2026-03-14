@@ -1,0 +1,60 @@
+{
+  "candidate_note_version": "v1",
+  "status": "proposal_only",
+  "entries": [
+    {
+      "id": "separated_counterframing",
+      "candidate_pattern": "bewusste getrennte Gegenrahmung",
+      "valuable_core": "Eine Gegenlesart bleibt sauber getrennt, statt als halbe Zustimmung in die Ausgangslesart zu kippen.",
+      "known_risks": "Kann künstlich Opposition produzieren, obwohl kein materieller Split vorliegt.",
+      "adoption_status": "adopt_now_as_note",
+      "not_adopted_yet": "Kein Operator, kein fester Ablauf, keine Trigger-Regel.",
+      "notes": "Wertvoll als konzeptuelle Disziplinierung, nicht als neuer AICOS-Kernmechanismus."
+    },
+    {
+      "id": "non_mediating_merge",
+      "candidate_pattern": "nicht-mittelnder Merge",
+      "valuable_core": "Der Merge soll Spannung explizit halten, statt vorschnell auf Konsens oder Schönwetterformulierung zu glätten.",
+      "known_risks": "Kann als dramatisierte Dialektik missverstanden werden, obwohl nur ein sauberes Vergleichsformat gemeint ist.",
+      "adoption_status": "adopt_now_as_note",
+      "not_adopted_yet": "Kein kanonischer Merge-Schritt in Delta oder Studio.",
+      "notes": "Nur als spätere Pilot-Idee denkbar, falls sich realer Mehrwert zeigen lässt."
+    },
+    {
+      "id": "agreement_zone_and_tension_points",
+      "candidate_pattern": "agreement_zone plus tension_points",
+      "valuable_core": "Trennt geteilte Basis von den eigentlichen Konfliktzonen.",
+      "known_risks": "Kann Scheingenauigkeit erzeugen, wenn die Felder nur dekorativ ausgefüllt werden.",
+      "adoption_status": "adopt_now_as_note",
+      "not_adopted_yet": "Keine Pflichtfelder in bestehender Frame-Delta-Logik.",
+      "notes": "Nützlich als spätere Auswertungsstruktur, wenn überhaupt."
+    },
+    {
+      "id": "hidden_assumption_and_failure_condition",
+      "candidate_pattern": "hidden_assumption plus failure_condition",
+      "valuable_core": "Zwingt dazu, die verdeckte Annahme und die Achillesferse eines Framings explizit zu benennen.",
+      "known_risks": "Kann falsche Tiefe suggerieren, wenn in Wahrheit nur schwache Hypothesen vorliegen.",
+      "adoption_status": "adopt_now_as_note",
+      "not_adopted_yet": "Kein verpflichtender Output und keine Kanonisierung als neuer Operatorzweck.",
+      "notes": "Konzeptuell stark, aber nur als Kandidatenmaterial belastbar."
+    },
+    {
+      "id": "false_split_and_shallow_split",
+      "candidate_pattern": "false_split oder shallow_split",
+      "valuable_core": "Negative Signale machen sichtbar, dass ein Split künstlich oder oberflächlich war und keinen echten Erkenntnisdruck erzeugt.",
+      "known_risks": "Kann zu unnötiger Meta-Diagnostik aufblasen, wenn jeder Widerspruch erst auf Split-Qualität geprüft werden soll.",
+      "adoption_status": "adopt_now_as_note",
+      "not_adopted_yet": "Kein Pflichtdiagnosepfad und keine Policy-Folge.",
+      "notes": "Wertvoll gerade deshalb, weil auch Nicht-Gelingen sauber markiert werden kann."
+    },
+    {
+      "id": "multi_output_realism",
+      "candidate_pattern": "mehrere realistische Output-Typen statt Pflicht-Transzendenz",
+      "valuable_core": "Ein späterer Pilot darf mit new_question, boundary_clarification, evidence_gap, trigger_refinement oder no_material_gain enden.",
+      "known_risks": "Die Idee wird verzerrt, wenn nur ein heroischer Endoutput als Erfolg gilt.",
+      "adoption_status": "adopt_now_as_note",
+      "not_adopted_yet": "Keine Pflicht, immer transcendent_question zu erzeugen.",
+      "notes": "Der nüchterne Output-Rahmen ist wahrscheinlich wertvoller als die überhöhte Ursprungssemantik."
+    }
+  ]
+}

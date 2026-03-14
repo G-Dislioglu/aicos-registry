@@ -1,0 +1,53 @@
+{
+  "candidate_note_version": "v1",
+  "status": "proposal_only",
+  "adopt_now_as_note": [
+    "separated_counterframing",
+    "non_mediating_merge",
+    "agreement_zone",
+    "tension_points",
+    "hidden_assumption",
+    "failure_condition",
+    "false_split",
+    "shallow_split",
+    "multiple_realistic_outputs"
+  ],
+  "defer_for_later_pilot": [
+    "prefer_p1_frame_challenge_if_any_pilot_happens",
+    "allow_p3_improvement_gate_as_secondary_option",
+    "test_whether_split_merge_yields_material_signal_or_no_material_gain",
+    "keep_any_future_pilot_small_bounded_and_non_canonical"
+  ],
+  "do_not_claim": [
+    "no_immediate_o8_operator",
+    "no_immediate_architecture_integration",
+    "no_immediate_four_position_embedding",
+    "no_provider_or_model_role_assignment",
+    "no_fixed_cost_claims_as_architecture_facts",
+    "no_transcendent_question_requirement",
+    "no_hidden_mutation_of_existing_frame_delta_line"
+  ],
+  "out_of_scope_now": [
+    "runtime_integration",
+    "registry_mutation",
+    "studio_mutation",
+    "trigger_policy_engine",
+    "provider_strategy",
+    "real_operator_build"
+  ],
+  "pilot_position_recommendation": {
+    "recommended_primary": "P1 Frame Challenge",
+    "recommended_alternative": "P3 Improvement Gate",
+    "pilot_now": false,
+    "build_now": false,
+    "operator_now": false,
+    "notes": "This is only a later-pilot preference if any pilot is ever justified. It is not a current build recommendation."
+  },
+  "realistic_output_types": [
+    "new_question",
+    "boundary_clarification",
+    "evidence_gap",
+    "trigger_refinement",
+    "no_material_gain"
+  ]
+}
