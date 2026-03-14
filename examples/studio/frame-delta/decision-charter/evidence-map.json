@@ -1,0 +1,111 @@
+{
+  "charter_version": "v1",
+  "public_reference_points": [
+    {
+      "commit": "59391de",
+      "label": "shadow evaluation track"
+    },
+    {
+      "commit": "fd9cecf",
+      "label": "comparative calibration batch 1"
+    },
+    {
+      "commit": "0c50c84",
+      "label": "decision boundary batch 2"
+    }
+  ],
+  "aspect_overlap_rule": "The same case may appear in more than one zone only when it supports different aspects of the charter. Reuse across zones is aspect-specific evidence, not a silent collapse of categories or a default invoke policy.",
+  "zone_support": {
+    "invoke_likely": [
+      {
+        "claim": "Delta is likely worth considering when local or review-bounded wording quietly carries stronger settled or authority posture than the surface allows.",
+        "supported_by": [
+          "batch1-07-ambiguous-governance-ask",
+          "batch2-03-hidden-settled-language"
+        ],
+        "strength": "moderate_to_strong",
+        "open_edges": "This does not define a default invoke rule for every authority-adjacent wording case."
+      },
+      {
+        "claim": "Delta is likely worth considering when harmonization or packaging coherence begins compressing live disagreement into false coherence or premature closure.",
+        "supported_by": [
+          "batch1-09-false-consensus-repair",
+          "batch1-05-contradiction-to-review-primary",
+          "batch2-04-conflict-harmonization-slip"
+        ],
+        "strength": "strong",
+        "open_edges": "Evidence favors consideration, not automatic use."
+      },
+      {
+        "claim": "Delta is likely worth considering when the surface stays formally bounded but implicitly claims more certainty than the evidence can carry.",
+        "supported_by": [
+          "batch1-08-over-clean-product-brief",
+          "batch2-03-hidden-settled-language",
+          "batch2-04-conflict-harmonization-slip"
+        ],
+        "strength": "moderate",
+        "open_edges": "The charter does not convert this into a score or trigger threshold."
+      }
+    ],
+    "invoke_unlikely": [
+      {
+        "claim": "Delta is likely unnecessary on already explicit, gate-saturated proposal cases where the baseline carries boundedness cleanly on the surface.",
+        "supported_by": [
+          "batch1-01-idea-to-proposal-primary",
+          "batch1-03-idea-to-handoff-primary",
+          "batch2-01-gate-saturated-proposal"
+        ],
+        "strength": "strong",
+        "open_edges": "Later evidence could still reveal exceptions, but no such default exception exists now."
+      },
+      {
+        "claim": "Delta is likely unnecessary when user-gates and no-runtime/no-mutation boundaries are already explicit enough to settle the practical bounded decision.",
+        "supported_by": [
+          "batch2-02-user-gated-handoff-clarity",
+          "batch1-01-idea-to-proposal-primary",
+          "batch1-03-idea-to-handoff-primary"
+        ],
+        "strength": "moderate",
+        "open_edges": "This is about likely overhead, not a prohibition on future targeted use."
+      }
+    ],
+    "invoke_ambiguous": [
+      {
+        "claim": "Delta stays ambiguous when multiple perspective passes are plausible and no single material failure clearly dominates.",
+        "supported_by": [
+          "batch1-02-idea-to-proposal-boundary-variant",
+          "batch2-05-competing-pass-boundary"
+        ],
+        "strength": "moderate",
+        "open_edges": "The evidence supports optional consideration, not mandatory invocation."
+      },
+      {
+        "claim": "Delta stays ambiguous when challenge is useful but does not clearly overturn the practical bounded route.",
+        "supported_by": [
+          "batch1-06-review-to-bundle-primary",
+          "batch2-06-challenge-useful-not-decisive"
+        ],
+        "strength": "moderate",
+        "open_edges": "Usefulness alone does not justify default enablement."
+      },
+      {
+        "claim": "Delta stays ambiguous when a risk signal exists but does not stabilize into a decisive material framing error.",
+        "supported_by": [
+          "batch1-05-contradiction-to-review-primary",
+          "batch1-08-over-clean-product-brief",
+          "batch2-05-competing-pass-boundary",
+          "batch2-06-challenge-useful-not-decisive"
+        ],
+        "strength": "moderate",
+        "open_edges": "This open zone is intentional and should not be smoothed into policy language."
+      }
+    ]
+  },
+  "negative_claims": [
+    "Batch 1 and Batch 2 do not prove Delta integration readiness.",
+    "Batch 1 and Batch 2 do not justify a Studio default layer.",
+    "Batch 1 and Batch 2 do not create an automatic trigger policy.",
+    "Batch 1 and Batch 2 do not replace the baseline.",
+    "Batch 1 and Batch 2 do not legitimize runtime, registry, truth, or Studio mutation."
+  ]
+}

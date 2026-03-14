@@ -1,0 +1,60 @@
+{
+  "charter_version": "v1",
+  "status": "proposal_only",
+  "entries": [
+    {
+      "id": "hidden_authority_posture",
+      "signal_family": "posture_drift",
+      "typical_surface_pattern": "Lokale oder review-gebundene Sprache trägt still Settled-, Approval- oder Authority-Haltung.",
+      "delta_value_hypothesis": "Delta kann die versteckte Haltungsdrift explizit machen, bevor sie als harmlose Cleanup-Sprache missverstanden wird.",
+      "misfire_risk": "Delta kann gewöhnliche Klarheitssprache überlesen, wenn keine echte Autoritätshaltung mitläuft.",
+      "recommended_zone": "invoke_likely",
+      "notes": "Stark gestützt durch Batch 2 und teilweise durch Batch 1 Governance-/Interpretationsdrift-Fälle."
+    },
+    {
+      "id": "false_coherence_harmonization",
+      "signal_family": "premature_closure",
+      "typical_surface_pattern": "Harmonisierung oder glatte Paket-Kohärenz macht lebenden Widerspruch kleiner oder sauberer als er ist.",
+      "delta_value_hypothesis": "Delta kann False Coherence und Premature Closure sichtbar halten.",
+      "misfire_risk": "Delta kann legitime lokale Aufräumarbeit zu aggressiv als Closure-Drift lesen.",
+      "recommended_zone": "invoke_likely",
+      "notes": "Stark gestützt durch Batch 2 sowie durch Batch-1-Fälle mit Review-/Consensus-Drift."
+    },
+    {
+      "id": "explicit_bounded_proposal",
+      "signal_family": "already_explicit_boundedness",
+      "typical_surface_pattern": "Proposal-Grenzen, No-Runtime- und No-Truth-Grenzen sind bereits offen und hart lesbar.",
+      "delta_value_hypothesis": "Delta liefert hier meist wenig zusätzlichen Wert, weil die Baseline die Boundedness schon ausreichend trägt.",
+      "misfire_risk": "Delta produziert Overhead und wiederholt nur bereits sichtbare Grenzen.",
+      "recommended_zone": "invoke_unlikely",
+      "notes": "Klar gestützt durch Batch 1 und Batch 2 baseline-stärkere bounded Fälle."
+    },
+    {
+      "id": "explicit_user_gate_surface",
+      "signal_family": "already_explicit_boundedness",
+      "typical_surface_pattern": "User-Gates, No-Runtime- und No-Mutation-Grenzen bleiben explizit und praktisch entscheidungssicher.",
+      "delta_value_hypothesis": "Delta kann hier allenfalls zusätzliche Vorsicht liefern, verändert aber den bounded Entscheid meist nicht wesentlich.",
+      "misfire_risk": "Mehr Pass- und Challenge-Arbeit ohne klaren Entscheidungsgewinn.",
+      "recommended_zone": "invoke_unlikely",
+      "notes": "Vor allem durch Batch 2 gestützt; Batch 1 liefert kompatible bounded Evidenz."
+    },
+    {
+      "id": "competing_plausible_passes",
+      "signal_family": "ambiguous_interpretation",
+      "typical_surface_pattern": "Mehrere Perspektivverträge sind plausibel, ohne dass einer einen klaren Materialfehler erzwingt.",
+      "delta_value_hypothesis": "Delta kann die Falllesart schärfen, ohne dass daraus ein eindeutiger Invoke-Zwang entsteht.",
+      "misfire_risk": "Die Shadow-Arbeit wird als scheinbar entschiedene Policy missverstanden, obwohl die Evidenz ambig bleibt.",
+      "recommended_zone": "invoke_ambiguous",
+      "notes": "Direkt durch Batch 2 ambiguous boundary cases gestützt; Batch 1 mixed cases zeigen dieselbe offene Zone breiter verteilt."
+    },
+    {
+      "id": "challenge_useful_not_decisive",
+      "signal_family": "useful_but_nondecisive_challenge",
+      "typical_surface_pattern": "Challenge hält ein Caveat sichtbar, kippt aber den praktischen bounded Entscheid nicht klar um.",
+      "delta_value_hypothesis": "Delta bleibt optional nützlich, aber nicht ausreichend belegt als Standard-Schritt.",
+      "misfire_risk": "Nützliche Vorsicht wird fälschlich in eine allgemeine Invoke-Regel umgedeutet.",
+      "recommended_zone": "invoke_ambiguous",
+      "notes": "Vor allem durch Batch 2 gestützt; Batch 1 mixed Fälle liefern ergänzende Plausibilität."
+    }
+  ]
+}
