@@ -1,0 +1,8 @@
+{
+  "case_id": "batch2-06-challenge-useful-not-decisive",
+  "boundary_class": "genuinely_ambiguous",
+  "boundary_reason": "Preflight and challenge are genuinely useful here, but they sharpen caution rather than overturning the practical bounded decision.",
+  "case_prompt": "A tidy local review packet contains a narrow unresolved caveat that Delta usefully names, yet the baseline route remains broadly sufficient once the caveat is kept visible.",
+  "comparison_only": true,
+  "non_authoritative": true
+}

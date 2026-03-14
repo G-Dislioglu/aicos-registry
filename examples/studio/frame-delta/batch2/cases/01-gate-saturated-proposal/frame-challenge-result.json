@@ -1,0 +1,21 @@
+{
+  "artifact_type": "frame_challenge_result",
+  "result_id": "batch2-frame-challenge-gate-saturated-proposal",
+  "subject_ref": "examples/studio/frame-delta/batch2/cases/01-gate-saturated-proposal/boundary-brief.json",
+  "input_preflight_ref": "examples/studio/frame-delta/batch2/cases/01-gate-saturated-proposal/delta-preflight.json",
+  "passes_run": [
+    "constraint_skeptic"
+  ],
+  "challenge_findings": [
+    "The baseline frame is already narrow enough for safe proposal-only handling.",
+    "Delta confirms discipline but does not materially improve the framing decision."
+  ],
+  "challenge_outcome": "confirmed",
+  "frame_risk_band_after_challenge": "low",
+  "residual_risks": [
+    "A reader could still overreact to polished wording, but the bounded baseline already counteracts that."
+  ],
+  "recommended_next_move": "proceed",
+  "shadow_only": true,
+  "non_authoritative": true
+}

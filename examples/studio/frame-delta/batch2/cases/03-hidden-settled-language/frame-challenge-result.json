@@ -1,0 +1,23 @@
+{
+  "artifact_type": "frame_challenge_result",
+  "result_id": "batch2-frame-challenge-hidden-settled-language",
+  "subject_ref": "examples/studio/frame-delta/batch2/cases/03-hidden-settled-language/boundary-brief.json",
+  "input_preflight_ref": "examples/studio/frame-delta/batch2/cases/03-hidden-settled-language/delta-preflight.json",
+  "passes_run": [
+    "constraint_skeptic",
+    "counterframe_probe"
+  ],
+  "challenge_findings": [
+    "The cleanup reading is too polite because 'settled' wording creates a stronger authority posture than the local surface supports.",
+    "The frame must be revised back to unresolved local review language before decomposition can be trusted."
+  ],
+  "challenge_outcome": "reframed",
+  "frame_risk_band_after_challenge": "high",
+  "residual_risks": [
+    "Later readers may still borrow approval-like confidence from the settled wording if it remains.",
+    "The surface can keep looking local even while its posture drifts."
+  ],
+  "recommended_next_move": "revise_frame",
+  "shadow_only": true,
+  "non_authoritative": true
+}

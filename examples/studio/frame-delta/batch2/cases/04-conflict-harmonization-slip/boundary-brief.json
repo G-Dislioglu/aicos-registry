@@ -1,0 +1,8 @@
+{
+  "case_id": "batch2-04-conflict-harmonization-slip",
+  "boundary_class": "delta_likely_better",
+  "boundary_reason": "A tidy harmonization move can collapse live disagreement into cosmetic alignment faster than the baseline read notices.",
+  "case_prompt": "A review note proposes harmonized phrasing across contradictory lines so the packet reads coherent, while the underlying disagreement remains materially unresolved.",
+  "comparison_only": true,
+  "non_authoritative": true
+}

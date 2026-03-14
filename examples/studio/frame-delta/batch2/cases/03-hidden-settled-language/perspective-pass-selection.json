@@ -1,0 +1,10 @@
+{
+  "case_id": "batch2-03-hidden-settled-language",
+  "selected_passes": [
+    "constraint_skeptic",
+    "counterframe_probe"
+  ],
+  "selection_reason": "The case needs both boundary pressure on hidden authority implications and a rival frame against the 'just cleanup' reading.",
+  "shadow_only": true,
+  "non_authoritative": true
+}

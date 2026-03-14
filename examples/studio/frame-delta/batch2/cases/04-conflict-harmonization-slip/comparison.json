@@ -1,0 +1,42 @@
+{
+  "artifact_type": "frame_delta_evaluation",
+  "scenario_id": "batch2-04-conflict-harmonization-slip",
+  "subject_ref": "examples/studio/frame-delta/batch2/cases/04-conflict-harmonization-slip/boundary-brief.json",
+  "baseline_summary": "The baseline can still keep the case in review, but its smooth harmonization reading risks underestimating how much living contradiction remains beneath the cosmetic alignment.",
+  "delta_summary": "Delta preflight marked high framing risk, challenge outcome reframed, and 1 ledger entry captured why cosmetic coherence initially looked like substantive convergence.",
+  "comparison_axes": [
+    {
+      "axis": "misframing_detection",
+      "winner": "delta",
+      "reason": "Delta identifies the harmonization as a frame problem instead of treating it as neutral wording cleanup."
+    },
+    {
+      "axis": "constraint_fidelity",
+      "winner": "delta",
+      "reason": "Delta better preserves the rule that contradiction visibility must survive local readability passes."
+    },
+    {
+      "axis": "premature_closure_resistance",
+      "winner": "delta",
+      "reason": "Delta resists letting surface coherence imply evidentiary settlement."
+    },
+    {
+      "axis": "signal_gap_awareness",
+      "winner": "delta",
+      "reason": "Delta keeps the unresolved contradictions and missing signals visible beneath the harmonized surface."
+    },
+    {
+      "axis": "actionability_after_challenge",
+      "winner": "tie",
+      "reason": "Both tracks still allow a bounded next step, but Delta more clearly explains why the harmonization move must be constrained."
+    }
+  ],
+  "overall_result": "delta_better",
+  "integration_signal": "none",
+  "delta_refs": {
+    "preflight_ref": "examples/studio/frame-delta/batch2/cases/04-conflict-harmonization-slip/delta-preflight.json",
+    "challenge_result_ref": "examples/studio/frame-delta/batch2/cases/04-conflict-harmonization-slip/frame-challenge-result.json"
+  },
+  "shadow_only": true,
+  "non_authoritative": true
+}

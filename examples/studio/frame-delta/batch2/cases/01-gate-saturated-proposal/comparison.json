@@ -1,0 +1,42 @@
+{
+  "artifact_type": "frame_delta_evaluation",
+  "scenario_id": "batch2-01-gate-saturated-proposal",
+  "subject_ref": "examples/studio/frame-delta/batch2/cases/01-gate-saturated-proposal/boundary-brief.json",
+  "baseline_summary": "The baseline already keeps this proposal path explicitly bounded, so Delta mostly adds shadow overhead without exposing a material framing miss.",
+  "delta_summary": "Delta preflight marked low framing risk, challenge outcome confirmed, and no material error ledger entry was required.",
+  "comparison_axes": [
+    {
+      "axis": "misframing_detection",
+      "winner": "baseline",
+      "reason": "The baseline already names the right bounded destination without needing extra reframing."
+    },
+    {
+      "axis": "constraint_fidelity",
+      "winner": "tie",
+      "reason": "Both tracks preserve the same hard proposal-only constraints."
+    },
+    {
+      "axis": "premature_closure_resistance",
+      "winner": "baseline",
+      "reason": "Delta caution does not expose a material closure error beyond what the baseline already prevents."
+    },
+    {
+      "axis": "signal_gap_awareness",
+      "winner": "tie",
+      "reason": "There is little decisive signal gap once the explicit gates are read literally."
+    },
+    {
+      "axis": "actionability_after_challenge",
+      "winner": "baseline",
+      "reason": "The baseline reaches the same safe next move with less shadow overhead."
+    }
+  ],
+  "overall_result": "baseline_better",
+  "integration_signal": "none",
+  "delta_refs": {
+    "preflight_ref": "examples/studio/frame-delta/batch2/cases/01-gate-saturated-proposal/delta-preflight.json",
+    "challenge_result_ref": "examples/studio/frame-delta/batch2/cases/01-gate-saturated-proposal/frame-challenge-result.json"
+  },
+  "shadow_only": true,
+  "non_authoritative": true
+}

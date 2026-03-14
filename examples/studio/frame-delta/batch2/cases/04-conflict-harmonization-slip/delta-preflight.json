@@ -1,0 +1,30 @@
+{
+  "artifact_type": "frame_preflight",
+  "preflight_id": "batch2-frame-preflight-conflict-harmonization-slip",
+  "subject_ref": "examples/studio/frame-delta/batch2/cases/04-conflict-harmonization-slip/boundary-brief.json",
+  "task_frame_summary": "The proposed harmonization sounds tidy and local, but it may be converting unresolved contradiction into surface coherence too early.",
+  "assumed_goal": "Determine whether harmonized phrasing is merely presentation cleanup or an actual false-consensus move.",
+  "explicit_constraints": [
+    "Contradictions must remain visible if unresolved.",
+    "No local wording pass may imply evidentiary closure.",
+    "Outputs remain local and review-bound only."
+  ],
+  "latent_frame_risks": [
+    "Harmonization can hide unresolved disagreement under coherence language.",
+    "A tidy packet can feel more settled than the evidence supports."
+  ],
+  "missing_but_decisive_questions": [
+    "What disagreement remains active after the proposed harmonization?",
+    "Which uncertainty would the harmonized wording hide from later readers?"
+  ],
+  "frame_risk_band": "high",
+  "frame_risk_signals": [
+    "cosmetic coherence outruns contradiction visibility",
+    "packet readability is being used as a substitute for evidentiary settlement"
+  ],
+  "decomposition_readiness": "blocked",
+  "recommended_next_move": "challenge",
+  "proposal_only": true,
+  "shadow_only": true,
+  "non_authoritative": true
+}

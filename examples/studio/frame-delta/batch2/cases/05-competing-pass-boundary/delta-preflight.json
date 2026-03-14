@@ -1,0 +1,30 @@
+{
+  "artifact_type": "frame_preflight",
+  "preflight_id": "batch2-frame-preflight-competing-pass-boundary",
+  "subject_ref": "examples/studio/frame-delta/batch2/cases/05-competing-pass-boundary/boundary-brief.json",
+  "task_frame_summary": "The packet remains locally bounded, but a thinly supported future-facing sentence invites both constraint skepticism and signal-gap scrutiny without clearly forcing either one to dominate.",
+  "assumed_goal": "Test whether Delta pressure materially improves the decision or only sharpens language around an already manageable bounded case.",
+  "explicit_constraints": [
+    "Outputs remain local and non-authoritative.",
+    "No hidden runtime or truth path is allowed.",
+    "The future-facing sentence must not silently broaden the packet's authority."
+  ],
+  "latent_frame_risks": [
+    "The sentence may be harmless shorthand.",
+    "The sentence may also be a mild scope-borrowing cue."
+  ],
+  "missing_but_decisive_questions": [
+    "Is the future-facing sentence operationally meaningful or merely descriptive?",
+    "Would removing the sentence materially change the practical next step?"
+  ],
+  "frame_risk_band": "medium",
+  "frame_risk_signals": [
+    "one thinly supported sentence carries more posture than the rest of the packet",
+    "multiple plausible passes compete without a decisive trigger"
+  ],
+  "decomposition_readiness": "caution",
+  "recommended_next_move": "narrow",
+  "proposal_only": true,
+  "shadow_only": true,
+  "non_authoritative": true
+}

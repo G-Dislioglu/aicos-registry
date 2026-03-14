@@ -1,0 +1,9 @@
+{
+  "case_id": "batch2-01-gate-saturated-proposal",
+  "selected_passes": [
+    "constraint_skeptic"
+  ],
+  "selection_reason": "Only a light constraint check is justified because the baseline constraints are already unusually explicit.",
+  "shadow_only": true,
+  "non_authoritative": true
+}

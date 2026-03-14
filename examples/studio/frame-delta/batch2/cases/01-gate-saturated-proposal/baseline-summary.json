@@ -1,0 +1,7 @@
+{
+  "case_id": "batch2-01-gate-saturated-proposal",
+  "boundary_class": "baseline_likely_better",
+  "baseline_summary": "The baseline already keeps this proposal path explicitly bounded, so Delta mostly adds shadow overhead without exposing a material framing miss.",
+  "comparison_only": true,
+  "non_authoritative": true
+}

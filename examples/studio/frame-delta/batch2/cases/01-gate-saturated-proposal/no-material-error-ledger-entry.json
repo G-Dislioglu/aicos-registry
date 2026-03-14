@@ -1,0 +1,7 @@
+{
+  "marker_type": "no_material_error_ledger_entry",
+  "case_id": "batch2-01-gate-saturated-proposal",
+  "reason": "Risk signals were visible, but no material framing error survived challenge because the baseline boundaries were already explicit.",
+  "shadow_only": true,
+  "non_authoritative": true
+}

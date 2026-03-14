@@ -1,0 +1,42 @@
+{
+  "artifact_type": "frame_delta_evaluation",
+  "scenario_id": "batch2-02-user-gated-handoff-clarity",
+  "subject_ref": "examples/studio/frame-delta/batch2/cases/02-user-gated-handoff-clarity/boundary-brief.json",
+  "baseline_summary": "The baseline handoff frame is already decision-sufficient because the user gate and no-runtime boundaries remain explicit, so Delta mostly restates what is already visible.",
+  "delta_summary": "Delta preflight marked low framing risk, challenge outcome confirmed, and no material error ledger entry was required.",
+  "comparison_axes": [
+    {
+      "axis": "misframing_detection",
+      "winner": "baseline",
+      "reason": "The baseline already leaves little room for a materially wrong handoff reading once the explicit gates are taken seriously."
+    },
+    {
+      "axis": "constraint_fidelity",
+      "winner": "tie",
+      "reason": "Both tracks preserve the user gate and no-runtime constraints."
+    },
+    {
+      "axis": "premature_closure_resistance",
+      "winner": "tie",
+      "reason": "Delta adds caution, but the baseline already prevents a practically dangerous closure."
+    },
+    {
+      "axis": "signal_gap_awareness",
+      "winner": "tie",
+      "reason": "Competing passes do not reveal a decisive hidden signal gap in this boundary case."
+    },
+    {
+      "axis": "actionability_after_challenge",
+      "winner": "baseline",
+      "reason": "The baseline reaches the same bounded handoff posture with less analytical overhead."
+    }
+  ],
+  "overall_result": "baseline_better",
+  "integration_signal": "none",
+  "delta_refs": {
+    "preflight_ref": "examples/studio/frame-delta/batch2/cases/02-user-gated-handoff-clarity/delta-preflight.json",
+    "challenge_result_ref": "examples/studio/frame-delta/batch2/cases/02-user-gated-handoff-clarity/frame-challenge-result.json"
+  },
+  "shadow_only": true,
+  "non_authoritative": true
+}

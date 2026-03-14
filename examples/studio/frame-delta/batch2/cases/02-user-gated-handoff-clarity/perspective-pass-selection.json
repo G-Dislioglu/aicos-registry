@@ -1,0 +1,10 @@
+{
+  "case_id": "batch2-02-user-gated-handoff-clarity",
+  "selected_passes": [
+    "constraint_skeptic",
+    "signal_gap_probe"
+  ],
+  "selection_reason": "Two passes are plausible here, but the test is precisely whether they change the actual bounded handoff decision.",
+  "shadow_only": true,
+  "non_authoritative": true
+}

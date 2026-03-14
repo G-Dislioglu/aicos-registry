@@ -20,6 +20,7 @@
     "summary:studio": "node tools/studio-summary-report.js",
     "eval:frame-delta": "node tools/frame-delta-eval.js",
     "verify:frame-delta-batch1": "node tools/verify-aicos-frame-delta-batch1.js",
+    "verify:frame-delta-batch2": "node tools/verify-aicos-frame-delta-batch2.js",
     "verify:studio-schemas": "node tools/verify-aicos-studio-schemas.js",
     "verify:studio-tooling": "node tools/verify-aicos-studio-tooling.js",
     "verify:studio-review": "node tools/verify-aicos-studio-review-layer.js",

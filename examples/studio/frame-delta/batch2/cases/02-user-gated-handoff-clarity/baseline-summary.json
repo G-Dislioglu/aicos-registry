@@ -1,0 +1,7 @@
+{
+  "case_id": "batch2-02-user-gated-handoff-clarity",
+  "boundary_class": "baseline_likely_better",
+  "baseline_summary": "The baseline handoff frame is already decision-sufficient because the user gate and no-runtime boundaries remain explicit, so Delta mostly restates what is already visible.",
+  "comparison_only": true,
+  "non_authoritative": true
+}

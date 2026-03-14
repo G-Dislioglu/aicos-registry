@@ -1,0 +1,23 @@
+{
+  "artifact_type": "frame_challenge_result",
+  "result_id": "batch2-frame-challenge-competing-pass-boundary",
+  "subject_ref": "examples/studio/frame-delta/batch2/cases/05-competing-pass-boundary/boundary-brief.json",
+  "input_preflight_ref": "examples/studio/frame-delta/batch2/cases/05-competing-pass-boundary/delta-preflight.json",
+  "passes_run": [
+    "constraint_skeptic",
+    "signal_gap_probe"
+  ],
+  "challenge_findings": [
+    "The sentence needed narrowing, but the broader packet was not fundamentally misframed.",
+    "Delta pressure is useful here, though not clearly decisive over the baseline bounded read."
+  ],
+  "challenge_outcome": "narrowed",
+  "frame_risk_band_after_challenge": "medium",
+  "residual_risks": [
+    "Future readers may still overread the sentence if it is left unchanged.",
+    "The case remains sensitive to how much weight one line should carry."
+  ],
+  "recommended_next_move": "proceed_with_caution",
+  "shadow_only": true,
+  "non_authoritative": true
+}

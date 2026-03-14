@@ -1,0 +1,10 @@
+{
+  "case_id": "batch2-05-competing-pass-boundary",
+  "selected_passes": [
+    "constraint_skeptic",
+    "signal_gap_probe"
+  ],
+  "selection_reason": "Both passes are plausibly justified, and the ambiguity of that selection is part of the boundary signal rather than a tooling mistake.",
+  "shadow_only": true,
+  "non_authoritative": true
+}

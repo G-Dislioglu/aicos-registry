@@ -1,0 +1,8 @@
+{
+  "case_id": "batch2-01-gate-saturated-proposal",
+  "boundary_class": "baseline_likely_better",
+  "boundary_reason": "The proposal path is already so gate-saturated and constraint-explicit that extra Delta pressure mostly restates visible rules.",
+  "case_prompt": "A proposal-only intake uses future-ready wording, but every decisive constraint already remains explicit and locally bounded.",
+  "comparison_only": true,
+  "non_authoritative": true
+}

@@ -1,0 +1,7 @@
+{
+  "case_id": "batch2-05-competing-pass-boundary",
+  "boundary_class": "genuinely_ambiguous",
+  "baseline_summary": "The baseline can keep the packet bounded, but one future-facing sentence still leaves enough interpretive slack that Delta pressure is useful without becoming clearly decisive.",
+  "comparison_only": true,
+  "non_authoritative": true
+}

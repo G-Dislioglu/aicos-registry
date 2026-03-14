@@ -1,0 +1,42 @@
+{
+  "artifact_type": "frame_delta_evaluation",
+  "scenario_id": "batch2-05-competing-pass-boundary",
+  "subject_ref": "examples/studio/frame-delta/batch2/cases/05-competing-pass-boundary/boundary-brief.json",
+  "baseline_summary": "The baseline can keep the packet bounded, but one future-facing sentence still leaves enough interpretive slack that Delta pressure is useful without becoming clearly decisive.",
+  "delta_summary": "Delta preflight marked medium framing risk, challenge outcome narrowed, and 1 ledger entry captured why one stronger sentence initially looked like harmless shorthand.",
+  "comparison_axes": [
+    {
+      "axis": "misframing_detection",
+      "winner": "tie",
+      "reason": "Delta names the sentence-level drift better, but the baseline still keeps the overall packet inside a bounded local frame."
+    },
+    {
+      "axis": "constraint_fidelity",
+      "winner": "delta",
+      "reason": "Delta is more explicit about limiting the weight of the future-facing sentence."
+    },
+    {
+      "axis": "premature_closure_resistance",
+      "winner": "tie",
+      "reason": "Delta adds useful pressure, but the baseline was not closing the case dangerously fast."
+    },
+    {
+      "axis": "signal_gap_awareness",
+      "winner": "delta",
+      "reason": "Delta better surfaces the fact that one sentence is carrying more posture than support."
+    },
+    {
+      "axis": "actionability_after_challenge",
+      "winner": "baseline",
+      "reason": "The baseline reaches a similar bounded next move with less interpretive overhead once the sentence is treated conservatively."
+    }
+  ],
+  "overall_result": "mixed",
+  "integration_signal": "none",
+  "delta_refs": {
+    "preflight_ref": "examples/studio/frame-delta/batch2/cases/05-competing-pass-boundary/delta-preflight.json",
+    "challenge_result_ref": "examples/studio/frame-delta/batch2/cases/05-competing-pass-boundary/frame-challenge-result.json"
+  },
+  "shadow_only": true,
+  "non_authoritative": true
+}

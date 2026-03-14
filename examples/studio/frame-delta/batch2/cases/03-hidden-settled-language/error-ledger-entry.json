@@ -1,0 +1,19 @@
+{
+  "artifact_type": "error_ledger_entry",
+  "entry_id": "batch2-error-ledger-hidden-settled-language",
+  "subject_ref": "examples/studio/frame-delta/batch2/cases/03-hidden-settled-language/boundary-brief.json",
+  "phase": "framing",
+  "error_class": "misframing",
+  "symptom": "Settled wording was initially treated as harmless local phrasing instead of a hidden authority-leaning signal.",
+  "why_plausible": "The note stayed inside a local review surface and avoided explicit approval claims, which made the stronger implication easy to miss.",
+  "detected_by": [
+    "preflight",
+    "perspective_pass"
+  ],
+  "impact_band": "high",
+  "recovery_action": "Strip settled-language implications or restate the case as unresolved local review wording only.",
+  "status": "open",
+  "notes": "This is a boundary case because the surface is polite and local while the posture drifts stronger than the surface allows.",
+  "evaluation_only": true,
+  "non_authoritative": true
+}

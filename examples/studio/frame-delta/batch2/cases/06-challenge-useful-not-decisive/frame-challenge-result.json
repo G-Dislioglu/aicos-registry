@@ -1,0 +1,23 @@
+{
+  "artifact_type": "frame_challenge_result",
+  "result_id": "batch2-frame-challenge-useful-not-decisive",
+  "subject_ref": "examples/studio/frame-delta/batch2/cases/06-challenge-useful-not-decisive/boundary-brief.json",
+  "input_preflight_ref": "examples/studio/frame-delta/batch2/cases/06-challenge-useful-not-decisive/delta-preflight.json",
+  "passes_run": [
+    "counterframe_probe",
+    "signal_gap_probe"
+  ],
+  "challenge_findings": [
+    "The unresolved caveat should remain explicit, but it does not overturn the packet's broader bounded route.",
+    "Delta adds useful anti-drift pressure without clearly outperforming the baseline on the full decision."
+  ],
+  "challenge_outcome": "narrowed",
+  "frame_risk_band_after_challenge": "medium",
+  "residual_risks": [
+    "The caveat can still fade in later summaries if readability is prioritized too strongly.",
+    "Delta can also overemphasize the caveat beyond its actual decision weight."
+  ],
+  "recommended_next_move": "proceed_with_caution",
+  "shadow_only": true,
+  "non_authoritative": true
+}

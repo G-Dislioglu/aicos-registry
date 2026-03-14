@@ -1,0 +1,19 @@
+{
+  "artifact_type": "error_ledger_entry",
+  "entry_id": "batch2-error-ledger-conflict-harmonization-slip",
+  "subject_ref": "examples/studio/frame-delta/batch2/cases/04-conflict-harmonization-slip/boundary-brief.json",
+  "phase": "evaluation",
+  "error_class": "pseudo_certainty",
+  "symptom": "Harmonized phrasing initially made unresolved contradiction look like mostly solved alignment.",
+  "why_plausible": "Readable conflict summaries feel safer and more professional, which makes cosmetic coherence easy to mistake for genuine evidentiary convergence.",
+  "detected_by": [
+    "preflight",
+    "perspective_pass"
+  ],
+  "impact_band": "high",
+  "recovery_action": "Restore explicit contradiction visibility and mark the harmonization as presentation-only rather than substantive settlement.",
+  "status": "open",
+  "notes": "This is a decision-boundary case because the improvement in readability is real, but the closure signal is not."
+,  "evaluation_only": true,
+  "non_authoritative": true
+}

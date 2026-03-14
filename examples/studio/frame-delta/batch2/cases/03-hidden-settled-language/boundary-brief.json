@@ -1,0 +1,8 @@
+{
+  "case_id": "batch2-03-hidden-settled-language",
+  "boundary_class": "delta_likely_better",
+  "boundary_reason": "The surface still looks local and review-safe, but 'settled' wording quietly imports an authority flavor that the baseline can read too politely.",
+  "case_prompt": "A local review note asks for wording alignment so the result reads settled for later reuse, without explicitly claiming approval authority.",
+  "comparison_only": true,
+  "non_authoritative": true
+}

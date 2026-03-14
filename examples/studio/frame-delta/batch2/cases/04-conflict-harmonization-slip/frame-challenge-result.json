@@ -1,0 +1,22 @@
+{
+  "artifact_type": "frame_challenge_result",
+  "result_id": "batch2-frame-challenge-conflict-harmonization-slip",
+  "subject_ref": "examples/studio/frame-delta/batch2/cases/04-conflict-harmonization-slip/boundary-brief.json",
+  "input_preflight_ref": "examples/studio/frame-delta/batch2/cases/04-conflict-harmonization-slip/delta-preflight.json",
+  "passes_run": [
+    "counterframe_probe",
+    "signal_gap_probe"
+  ],
+  "challenge_findings": [
+    "The harmonization move is not merely cosmetic because it hides live contradiction under cleaner surface language.",
+    "The frame must be revised to keep contradiction explicit before any local cleanup proceeds."
+  ],
+  "challenge_outcome": "reframed",
+  "frame_risk_band_after_challenge": "high",
+  "residual_risks": [
+    "The case can still drift back toward false consensus if later summaries prefer readability over contradiction visibility."
+  ],
+  "recommended_next_move": "revise_frame",
+  "shadow_only": true,
+  "non_authoritative": true
+}

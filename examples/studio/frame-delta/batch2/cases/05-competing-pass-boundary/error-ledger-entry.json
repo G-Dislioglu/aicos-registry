@@ -1,0 +1,19 @@
+{
+  "artifact_type": "error_ledger_entry",
+  "entry_id": "batch2-error-ledger-competing-pass-boundary",
+  "subject_ref": "examples/studio/frame-delta/batch2/cases/05-competing-pass-boundary/boundary-brief.json",
+  "phase": "framing",
+  "error_class": "invalid_constraint_inference",
+  "symptom": "The future-facing sentence briefly borrowed more scope confidence than its direct support justified.",
+  "why_plausible": "The rest of the packet was disciplined and local, which made the one stronger sentence feel like harmless shorthand instead of a live boundary cue.",
+  "detected_by": [
+    "preflight",
+    "comparison"
+  ],
+  "impact_band": "medium",
+  "recovery_action": "Narrow the sentence or mark it as descriptive only without pretending that the whole case was materially misframed.",
+  "status": "mitigated",
+  "notes": "This is intentionally ambiguous because the drift is real but not clearly decisive.",
+  "evaluation_only": true,
+  "non_authoritative": true
+}

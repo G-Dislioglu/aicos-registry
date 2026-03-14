@@ -1,0 +1,19 @@
+{
+  "artifact_type": "error_ledger_entry",
+  "entry_id": "batch2-error-ledger-challenge-useful-not-decisive",
+  "subject_ref": "examples/studio/frame-delta/batch2/cases/06-challenge-useful-not-decisive/boundary-brief.json",
+  "phase": "evaluation",
+  "error_class": "premature_closure",
+  "symptom": "The unresolved caveat briefly disappeared behind the packet's otherwise coherent bounded framing.",
+  "why_plausible": "The packet really is mostly disciplined, so the caveat felt editorial rather than decision-relevant at first glance.",
+  "detected_by": [
+    "preflight",
+    "comparison"
+  ],
+  "impact_band": "medium",
+  "recovery_action": "Keep the caveat explicitly visible without pretending it overturns the entire bounded path.",
+  "status": "mitigated",
+  "notes": "This is intentionally ambiguous: challenge helps, but the overall baseline route remains broadly sound.",
+  "evaluation_only": true,
+  "non_authoritative": true
+}

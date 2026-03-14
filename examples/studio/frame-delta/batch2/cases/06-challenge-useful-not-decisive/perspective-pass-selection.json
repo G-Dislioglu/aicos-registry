@@ -1,0 +1,10 @@
+{
+  "case_id": "batch2-06-challenge-useful-not-decisive",
+  "selected_passes": [
+    "counterframe_probe",
+    "signal_gap_probe"
+  ],
+  "selection_reason": "Challenge is useful because the caveat can fade, but the boundary question is whether that usefulness becomes decisive or remains only cautionary.",
+  "shadow_only": true,
+  "non_authoritative": true
+}

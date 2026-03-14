@@ -1,0 +1,45 @@
+{
+  "scenario_id": "batch2-03-hidden-settled-language",
+  "title": "Batch 2 — Hidden settled-language boundary case",
+  "subject_ref": "examples/studio/frame-delta/batch2/cases/03-hidden-settled-language/boundary-brief.json",
+  "baseline_summary": "The baseline can keep this note local, but it can also underreact to the way 'settled' language quietly imports stronger authority expectations than the local review surface warrants.",
+  "delta_summary_tail": "preserved why settled local wording initially looked harmless.",
+  "preflight_ref": "examples/studio/frame-delta/batch2/cases/03-hidden-settled-language/delta-preflight.json",
+  "challenge_result_ref": "examples/studio/frame-delta/batch2/cases/03-hidden-settled-language/frame-challenge-result.json",
+  "ledger_refs": [
+    "examples/studio/frame-delta/batch2/cases/03-hidden-settled-language/error-ledger-entry.json"
+  ],
+  "pass_refs": [
+    "examples/studio/frame-delta/valid/constraint-skeptic.pass.valid.json",
+    "examples/studio/frame-delta/valid/counterframe-probe.pass.valid.json"
+  ],
+  "comparison_axes": [
+    {
+      "axis": "misframing_detection",
+      "winner": "delta",
+      "reason": "Delta treats the settled wording as a meaningful frame signal instead of cosmetic local phrasing."
+    },
+    {
+      "axis": "constraint_fidelity",
+      "winner": "delta",
+      "reason": "Delta better preserves the limit that local review wording must not smuggle authority posture."
+    },
+    {
+      "axis": "premature_closure_resistance",
+      "winner": "delta",
+      "reason": "Delta resists letting settled-language prematurely close what should remain an unresolved local review state."
+    },
+    {
+      "axis": "signal_gap_awareness",
+      "winner": "delta",
+      "reason": "Delta forces the decisive question of what 'settled' practically means without an authority surface."
+    },
+    {
+      "axis": "actionability_after_challenge",
+      "winner": "tie",
+      "reason": "Both tracks can still produce a bounded next move, but only Delta clearly explains why the wording must be revised."
+    }
+  ],
+  "overall_result": "delta_better",
+  "integration_signal": "none"
+}

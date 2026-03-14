@@ -1,0 +1,30 @@
+{
+  "artifact_type": "frame_preflight",
+  "preflight_id": "batch2-frame-preflight-challenge-useful-not-decisive",
+  "subject_ref": "examples/studio/frame-delta/batch2/cases/06-challenge-useful-not-decisive/boundary-brief.json",
+  "task_frame_summary": "The packet is broadly well-framed, but one unresolved caveat can easily disappear behind overall coherence unless challenge keeps it visible.",
+  "assumed_goal": "Use challenge to test whether the caveat is merely editorial detail or a live boundary condition that should remain visible.",
+  "explicit_constraints": [
+    "The case remains local and non-authoritative.",
+    "No truth, registry, or runtime step follows.",
+    "The unresolved caveat must not be silently compressed away."
+  ],
+  "latent_frame_risks": [
+    "Delta may spend effort protecting a caveat that does not change the practical route.",
+    "The baseline may let the caveat fade if readability is prioritized too strongly."
+  ],
+  "missing_but_decisive_questions": [
+    "Would losing the caveat materially change the next decision, or only its wording quality?",
+    "How much weight should the unresolved caveat carry relative to the rest of the packet?"
+  ],
+  "frame_risk_band": "medium",
+  "frame_risk_signals": [
+    "one live caveat is easy to compress under overall coherence",
+    "challenge clarifies posture but may not flip the practical route"
+  ],
+  "decomposition_readiness": "caution",
+  "recommended_next_move": "challenge",
+  "proposal_only": true,
+  "shadow_only": true,
+  "non_authoritative": true
+}

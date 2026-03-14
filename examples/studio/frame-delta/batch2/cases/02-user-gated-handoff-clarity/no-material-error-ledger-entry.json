@@ -1,0 +1,7 @@
+{
+  "marker_type": "no_material_error_ledger_entry",
+  "case_id": "batch2-02-user-gated-handoff-clarity",
+  "reason": "Risk signals existed at the wording level, but no material framing error remained once the explicit user gate and no-runtime guards were read literally.",
+  "shadow_only": true,
+  "non_authoritative": true
+}

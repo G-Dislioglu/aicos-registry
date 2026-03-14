@@ -1,0 +1,28 @@
+{
+  "artifact_type": "frame_preflight",
+  "preflight_id": "batch2-frame-preflight-gate-saturated-proposal",
+  "subject_ref": "examples/studio/frame-delta/batch2/cases/01-gate-saturated-proposal/boundary-brief.json",
+  "task_frame_summary": "The proposal wording sounds forward-leaning, but the actual bounded destination and forbidden paths are already explicit.",
+  "assumed_goal": "Check whether the future-ready language hides a real frame problem or merely sounds broader than the bounded proposal path.",
+  "explicit_constraints": [
+    "Remain proposal-only.",
+    "Do not infer runtime or truth mutation.",
+    "Treat polish as descriptive rather than authorizing."
+  ],
+  "latent_frame_risks": [
+    "Delta may overread ordinary forward-leaning language as a material drift.",
+    "A reviewer may confuse explicit discipline with hidden ambiguity."
+  ],
+  "missing_but_decisive_questions": [
+    "Is any destination implied beyond the already explicit proposal boundary?"
+  ],
+  "frame_risk_band": "low",
+  "frame_risk_signals": [
+    "future-ready wording exists but bounded gates remain explicit"
+  ],
+  "decomposition_readiness": "ready",
+  "recommended_next_move": "proceed",
+  "proposal_only": true,
+  "shadow_only": true,
+  "non_authoritative": true
+}

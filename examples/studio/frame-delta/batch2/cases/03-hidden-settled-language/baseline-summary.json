@@ -1,0 +1,7 @@
+{
+  "case_id": "batch2-03-hidden-settled-language",
+  "boundary_class": "delta_likely_better",
+  "baseline_summary": "The baseline can keep this note local, but it can also underreact to the way 'settled' language quietly imports stronger authority expectations than the local review surface warrants.",
+  "comparison_only": true,
+  "non_authoritative": true
+}

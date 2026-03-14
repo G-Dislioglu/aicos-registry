@@ -1,0 +1,30 @@
+{
+  "artifact_type": "frame_preflight",
+  "preflight_id": "batch2-frame-preflight-hidden-settled-language",
+  "subject_ref": "examples/studio/frame-delta/batch2/cases/03-hidden-settled-language/boundary-brief.json",
+  "task_frame_summary": "The note stays inside a local review surface, but 'settled for later reuse' language hints at a stronger authority posture than the local frame supports.",
+  "assumed_goal": "Test whether apparently harmless settling language is merely cosmetic or a meaningful authority-leaning frame signal.",
+  "explicit_constraints": [
+    "Outputs remain local and non-authoritative.",
+    "No truth, registry, or runtime mutation follows.",
+    "Review wording must not silently become approval language."
+  ],
+  "latent_frame_risks": [
+    "Settled wording can import authority posture without explicit approval claims.",
+    "A polite baseline read may treat the phrasing as harmless cleanup."
+  ],
+  "missing_but_decisive_questions": [
+    "What practical expectation does 'settled' create if no authority surface exists?",
+    "Would the request still make sense if all approval-like implications were stripped away?"
+  ],
+  "frame_risk_band": "high",
+  "frame_risk_signals": [
+    "settled language outruns local review authority",
+    "reuse wording implies stronger downstream certainty than the surface warrants"
+  ],
+  "decomposition_readiness": "blocked",
+  "recommended_next_move": "challenge",
+  "proposal_only": true,
+  "shadow_only": true,
+  "non_authoritative": true
+}

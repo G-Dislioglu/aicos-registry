@@ -1,0 +1,42 @@
+{
+  "artifact_type": "frame_delta_evaluation",
+  "scenario_id": "batch2-06-challenge-useful-not-decisive",
+  "subject_ref": "examples/studio/frame-delta/batch2/cases/06-challenge-useful-not-decisive/boundary-brief.json",
+  "baseline_summary": "The baseline route remains practically sufficient, but Delta usefully protects one caveat that would otherwise risk fading behind the packet's overall coherence.",
+  "delta_summary": "Delta preflight marked medium framing risk, challenge outcome narrowed, and 1 ledger entry captured why the caveat initially looked editorial rather than decision-relevant.",
+  "comparison_axes": [
+    {
+      "axis": "misframing_detection",
+      "winner": "tie",
+      "reason": "Delta spots the caveat more sharply, but the baseline still keeps the overall case inside a bounded safe route."
+    },
+    {
+      "axis": "constraint_fidelity",
+      "winner": "tie",
+      "reason": "Both tracks preserve the same hard local-only constraints."
+    },
+    {
+      "axis": "premature_closure_resistance",
+      "winner": "delta",
+      "reason": "Delta is better at keeping the unresolved caveat visible instead of letting coherence compress it away."
+    },
+    {
+      "axis": "signal_gap_awareness",
+      "winner": "delta",
+      "reason": "Delta names the caveat as a live signal-gap issue rather than a mere editorial footnote."
+    },
+    {
+      "axis": "actionability_after_challenge",
+      "winner": "baseline",
+      "reason": "The baseline still reaches a workable bounded next move without requiring full challenge machinery."
+    }
+  ],
+  "overall_result": "mixed",
+  "integration_signal": "none",
+  "delta_refs": {
+    "preflight_ref": "examples/studio/frame-delta/batch2/cases/06-challenge-useful-not-decisive/delta-preflight.json",
+    "challenge_result_ref": "examples/studio/frame-delta/batch2/cases/06-challenge-useful-not-decisive/frame-challenge-result.json"
+  },
+  "shadow_only": true,
+  "non_authoritative": true
+}

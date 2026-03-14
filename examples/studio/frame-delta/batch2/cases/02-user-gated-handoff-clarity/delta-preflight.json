@@ -1,0 +1,28 @@
+{
+  "artifact_type": "frame_preflight",
+  "preflight_id": "batch2-frame-preflight-user-gated-handoff-clarity",
+  "subject_ref": "examples/studio/frame-delta/batch2/cases/02-user-gated-handoff-clarity/boundary-brief.json",
+  "task_frame_summary": "The handoff wording is polished enough to invite extra scrutiny, but the decisive user-gate and no-runtime constraints already remain on the surface.",
+  "assumed_goal": "Test whether Delta adds a material framing correction or only extra caution to an already well-bounded handoff case.",
+  "explicit_constraints": [
+    "User review remains mandatory.",
+    "No runtime or operator action follows from the handoff artifact.",
+    "Conflict visibility remains part of the handoff frame."
+  ],
+  "latent_frame_risks": [
+    "Delta may overread coordination polish as hidden escalation pressure.",
+    "Multiple plausible passes may add analysis without changing the practical decision."
+  ],
+  "missing_but_decisive_questions": [
+    "Does any wording actually weaken the explicit user-gate boundary?"
+  ],
+  "frame_risk_band": "low",
+  "frame_risk_signals": [
+    "polished coordination language exists, but decisive gates stay explicit"
+  ],
+  "decomposition_readiness": "ready",
+  "recommended_next_move": "proceed",
+  "proposal_only": true,
+  "shadow_only": true,
+  "non_authoritative": true
+}

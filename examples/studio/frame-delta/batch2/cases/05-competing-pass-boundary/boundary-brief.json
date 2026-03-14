@@ -1,0 +1,8 @@
+{
+  "case_id": "batch2-05-competing-pass-boundary",
+  "boundary_class": "genuinely_ambiguous",
+  "boundary_reason": "Constraint-skeptic and signal-gap probing are both plausible here, but neither reveals a decisive material error after challenge.",
+  "case_prompt": "A compact review packet is bounded and local, but contains one thinly supported future-facing sentence that could be either harmless shorthand or mild scope borrowing.",
+  "comparison_only": true,
+  "non_authoritative": true
+}

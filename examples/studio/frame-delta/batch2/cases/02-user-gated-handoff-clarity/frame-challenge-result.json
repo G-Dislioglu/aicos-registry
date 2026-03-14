@@ -1,0 +1,22 @@
+{
+  "artifact_type": "frame_challenge_result",
+  "result_id": "batch2-frame-challenge-user-gated-handoff-clarity",
+  "subject_ref": "examples/studio/frame-delta/batch2/cases/02-user-gated-handoff-clarity/boundary-brief.json",
+  "input_preflight_ref": "examples/studio/frame-delta/batch2/cases/02-user-gated-handoff-clarity/delta-preflight.json",
+  "passes_run": [
+    "constraint_skeptic",
+    "signal_gap_probe"
+  ],
+  "challenge_findings": [
+    "The explicit user gate and no-runtime boundary still dominate the decision frame.",
+    "Delta adds analytical caution, but not a materially different practical framing outcome."
+  ],
+  "challenge_outcome": "confirmed",
+  "frame_risk_band_after_challenge": "low",
+  "residual_risks": [
+    "Some readers may still overread coordination polish, but the baseline guardrails already absorb that risk."
+  ],
+  "recommended_next_move": "proceed",
+  "shadow_only": true,
+  "non_authoritative": true
+}
