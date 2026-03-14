@@ -1,0 +1,24 @@
+{
+  "schema_version": "aicos-scoring-deescalation-stress-case/v1",
+  "id": "deescalation-stress-02",
+  "status": "proposal_only",
+  "source_anchor": "sol-trading-001",
+  "case_family": "domain_conditioned_strength",
+  "title": "Local domain strength without registry-wide exception status",
+  "scenario": "`sol-trading-001` can read as highly useful inside one domain and may tempt an exceptional interpretation, but its usefulness remains condition-sensitive and domain-bound rather than registry-wide in the strong exception sense.",
+  "signals_for_escalation": [
+    "domain users may experience the card as unusually useful in the local setting",
+    "specialized heuristics can look stronger than they really are when they fit one context well",
+    "apparent local leverage can be mistaken for registry-wide exceptional value"
+  ],
+  "signals_against_escalation": [
+    "the card is explicitly condition-sensitive rather than broadly transferable",
+    "current confidence is already restrained rather than near-certain",
+    "the case shows bounded domain fit, not a general registry-level exception pattern"
+  ],
+  "dominant_reading": "no_material_escalation",
+  "why_no_material_escalation": "The case does not justify a new escalation because the main signal is contextual usefulness, not a broader unresolved inflation or exception problem across the registry.",
+  "why_not_s2_entry_relevant": "A domain-conditioned solution does not show that S1 lacks a necessary interpretive axis. It shows that local usefulness and registry-wide exception status must stay distinct under the existing reading discipline.",
+  "why_not_adjacent_escalation_readings": "This is not a soft-flag-worthy inflation case because the issue is not exaggerated certainty. It is not a justified exception in the stronger sense because the local usefulness does not expand into registry-wide exception force. It is not a borderline S2 case because no missing model layer is exposed.",
+  "notes": "Use this case to keep local utility from being over-read as general exception strength."
+}

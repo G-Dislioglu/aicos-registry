@@ -1,0 +1,40 @@
+{
+  "block_version": "v1",
+  "status": "proposal_only",
+  "dominant_reading": "no_material_escalation",
+  "purpose": "Stress-test how superficially strong scoring cases can remain readable without creating new material escalation or genuine S2-entry pressure.",
+  "entries": [
+    {
+      "id": "deescalation-stress-01",
+      "case_file": "01-symbolic-maximum-no-material-escalation.json",
+      "stress_pattern": "symbolic maximum looks like fresh review pressure",
+      "source_anchor": "meta-006",
+      "primary_misreading": "A symbolic maximum could be misread as a live scoring emergency rather than as an already isolated worldview signal.",
+      "s2_entry_relation": "Looks theoretically hot on the surface but does not demonstrate a missing interpretive axis that would justify S2 entry work."
+    },
+    {
+      "id": "deescalation-stress-02",
+      "case_file": "02-domain-strength-without-registry-exception.json",
+      "stress_pattern": "local strength gets overstated as registry-wide exception",
+      "source_anchor": "sol-trading-001",
+      "primary_misreading": "Strong usefulness inside one domain can be mistaken for registry-wide exceptional value.",
+      "s2_entry_relation": "Shows domain fit and bounded usefulness, not a failure of current S1 plus human review."
+    },
+    {
+      "id": "deescalation-stress-03",
+      "case_file": "03-schema-proposal-looks-s2-near.json",
+      "stress_pattern": "schema or genealogy language gets misread as true S2 proximity",
+      "source_anchor": "sol-cross-039",
+      "primary_misreading": "A future-facing schema proposal can sound like evidence that a second scoring layer is already needed.",
+      "s2_entry_relation": "Future design interest alone does not establish genuine S2-entry relevance."
+    },
+    {
+      "id": "deescalation-stress-04",
+      "case_file": "04-compact-gate-heuristic-overreads-materiality.json",
+      "stress_pattern": "formal compactness or gate language overstates evidential hardness",
+      "source_anchor": "sol-cross-030",
+      "primary_misreading": "A compact gate framework can be misread as stronger evidence than the heuristic material actually supports.",
+      "s2_entry_relation": "Compact gate language does not by itself reveal a missing S2 semantics problem."
+    }
+  ]
+}

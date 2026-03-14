@@ -1,0 +1,24 @@
+{
+  "schema_version": "aicos-scoring-deescalation-stress-case/v1",
+  "id": "deescalation-stress-04",
+  "status": "proposal_only",
+  "source_anchor": "sol-cross-030",
+  "case_family": "formal_compactness_overread",
+  "title": "Compact gate heuristic that overstates evidential hardness on first read",
+  "scenario": "`sol-cross-030` presents a compact gate framework that sounds operational and disciplined, but the compactness itself can make the heuristic look materially stronger than the underlying evidence actually is.",
+  "signals_for_escalation": [
+    "gate language makes the card sound harder and more settled than a loose proposal",
+    "formal compactness can be misread as evidence density",
+    "the framework shape invites over-reading as a general scoring or review pressure signal"
+  ],
+  "signals_against_escalation": [
+    "the card remains heuristic and context-specific rather than repeatedly validated",
+    "compact structure does not create new material proof by itself",
+    "the current reading problem is interpretive discipline, not a new unresolved scoring emergency"
+  ],
+  "dominant_reading": "no_material_escalation",
+  "why_no_material_escalation": "The case does not need a new escalation because the main risk lies in over-reading formal compactness, not in a genuinely unresolved scoring defect or new exception pressure.",
+  "why_not_s2_entry_relevant": "A compact gate heuristic does not reveal a missing S2 axis. It remains a disciplined proposal pattern that current review can already read without expanding the scoring model.",
+  "why_not_adjacent_escalation_readings": "This is not a fresh soft-flag-worthy escalation because the issue is not an unresolved active score spike. It is not a justified exception because no narrow bounded proof surface is being defended. It is not a true S2-near case because formal compactness alone does not establish a missing interpretive layer.",
+  "notes": "Use this case to stop gate-shaped proposals from being mistaken for materially harder evidence than they contain."
+}

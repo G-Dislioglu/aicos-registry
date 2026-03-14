@@ -1,0 +1,24 @@
+{
+  "schema_version": "aicos-scoring-deescalation-stress-case/v1",
+  "id": "deescalation-stress-01",
+  "status": "proposal_only",
+  "source_anchor": "meta-006",
+  "case_family": "symbolic_boundary_signal",
+  "title": "Symbolic maximum without new material review pressure",
+  "scenario": "`meta-006` can look like the strongest possible scoring escalation because value and confidence are both maximal, but the current review line already isolates it as a worldview anchor rather than a transferable evidence pattern.",
+  "signals_for_escalation": [
+    "maximal value and confidence profile looks like the strongest possible conviction signal",
+    "symbolic boundary force can be misread as a live scoring emergency",
+    "the card surface invites over-reading as a general template rather than a known exception"
+  ],
+  "signals_against_escalation": [
+    "the existing review line already treats the card as a non-transferable worldview anchor",
+    "there is no new bounded operational defect or new evidence spike to interpret",
+    "the case is already quarantined as symbolic meaning rather than unresolved scoring drift"
+  ],
+  "dominant_reading": "no_material_escalation",
+  "why_no_material_escalation": "The case does not create a fresh unresolved review zone; it remains an already isolated symbolic exception whose surface extremity should not be promoted into new calibration pressure.",
+  "why_not_s2_entry_relevant": "Nothing here shows that current S1 plus human interpretation cannot read the case. The issue is disciplined reading of a known symbolic maximum, not a missing semantics layer that would justify S2 entry.",
+  "why_not_adjacent_escalation_readings": "This is not a fresh soft-flag-worthy escalation because no new inflation pattern is being introduced. It is not a justified exception case because the point is not narrow bounded evidence. It is not a real S2-near case because the surface extremity is symbolic rather than proof of a missing scoring axis.",
+  "notes": "Use this case to prevent overreacting to already-isolated worldview maxima as if they demanded new scoring machinery."
+}

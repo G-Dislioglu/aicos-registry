@@ -1,0 +1,24 @@
+{
+  "schema_version": "aicos-scoring-deescalation-stress-case/v1",
+  "id": "deescalation-stress-03",
+  "status": "proposal_only",
+  "source_anchor": "sol-cross-039",
+  "case_family": "future_schema_proposal",
+  "title": "Schema-adjacent proposal that looks closer to S2 than it really is",
+  "scenario": "`sol-cross-039` is a future-facing schema or genealogy extension idea and can therefore sound like evidence that the repo already needs a second scoring layer, even though the card itself remains proposal-level and complexity-bearing.",
+  "signals_for_escalation": [
+    "schema or genealogy language can sound like imminent model evolution",
+    "future-oriented structure work can be mistaken for proof that current scoring semantics are insufficient",
+    "proposal language around extensions can create artificial S2 proximity"
+  ],
+  "signals_against_escalation": [
+    "the card remains explicitly proposal-level rather than validated scoring practice",
+    "the existing review line can already read it as a salvageable future-facing idea without changing S1",
+    "no concrete interpretive failure is shown in current soft-flag or audit reading"
+  ],
+  "dominant_reading": "no_material_escalation",
+  "why_no_material_escalation": "The case is future-interesting but not materially urgent. It does not create a new unresolved review pressure; it only shows a possible design direction that can remain deferred.",
+  "why_not_s2_entry_relevant": "A schema-adjacent proposal is not enough to justify S2 entry. It does not prove that existing S1 plus human review cannot read current cards; it only points to optional future design space.",
+  "why_not_adjacent_escalation_readings": "This is not a soft-flag escalation case because it does not depend on inflated current scores. It is not a justified exception because it is not a narrow bounded proof surface. It is not a real S2-entry precursor because the proposal does not demonstrate a present interpretive failure that only S2 could resolve.",
+  "notes": "Use this case to separate future design appetite from actual present scoring necessity."
+}
