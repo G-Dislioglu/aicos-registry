@@ -1,0 +1,8 @@
+{
+  "case_id": "batch1-06-review-to-bundle-primary",
+  "batch_track": "baseline_near",
+  "source_scenario_ref": "examples/studio/scenarios/review-to-bundle/scenario.json",
+  "baseline_summary": "The baseline already keeps the nomination flow locally bundled and trace-consistent, but its tidy packaging can still make the case feel more complete than the explicit review boundaries warrant.",
+  "comparison_only": true,
+  "non_authoritative": true
+}

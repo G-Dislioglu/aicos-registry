@@ -1,0 +1,8 @@
+{
+  "case_id": "batch1-04-idea-to-handoff-boundary-variant",
+  "batch_track": "baseline_near",
+  "source_scenario_ref": "examples/studio/scenarios/idea-to-handoff/scenario.json",
+  "baseline_summary": "The baseline handoff path is still correct, but in this variant its forward-looking language can tempt readers to treat a bounded handoff as operational readiness rather than a proposal-safe artifact.",
+  "comparison_only": true,
+  "non_authoritative": true
+}

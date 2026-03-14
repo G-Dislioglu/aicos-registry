@@ -1,0 +1,42 @@
+{
+  "artifact_type": "frame_delta_evaluation",
+  "scenario_id": "batch1-04-idea-to-handoff-boundary-variant",
+  "subject_ref": "examples/studio/scenarios/idea-to-handoff/scenario.json",
+  "baseline_summary": "The baseline handoff path is still correct, but in this variant its forward-looking language can tempt readers to treat a bounded handoff as operational readiness rather than a proposal-safe artifact.",
+  "delta_summary": "Delta preflight marked medium framing risk, challenge outcome narrowed, and 1 ledger entry captured why handoff language can be overread as runtime readiness.",
+  "comparison_axes": [
+    {
+      "axis": "misframing_detection",
+      "winner": "delta",
+      "reason": "Delta identifies the runtime-adjacent misreading sooner and more explicitly."
+    },
+    {
+      "axis": "constraint_fidelity",
+      "winner": "delta",
+      "reason": "Delta keeps the no-runtime implication more visible than the plain baseline read."
+    },
+    {
+      "axis": "premature_closure_resistance",
+      "winner": "delta",
+      "reason": "Delta resists treating handoff polish as evidence of downstream readiness."
+    },
+    {
+      "axis": "signal_gap_awareness",
+      "winner": "tie",
+      "reason": "The main issue is interpretive drift more than absent evidence."
+    },
+    {
+      "axis": "actionability_after_challenge",
+      "winner": "tie",
+      "reason": "Both tracks still support a bounded handoff result once the frame is narrowed."
+    }
+  ],
+  "overall_result": "delta_better",
+  "integration_signal": "none",
+  "delta_refs": {
+    "preflight_ref": "examples/studio/frame-delta/batch1/cases/04-idea-to-handoff-boundary-variant/delta-preflight.json",
+    "challenge_result_ref": "examples/studio/frame-delta/batch1/cases/04-idea-to-handoff-boundary-variant/frame-challenge-result.json"
+  },
+  "shadow_only": true,
+  "non_authoritative": true
+}

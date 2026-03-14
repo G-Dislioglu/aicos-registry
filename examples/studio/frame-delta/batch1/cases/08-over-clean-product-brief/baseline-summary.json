@@ -1,0 +1,8 @@
+{
+  "case_id": "batch1-08-over-clean-product-brief",
+  "batch_track": "frame_risk_case",
+  "source_scenario_ref": "examples/studio/frame-delta/scenarios/review-to-bundle-shadow.scenario.json",
+  "baseline_summary": "The baseline path remains usable, but the brief is polished enough that readers can borrow too much scope certainty from presentation quality alone.",
+  "comparison_only": true,
+  "non_authoritative": true
+}

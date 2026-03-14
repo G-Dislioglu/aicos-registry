@@ -1,0 +1,30 @@
+{
+  "artifact_type": "frame_preflight",
+  "preflight_id": "batch1-frame-preflight-over-clean-product-brief",
+  "subject_ref": "examples/studio/frame-delta/scenarios/review-to-bundle-shadow.scenario.json",
+  "task_frame_summary": "The product brief feels complete and implementation-ready, but that cleanliness may be carrying more scope confidence than the explicit constraints support.",
+  "assumed_goal": "Keep the case inside the valid baseline route while preventing polish from substituting for explicit constraint grounding.",
+  "explicit_constraints": [
+    "Stay inside the bounded Studio proposal and review package layer.",
+    "Do not infer hidden approval or rollout semantics.",
+    "Keep all outputs comparison-only."
+  ],
+  "latent_frame_risks": [
+    "A polished brief can hide under-specified forbidden zones.",
+    "Presentation quality can be mistaken for evidence completeness."
+  ],
+  "missing_but_decisive_questions": [
+    "Which constraints are explicit rather than merely conventional?",
+    "What part of the brief feels complete only because it is cleanly phrased?"
+  ],
+  "frame_risk_band": "medium",
+  "frame_risk_signals": [
+    "high polish with low evidence density",
+    "scope feels cleaner than the explicit boundary language"
+  ],
+  "decomposition_readiness": "caution",
+  "recommended_next_move": "narrow",
+  "proposal_only": true,
+  "shadow_only": true,
+  "non_authoritative": true
+}

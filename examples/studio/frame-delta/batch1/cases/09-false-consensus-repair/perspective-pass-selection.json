@@ -1,0 +1,10 @@
+{
+  "case_id": "batch1-09-false-consensus-repair",
+  "selected_passes": [
+    "counterframe_probe",
+    "signal_gap_probe"
+  ],
+  "selection_reason": "This case needs explicit pressure against false consensus and against certainty that is outrunning the visible signals.",
+  "shadow_only": true,
+  "non_authoritative": true
+}

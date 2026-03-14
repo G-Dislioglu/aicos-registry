@@ -1,0 +1,42 @@
+{
+  "artifact_type": "frame_delta_evaluation",
+  "scenario_id": "batch1-03-idea-to-handoff-primary",
+  "subject_ref": "examples/studio/scenarios/idea-to-handoff/scenario.json",
+  "baseline_summary": "The baseline handoff path already carries explicit gates for user review, handoff quality, no-runtime-write, and conflict visibility, so the shadow track mostly confirms an already disciplined frame.",
+  "delta_summary": "Delta preflight marked low framing risk, challenge outcome confirmed, and no material error ledger entry was required.",
+  "comparison_axes": [
+    {
+      "axis": "misframing_detection",
+      "winner": "baseline",
+      "reason": "The baseline already presents the handoff case as gated and non-runtime without needing extra reframing."
+    },
+    {
+      "axis": "constraint_fidelity",
+      "winner": "tie",
+      "reason": "Both tracks respect the same explicit gates and forbidden destinations."
+    },
+    {
+      "axis": "premature_closure_resistance",
+      "winner": "tie",
+      "reason": "The baseline is already constraint-rich enough that Delta does not materially reduce early closure risk."
+    },
+    {
+      "axis": "signal_gap_awareness",
+      "winner": "tie",
+      "reason": "No decisive missing signal meaningfully separates the two tracks for this primary handoff case."
+    },
+    {
+      "axis": "actionability_after_challenge",
+      "winner": "baseline",
+      "reason": "The baseline reaches the same safe bounded handoff posture with less shadow overhead."
+    }
+  ],
+  "overall_result": "baseline_better",
+  "integration_signal": "none",
+  "delta_refs": {
+    "preflight_ref": "examples/studio/frame-delta/batch1/cases/03-idea-to-handoff-primary/delta-preflight.json",
+    "challenge_result_ref": "examples/studio/frame-delta/batch1/cases/03-idea-to-handoff-primary/frame-challenge-result.json"
+  },
+  "shadow_only": true,
+  "non_authoritative": true
+}

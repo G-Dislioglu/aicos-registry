@@ -1,0 +1,28 @@
+{
+  "artifact_type": "frame_preflight",
+  "preflight_id": "batch1-frame-preflight-idea-to-proposal-primary",
+  "subject_ref": "examples/studio/scenarios/idea-to-proposal/scenario.json",
+  "task_frame_summary": "The case is already explicitly bounded as a proposal-only conversion with one clean gate and obvious forbidden destinations.",
+  "assumed_goal": "Confirm that the baseline frame can enter decomposition without extra shadow friction.",
+  "explicit_constraints": [
+    "Stay inside the proposal layer.",
+    "Do not create runtime review objects.",
+    "Do not mutate registry truth."
+  ],
+  "latent_frame_risks": [
+    "A reviewer may overcomplicate a simple bounded case.",
+    "Shadow analysis might invent uncertainty where the baseline is already explicit."
+  ],
+  "missing_but_decisive_questions": [
+    "Is there any hidden authority target beyond proposal generation?"
+  ],
+  "frame_risk_band": "low",
+  "frame_risk_signals": [
+    "the baseline constraints are already explicit"
+  ],
+  "decomposition_readiness": "ready",
+  "recommended_next_move": "proceed",
+  "proposal_only": true,
+  "shadow_only": true,
+  "non_authoritative": true
+}

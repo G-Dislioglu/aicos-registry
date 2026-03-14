@@ -51,7 +51,12 @@ function assert(condition, message) {
 function loadScenarioArtifacts(scenario) {
   const preflight = readJson(resolveRepoRef(scenario.preflight_ref));
   const challengeResult = readJson(resolveRepoRef(scenario.challenge_result_ref));
-  const ledgerEntries = scenario.ledger_refs.map((ref) => readJson(resolveRepoRef(ref)));
+  const ledgerEntries = Array.isArray(scenario.ledger_refs)
+    ? scenario.ledger_refs.map((ref) => readJson(resolveRepoRef(ref)))
+    : [];
+  const noMaterialErrorMarker = typeof scenario.no_material_error_marker_ref === 'string'
+    ? readJson(resolveRepoRef(scenario.no_material_error_marker_ref))
+    : null;
   const passes = scenario.pass_refs.map((ref) => readJson(resolveRepoRef(ref)));
 
   assert(preflight.artifact_type === 'frame_preflight', `Scenario preflight must be frame_preflight: ${scenario.scenario_id}`);
@@ -63,17 +68,25 @@ function loadScenarioArtifacts(scenario) {
   for (const pass of passes) {
     assert(pass.artifact_type === 'perspective_pass', `Scenario pass must be perspective_pass: ${scenario.scenario_id}`);
   }
+  assert(ledgerEntries.length > 0 || noMaterialErrorMarker, `Scenario must provide either ledger_refs or no_material_error_marker_ref: ${scenario.scenario_id}`);
+  if (noMaterialErrorMarker) {
+    assert(noMaterialErrorMarker.marker_type === 'no_material_error_ledger_entry', `Scenario marker must be no_material_error_ledger_entry: ${scenario.scenario_id}`);
+  }
 
   return {
     preflight,
     challengeResult,
     ledgerEntries,
+    noMaterialErrorMarker,
     passes
   };
 }
 
 function deriveDeltaSummary(scenario, artifacts) {
   const ledgerCount = artifacts.ledgerEntries.length;
+  if (artifacts.noMaterialErrorMarker) {
+    return `Delta preflight marked ${artifacts.preflight.frame_risk_band} framing risk, challenge outcome ${artifacts.challengeResult.challenge_outcome}, and no material error ledger entry was required.`;
+  }
   const ledgerLabel = ledgerCount === 1 ? 'ledger entry' : 'ledger entries';
   return `Delta preflight marked ${artifacts.preflight.frame_risk_band} framing risk, challenge outcome ${artifacts.challengeResult.challenge_outcome}, and ${ledgerCount} ${ledgerLabel} ${scenario.delta_summary_tail}`;
 }
@@ -81,10 +94,17 @@ function deriveDeltaSummary(scenario, artifacts) {
 function buildEvaluationFromScenario(scenarioPath) {
   const absoluteScenarioPath = path.resolve(process.cwd(), scenarioPath);
   const scenario = readJson(absoluteScenarioPath);
-  for (const key of ['scenario_id', 'title', 'subject_ref', 'baseline_summary', 'delta_summary_tail', 'preflight_ref', 'challenge_result_ref', 'ledger_refs', 'pass_refs', 'comparison_axes', 'overall_result', 'integration_signal']) {
+  for (const key of ['scenario_id', 'title', 'subject_ref', 'baseline_summary', 'preflight_ref', 'challenge_result_ref', 'pass_refs', 'comparison_axes', 'overall_result', 'integration_signal']) {
     assert(Object.prototype.hasOwnProperty.call(scenario, key), `Scenario missing required key ${key}: ${scenarioPath}`);
   }
-  assert(Array.isArray(scenario.ledger_refs) && scenario.ledger_refs.length > 0, `Scenario must contain ledger_refs: ${scenario.scenario_id}`);
+  assert(
+    (Array.isArray(scenario.ledger_refs) && scenario.ledger_refs.length > 0)
+      || typeof scenario.no_material_error_marker_ref === 'string',
+    `Scenario must contain ledger_refs or no_material_error_marker_ref: ${scenario.scenario_id}`
+  );
+  if (!scenario.no_material_error_marker_ref) {
+    assert(typeof scenario.delta_summary_tail === 'string' && scenario.delta_summary_tail.length > 0, `Scenario with ledger entries must contain delta_summary_tail: ${scenario.scenario_id}`);
+  }
   assert(Array.isArray(scenario.pass_refs) && scenario.pass_refs.length > 0, `Scenario must contain pass_refs: ${scenario.scenario_id}`);
   assert(Array.isArray(scenario.comparison_axes) && scenario.comparison_axes.length > 0, `Scenario must contain comparison_axes: ${scenario.scenario_id}`);
 

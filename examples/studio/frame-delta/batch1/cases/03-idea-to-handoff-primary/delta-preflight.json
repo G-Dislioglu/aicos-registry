@@ -1,0 +1,27 @@
+{
+  "artifact_type": "frame_preflight",
+  "preflight_id": "batch1-frame-preflight-idea-to-handoff-primary",
+  "subject_ref": "examples/studio/scenarios/idea-to-handoff/scenario.json",
+  "task_frame_summary": "The handoff request is already heavily gated and boundary-explicit, which leaves little hidden frame ambiguity.",
+  "assumed_goal": "Confirm that the baseline handoff frame is ready without shadow overreach.",
+  "explicit_constraints": [
+    "User gate remains mandatory.",
+    "No runtime dispatch is allowed.",
+    "Conflict visibility must stay explicit."
+  ],
+  "latent_frame_risks": [
+    "Shadow analysis may duplicate gate logic rather than expose new frame risk."
+  ],
+  "missing_but_decisive_questions": [
+    "Is there any hidden request to bypass the user or runtime boundaries?"
+  ],
+  "frame_risk_band": "low",
+  "frame_risk_signals": [
+    "the baseline handoff gates are already explicit"
+  ],
+  "decomposition_readiness": "ready",
+  "recommended_next_move": "proceed",
+  "proposal_only": true,
+  "shadow_only": true,
+  "non_authoritative": true
+}

@@ -1,0 +1,10 @@
+{
+  "case_id": "batch1-02-idea-to-proposal-boundary-variant",
+  "selected_passes": [
+    "constraint_skeptic",
+    "signal_gap_probe"
+  ],
+  "selection_reason": "The variant needs a check on borrowed downstream constraints and on the thin signals supporting future-readiness interpretations.",
+  "shadow_only": true,
+  "non_authoritative": true
+}

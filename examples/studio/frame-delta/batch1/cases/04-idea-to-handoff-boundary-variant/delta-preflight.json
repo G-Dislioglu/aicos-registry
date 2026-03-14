@@ -1,0 +1,30 @@
+{
+  "artifact_type": "frame_preflight",
+  "preflight_id": "batch1-frame-preflight-idea-to-handoff-boundary-variant",
+  "subject_ref": "examples/studio/scenarios/idea-to-handoff/scenario.json",
+  "task_frame_summary": "The gated handoff path remains valid, but the frame risks overreading handoff clarity as operational readiness.",
+  "assumed_goal": "Keep the case inside a bounded handoff frame without letting future-oriented language imply runtime progression.",
+  "explicit_constraints": [
+    "User gate remains mandatory.",
+    "No runtime or operator action follows from the handoff artifact.",
+    "Conflict visibility stays part of the framing."
+  ],
+  "latent_frame_risks": [
+    "A polished handoff can be mistaken for implied dispatch readiness.",
+    "Forward-oriented language can hide how bounded the artifact still is."
+  ],
+  "missing_but_decisive_questions": [
+    "Where would a reader mistake bounded handoff preparation for runtime actionability?",
+    "Which phrase would overstate what the handoff artifact authorizes?"
+  ],
+  "frame_risk_band": "medium",
+  "frame_risk_signals": [
+    "handoff language invites premature operational interpretation",
+    "user gate language can fade behind artifact polish"
+  ],
+  "decomposition_readiness": "caution",
+  "recommended_next_move": "narrow",
+  "proposal_only": true,
+  "shadow_only": true,
+  "non_authoritative": true
+}

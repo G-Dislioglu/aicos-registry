@@ -1,0 +1,45 @@
+{
+  "scenario_id": "batch1-08-over-clean-product-brief",
+  "title": "Batch 1 — Over-clean product brief",
+  "subject_ref": "examples/studio/frame-delta/scenarios/review-to-bundle-shadow.scenario.json",
+  "baseline_summary": "The baseline path remains usable, but the brief is polished enough that readers can borrow too much scope certainty from presentation quality alone.",
+  "delta_summary_tail": "captured why polish looked like stronger constraint grounding than it was.",
+  "preflight_ref": "examples/studio/frame-delta/batch1/cases/08-over-clean-product-brief/delta-preflight.json",
+  "challenge_result_ref": "examples/studio/frame-delta/batch1/cases/08-over-clean-product-brief/frame-challenge-result.json",
+  "ledger_refs": [
+    "examples/studio/frame-delta/batch1/cases/08-over-clean-product-brief/error-ledger-entry.json"
+  ],
+  "pass_refs": [
+    "examples/studio/frame-delta/valid/constraint-skeptic.pass.valid.json",
+    "examples/studio/frame-delta/valid/signal-gap-probe.pass.valid.json"
+  ],
+  "comparison_axes": [
+    {
+      "axis": "misframing_detection",
+      "winner": "tie",
+      "reason": "The baseline route remains correct, and Delta mainly refines how narrowly it should be read."
+    },
+    {
+      "axis": "constraint_fidelity",
+      "winner": "delta",
+      "reason": "Delta more clearly separates explicit constraints from polish-borrowed assumptions."
+    },
+    {
+      "axis": "premature_closure_resistance",
+      "winner": "delta",
+      "reason": "Delta resists treating neat presentation as evidence of complete scope clarity."
+    },
+    {
+      "axis": "signal_gap_awareness",
+      "winner": "delta",
+      "reason": "Delta highlights the thin signals behind the strongest confidence moves."
+    },
+    {
+      "axis": "actionability_after_challenge",
+      "winner": "tie",
+      "reason": "Both tracks remain usable once the case is narrowed back to explicit boundaries."
+    }
+  ],
+  "overall_result": "mixed",
+  "integration_signal": "none"
+}

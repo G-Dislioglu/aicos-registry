@@ -1,0 +1,22 @@
+{
+  "artifact_type": "frame_challenge_result",
+  "result_id": "batch1-frame-challenge-ambiguous-governance-ask",
+  "subject_ref": "examples/studio/frame-delta/scenarios/ambiguous-governance-ask-shadow.scenario.json",
+  "input_preflight_ref": "examples/studio/frame-delta/batch1/cases/07-ambiguous-governance-ask/delta-preflight.json",
+  "passes_run": [
+    "constraint_skeptic",
+    "counterframe_probe"
+  ],
+  "challenge_findings": [
+    "The cleanup interpretation collapses once truth mutation remains forbidden.",
+    "A hidden governance-change frame explains the actual pressure better than the initial benign reading."
+  ],
+  "challenge_outcome": "reframed",
+  "frame_risk_band_after_challenge": "high",
+  "residual_risks": [
+    "The requester may still expect authority even after the frame is corrected."
+  ],
+  "recommended_next_move": "revise_frame",
+  "shadow_only": true,
+  "non_authoritative": true
+}

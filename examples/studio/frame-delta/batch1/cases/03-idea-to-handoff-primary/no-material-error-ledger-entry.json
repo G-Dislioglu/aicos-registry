@@ -1,0 +1,7 @@
+{
+  "marker_type": "no_material_error_ledger_entry",
+  "case_id": "batch1-03-idea-to-handoff-primary",
+  "reason": "No material framing error was required because the handoff baseline already externalizes the important boundary logic.",
+  "shadow_only": true,
+  "non_authoritative": true
+}

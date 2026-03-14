@@ -1,0 +1,30 @@
+{
+  "artifact_type": "frame_preflight",
+  "preflight_id": "batch1-frame-preflight-false-consensus-repair",
+  "subject_ref": "examples/studio/frame-delta/scenarios/contradiction-to-review-shadow.scenario.json",
+  "task_frame_summary": "The baseline route remains bounded and valid, but its coherence risks compressing unresolved disagreement into an overly smooth consensus story.",
+  "assumed_goal": "Keep contradiction visible while testing whether the current frame closes too early around apparent agreement.",
+  "explicit_constraints": [
+    "Do not force closure.",
+    "Keep contradiction and evidence gaps visible.",
+    "No truth or runtime shortcutting is allowed."
+  ],
+  "latent_frame_risks": [
+    "A coherent review posture can feel more settled than the evidence warrants.",
+    "Thin signals may still be carrying too much certainty."
+  ],
+  "missing_but_decisive_questions": [
+    "Which disagreement remains active despite the neat overall story?",
+    "What missing signal would materially change the confidence of the current frame?"
+  ],
+  "frame_risk_band": "high",
+  "frame_risk_signals": [
+    "fast convergence around an incomplete evidence story",
+    "unresolved contradiction is described as mostly settled"
+  ],
+  "decomposition_readiness": "caution",
+  "recommended_next_move": "challenge",
+  "proposal_only": true,
+  "shadow_only": true,
+  "non_authoritative": true
+}

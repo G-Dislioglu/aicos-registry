@@ -1,0 +1,19 @@
+{
+  "artifact_type": "error_ledger_entry",
+  "entry_id": "batch1-error-ledger-review-to-bundle-primary",
+  "subject_ref": "examples/studio/scenarios/review-to-bundle/scenario.json",
+  "phase": "framing",
+  "error_class": "invalid_constraint_inference",
+  "symptom": "Trace-consistent packaging initially looked like stronger scope certainty than the underlying evidence justified.",
+  "why_plausible": "A bundle that is orderly and internally aligned naturally feels closer to decision-readiness, even when its authority remains bounded.",
+  "detected_by": [
+    "preflight",
+    "comparison"
+  ],
+  "impact_band": "medium",
+  "recovery_action": "Restate that trace-consistent packaging is not the same as broader authority or evidence closure.",
+  "status": "mitigated",
+  "notes": "The baseline package is still useful; the ledger explains the overread risk.",
+  "evaluation_only": true,
+  "non_authoritative": true
+}

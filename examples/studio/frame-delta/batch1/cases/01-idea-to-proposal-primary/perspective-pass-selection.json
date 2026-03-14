@@ -1,0 +1,9 @@
+{
+  "case_id": "batch1-01-idea-to-proposal-primary",
+  "selected_passes": [
+    "constraint_skeptic"
+  ],
+  "selection_reason": "Only the constraint skeptic is needed because the main risk is overcomplicating an already explicit bounded frame.",
+  "shadow_only": true,
+  "non_authoritative": true
+}

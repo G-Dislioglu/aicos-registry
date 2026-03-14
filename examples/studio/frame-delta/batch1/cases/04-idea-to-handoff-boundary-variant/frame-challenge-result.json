@@ -1,0 +1,22 @@
+{
+  "artifact_type": "frame_challenge_result",
+  "result_id": "batch1-frame-challenge-idea-to-handoff-boundary-variant",
+  "subject_ref": "examples/studio/scenarios/idea-to-handoff/scenario.json",
+  "input_preflight_ref": "examples/studio/frame-delta/batch1/cases/04-idea-to-handoff-boundary-variant/delta-preflight.json",
+  "passes_run": [
+    "constraint_skeptic",
+    "counterframe_probe"
+  ],
+  "challenge_findings": [
+    "The baseline handoff route remains right, but its interpretation should be narrowed away from operational readiness language.",
+    "The counterframe of runtime-adjacent readiness explains the main framing drift better than the literal baseline path alone."
+  ],
+  "challenge_outcome": "narrowed",
+  "frame_risk_band_after_challenge": "medium",
+  "residual_risks": [
+    "Readers may still overread handoff as a near-runtime object if the bounded language weakens."
+  ],
+  "recommended_next_move": "proceed_with_caution",
+  "shadow_only": true,
+  "non_authoritative": true
+}

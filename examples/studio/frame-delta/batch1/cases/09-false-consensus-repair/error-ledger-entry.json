@@ -1,0 +1,19 @@
+{
+  "artifact_type": "error_ledger_entry",
+  "entry_id": "batch1-error-ledger-false-consensus-repair",
+  "subject_ref": "examples/studio/frame-delta/scenarios/contradiction-to-review-shadow.scenario.json",
+  "phase": "evaluation",
+  "error_class": "pseudo_certainty",
+  "symptom": "The case was summarized as if it were closer to consensus than the live disagreement and missing signals supported.",
+  "why_plausible": "A coherent baseline review path makes unresolved tension look smaller than it is, especially when the case remains orderly and bounded.",
+  "detected_by": [
+    "comparison",
+    "human_review"
+  ],
+  "impact_band": "high",
+  "recovery_action": "Keep the contradiction and the decisive missing signals explicit instead of letting coherence imply closure.",
+  "status": "open",
+  "notes": "This is the clearest Batch-1 case where Delta pressure adds visible anti-closure value.",
+  "evaluation_only": true,
+  "non_authoritative": true
+}

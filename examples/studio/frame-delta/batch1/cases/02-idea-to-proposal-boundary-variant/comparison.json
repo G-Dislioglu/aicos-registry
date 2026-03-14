@@ -1,0 +1,42 @@
+{
+  "artifact_type": "frame_delta_evaluation",
+  "scenario_id": "batch1-02-idea-to-proposal-boundary-variant",
+  "subject_ref": "examples/studio/scenarios/idea-to-proposal/scenario.json",
+  "baseline_summary": "The baseline still fits the proposal path, but in this variant the surrounding wording makes it easier to infer extra scope that is not explicitly grounded.",
+  "delta_summary": "Delta preflight marked medium framing risk, challenge outcome narrowed, and 1 ledger entry captured why borrowed downstream confidence looked plausible.",
+  "comparison_axes": [
+    {
+      "axis": "misframing_detection",
+      "winner": "tie",
+      "reason": "Both tracks keep the case inside the proposal path, though Delta names the boundary drift more explicitly."
+    },
+    {
+      "axis": "constraint_fidelity",
+      "winner": "delta",
+      "reason": "Delta better separates grounded proposal constraints from imagined downstream readiness."
+    },
+    {
+      "axis": "premature_closure_resistance",
+      "winner": "tie",
+      "reason": "The baseline is mostly safe, and Delta adds only a modest narrowing benefit."
+    },
+    {
+      "axis": "signal_gap_awareness",
+      "winner": "delta",
+      "reason": "Delta makes the missing support for stronger downstream claims explicit."
+    },
+    {
+      "axis": "actionability_after_challenge",
+      "winner": "tie",
+      "reason": "Both tracks still leave the case actionable as a bounded proposal artifact."
+    }
+  ],
+  "overall_result": "mixed",
+  "integration_signal": "none",
+  "delta_refs": {
+    "preflight_ref": "examples/studio/frame-delta/batch1/cases/02-idea-to-proposal-boundary-variant/delta-preflight.json",
+    "challenge_result_ref": "examples/studio/frame-delta/batch1/cases/02-idea-to-proposal-boundary-variant/frame-challenge-result.json"
+  },
+  "shadow_only": true,
+  "non_authoritative": true
+}

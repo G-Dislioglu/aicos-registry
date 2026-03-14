@@ -1,0 +1,7 @@
+{
+  "marker_type": "no_material_error_ledger_entry",
+  "case_id": "batch1-01-idea-to-proposal-primary",
+  "reason": "No material framing error needed to be recorded because the baseline framing already stayed bounded and explicit.",
+  "shadow_only": true,
+  "non_authoritative": true
+}

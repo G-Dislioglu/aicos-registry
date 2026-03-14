@@ -1,0 +1,9 @@
+{
+  "case_id": "batch1-03-idea-to-handoff-primary",
+  "selected_passes": [
+    "constraint_skeptic"
+  ],
+  "selection_reason": "The handoff baseline already externalizes most of the meaningful constraints, so only a light constraint check is justified.",
+  "shadow_only": true,
+  "non_authoritative": true
+}

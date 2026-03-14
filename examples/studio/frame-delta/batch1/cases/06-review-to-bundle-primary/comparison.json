@@ -1,0 +1,42 @@
+{
+  "artifact_type": "frame_delta_evaluation",
+  "scenario_id": "batch1-06-review-to-bundle-primary",
+  "subject_ref": "examples/studio/scenarios/review-to-bundle/scenario.json",
+  "baseline_summary": "The baseline already keeps the nomination flow locally bundled and trace-consistent, but its tidy packaging can still make the case feel more complete than the explicit review boundaries warrant.",
+  "delta_summary": "Delta preflight marked medium framing risk, challenge outcome narrowed, and 1 ledger entry captured why tidy bundle packaging can look more authoritative than it is.",
+  "comparison_axes": [
+    {
+      "axis": "misframing_detection",
+      "winner": "tie",
+      "reason": "Both tracks keep the case inside a bounded local bundle frame."
+    },
+    {
+      "axis": "constraint_fidelity",
+      "winner": "delta",
+      "reason": "Delta more explicitly guards against treating package polish as broader authority."
+    },
+    {
+      "axis": "premature_closure_resistance",
+      "winner": "delta",
+      "reason": "Delta is better at resisting closure borrowed from tidy review packaging."
+    },
+    {
+      "axis": "signal_gap_awareness",
+      "winner": "delta",
+      "reason": "Delta better highlights where evidence completeness is being inferred from structure."
+    },
+    {
+      "axis": "actionability_after_challenge",
+      "winner": "tie",
+      "reason": "Both tracks still produce a usable bounded review package after the caution is made explicit."
+    }
+  ],
+  "overall_result": "mixed",
+  "integration_signal": "none",
+  "delta_refs": {
+    "preflight_ref": "examples/studio/frame-delta/batch1/cases/06-review-to-bundle-primary/delta-preflight.json",
+    "challenge_result_ref": "examples/studio/frame-delta/batch1/cases/06-review-to-bundle-primary/frame-challenge-result.json"
+  },
+  "shadow_only": true,
+  "non_authoritative": true
+}

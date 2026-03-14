@@ -1,0 +1,10 @@
+{
+  "case_id": "batch1-08-over-clean-product-brief",
+  "selected_passes": [
+    "constraint_skeptic",
+    "signal_gap_probe"
+  ],
+  "selection_reason": "The case needs pressure against borrowed constraint certainty and against evidence gaps hidden by polish.",
+  "shadow_only": true,
+  "non_authoritative": true
+}

@@ -1,0 +1,45 @@
+{
+  "scenario_id": "batch1-09-false-consensus-repair",
+  "title": "Batch 1 — False consensus repair",
+  "subject_ref": "examples/studio/frame-delta/scenarios/contradiction-to-review-shadow.scenario.json",
+  "baseline_summary": "The baseline contradiction route is correct, but the surrounding coherence can still compress living disagreement into a smoother consensus posture than the evidence supports.",
+  "delta_summary_tail": "captured why coherence can still compress unresolved disagreement into false consensus.",
+  "preflight_ref": "examples/studio/frame-delta/batch1/cases/09-false-consensus-repair/delta-preflight.json",
+  "challenge_result_ref": "examples/studio/frame-delta/batch1/cases/09-false-consensus-repair/frame-challenge-result.json",
+  "ledger_refs": [
+    "examples/studio/frame-delta/batch1/cases/09-false-consensus-repair/error-ledger-entry.json"
+  ],
+  "pass_refs": [
+    "examples/studio/frame-delta/valid/counterframe-probe.pass.valid.json",
+    "examples/studio/frame-delta/valid/signal-gap-probe.pass.valid.json"
+  ],
+  "comparison_axes": [
+    {
+      "axis": "misframing_detection",
+      "winner": "tie",
+      "reason": "Both tracks keep the case inside contradiction review rather than a false clean resolution path."
+    },
+    {
+      "axis": "constraint_fidelity",
+      "winner": "tie",
+      "reason": "Both tracks preserve the same hard proposal-only and no-runtime boundaries."
+    },
+    {
+      "axis": "premature_closure_resistance",
+      "winner": "delta",
+      "reason": "Delta is stronger at resisting the slide from coherence into implied consensus."
+    },
+    {
+      "axis": "signal_gap_awareness",
+      "winner": "delta",
+      "reason": "Delta keeps the missing decisive signals in the foreground."
+    },
+    {
+      "axis": "actionability_after_challenge",
+      "winner": "tie",
+      "reason": "Both tracks still support a bounded next move once the contradiction remains explicit."
+    }
+  ],
+  "overall_result": "mixed",
+  "integration_signal": "none"
+}

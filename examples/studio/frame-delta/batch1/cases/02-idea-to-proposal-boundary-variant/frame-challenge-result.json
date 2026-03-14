@@ -1,0 +1,22 @@
+{
+  "artifact_type": "frame_challenge_result",
+  "result_id": "batch1-frame-challenge-idea-to-proposal-boundary-variant",
+  "subject_ref": "examples/studio/scenarios/idea-to-proposal/scenario.json",
+  "input_preflight_ref": "examples/studio/frame-delta/batch1/cases/02-idea-to-proposal-boundary-variant/delta-preflight.json",
+  "passes_run": [
+    "constraint_skeptic",
+    "signal_gap_probe"
+  ],
+  "challenge_findings": [
+    "The baseline path remains correct, but downstream confidence should be narrowed back to proposal-only language.",
+    "The frame needed mild correction rather than replacement."
+  ],
+  "challenge_outcome": "narrowed",
+  "frame_risk_band_after_challenge": "medium",
+  "residual_risks": [
+    "Readers may still borrow too much readiness from the clean conversion path."
+  ],
+  "recommended_next_move": "proceed_with_caution",
+  "shadow_only": true,
+  "non_authoritative": true
+}

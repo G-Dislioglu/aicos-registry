@@ -1,0 +1,19 @@
+{
+  "artifact_type": "error_ledger_entry",
+  "entry_id": "batch1-error-ledger-ambiguous-governance-ask",
+  "subject_ref": "examples/studio/frame-delta/scenarios/ambiguous-governance-ask-shadow.scenario.json",
+  "phase": "framing",
+  "error_class": "misframing",
+  "symptom": "The request was initially read as local wording cleanup instead of a hidden authority-facing governance ask.",
+  "why_plausible": "The request emphasized consistency and cleanup, which made the harmless local frame feel superficially reasonable.",
+  "detected_by": [
+    "preflight",
+    "comparison"
+  ],
+  "impact_band": "high",
+  "recovery_action": "Separate local wording questions from any truth-facing governance request before decomposition.",
+  "status": "open",
+  "notes": "This case is valuable because the wrong frame looks tidy rather than obviously forbidden.",
+  "evaluation_only": true,
+  "non_authoritative": true
+}

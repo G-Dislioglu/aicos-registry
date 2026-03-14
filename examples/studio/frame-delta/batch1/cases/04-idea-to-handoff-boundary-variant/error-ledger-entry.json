@@ -1,0 +1,19 @@
+{
+  "artifact_type": "error_ledger_entry",
+  "entry_id": "batch1-error-ledger-idea-to-handoff-boundary-variant",
+  "subject_ref": "examples/studio/scenarios/idea-to-handoff/scenario.json",
+  "phase": "framing",
+  "error_class": "premature_closure",
+  "symptom": "The handoff artifact was initially read as if it implied runtime readiness instead of bounded preparation.",
+  "why_plausible": "Handoff language naturally sounds closer to execution, so readers can borrow operational confidence from the artifact name itself.",
+  "detected_by": [
+    "preflight",
+    "perspective_pass"
+  ],
+  "impact_band": "medium",
+  "recovery_action": "Restate that handoff remains proposal-safe and gated, with no runtime implication.",
+  "status": "mitigated",
+  "notes": "This is a framing drift, not a flaw in the baseline conversion rules.",
+  "evaluation_only": true,
+  "non_authoritative": true
+}

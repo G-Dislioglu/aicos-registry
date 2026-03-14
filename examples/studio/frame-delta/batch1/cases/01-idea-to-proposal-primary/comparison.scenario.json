@@ -1,0 +1,41 @@
+{
+  "scenario_id": "batch1-01-idea-to-proposal-primary",
+  "title": "Batch 1 — Idea to proposal primary case",
+  "subject_ref": "examples/studio/scenarios/idea-to-proposal/scenario.json",
+  "baseline_summary": "The baseline already frames this as a bounded proposal-only conversion with clear no-runtime and no-truth boundaries, so extra delta pressure adds little practical value.",
+  "preflight_ref": "examples/studio/frame-delta/batch1/cases/01-idea-to-proposal-primary/delta-preflight.json",
+  "challenge_result_ref": "examples/studio/frame-delta/batch1/cases/01-idea-to-proposal-primary/frame-challenge-result.json",
+  "no_material_error_marker_ref": "examples/studio/frame-delta/batch1/cases/01-idea-to-proposal-primary/no-material-error-ledger-entry.json",
+  "pass_refs": [
+    "examples/studio/frame-delta/valid/constraint-skeptic.pass.valid.json"
+  ],
+  "comparison_axes": [
+    {
+      "axis": "misframing_detection",
+      "winner": "baseline",
+      "reason": "The baseline already captures the right frame without needing extra reinterpretation."
+    },
+    {
+      "axis": "constraint_fidelity",
+      "winner": "tie",
+      "reason": "Both tracks preserve the proposal-only and no-truth boundaries."
+    },
+    {
+      "axis": "premature_closure_resistance",
+      "winner": "baseline",
+      "reason": "Delta adds caution without uncovering a materially missing frame challenge."
+    },
+    {
+      "axis": "signal_gap_awareness",
+      "winner": "tie",
+      "reason": "No decisive signal gap meaningfully separates the two tracks here."
+    },
+    {
+      "axis": "actionability_after_challenge",
+      "winner": "baseline",
+      "reason": "The baseline reaches the same safe next move with less overhead."
+    }
+  ],
+  "overall_result": "baseline_better",
+  "integration_signal": "none"
+}

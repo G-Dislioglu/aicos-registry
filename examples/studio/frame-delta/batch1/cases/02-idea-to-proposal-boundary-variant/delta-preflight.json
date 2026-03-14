@@ -1,0 +1,30 @@
+{
+  "artifact_type": "frame_preflight",
+  "preflight_id": "batch1-frame-preflight-idea-to-proposal-boundary-variant",
+  "subject_ref": "examples/studio/scenarios/idea-to-proposal/scenario.json",
+  "task_frame_summary": "The basic proposal-only path remains right, but the phrasing around downstream usefulness tempts a scope reading that is broader than the evidence supports.",
+  "assumed_goal": "Keep the case inside the proposal path while resisting borrowed certainty about downstream destinations.",
+  "explicit_constraints": [
+    "Remain proposal-only.",
+    "Do not infer runtime or truth-facing follow-through.",
+    "Treat downstream value as descriptive rather than authoritative."
+  ],
+  "latent_frame_risks": [
+    "Readers may infer broader destination readiness from a clean proposal conversion.",
+    "Useful-looking proposal language may suppress explicit boundary reminders."
+  ],
+  "missing_but_decisive_questions": [
+    "Which future destination is actually grounded versus merely imaginable?",
+    "Where would the current phrasing invite more confidence than the bounded case justifies?"
+  ],
+  "frame_risk_band": "medium",
+  "frame_risk_signals": [
+    "downstream usefulness is easy to overread",
+    "boundary language is weaker than the conversion cleanliness suggests"
+  ],
+  "decomposition_readiness": "caution",
+  "recommended_next_move": "narrow",
+  "proposal_only": true,
+  "shadow_only": true,
+  "non_authoritative": true
+}

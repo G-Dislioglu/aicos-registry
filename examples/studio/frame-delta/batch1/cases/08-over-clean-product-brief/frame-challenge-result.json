@@ -1,0 +1,22 @@
+{
+  "artifact_type": "frame_challenge_result",
+  "result_id": "batch1-frame-challenge-over-clean-product-brief",
+  "subject_ref": "examples/studio/frame-delta/scenarios/review-to-bundle-shadow.scenario.json",
+  "input_preflight_ref": "examples/studio/frame-delta/batch1/cases/08-over-clean-product-brief/delta-preflight.json",
+  "passes_run": [
+    "constraint_skeptic",
+    "signal_gap_probe"
+  ],
+  "challenge_findings": [
+    "The baseline direction is still right, but the frame must stay narrower than the polished brief initially suggested.",
+    "Delta does not replace the baseline path; it reduces unjustified breadth."
+  ],
+  "challenge_outcome": "narrowed",
+  "frame_risk_band_after_challenge": "medium",
+  "residual_risks": [
+    "Future readers may still over-trust the polished brief."
+  ],
+  "recommended_next_move": "proceed_with_caution",
+  "shadow_only": true,
+  "non_authoritative": true
+}

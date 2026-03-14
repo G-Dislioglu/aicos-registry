@@ -1,0 +1,10 @@
+{
+  "case_id": "batch1-06-review-to-bundle-primary",
+  "selected_passes": [
+    "constraint_skeptic",
+    "signal_gap_probe"
+  ],
+  "selection_reason": "The case benefits from checking where bundle polish is borrowing too much constraint confidence or evidence confidence.",
+  "shadow_only": true,
+  "non_authoritative": true
+}

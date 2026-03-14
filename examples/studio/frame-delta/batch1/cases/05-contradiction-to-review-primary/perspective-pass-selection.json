@@ -1,0 +1,10 @@
+{
+  "case_id": "batch1-05-contradiction-to-review-primary",
+  "selected_passes": [
+    "counterframe_probe",
+    "signal_gap_probe"
+  ],
+  "selection_reason": "This primary contradiction case needs pressure against false consensus and against thin-evidence closure.",
+  "shadow_only": true,
+  "non_authoritative": true
+}

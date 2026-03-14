@@ -1,0 +1,19 @@
+{
+  "artifact_type": "error_ledger_entry",
+  "entry_id": "batch1-error-ledger-idea-to-proposal-boundary-variant",
+  "subject_ref": "examples/studio/scenarios/idea-to-proposal/scenario.json",
+  "phase": "framing",
+  "error_class": "invalid_constraint_inference",
+  "symptom": "Future usefulness language was initially treated as if it implied broader downstream readiness.",
+  "why_plausible": "A clean conversion path often makes readers borrow confidence from the artifact shape instead of the explicitly allowed destinations.",
+  "detected_by": [
+    "preflight",
+    "perspective_pass"
+  ],
+  "impact_band": "medium",
+  "recovery_action": "Narrow the framing back to the proposal-only destination and restate the forbidden downstream inferences.",
+  "status": "mitigated",
+  "notes": "The baseline is still usable; the ledger captures why the drift looked reasonable at first.",
+  "evaluation_only": true,
+  "non_authoritative": true
+}

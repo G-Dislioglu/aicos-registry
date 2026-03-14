@@ -1,0 +1,19 @@
+{
+  "artifact_type": "error_ledger_entry",
+  "entry_id": "batch1-error-ledger-over-clean-product-brief",
+  "subject_ref": "examples/studio/frame-delta/scenarios/review-to-bundle-shadow.scenario.json",
+  "phase": "decomposition",
+  "error_class": "invalid_constraint_inference",
+  "symptom": "Several constraints were initially treated as settled because the brief looked complete and polished.",
+  "why_plausible": "A neat brief often signals readiness, so the reasoning process borrowed confidence from presentation instead of explicit grounding.",
+  "detected_by": [
+    "perspective_pass",
+    "comparison"
+  ],
+  "impact_band": "medium",
+  "recovery_action": "Reduce the frame back to the explicitly grounded boundaries and mark the rest as unresolved.",
+  "status": "mitigated",
+  "notes": "The case stays valid; the ledger records the polish-driven overread.",
+  "evaluation_only": true,
+  "non_authoritative": true
+}

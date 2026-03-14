@@ -1,0 +1,19 @@
+{
+  "artifact_type": "error_ledger_entry",
+  "entry_id": "batch1-error-ledger-contradiction-to-review-primary",
+  "subject_ref": "examples/studio/scenarios/contradiction-to-review/scenario.json",
+  "phase": "evaluation",
+  "error_class": "pseudo_certainty",
+  "symptom": "The contradiction looked more settled than the evidence actually justified.",
+  "why_plausible": "The baseline review path is coherent and disciplined, which can make the remaining uncertainty feel smaller than it is.",
+  "detected_by": [
+    "comparison",
+    "perspective_pass"
+  ],
+  "impact_band": "high",
+  "recovery_action": "Keep the contradiction visibly open and restate the decisive missing signals.",
+  "status": "mitigated",
+  "notes": "This captures closure drift, not a failure of the baseline routing itself.",
+  "evaluation_only": true,
+  "non_authoritative": true
+}

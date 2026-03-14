@@ -190,6 +190,7 @@ Parallel experimental tracks:
 - Frame Delta artifacts are local, non-authoritative, and evaluation-only
 - Frame Delta is not a replacement for the Studio baseline
 - Frame Delta does not authorize truth mutation, registry mutation, or runtime action
+- Batch 1 comparative calibration is summarized in `AICOS_FRAME_DELTA_BATCH1_REPORT.md`
 
 Normal command:
 
@@ -210,6 +211,7 @@ npm run convert:studio -- examples/studio/valid/intake-convert-proposal-source.v
 npm run dossier:studio -- examples/studio/scenarios/review-to-bundle/intake.packet.json examples/studio/scenarios/review-to-bundle/proposal.artifact.json examples/studio/scenarios/review-to-bundle/card-review-target.artifact.json examples/studio/scenarios/review-to-bundle/review-record.forward.json examples/studio/scenarios/review-to-bundle/gate-report.pass.json --bundle-manifest examples/studio/scenarios/review-to-bundle/bundle.manifest.json
 npm run summary:studio -- examples/studio/valid/studio-dossier-review.valid.json
 npm run eval:frame-delta -- examples/studio/frame-delta/scenarios/ambiguous-governance-ask-shadow.scenario.json
+npm run verify:frame-delta-batch1
 npm run verify:studio-review
 npm run verify:studio-bundle-trace
 npm run verify:studio-conversion

@@ -1,0 +1,30 @@
+{
+  "artifact_type": "frame_preflight",
+  "preflight_id": "batch1-frame-preflight-review-to-bundle-primary",
+  "subject_ref": "examples/studio/scenarios/review-to-bundle/scenario.json",
+  "task_frame_summary": "The local review bundle is structurally disciplined, but its completeness and polish can still overstate scope certainty.",
+  "assumed_goal": "Test whether the neat packaging of the review bundle hides scope inflation or borrowed completeness.",
+  "explicit_constraints": [
+    "Stay local and trace-consistent.",
+    "Do not imply registry or runtime progression.",
+    "Treat the bundle as review packaging, not authority."
+  ],
+  "latent_frame_risks": [
+    "A clean package can look more decision-ready than it is.",
+    "Bundle completeness can hide thin justification for some scope edges."
+  ],
+  "missing_but_decisive_questions": [
+    "Which part of the bundle feels settled because of packaging rather than evidence?",
+    "Where could trace-consistency be mistaken for broader authority?"
+  ],
+  "frame_risk_band": "medium",
+  "frame_risk_signals": [
+    "high packaging polish with bounded authority",
+    "trace-consistency can be overread as stronger endorsement"
+  ],
+  "decomposition_readiness": "caution",
+  "recommended_next_move": "narrow",
+  "proposal_only": true,
+  "shadow_only": true,
+  "non_authoritative": true
+}

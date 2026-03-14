@@ -1,0 +1,8 @@
+{
+  "case_id": "batch1-02-idea-to-proposal-boundary-variant",
+  "batch_track": "baseline_near",
+  "source_scenario_ref": "examples/studio/scenarios/idea-to-proposal/scenario.json",
+  "baseline_summary": "The baseline still fits the proposal path, but in this variant the surrounding wording makes it easier to infer extra scope that is not explicitly grounded.",
+  "comparison_only": true,
+  "non_authoritative": true
+}

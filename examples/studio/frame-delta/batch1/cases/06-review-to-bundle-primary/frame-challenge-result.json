@@ -1,0 +1,22 @@
+{
+  "artifact_type": "frame_challenge_result",
+  "result_id": "batch1-frame-challenge-review-to-bundle-primary",
+  "subject_ref": "examples/studio/scenarios/review-to-bundle/scenario.json",
+  "input_preflight_ref": "examples/studio/frame-delta/batch1/cases/06-review-to-bundle-primary/delta-preflight.json",
+  "passes_run": [
+    "constraint_skeptic",
+    "signal_gap_probe"
+  ],
+  "challenge_findings": [
+    "The baseline review bundle remains the right local packaging path.",
+    "Delta mainly adds caution against confusing tidy packaging with broader authority or evidentiary completeness."
+  ],
+  "challenge_outcome": "narrowed",
+  "frame_risk_band_after_challenge": "medium",
+  "residual_risks": [
+    "Readers may still overread trace-consistency as implicit endorsement."
+  ],
+  "recommended_next_move": "proceed_with_caution",
+  "shadow_only": true,
+  "non_authoritative": true
+}

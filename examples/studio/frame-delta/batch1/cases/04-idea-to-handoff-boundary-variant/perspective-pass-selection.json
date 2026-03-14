@@ -1,0 +1,10 @@
+{
+  "case_id": "batch1-04-idea-to-handoff-boundary-variant",
+  "selected_passes": [
+    "constraint_skeptic",
+    "counterframe_probe"
+  ],
+  "selection_reason": "The variant needs a boundary check and a counterframe against the too-easy reading that handoff equals runtime readiness.",
+  "shadow_only": true,
+  "non_authoritative": true
+}

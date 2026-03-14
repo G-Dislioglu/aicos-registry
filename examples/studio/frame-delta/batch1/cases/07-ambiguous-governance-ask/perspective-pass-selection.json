@@ -1,0 +1,10 @@
+{
+  "case_id": "batch1-07-ambiguous-governance-ask",
+  "selected_passes": [
+    "constraint_skeptic",
+    "counterframe_probe"
+  ],
+  "selection_reason": "This case needs both a hidden-constraint check and a rival-frame probe against the too-benign cleanup reading.",
+  "shadow_only": true,
+  "non_authoritative": true
+}

@@ -1,0 +1,8 @@
+{
+  "case_id": "batch1-03-idea-to-handoff-primary",
+  "batch_track": "baseline_near",
+  "source_scenario_ref": "examples/studio/scenarios/idea-to-handoff/scenario.json",
+  "baseline_summary": "The baseline handoff path already carries explicit gates for user review, handoff quality, no-runtime-write, and conflict visibility, so the shadow track mostly confirms an already disciplined frame.",
+  "comparison_only": true,
+  "non_authoritative": true
+}

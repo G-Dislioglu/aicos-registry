@@ -1,0 +1,30 @@
+{
+  "artifact_type": "frame_preflight",
+  "preflight_id": "batch1-frame-preflight-contradiction-to-review-primary",
+  "subject_ref": "examples/studio/scenarios/contradiction-to-review/scenario.json",
+  "task_frame_summary": "The contradiction case is framed correctly as review-bound, but the evidence gap can still be understated by the smoothness of the baseline flow.",
+  "assumed_goal": "Keep contradiction visibility explicit while checking whether the baseline flow implies too much closure.",
+  "explicit_constraints": [
+    "Do not force contradiction closure.",
+    "Keep evidence insufficiency visible.",
+    "Do not infer runtime or truth shortcuts."
+  ],
+  "latent_frame_risks": [
+    "A readable review flow can look more resolved than the evidence supports.",
+    "Provider convergence language may still borrow false certainty."
+  ],
+  "missing_but_decisive_questions": [
+    "Which missing signal still limits confidence in the contradiction posture?",
+    "Where does coherence risk hiding active disagreement?"
+  ],
+  "frame_risk_band": "medium",
+  "frame_risk_signals": [
+    "coherent flow can mask unresolved evidence",
+    "contradiction language may be softer than the uncertainty warrants"
+  ],
+  "decomposition_readiness": "caution",
+  "recommended_next_move": "challenge",
+  "proposal_only": true,
+  "shadow_only": true,
+  "non_authoritative": true
+}

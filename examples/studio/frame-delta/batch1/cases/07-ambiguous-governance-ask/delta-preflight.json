@@ -1,0 +1,30 @@
+{
+  "artifact_type": "frame_preflight",
+  "preflight_id": "batch1-frame-preflight-ambiguous-governance-ask",
+  "subject_ref": "examples/studio/frame-delta/scenarios/ambiguous-governance-ask-shadow.scenario.json",
+  "task_frame_summary": "The task sounds like small governance wording cleanup but may actually be a disguised truth-facing change request.",
+  "assumed_goal": "Expose whether the ask belongs to a local shadow path or to a forbidden authority path before decomposition begins.",
+  "explicit_constraints": [
+    "No registry, index, or alias mutation is allowed.",
+    "No runtime or operator write is allowed.",
+    "The comparison remains local and non-authoritative."
+  ],
+  "latent_frame_risks": [
+    "The benign documentation frame can hide a truth-authority expectation.",
+    "Approval language can appear under the cover of cleanup language."
+  ],
+  "missing_but_decisive_questions": [
+    "Is the real target a local review aid or a truth-facing governance change?",
+    "What remains of the request if all truth mutation stays forbidden?"
+  ],
+  "frame_risk_band": "high",
+  "frame_risk_signals": [
+    "governance language hides authority expectations",
+    "cleanup framing blurs documentation and truth mutation"
+  ],
+  "decomposition_readiness": "blocked",
+  "recommended_next_move": "challenge",
+  "proposal_only": true,
+  "shadow_only": true,
+  "non_authoritative": true
+}

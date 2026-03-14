@@ -1,0 +1,8 @@
+{
+  "case_id": "batch1-07-ambiguous-governance-ask",
+  "batch_track": "frame_risk_case",
+  "source_scenario_ref": "examples/studio/frame-delta/scenarios/ambiguous-governance-ask-shadow.scenario.json",
+  "baseline_summary": "Without shadow pressure, this ask can still be misread as harmless local cleanup even though its real pressure points toward truth-facing governance change.",
+  "comparison_only": true,
+  "non_authoritative": true
+}

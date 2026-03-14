@@ -1,0 +1,45 @@
+{
+  "scenario_id": "batch1-05-contradiction-to-review-primary",
+  "title": "Batch 1 — Contradiction to review primary case",
+  "subject_ref": "examples/studio/scenarios/contradiction-to-review/scenario.json",
+  "baseline_summary": "The baseline already routes the contradiction into review and avoids forced closure, but its coherent flow can still make the unresolved evidence look more settled than it is.",
+  "delta_summary_tail": "captured why the coherent review path can still imply too much certainty.",
+  "preflight_ref": "examples/studio/frame-delta/batch1/cases/05-contradiction-to-review-primary/delta-preflight.json",
+  "challenge_result_ref": "examples/studio/frame-delta/batch1/cases/05-contradiction-to-review-primary/frame-challenge-result.json",
+  "ledger_refs": [
+    "examples/studio/frame-delta/batch1/cases/05-contradiction-to-review-primary/error-ledger-entry.json"
+  ],
+  "pass_refs": [
+    "examples/studio/frame-delta/valid/counterframe-probe.pass.valid.json",
+    "examples/studio/frame-delta/valid/signal-gap-probe.pass.valid.json"
+  ],
+  "comparison_axes": [
+    {
+      "axis": "misframing_detection",
+      "winner": "tie",
+      "reason": "Both tracks correctly keep the case in contradiction review."
+    },
+    {
+      "axis": "constraint_fidelity",
+      "winner": "tie",
+      "reason": "Both tracks preserve the no-runtime and no-truth limits."
+    },
+    {
+      "axis": "premature_closure_resistance",
+      "winner": "delta",
+      "reason": "Delta more actively resists letting a coherent hold posture imply evidentiary closure."
+    },
+    {
+      "axis": "signal_gap_awareness",
+      "winner": "delta",
+      "reason": "Delta names the missing signals limiting confidence more explicitly."
+    },
+    {
+      "axis": "actionability_after_challenge",
+      "winner": "tie",
+      "reason": "Both tracks still support a bounded hold posture once the uncertainty stays visible."
+    }
+  ],
+  "overall_result": "mixed",
+  "integration_signal": "none"
+}
