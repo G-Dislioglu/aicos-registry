@@ -23,6 +23,7 @@
     "verify:frame-delta-batch2": "node tools/verify-aicos-frame-delta-batch2.js",
     "verify:frame-delta-charter": "node tools/verify-aicos-frame-delta-decision-charter-v1.js",
     "verify:frame-delta-smt-candidate": "node tools/verify-aicos-frame-delta-smt-candidate-note.js",
+    "verify:frame-delta-smt-pilot-entry": "node tools/verify-aicos-frame-delta-smt-pilot-entry-criteria.js",
     "verify:studio-schemas": "node tools/verify-aicos-studio-schemas.js",
     "verify:studio-tooling": "node tools/verify-aicos-studio-tooling.js",
     "verify:studio-review": "node tools/verify-aicos-studio-review-layer.js",

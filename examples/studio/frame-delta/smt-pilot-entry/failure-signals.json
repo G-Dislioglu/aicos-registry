@@ -1,0 +1,70 @@
+{
+  "entry_criteria_version": "v1",
+  "status": "proposal_only",
+  "signals": [
+    {
+      "id": "artificial_counterframing_without_material_gain",
+      "signal": "Künstliche Gegenrahmung ohne materiellen Mehrwert.",
+      "effect": "abort",
+      "reason": "Der Split erzeugt Reibung, aber keine belastbare zusätzliche Einsicht."
+    },
+    {
+      "id": "high_false_split_rate",
+      "signal": "Hohe false_split-Rate.",
+      "effect": "abort",
+      "reason": "Der Pilot produziert zu oft künstliche Trennungen statt realer Konfliktklärung."
+    },
+    {
+      "id": "high_shallow_split_rate",
+      "signal": "Hohe shallow_split-Rate.",
+      "effect": "abort",
+      "reason": "Die erzeugten Splits bleiben oberflächlich und liefern keinen materiellen Erkenntnisdruck."
+    },
+    {
+      "id": "diplomatic_merge_instead_of_tension_extraction",
+      "signal": "Diplomatischer Merge statt echter Spannungsextraktion.",
+      "effect": "abort",
+      "reason": "Die Methode verschönert den Konflikt, statt ihn präziser sichtbar zu machen."
+    },
+    {
+      "id": "no_clear_output_difference_vs_existing_line",
+      "signal": "Fehlende klare Output-Differenz zur normalen Challenge-/Frame-Delta-Linie.",
+      "effect": "abort",
+      "reason": "Ohne sichtbare Differenz gibt es keinen Pilotgrund."
+    },
+    {
+      "id": "complexity_exceeds_learning_value",
+      "signal": "Unverhältnismäßige Komplexität im Verhältnis zum Erkenntnisgewinn.",
+      "effect": "abort",
+      "reason": "Ein aufwendigerer Ablauf ist nicht schon deshalb gerechtfertigt, weil er komplexer ist."
+    },
+    {
+      "id": "unclear_success_criteria",
+      "signal": "Unklare Erfolgskriterien.",
+      "effect": "abort",
+      "reason": "Ein Pilot ohne klare Erfolgs- und Stop-Kriterien ist nicht prüfbar."
+    },
+    {
+      "id": "drift_toward_silent_integration_logic",
+      "signal": "Drift in Richtung stiller Integrationslogik.",
+      "effect": "disqualify",
+      "reason": "Sobald der Pilot als verdeckte Architekturvorstufe behandelt wird, ist der bounded Scope verloren."
+    }
+  ],
+  "valid_pilot_outputs": [
+    "new_question",
+    "boundary_clarification",
+    "evidence_gap",
+    "trigger_refinement",
+    "no_material_gain"
+  ],
+  "pilot_slot_recommendation": {
+    "recommended_first_slot": "P1 Frame Challenge",
+    "later_secondary_candidate": "P3 Improvement Gate",
+    "allow_parallel_slots_now": false,
+    "pilot_now": false,
+    "build_now": false,
+    "operator_now": false,
+    "notes": "Nur ein erster Slot wäre später überhaupt erwägenswert; P1 zuerst, P3 höchstens später und nicht parallel."
+  }
+}

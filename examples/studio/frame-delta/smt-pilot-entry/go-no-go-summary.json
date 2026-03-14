@@ -1,0 +1,54 @@
+{
+  "entry_criteria_version": "v1",
+  "status": "proposal_only",
+  "entries": [
+    {
+      "id": "single_pilot_slot",
+      "criterion": "Ein späterer Pilot braucht genau einen klaren, engen ersten Slot statt breiter Architektur.",
+      "type": "go",
+      "reason": "Ohne klaren Slot driftet die Idee sofort in Integrationslogik.",
+      "required_now": true,
+      "notes": "Bevorzugt nur P1 Frame Challenge; P3 höchstens später und nicht parallel."
+    },
+    {
+      "id": "explicit_baseline_comparison",
+      "criterion": "Ein späterer Pilot braucht einen klaren Vergleich gegen die bestehende Challenge-/Frame-Delta-Linie.",
+      "type": "go",
+      "reason": "Ohne Gegenvergleich ist kein materieller Mehrwert prüfbar.",
+      "required_now": true,
+      "notes": "Ein Pilot ohne Vergleichsmaßstab ist kein Test, sondern Selbsterzählung."
+    },
+    {
+      "id": "realistic_output_frame",
+      "criterion": "Ein späterer Pilot darf nur mit realistischen Outputs und ausdrücklich auch no_material_gain geführt werden.",
+      "type": "go",
+      "reason": "Ohne valides no_material_gain kippt der Pilot in automatische Selbstbestätigung.",
+      "required_now": true,
+      "notes": "Erlaubte Outputs: new_question, boundary_clarification, evidence_gap, trigger_refinement, no_material_gain."
+    },
+    {
+      "id": "undefined_failure_logic",
+      "criterion": "Ein späterer Pilot ist No-Go, wenn Failure-Signale oder Abort-Regeln unklar bleiben.",
+      "type": "no_go",
+      "reason": "Ohne Stop-Regeln wird aus einem begrenzten Test leicht eine stille Fortsetzungslogik.",
+      "required_now": true,
+      "notes": "Failure-Signale müssen vorab benannt werden, nicht erst nachträglich."
+    },
+    {
+      "id": "requires_mutation_or_build",
+      "criterion": "Ein späterer Pilot ist No-Go, wenn er Operatorbau, Integrationslogik oder stille Mutation bestehender Kernlinien braucht.",
+      "type": "no_go",
+      "reason": "Der Schritt von Kandidatenmaterial zu Architektur darf nicht still vollzogen werden.",
+      "required_now": true,
+      "notes": "Kein O8, kein Build, keine Integration, keine Provider-Bindung."
+    },
+    {
+      "id": "evidence_gap_on_expected_gain",
+      "criterion": "Wenn der behauptete Mehrwert nur abstrakt klingt, aber nicht prüfbar operationalisiert ist, bleibt needs_more_evidence bestehen.",
+      "type": "evidence_gap",
+      "reason": "Interessant klingende Differenz ist noch kein belastbarer Pilotgrund.",
+      "required_now": true,
+      "notes": "Erst wenn erwarteter Mehrwert, Gegenvergleich und Abort-Punkt konkret genug sind, wäre Entry überhaupt diskutierbar."
+    }
+  ]
+}
