@@ -1,0 +1,30 @@
+{
+  "artifact_type": "studio_intake_packet",
+  "packet_id": "studio-review-target-boundary-005",
+  "created_at": "2026-03-14T12:23:00Z",
+  "source_mode": "maya_council",
+  "participants": [
+    "maya:observer",
+    "maya:distillator",
+    "provider:deepseek_chat",
+    "human:operator"
+  ],
+  "topic": "whether bundle-facing review notes should always carry one explicit open-conflict reminder or only add it when escalation pressure is already visible",
+  "proposal_type": "situation_analysis",
+  "claim_status": "bounded_proposal",
+  "evidence_status": "example_supported",
+  "challenge_status": "challenged_with_open_conflicts",
+  "drift_risk": "medium",
+  "recommendation_scope": "review_later",
+  "promotion_state": "proposal_only",
+  "distilled_summary": "the pressure feels close to a later human decision because it shapes what reviewers will see, but the issue still primarily concerns local review-surface discipline rather than a concrete human escalation choice",
+  "open_conflicts": [
+    "some participants want immediate human escalation because hidden-conflict risk is real while others see this as a bounded local review-surface design issue first"
+  ],
+  "next_review_target": "manual_design_followup",
+  "source_refs": [
+    "AICOS_STUDIO_BUNDLE_REVIEW_CONTEXT.md#purpose",
+    "AICOS_STUDIO_REVIEW_TARGET_MAPPING.md#situation_analysis"
+  ],
+  "distillator_notes": "This is intentionally drift-prone: manual follow-up wins, but only narrowly."
+}

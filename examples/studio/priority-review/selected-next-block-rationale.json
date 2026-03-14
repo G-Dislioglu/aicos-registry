@@ -1,0 +1,36 @@
+{
+  "reprioritization_version": "v1",
+  "status": "proposal_only",
+  "selected_next_k2_block": {
+    "id": "studio_next_review_target_boundary_cases",
+    "title": "K2 — Studio Next Review Target Boundary Cases",
+    "why_highest_current_value": "Der Block klärt eine bereits zentrale Hauptlinien-Entscheidungsgrenze im bestehenden Studio-Kernfluss: die praktische Trennung zwischen manual_design_followup, request_human_decision und human_registry_review.",
+    "already_satisfied_prerequisites": [
+      "AICOS_STUDIO_REVIEW_TARGET_MAPPING.md definiert die zulässigen next_review_target-Klassen und Gates.",
+      "AICOS_STUDIO_ROUTING_MATRIX.md und AICOS_STUDIO_REVIEW_PROCEDURE.md liefern die Boundary- und Review-Logik.",
+      "AICOS_STUDIO_PIPELINE_SCENARIOS.md zeigt bereits mehrere lokale Referenzflüsse mit bounded next steps.",
+      "Die bestehende Studio-Tooling- und Verifier-Linie ist öffentlich gesichert und anschlussfähig."
+    ],
+    "bounded_risks": [
+      "Kein neuer Operator oder Pilotpfad.",
+      "Keine Runtime-, Registry- oder Provider-Integration.",
+      "Keine neue Ontologie, sondern Kalibrierung bestehender Felder und Grenzen.",
+      "Keine versteckte Rückkehr in SMT oder Delta-Erweiterung."
+    ]
+  },
+  "why_rank_2_not_first": {
+    "id": "studio_review_posture_boundary_corpus",
+    "reason": "Review-Postures werden erst dann scharf, wenn die Zielwahl selbst weniger interpretationsoffen ist. Zuerst die Target-Grenze, dann die Posture-Grenze."
+  },
+  "why_rank_3_not_first": {
+    "id": "studio_dossier_readout_stress_cases",
+    "reason": "Dossier-Stressfälle verbessern vor allem die spätere menschliche Lesefläche. Sie lösen aber nicht zuerst die engere Hauptlinien-Frage, wann welcher next_review_target gerechtfertigt ist."
+  },
+  "not_recommended_now": [
+    "smt_continuation",
+    "smt_pilot_build",
+    "o8_or_operator_build",
+    "broad_theory_or_schema_expansion_without_clear_leverage",
+    "early_scoring_s2_reopening"
+  ]
+}

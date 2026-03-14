@@ -1,0 +1,51 @@
+{
+  "reprioritization_version": "v1",
+  "status": "proposal_only",
+  "freeze_context": "smt_frozen_for_now",
+  "entries": [
+    {
+      "id": "studio_next_review_target_boundary_cases",
+      "candidate_block": "K2 — Studio Next Review Target Boundary Cases",
+      "domain": "studio_review_targeting",
+      "expected_value": "high",
+      "risk": "low_to_medium",
+      "prereq_status": "ready_now",
+      "why_now": "Die bestehende Studio-Hauptlinie benutzt next_review_target bereits durchgängig, aber die praktischen Zielgrenzen sind noch nicht als eigener kleiner Boundary-Block kalibriert.",
+      "why_not_now": "Entfällt; dies ist der empfohlene nächste Block.",
+      "recommended_rank": 1
+    },
+    {
+      "id": "studio_review_posture_boundary_corpus",
+      "candidate_block": "K2 — Studio Review Posture Boundary Corpus",
+      "domain": "studio_review_decisions",
+      "expected_value": "medium_to_high",
+      "risk": "medium",
+      "prereq_status": "partially_ready",
+      "why_now": "Der Review-Procedure-Unterbau existiert bereits und könnte durch einen kleinen Corpus mit hold/forward/split/downgrade/archive/discard-Fällen operationalisiert werden.",
+      "why_not_now": "Posture-Grenzen hängen praktisch an sauberer Zielklarheit; ohne vorherige Target-Boundary-Schärfung ist die Kalibrierung unnötig weich.",
+      "recommended_rank": 2
+    },
+    {
+      "id": "studio_dossier_readout_stress_cases",
+      "candidate_block": "K2 — Studio Dossier Readout Stress Cases",
+      "domain": "studio_human_review_surface",
+      "expected_value": "medium",
+      "risk": "low",
+      "prereq_status": "ready_now",
+      "why_now": "Dossier- und Summary-Linie existieren bereits und könnten mit wenigen harten Stressfällen für menschliche Lesbarkeit und Boundary-Sprache robuster gemacht werden.",
+      "why_not_now": "Der direkte Hebel auf den Hauptfluss ist kleiner als bei der Zielgrenzen-Kalibrierung; es stärkt eher die Lesefläche als die primäre Entscheidungsgrenze.",
+      "recommended_rank": 3
+    },
+    {
+      "id": "scoring_s2_entry_criteria_note",
+      "candidate_block": "K2 — Scoring S2 Entry Criteria Note",
+      "domain": "scoring",
+      "expected_value": "medium",
+      "risk": "medium_to_high",
+      "prereq_status": "not_urgent",
+      "why_now": "S1 ist stabil abgeschlossen; ein Entry-Criteria-Block könnte spätere S2-Arbeit gegen vorschnellen Theorieausbau absichern.",
+      "why_not_now": "S1 ist workflow-ready und S2 explizit nicht gestartet; der unmittelbare Hauptlinien-Hebel ist kleiner und die Theorieausbau-Gefahr höher als bei Studio-Zielgrenzen.",
+      "recommended_rank": 4
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "boundary_block_version": "v1",
+  "status": "proposal_only",
+  "tested_target_classes": [
+    "manual_design_followup",
+    "request_human_decision",
+    "human_registry_review"
+  ],
+  "entries": [
+    {
+      "id": "studio-review-target-boundary-001",
+      "case_file": "01-manual-design-followup-packet-shape.json",
+      "case_group": "clear_manual_design_followup",
+      "boundary_reason": "Es geht noch um lokale Packet-Form und Review-Lesbarkeit, nicht um eine spätere menschliche Eskalationsentscheidung.",
+      "expected_target": "manual_design_followup",
+      "why_not_adjacent_target": "request_human_decision wäre hier unnötige Eskalation, weil weder ein konkreter später Human-Entscheid noch eine Registry-Prüflast vorliegt.",
+      "ambiguity_level": "low"
+    },
+    {
+      "id": "studio-review-target-boundary-002",
+      "case_file": "02-manual-design-followup-contradiction-format.json",
+      "case_group": "clear_manual_design_followup",
+      "boundary_reason": "Der Fall ist noch explorativ und formt nur, wie Widerspruch lokal sichtbar bleibt; er ist nicht reif für spätere menschliche Zielposturen.",
+      "expected_target": "manual_design_followup",
+      "why_not_adjacent_target": "request_human_decision wäre zu stark, weil weder Evidenz- noch Stabilitätsniveau für einen späteren Human-Entscheid erreicht sind.",
+      "ambiguity_level": "low"
+    },
+    {
+      "id": "studio-review-target-boundary-003",
+      "case_file": "03-request-human-decision-forwarding-threshold.json",
+      "case_group": "clear_escalation",
+      "boundary_reason": "Die Kernfrage ist nicht mehr reine Designpflege, sondern ob ein konflikttragender Fall überhaupt in eine spätere menschliche Entscheidungsfläche getragen werden darf.",
+      "expected_target": "request_human_decision",
+      "why_not_adjacent_target": "manual_design_followup wäre zu schwach, human_registry_review zu stark; zuerst muss die begrenzte Human-Eskalation selbst geklärt werden.",
+      "ambiguity_level": "medium"
+    },
+    {
+      "id": "studio-review-target-boundary-004",
+      "case_file": "04-human-registry-review-existing-card-boundary.json",
+      "case_group": "clear_escalation",
+      "boundary_reason": "Der Fall betrifft eine bestehende Card-Grenze mit konkreter später Registry-Prüflast und ausreichender bounded Evidenz, ohne Mutation zu behaupten.",
+      "expected_target": "human_registry_review",
+      "why_not_adjacent_target": "request_human_decision wäre hier zu schwach, weil die eigentliche spätere Zielklasse bereits klar eine menschliche Registry-Wortlautprüfung ist.",
+      "ambiguity_level": "medium"
+    },
+    {
+      "id": "studio-review-target-boundary-005",
+      "case_file": "05-ambiguous-manual-vs-human-decision.json",
+      "case_group": "ambiguous_boundary",
+      "boundary_reason": "Die Sichtbarkeitsfrage erzeugt bereits Eskalationsdruck, bleibt aber noch primär eine bounded Review-Surface- und Designfrage.",
+      "expected_target": "manual_design_followup",
+      "why_not_adjacent_target": "request_human_decision wäre plausibel, würde hier aber die noch lokale Designnatur des Problems zu früh als spätere Human-Entscheidungsfrage framen.",
+      "ambiguity_level": "high"
+    },
+    {
+      "id": "studio-review-target-boundary-006",
+      "case_file": "06-ambiguous-human-decision-vs-registry-review.json",
+      "case_group": "ambiguous_boundary",
+      "boundary_reason": "Ein bestehender Card-Bezug macht human_registry_review plausibel, aber Evidenz und Konfliktlage sind noch nicht stark genug, um den request_human_decision-Schritt zu überspringen.",
+      "expected_target": "request_human_decision",
+      "why_not_adjacent_target": "human_registry_review wäre hier zu aggressiv, weil die Ernsthaftigkeit und Zielschärfe noch selbst Teil des offenen Human-Entscheids sind.",
+      "ambiguity_level": "high"
+    }
+  ]
+}

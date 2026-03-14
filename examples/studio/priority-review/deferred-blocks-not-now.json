@@ -1,0 +1,31 @@
+{
+  "reprioritization_version": "v1",
+  "status": "proposal_only",
+  "not_now": [
+    {
+      "id": "smt_continuation",
+      "decision": "not_now",
+      "reason": "SMT ist bewusst eingefroren; weitere Vertiefung würde aktuell vor allem Theorie- oder Pilotdruck erzeugen."
+    },
+    {
+      "id": "smt_pilot_build",
+      "decision": "not_now",
+      "reason": "Pilot Entry Criteria sind dokumentiert, aber damit ist gerade kein Pilot freigegeben."
+    },
+    {
+      "id": "o8_or_operator_build",
+      "decision": "not_now",
+      "reason": "Ein Operatorpfad wäre gegen den dokumentierten Freeze und gegen den bounded Scope der SMT-Linie."
+    },
+    {
+      "id": "broad_theory_or_schema_expansion",
+      "decision": "not_now",
+      "reason": "Weitere Theorie- oder Schema-Ausweitung ohne direkte Hauptlinien-Lücke hätte aktuell zu wenig Hebel."
+    },
+    {
+      "id": "early_studio_or_scoring_reloops",
+      "decision": "not_now",
+      "reason": "Frühe Rückschleifen in bereits stabilisierte Grundlagen liefern derzeit weniger Nutzwert als eine gezielte Hauptlinien-Boundary-Schärfung."
+    }
+  ]
+}

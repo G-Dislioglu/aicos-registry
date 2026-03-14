@@ -1,0 +1,27 @@
+{
+  "artifact_type": "studio_intake_packet",
+  "packet_id": "studio-review-target-boundary-002",
+  "created_at": "2026-03-14T12:09:00Z",
+  "source_mode": "single_model_session",
+  "participants": [
+    "maya:observer"
+  ],
+  "topic": "whether contradiction pressure should stay inside one bounded packet note or be split later without inventing a stronger review destination",
+  "proposal_type": "idea_probe",
+  "claim_status": "exploratory",
+  "evidence_status": "conversation_only",
+  "challenge_status": "challenge_in_progress",
+  "drift_risk": "medium",
+  "recommendation_scope": "review_later",
+  "promotion_state": "proposal_only",
+  "distilled_summary": "the case still needs bounded design follow-up on packet formatting and does not yet justify a later human-owned decision posture",
+  "open_conflicts": [
+    "it is unresolved whether the contradiction note needs stronger separation or should remain embedded in one packet"
+  ],
+  "next_review_target": "manual_design_followup",
+  "source_refs": [
+    "AICOS_STUDIO_REVIEW_TARGET_MAPPING.md#idea_probe",
+    "AICOS_STUDIO_REVIEW_PROCEDURE.md#phase-1-intake-and-identification"
+  ],
+  "distillator_notes": "Keep this inside local design follow-up until the packet shape is less provisional."
+}
