@@ -1,12 +1,15 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 
+import { ensureMayaPostgresSchema, getMayaPostgresPool } from '@/lib/maya-db';
+import { getMayaRuntimeConfig } from '@/lib/maya-env';
 import { isLanguage } from '@/lib/i18n';
 import { getMayaState } from '@/lib/seed-data';
 import { AppLanguage, ChatMessage, ChatSession, MayaStore, MemoryItem, Profile, Project } from '@/lib/types';
 
 const DATA_DIRECTORY = path.join(process.cwd(), 'data');
 const STORE_FILE_PATH = path.join(DATA_DIRECTORY, 'maya-store.json');
+const STORE_ROW_ID = 'primary';
 
 function nowIso() {
   return new Date().toISOString();
@@ -137,7 +140,7 @@ function normalizeSession(session: Partial<ChatSession> | undefined, fallback?: 
   };
 }
 
-export function createInitialMayaStore(language: AppLanguage = 'de'): MayaStore {
+export function createInitialMayaStore(language: AppLanguage = getMayaRuntimeConfig().seedLanguage): MayaStore {
   const seed = getMayaState(language);
   const timestamp = nowIso();
   const projects = seed.projects.map((project) => normalizeProject(project));
@@ -197,12 +200,12 @@ async function ensureStoreFile() {
   try {
     await fs.access(STORE_FILE_PATH);
   } catch {
-    const initial = createInitialMayaStore('de');
+    const initial = createInitialMayaStore();
     await fs.writeFile(STORE_FILE_PATH, JSON.stringify(initial, null, 2), 'utf8');
   }
 }
 
-export async function readMayaStore() {
+async function readFileMayaStore() {
   await ensureStoreFile();
 
   try {
@@ -212,19 +215,74 @@ export async function readMayaStore() {
     await fs.writeFile(STORE_FILE_PATH, JSON.stringify(normalized, null, 2), 'utf8');
     return normalized;
   } catch {
-    const initial = createInitialMayaStore('de');
+    const initial = createInitialMayaStore();
     await fs.writeFile(STORE_FILE_PATH, JSON.stringify(initial, null, 2), 'utf8');
     return initial;
   }
 }
 
-export async function writeMayaStore(store: Partial<MayaStore>) {
+async function writeFileMayaStore(store: Partial<MayaStore>) {
   await ensureStoreFile();
   const normalized = normalizeMayaStore(store);
   await fs.writeFile(STORE_FILE_PATH, JSON.stringify(normalized, null, 2), 'utf8');
   return normalized;
 }
 
+async function readPostgresMayaStore() {
+  await ensureMayaPostgresSchema();
+
+  const pool = getMayaPostgresPool();
+  const result = await pool.query<{ payload: Partial<MayaStore> }>('SELECT payload FROM maya_state WHERE id = $1', [STORE_ROW_ID]);
+
+  if (result.rowCount && result.rows[0]?.payload) {
+    const normalized = normalizeMayaStore(result.rows[0].payload);
+    await writePostgresMayaStore(normalized);
+    return normalized;
+  }
+
+  const initial = createInitialMayaStore();
+  await pool.query('INSERT INTO maya_state (id, payload, updated_at) VALUES ($1, $2::jsonb, NOW()) ON CONFLICT (id) DO UPDATE SET payload = EXCLUDED.payload, updated_at = NOW()', [STORE_ROW_ID, JSON.stringify(initial)]);
+  return initial;
+}
+
+async function writePostgresMayaStore(store: Partial<MayaStore>) {
+  await ensureMayaPostgresSchema();
+
+  const normalized = normalizeMayaStore(store);
+  await getMayaPostgresPool().query('INSERT INTO maya_state (id, payload, updated_at) VALUES ($1, $2::jsonb, NOW()) ON CONFLICT (id) DO UPDATE SET payload = EXCLUDED.payload, updated_at = NOW()', [STORE_ROW_ID, JSON.stringify(normalized)]);
+  return normalized;
+}
+
+export async function readMayaStore() {
+  const runtime = getMayaRuntimeConfig();
+
+  if (runtime.storageDriver === 'postgres') {
+    return readPostgresMayaStore();
+  }
+
+  return readFileMayaStore();
+}
+
+export async function writeMayaStore(store: Partial<MayaStore>) {
+  const runtime = getMayaRuntimeConfig();
+
+  if (runtime.storageDriver === 'postgres') {
+    return writePostgresMayaStore(store);
+  }
+
+  return writeFileMayaStore(store);
+}
+
 export function getStoreFilePath() {
   return STORE_FILE_PATH;
+}
+
+export function getMayaStorageInfo() {
+  const runtime = getMayaRuntimeConfig();
+
+  return {
+    driver: runtime.storageDriver,
+    seedLanguage: runtime.seedLanguage,
+    storeFilePath: runtime.storageDriver === 'file' ? STORE_FILE_PATH : null
+  };
 }

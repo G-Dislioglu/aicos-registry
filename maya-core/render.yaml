@@ -1,3 +1,8 @@
+databases:
+  - name: maya-core-db
+    databaseName: maya_core
+    user: maya_core
+
 services:
   - type: web
     name: maya-core
@@ -8,6 +13,18 @@ services:
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: maya-core-db
+          property: connectionString
+      - key: MAYA_STORAGE_DRIVER
+        value: postgres
+      - key: MAYA_AUTH_SECRET
+        generateValue: true
+      - key: MAYA_PASSPHRASE
+        sync: false
+      - key: MAYA_SEED_LANGUAGE
+        value: de
       - key: NODE_VERSION
         value: 20.11.0
       - key: NEXT_TELEMETRY_DISABLED

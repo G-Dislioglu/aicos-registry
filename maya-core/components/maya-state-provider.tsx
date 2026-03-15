@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 import { useLanguage } from '@/components/language-provider';
 import { ChatApiResponse, ChatSession, MayaStore, MemoryItem, Profile, Project } from '@/lib/types';
@@ -42,11 +43,21 @@ function getDefaultSessionIntent(language: 'de' | 'en') {
 
 export function MayaStateProvider({ children }: { children: ReactNode }) {
   const { language } = useLanguage();
+  const pathname = usePathname();
   const [state, setState] = useState<MayaStore | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const stateRef = useRef<MayaStore | null>(null);
+
+  const redirectToLogin = useCallback(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const target = pathname && pathname !== '/login' ? pathname : '/';
+    window.location.href = `/login?next=${encodeURIComponent(target)}`;
+  }, [pathname]);
 
   const replaceState = useCallback((nextState: MayaStore) => {
     stateRef.current = nextState;
@@ -54,11 +65,25 @@ export function MayaStateProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refresh = useCallback(async () => {
+    if (pathname === '/login') {
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await fetch('/api/state', { cache: 'no-store' });
+
+      if (response.status === 401) {
+        redirectToLogin();
+        return;
+      }
+
+      if (response.status === 503) {
+        throw new Error('state_unavailable');
+      }
 
       if (!response.ok) {
         throw new Error('state_load_failed');
@@ -71,7 +96,7 @@ export function MayaStateProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [replaceState]);
+  }, [pathname, redirectToLogin, replaceState]);
 
   useEffect(() => {
     refresh();
@@ -90,6 +115,11 @@ export function MayaStateProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ state: nextState })
       });
 
+      if (response.status === 401) {
+        redirectToLogin();
+        throw new Error('unauthorized');
+      }
+
       if (!response.ok) {
         throw new Error('state_save_failed');
       }
@@ -103,7 +133,7 @@ export function MayaStateProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsSaving(false);
     }
-  }, [replaceState]);
+  }, [redirectToLogin, replaceState]);
 
   const mutateState = useCallback(async (updater: (current: MayaStore) => MayaStore) => {
     const current = stateRef.current;
@@ -283,6 +313,11 @@ export function MayaStateProvider({ children }: { children: ReactNode }) {
         })
       });
 
+      if (response.status === 401) {
+        redirectToLogin();
+        throw new Error('unauthorized');
+      }
+
       if (!response.ok) {
         throw new Error('chat_failed');
       }
@@ -296,7 +331,7 @@ export function MayaStateProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsSaving(false);
     }
-  }, [language, replaceState]);
+  }, [language, redirectToLogin, replaceState]);
 
   const activeSession = useMemo(() => {
     if (!state) {
