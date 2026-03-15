@@ -264,6 +264,7 @@ export type ReviewQueueItem = {
 // Health Response
 // Phase 1B-A: Extended with extract status and tier counts
 // Phase 1C: Extended with calibration status
+// Phase 1C Ops: Extended with chatProvider readiness
 export type MayaHealthResponse = {
   status: 'ok' | 'degraded' | 'blocked';
   costToday: number;
@@ -280,6 +281,13 @@ export type MayaHealthResponse = {
     total: number;
   };
   providerStatus: Record<string, boolean>;
+  chatProvider: {
+    ready: boolean;
+    primaryProvider: string;
+    primaryModel: string;
+    keyConfigured: boolean;
+    isMockMode: boolean;
+  };
   extractStatus: {
     enabled: boolean;
     lastRun: string | null;

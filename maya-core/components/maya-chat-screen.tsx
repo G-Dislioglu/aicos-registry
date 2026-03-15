@@ -66,6 +66,13 @@ type HealthStatus = {
     total: number;
   };
   providerStatus: Record<string, boolean>;
+  chatProvider: {
+    ready: boolean;
+    primaryProvider: string;
+    primaryModel: string;
+    keyConfigured: boolean;
+    isMockMode: boolean;
+  };
   extractStatus?: {
     enabled: boolean;
     lastRun: string | null;
@@ -346,6 +353,24 @@ export function MayaChatScreen() {
         </div>
 
         <div className="flex items-center gap-4">
+          {/* Provider Status Indicator */}
+          {health?.chatProvider && (
+            <div className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 ${
+              health.chatProvider.isMockMode 
+                ? 'bg-orange-100 text-orange-800 border border-orange-200' 
+                : 'bg-green-100 text-green-800 border border-green-200'
+            }`}>
+              <span className={`w-2 h-2 rounded-full ${
+                health.chatProvider.isMockMode ? 'bg-orange-500' : 'bg-green-500'
+              }`}></span>
+              {health.chatProvider.isMockMode ? (
+                <span>MOCK MODE - Set API Key</span>
+              ) : (
+                <span>LIVE: {health.chatProvider.primaryProvider} / {health.chatProvider.primaryModel}</span>
+              )}
+            </div>
+          )}
+
           {/* Provider Dropdown */}
           <select
             value={provider}
@@ -402,6 +427,20 @@ export function MayaChatScreen() {
       <div className="flex flex-1 overflow-hidden">
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col">
+          {/* Mock Mode Warning Banner */}
+          {health?.chatProvider?.isMockMode && (
+            <div className="bg-orange-50 border-b border-orange-200 px-4 py-3">
+              <div className="flex items-center gap-2">
+                <span className="text-orange-600 text-sm font-medium">⚠️ Mock Mode Active</span>
+              </div>
+              <p className="text-xs text-orange-700 mt-1">
+                Maya is running in mock mode. Set <code className="bg-orange-100 px-1 rounded">OPENAI_API_KEY</code>,{' '}
+                <code className="bg-orange-100 px-1 rounded">ANTHROPIC_API_KEY</code>, or{' '}
+                <code className="bg-orange-100 px-1 rounded">GOOGLE_AI_KEY</code> in your environment for real responses.
+              </p>
+            </div>
+          )}
+
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.length === 0 && (

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { isMayaRequestAuthorized } from '@/lib/maya-auth';
 import { getCostGuardState, getMemoryStoreCounts } from '@/lib/maya-memory-store';
-import { getProviders } from '@/lib/maya-provider';
+import { getProviders, detectDefaultProvider, getProvider } from '@/lib/maya-provider';
 import { getExtractStatus } from '@/lib/maya-cognitive-engine';
 import { getCalibrationMetrics } from '@/lib/maya-calibration-store';
 import { MayaHealthResponse } from '@/lib/maya-spec-types';
@@ -21,6 +21,11 @@ export async function GET(request: NextRequest) {
     const providers = getProviders();
     const extractStatus = await getExtractStatus();
     const calibrationMetrics = await getCalibrationMetrics();
+
+    const defaultProviderType = detectDefaultProvider();
+    const defaultProvider = getProvider(defaultProviderType);
+    const isMockMode = defaultProviderType === 'mock';
+    const hasRealProvider = providers.some(p => p.available && p.type !== 'mock');
 
     const providerStatus: Record<string, boolean> = {};
     for (const provider of providers) {
@@ -51,6 +56,13 @@ export async function GET(request: NextRequest) {
         total: storeCounts.total || 0
       },
       providerStatus,
+      chatProvider: {
+        ready: hasRealProvider,
+        primaryProvider: defaultProviderType,
+        primaryModel: defaultProvider?.defaultModel || 'mock',
+        keyConfigured: hasRealProvider,
+        isMockMode
+      },
       extractStatus: {
         enabled: extractStatus.enabled,
         lastRun: extractStatus.lastRun,
