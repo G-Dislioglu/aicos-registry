@@ -61,6 +61,9 @@ export async function getMemoryEntries(options?: {
     usage_score: number;
     contradicts_id: string | null;
     assumption: boolean;
+    severity: number;
+    review_status: string;
+    meta_json: string;
     created_at: Date;
     updated_at: Date;
   }>(`SELECT * FROM maya_memory ${whereClause} ORDER BY usage_score DESC, updated_at DESC ${limitClause}`, values);
@@ -73,7 +76,7 @@ export async function getMemoryEntries(options?: {
     content: row.content,
     confidence: row.confidence,
     domain: row.domain,
-    source: row.source as 'user' | 'inferred' | 'external',
+    source: row.source as 'user' | 'inferred' | 'external' | 'cognitive_engine',
     ttlDays: row.ttl_days,
     expiresAt: row.expires_at?.toISOString() || null,
     isDeleted: row.is_deleted,
@@ -81,6 +84,9 @@ export async function getMemoryEntries(options?: {
     usageScore: row.usage_score,
     contradictsId: row.contradicts_id,
     assumption: row.assumption,
+    severity: row.severity || 1,
+    reviewStatus: (row.review_status || 'pending') as 'pending' | 'confirmed' | 'denied' | 'resolved',
+    metaJson: row.meta_json || '{}',
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString()
   }));
@@ -106,6 +112,9 @@ export async function getMemoryEntry(id: string): Promise<MemoryEntry | null> {
     usage_score: number;
     contradicts_id: string | null;
     assumption: boolean;
+    severity: number;
+    review_status: string;
+    meta_json: string;
     created_at: Date;
     updated_at: Date;
   }>('SELECT * FROM maya_memory WHERE id = $1', [id]);
@@ -121,7 +130,7 @@ export async function getMemoryEntry(id: string): Promise<MemoryEntry | null> {
     content: row.content,
     confidence: row.confidence,
     domain: row.domain,
-    source: row.source as 'user' | 'inferred' | 'external',
+    source: row.source as 'user' | 'inferred' | 'external' | 'cognitive_engine',
     ttlDays: row.ttl_days,
     expiresAt: row.expires_at?.toISOString() || null,
     isDeleted: row.is_deleted,
@@ -129,6 +138,9 @@ export async function getMemoryEntry(id: string): Promise<MemoryEntry | null> {
     usageScore: row.usage_score,
     contradictsId: row.contradicts_id,
     assumption: row.assumption,
+    severity: row.severity || 1,
+    reviewStatus: (row.review_status || 'pending') as 'pending' | 'confirmed' | 'denied' | 'resolved',
+    metaJson: row.meta_json || '{}',
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString()
   };
@@ -142,8 +154,8 @@ export async function createMemoryEntry(entry: Omit<MemoryEntry, 'id' | 'created
   const now = new Date();
 
   await pool.query(
-    `INSERT INTO maya_memory (id, tier, category, topic, content, confidence, domain, source, ttl_days, expires_at, assumption, contradicts_id)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+    `INSERT INTO maya_memory (id, tier, category, topic, content, confidence, domain, source, ttl_days, expires_at, assumption, contradicts_id, severity, review_status, meta_json)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
     [
       id,
       entry.tier,
@@ -156,7 +168,10 @@ export async function createMemoryEntry(entry: Omit<MemoryEntry, 'id' | 'created
       entry.ttlDays,
       entry.expiresAt,
       entry.assumption,
-      entry.contradictsId
+      entry.contradictsId,
+      entry.severity || 1,
+      entry.reviewStatus || 'pending',
+      entry.metaJson || '{}'
     ]
   );
 
@@ -451,7 +466,16 @@ export async function recordCost(costCents: number, tokens: number): Promise<voi
 
 // Memory Store Counts
 
-export async function getMemoryStoreCounts(): Promise<{ core: number; working: number; ephemeral: number; total: number }> {
+export async function getMemoryStoreCounts(): Promise<{ 
+  core: number; 
+  working: number; 
+  ephemeral: number; 
+  event: number;
+  signal: number;
+  proposed: number;
+  conflict: number;
+  total: number 
+}> {
   await ensureMayaPostgresSchema();
   const pool = getMayaPostgresPool();
 
@@ -459,13 +483,17 @@ export async function getMemoryStoreCounts(): Promise<{ core: number; working: n
     "SELECT tier, COUNT(*) as count FROM maya_memory WHERE is_deleted = false GROUP BY tier"
   );
 
-  const counts = { core: 0, working: 0, ephemeral: 0, total: 0 };
+  const counts = { core: 0, working: 0, ephemeral: 0, event: 0, signal: 0, proposed: 0, conflict: 0, total: 0 };
 
   for (const row of result.rows) {
     const count = parseInt(row.count, 10);
     if (row.tier === 'core') counts.core = count;
     else if (row.tier === 'working') counts.working = count;
     else if (row.tier === 'ephemeral') counts.ephemeral = count;
+    else if (row.tier === 'event') counts.event = count;
+    else if (row.tier === 'signal') counts.signal = count;
+    else if (row.tier === 'proposed') counts.proposed = count;
+    else if (row.tier === 'conflict') counts.conflict = count;
     counts.total += count;
   }
 

@@ -26,22 +26,28 @@ type Message = {
   createdAt: string;
 };
 
-type Briefing = {
-  contextSummary: string;
-  openProposed: Array<{
+type BriefingSlot = {
     id: string;
     type: string;
     title: string;
     summary: string;
     entityId: string | null;
-  }>;
-  conflictSlot: {
-    id: string;
-    title: string;
-    summary: string;
-  } | null;
+    severity?: number;
+    confidence?: number;
+  };
+
+type Briefing = {
+  contextSummary: string;
+  openProposed: BriefingSlot[];
+  conflicts: BriefingSlot[];
+  signals: BriefingSlot[];
   costToday: number;
   tokensToday: number;
+  extractStats?: {
+    lastRun: string | null;
+    eventsExtracted: number;
+    conflictsDetected: number;
+  };
 };
 
 type HealthStatus = {
@@ -53,9 +59,19 @@ type HealthStatus = {
     core: number;
     working: number;
     ephemeral: number;
+    event: number;
+    signal: number;
+    proposed: number;
+    conflict: number;
     total: number;
   };
   providerStatus: Record<string, boolean>;
+  extractStatus?: {
+    enabled: boolean;
+    lastRun: string | null;
+    lastLifecycleRun: string | null;
+    extractCostToday: number;
+  };
 };
 
 const MODE_LABELS: Record<StudioMode, string> = {
@@ -432,19 +448,73 @@ export function MayaChatScreen() {
                 </div>
               )}
 
-              {/* Conflict Slot */}
-              {briefing.conflictSlot && (
+              {/* Conflicts */}
+              {briefing.conflicts.length > 0 && (
                 <div className="mb-6">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Conflict</h3>
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <div className="font-medium text-red-900 text-sm">{briefing.conflictSlot.title}</div>
-                    <div className="text-xs text-red-700 mt-1">{briefing.conflictSlot.summary}</div>
-                    <button
-                      onClick={() => {/* Open conflict resolution */}}
-                      className="mt-2 px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
-                    >
-                      Resolve
-                    </button>
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                    Conflicts ({briefing.conflicts.length})
+                  </h3>
+                  <div className="space-y-2">
+                    {briefing.conflicts.map(conflict => (
+                      <div key={conflict.id} className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div className="font-medium text-red-900 text-sm">{conflict.title}</div>
+                          {conflict.severity && (
+                            <span className="px-1.5 py-0.5 bg-red-200 text-red-800 text-xs rounded">
+                              Sev {conflict.severity}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-red-700 mt-1">{conflict.summary}</div>
+                        {conflict.entityId && (
+                          <div className="mt-2 flex gap-2">
+                            <button
+                              onClick={() => {/* Open conflict resolution */}}
+                              className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
+                            >
+                              Resolve
+                            </button>
+                            <button
+                              onClick={() => conflict.entityId && denyProposed(conflict.entityId)}
+                              className="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
+                            >
+                              Dismiss
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Signals */}
+              {briefing.signals.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                    Signals ({briefing.signals.length})
+                  </h3>
+                  <div className="space-y-2">
+                    {briefing.signals.map(signal => (
+                      <div key={signal.id} className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                        <div className="font-medium text-purple-900 text-sm">{signal.title}</div>
+                        <div className="text-xs text-purple-700 mt-1">{signal.summary}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Extract Stats */}
+              {briefing.extractStats && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">Learning Activity</h3>
+                  <div className="text-xs text-gray-600 space-y-1">
+                    <div>Events extracted: {briefing.extractStats.eventsExtracted}</div>
+                    <div>Conflicts detected: {briefing.extractStats.conflictsDetected}</div>
+                    {briefing.extractStats.lastRun && (
+                      <div>Last run: {new Date(briefing.extractStats.lastRun).toLocaleTimeString()}</div>
+                    )}
                   </div>
                 </div>
               )}
@@ -462,18 +532,38 @@ export function MayaChatScreen() {
               {health && (
                 <div className="border-t pt-4 mt-4">
                   <h3 className="text-sm font-medium text-gray-700 mb-2">Memory Store</h3>
-                  <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="grid grid-cols-4 gap-2 text-center text-xs">
                     <div className="p-2 bg-blue-50 rounded">
                       <div className="text-lg font-bold text-blue-700">{health.storeCounts.core}</div>
-                      <div className="text-xs text-blue-600">Core</div>
+                      <div className="text-blue-600">Core</div>
                     </div>
                     <div className="p-2 bg-green-50 rounded">
                       <div className="text-lg font-bold text-green-700">{health.storeCounts.working}</div>
-                      <div className="text-xs text-green-600">Working</div>
+                      <div className="text-green-600">Working</div>
                     </div>
                     <div className="p-2 bg-gray-50 rounded">
                       <div className="text-lg font-bold text-gray-700">{health.storeCounts.ephemeral}</div>
-                      <div className="text-xs text-gray-600">Ephemeral</div>
+                      <div className="text-gray-600">Ephemeral</div>
+                    </div>
+                    <div className="p-2 bg-indigo-50 rounded">
+                      <div className="text-lg font-bold text-indigo-700">{health.storeCounts.event}</div>
+                      <div className="text-indigo-600">Event</div>
+                    </div>
+                    <div className="p-2 bg-purple-50 rounded">
+                      <div className="text-lg font-bold text-purple-700">{health.storeCounts.signal}</div>
+                      <div className="text-purple-600">Signal</div>
+                    </div>
+                    <div className="p-2 bg-yellow-50 rounded">
+                      <div className="text-lg font-bold text-yellow-700">{health.storeCounts.proposed}</div>
+                      <div className="text-yellow-600">Proposed</div>
+                    </div>
+                    <div className="p-2 bg-red-50 rounded">
+                      <div className="text-lg font-bold text-red-700">{health.storeCounts.conflict}</div>
+                      <div className="text-red-600">Conflict</div>
+                    </div>
+                    <div className="p-2 bg-slate-50 rounded">
+                      <div className="text-lg font-bold text-slate-700">{health.storeCounts.total}</div>
+                      <div className="text-slate-600">Total</div>
                     </div>
                   </div>
                 </div>

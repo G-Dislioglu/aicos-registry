@@ -63,7 +63,10 @@ export async function POST(request: NextRequest) {
       ttlDays: body.ttlDays || null,
       expiresAt: body.expiresAt || null,
       assumption: body.assumption || false,
-      contradictsId: body.contradictsId || null
+      contradictsId: body.contradictsId || null,
+      severity: body.severity || 1,
+      reviewStatus: body.reviewStatus || 'pending',
+      metaJson: body.metaJson || '{}'
     });
 
     await createAuditEntry({

@@ -75,7 +75,10 @@ export async function POST(request: NextRequest) {
           ttlDays: null,
           expiresAt: null,
           assumption: false,
-          contradictsId: null
+          contradictsId: null,
+          severity: 1,
+          reviewStatus: 'resolved',
+          metaJson: '{}'
         });
         // Archive both originals
         await updateMemoryEntry(memoryId, { isDeleted: true, archivedAt: new Date().toISOString() });

@@ -114,7 +114,7 @@ export async function ensureMayaPostgresSchema() {
         CREATE INDEX IF NOT EXISTS idx_decision_workspace ON supervisor_decision(workspace_id);
         CREATE INDEX IF NOT EXISTS idx_run_workspace ON supervisor_run(workspace_id);
 
-        -- Maya Spec Phase 1A Tables
+        -- Maya Spec Phase 1A/1B-A Tables
         CREATE TABLE IF NOT EXISTS maya_memory (
           id TEXT PRIMARY KEY,
           tier TEXT NOT NULL DEFAULT 'working',
@@ -131,6 +131,10 @@ export async function ensureMayaPostgresSchema() {
           usage_score INTEGER NOT NULL DEFAULT 0,
           contradicts_id TEXT,
           assumption BOOLEAN NOT NULL DEFAULT false,
+          -- Phase 1B-A additions
+          severity INTEGER NOT NULL DEFAULT 1,
+          review_status TEXT NOT NULL DEFAULT 'pending',
+          meta_json JSONB NOT NULL DEFAULT '{}',
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
           updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
@@ -178,9 +182,26 @@ export async function ensureMayaPostgresSchema() {
         CREATE INDEX IF NOT EXISTS idx_memory_tier ON maya_memory(tier);
         CREATE INDEX IF NOT EXISTS idx_memory_category ON maya_memory(category);
         CREATE INDEX IF NOT EXISTS idx_memory_deleted ON maya_memory(is_deleted);
+        CREATE INDEX IF NOT EXISTS idx_memory_review_status ON maya_memory(review_status);
+        CREATE INDEX IF NOT EXISTS idx_memory_source ON maya_memory(source);
+        CREATE INDEX IF NOT EXISTS idx_memory_created ON maya_memory(created_at);
         CREATE INDEX IF NOT EXISTS idx_messages_created ON maya_messages(created_at);
         CREATE INDEX IF NOT EXISTS idx_audit_entity ON maya_audit(entity_id);
+        CREATE INDEX IF NOT EXISTS idx_audit_action ON maya_audit(action);
         CREATE INDEX IF NOT EXISTS idx_cost_date ON maya_cost_daily(date);
+
+        -- Phase 1B-A: Extract status tracking
+        CREATE TABLE IF NOT EXISTS maya_extract_status (
+          id TEXT PRIMARY KEY,
+          last_run TIMESTAMPTZ,
+          last_lifecycle_run TIMESTAMPTZ,
+          extract_cost_today INTEGER NOT NULL DEFAULT 0,
+          events_extracted_today INTEGER NOT NULL DEFAULT 0,
+          conflicts_detected_today INTEGER NOT NULL DEFAULT 0,
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+
+        INSERT INTO maya_extract_status (id) VALUES ('primary') ON CONFLICT DO NOTHING;
       `);
     })();
   }
