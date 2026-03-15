@@ -7,6 +7,13 @@ export type MemoryCategory = 'preference' | 'constraint' | 'insight' | 'fact' | 
 export type MemorySource = 'user' | 'inferred' | 'external' | 'cognitive_engine';
 export type ReviewStatus = 'pending' | 'confirmed' | 'denied' | 'resolved';
 
+// Phase 1C Ops: Model Roles and Lanes
+export type ModelRole = 'scout' | 'worker' | 'reasoner' | 'vision_ocr' | 'tts';
+export type ModelLane = 'chat' | 'reasoning' | 'vision' | 'audio';
+export type ModelCapability = 'chat' | 'reasoning' | 'vision' | 'ocr' | 'tts' | 'json' | 'tool_calling';
+export type ModelStability = 'stable' | 'preview' | 'alias';
+export type CostClass = 'cheap' | 'medium' | 'expensive';
+
 // Phase 1C: Review Labels per Tier
 export type EventReviewLabel = 'useful' | 'trivial' | 'wrong';
 export type ConflictReviewLabel = 'real_conflict' | 'false_positive' | 'unclear';
@@ -264,7 +271,7 @@ export type ReviewQueueItem = {
 // Health Response
 // Phase 1B-A: Extended with extract status and tier counts
 // Phase 1C: Extended with calibration status
-// Phase 1C Ops: Extended with chatProvider readiness
+// Phase 1C Ops: Extended with chatProvider readiness and roleDefaults
 export type MayaHealthResponse = {
   status: 'ok' | 'degraded' | 'blocked';
   costToday: number;
@@ -287,6 +294,13 @@ export type MayaHealthResponse = {
     primaryModel: string;
     keyConfigured: boolean;
     isMockMode: boolean;
+  };
+  roleDefaults?: {
+    scout: { providerId: string; modelId: string } | null;
+    worker: { providerId: string; modelId: string } | null;
+    reasoner: { providerId: string; modelId: string } | null;
+    vision: { providerId: string; modelId: string } | null;
+    tts: { providerId: string; modelId: string } | null;
   };
   extractStatus: {
     enabled: boolean;

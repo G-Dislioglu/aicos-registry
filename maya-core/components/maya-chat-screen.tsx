@@ -3,15 +3,31 @@
 import { useState, useEffect, useCallback } from 'react';
 
 type StudioMode = 'personal' | 'soulmatch_studio' | 'aicos_studio';
+type ModelRole = 'scout' | 'worker' | 'reasoner' | 'vision_ocr' | 'tts';
+
 type Provider = {
-  type: string;
+  id: string;
   name: string;
+  configured: boolean;
   available: boolean;
+  status: 'ready' | 'not_configured' | 'error';
+  defaultModel: string;
   models: Array<{
     id: string;
     name: string;
+    roles: string[];
+    stability: 'stable' | 'preview' | 'alias';
+    isDefault: boolean;
+    costClass: 'cheap' | 'medium' | 'expensive';
   }>;
-  defaultModel: string;
+};
+
+type RoleDefaults = {
+  scout: { providerId: string; modelId: string; label: string } | null;
+  worker: { providerId: string; modelId: string; label: string } | null;
+  reasoner: { providerId: string; modelId: string; label: string } | null;
+  vision: { providerId: string; modelId: string; label: string } | null;
+  tts: { providerId: string; modelId: string; label: string } | null;
 };
 
 type Message = {
@@ -73,6 +89,7 @@ type HealthStatus = {
     keyConfigured: boolean;
     isMockMode: boolean;
   };
+  roleDefaults?: RoleDefaults;
   extractStatus?: {
     enabled: boolean;
     lastRun: string | null;
@@ -139,9 +156,11 @@ const MODE_ICONS: Record<StudioMode, string> = {
 
 export function MayaChatScreen() {
   const [mode, setMode] = useState<StudioMode>('personal');
+  const [role, setRole] = useState<ModelRole>('worker');
   const [provider, setProvider] = useState<string>('mock');
   const [model, setModel] = useState<string>('mock');
   const [providers, setProviders] = useState<Provider[]>([]);
+  const [roleDefaults, setRoleDefaults] = useState<RoleDefaults | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -161,12 +180,15 @@ export function MayaChatScreen() {
       .then(res => res.json())
       .then(data => {
         setProviders(data.providers || []);
-        if (data.defaultProvider) {
-          setProvider(data.defaultProvider);
-          const defaultProv = data.providers?.find((p: Provider) => p.type === data.defaultProvider);
-          if (defaultProv) {
-            setModel(defaultProv.defaultModel);
-          }
+        setRoleDefaults(data.roleDefaults || null);
+        // Set default based on role defaults
+        if (data.roleDefaults?.worker) {
+          setProvider(data.roleDefaults.worker.providerId);
+          setModel(data.roleDefaults.worker.modelId);
+        } else if (data.providers?.length > 0) {
+          const firstProvider = data.providers[0];
+          setProvider(firstProvider.id);
+          setModel(firstProvider.defaultModel);
         }
       })
       .catch(() => setError('Failed to load providers'));
@@ -216,9 +238,11 @@ export function MayaChatScreen() {
     loadBriefingAndHealth();
   }, [loadBriefingAndHealth]);
 
-  // Get current provider's models
-  const currentProvider = providers.find(p => p.type === provider);
-  const availableModels = currentProvider?.models || [];
+  // Get current provider's models filtered by role
+  const currentProvider = providers.find(p => p.id === provider);
+  const availableModels = (currentProvider?.models || []).filter(m => 
+    m.roles.includes(role) || m.roles.length === 0
+  );
 
   // Send message
   const sendMessage = async () => {
@@ -247,6 +271,7 @@ export function MayaChatScreen() {
           })),
           provider,
           model,
+          role,
           studioMode: mode
         })
       });
@@ -350,6 +375,28 @@ export function MayaChatScreen() {
               </button>
             ))}
           </div>
+
+          {/* Role Selector */}
+          <select
+            value={role}
+            onChange={e => {
+              const newRole = e.target.value as ModelRole;
+              setRole(newRole);
+              // Update to role default if available
+              const roleDefault = roleDefaults?.[newRole.replace('_ocr', '') as keyof RoleDefaults];
+              if (roleDefault) {
+                setProvider(roleDefault.providerId);
+                setModel(roleDefault.modelId);
+              }
+            }}
+            className="px-3 py-1.5 border rounded-lg text-sm bg-white"
+          >
+            <option value="scout">Scout (Fast)</option>
+            <option value="worker">Worker (Standard)</option>
+            <option value="reasoner">Reasoner (Deep)</option>
+            <option value="vision_ocr">Vision/OCR</option>
+            <option value="tts">TTS</option>
+          </select>
         </div>
 
         <div className="flex items-center gap-4">
@@ -376,13 +423,13 @@ export function MayaChatScreen() {
             value={provider}
             onChange={e => {
               setProvider(e.target.value);
-              const prov = providers.find(p => p.type === e.target.value);
+              const prov = providers.find(p => p.id === e.target.value);
               if (prov) setModel(prov.defaultModel);
             }}
             className="px-3 py-1.5 border rounded-lg text-sm bg-white"
           >
             {providers.filter(p => p.available).map(p => (
-              <option key={p.type} value={p.type}>
+              <option key={p.id} value={p.id}>
                 {p.name}
               </option>
             ))}
@@ -396,7 +443,7 @@ export function MayaChatScreen() {
           >
             {availableModels.map(m => (
               <option key={m.id} value={m.id}>
-                {m.name}
+                {m.name} {m.stability !== 'stable' ? `(${m.stability})` : ''} [{m.costClass}]
               </option>
             ))}
           </select>

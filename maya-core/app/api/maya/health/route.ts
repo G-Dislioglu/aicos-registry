@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { isMayaRequestAuthorized } from '@/lib/maya-auth';
 import { getCostGuardState, getMemoryStoreCounts } from '@/lib/maya-memory-store';
-import { getProviders, detectDefaultProvider, getProvider } from '@/lib/maya-provider';
 import { getExtractStatus } from '@/lib/maya-cognitive-engine';
 import { getCalibrationMetrics } from '@/lib/maya-calibration-store';
 import { MayaHealthResponse } from '@/lib/maya-spec-types';
+import {
+  PROVIDER_REGISTRY,
+  getRoleDefaults,
+  isProviderKeyConfigured
+} from '@/lib/maya-provider-registry';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -18,21 +22,22 @@ export async function GET(request: NextRequest) {
   try {
     const costGuard = await getCostGuardState();
     const storeCounts = await getMemoryStoreCounts();
-    const providers = getProviders();
     const extractStatus = await getExtractStatus();
     const calibrationMetrics = await getCalibrationMetrics();
+    const roleDefaults = getRoleDefaults();
 
-    const defaultProviderType = detectDefaultProvider();
-    const defaultProvider = getProvider(defaultProviderType);
-    const isMockMode = defaultProviderType === 'mock';
-    const hasRealProvider = providers.some(p => p.available && p.type !== 'mock');
-
+    // Build provider status from registry
     const providerStatus: Record<string, boolean> = {};
-    for (const provider of providers) {
-      providerStatus[provider.type] = provider.available;
+    for (const provider of PROVIDER_REGISTRY) {
+      providerStatus[provider.id] = isProviderKeyConfigured(provider.id);
     }
 
-    // Determine FP trend (simplified - would need historical data for real trend)
+    // Determine primary provider and model
+    const workerDefault = roleDefaults.worker_default;
+    const hasRealProvider = PROVIDER_REGISTRY.some(p => p.id !== 'mock' && isProviderKeyConfigured(p.id));
+    const isMockMode = !hasRealProvider;
+
+    // Determine FP trend
     let fpTrend: 'improving' | 'stable' | 'worsening' = 'stable';
     if (calibrationMetrics.conflictFalsePositiveRate > 0.3) {
       fpTrend = 'worsening';
@@ -58,10 +63,17 @@ export async function GET(request: NextRequest) {
       providerStatus,
       chatProvider: {
         ready: hasRealProvider,
-        primaryProvider: defaultProviderType,
-        primaryModel: defaultProvider?.defaultModel || 'mock',
+        primaryProvider: workerDefault?.providerId || 'mock',
+        primaryModel: workerDefault?.modelId || 'mock',
         keyConfigured: hasRealProvider,
         isMockMode
+      },
+      roleDefaults: {
+        scout: roleDefaults.scout_default ? { providerId: roleDefaults.scout_default.providerId, modelId: roleDefaults.scout_default.modelId } : null,
+        worker: roleDefaults.worker_default ? { providerId: roleDefaults.worker_default.providerId, modelId: roleDefaults.worker_default.modelId } : null,
+        reasoner: roleDefaults.reasoner_default ? { providerId: roleDefaults.reasoner_default.providerId, modelId: roleDefaults.reasoner_default.modelId } : null,
+        vision: roleDefaults.vision_default ? { providerId: roleDefaults.vision_default.providerId, modelId: roleDefaults.vision_default.modelId } : null,
+        tts: roleDefaults.tts_default ? { providerId: roleDefaults.tts_default.providerId, modelId: roleDefaults.tts_default.modelId } : null
       },
       extractStatus: {
         enabled: extractStatus.enabled,

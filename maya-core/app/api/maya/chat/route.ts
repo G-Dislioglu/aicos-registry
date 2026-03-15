@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { isMayaRequestAuthorized } from '@/lib/maya-auth';
-import { executeChat, detectDefaultProvider } from '@/lib/maya-provider';
+import { dispatchChat, DispatchRequest } from '@/lib/maya-provider-dispatch';
 import { runDualModelExtract, saveExtractResults } from '@/lib/maya-cognitive-engine';
 import { getMemoryEntries } from '@/lib/maya-memory-store';
-import { StudioMode } from '@/lib/maya-spec-types';
+import { StudioMode, ModelRole } from '@/lib/maya-spec-types';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -17,27 +17,33 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const messages = body.messages || [];
-    const provider = body.provider;
-    const model = body.model;
+    const providerId = body.provider;
+    const modelId = body.model;
+    const role = body.role as ModelRole | undefined;
     const studioMode: StudioMode = body.studioMode || 'personal';
     const maxTokens = body.maxTokens;
     const temperature = body.temperature;
+    const reasoningEffort = body.reasoningEffort;
 
     if (!Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ error: 'messages_required' }, { status: 400 });
     }
 
-    const result = await executeChat({
+    const dispatchRequest: DispatchRequest = {
       messages: messages.map((m: { role: string; content: string }) => ({
         role: m.role as 'user' | 'assistant' | 'system',
         content: m.content
       })),
-      provider,
-      model,
+      providerId,
+      modelId,
+      role,
       studioMode,
       maxTokens,
-      temperature
-    });
+      temperature,
+      reasoningEffort
+    };
+
+    const result = await dispatchChat(dispatchRequest);
 
     // Trigger async extract (does not block response)
     if (!result.blocked && result.message) {
@@ -57,7 +63,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       message: result.message,
       blocked: result.blocked,
-      blockReason: result.blockReason
+      blockReason: result.blockReason,
+      modelUsed: {
+        providerId: result.modelUsed.providerId,
+        modelId: result.modelUsed.modelId,
+        label: result.modelUsed.label
+      },
+      warnings: result.warnings
     });
   } catch (error) {
     return NextResponse.json({ error: 'chat_failed' }, { status: 500 });
