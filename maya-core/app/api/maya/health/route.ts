@@ -4,6 +4,7 @@ import { isMayaRequestAuthorized } from '@/lib/maya-auth';
 import { getCostGuardState, getMemoryStoreCounts } from '@/lib/maya-memory-store';
 import { getProviders } from '@/lib/maya-provider';
 import { getExtractStatus } from '@/lib/maya-cognitive-engine';
+import { getCalibrationMetrics } from '@/lib/maya-calibration-store';
 import { MayaHealthResponse } from '@/lib/maya-spec-types';
 
 export const dynamic = 'force-dynamic';
@@ -19,10 +20,19 @@ export async function GET(request: NextRequest) {
     const storeCounts = await getMemoryStoreCounts();
     const providers = getProviders();
     const extractStatus = await getExtractStatus();
+    const calibrationMetrics = await getCalibrationMetrics();
 
     const providerStatus: Record<string, boolean> = {};
     for (const provider of providers) {
       providerStatus[provider.type] = provider.available;
+    }
+
+    // Determine FP trend (simplified - would need historical data for real trend)
+    let fpTrend: 'improving' | 'stable' | 'worsening' = 'stable';
+    if (calibrationMetrics.conflictFalsePositiveRate > 0.3) {
+      fpTrend = 'worsening';
+    } else if (calibrationMetrics.conflictFalsePositiveRate < 0.1) {
+      fpTrend = 'improving';
     }
 
     const response: MayaHealthResponse = {
@@ -46,6 +56,13 @@ export async function GET(request: NextRequest) {
         lastRun: extractStatus.lastRun,
         lastLifecycleRun: extractStatus.lastLifecycleRun,
         extractCostToday: extractStatus.extractCostToday
+      },
+      calibrationStatus: {
+        pendingReviews: Math.round((1 - calibrationMetrics.reviewCoverageRate) * 
+          (calibrationMetrics.eventCount + calibrationMetrics.conflictCount + 
+           calibrationMetrics.proposedCount + calibrationMetrics.signalCount)),
+        reviewCoverageRate: calibrationMetrics.reviewCoverageRate,
+        falsePositiveTrend: fpTrend
       }
     };
 

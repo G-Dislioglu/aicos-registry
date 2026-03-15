@@ -201,6 +201,41 @@ export async function ensureMayaPostgresSchema() {
           updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
 
+        -- Phase 1C: Review entries for calibration
+        CREATE TABLE IF NOT EXISTS maya_review (
+          id TEXT PRIMARY KEY,
+          memory_entry_id TEXT NOT NULL REFERENCES maya_memory(id) ON DELETE CASCADE,
+          entry_tier TEXT NOT NULL,
+          review_type TEXT NOT NULL,
+          review_label TEXT NOT NULL,
+          review_note TEXT,
+          actor TEXT NOT NULL DEFAULT 'user',
+          session_id TEXT,
+          mode TEXT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          UNIQUE(memory_entry_id, actor)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_review_entry ON maya_review(memory_entry_id);
+        CREATE INDEX IF NOT EXISTS idx_review_label ON maya_review(review_label);
+        CREATE INDEX IF NOT EXISTS idx_review_type ON maya_review(review_type);
+        CREATE INDEX IF NOT EXISTS idx_review_created ON maya_review(created_at);
+
+        -- Phase 1C: Calibration settings
+        CREATE TABLE IF NOT EXISTS maya_calibration_settings (
+          id TEXT PRIMARY KEY DEFAULT 'primary',
+          extract_enabled BOOLEAN NOT NULL DEFAULT true,
+          extract_degraded_mode BOOLEAN NOT NULL DEFAULT false,
+          overlap_threshold TEXT NOT NULL DEFAULT 'normal',
+          signal_to_event_threshold INTEGER NOT NULL DEFAULT 80,
+          proposed_generation_threshold INTEGER NOT NULL DEFAULT 3,
+          conflict_sensitivity TEXT NOT NULL DEFAULT 'normal',
+          lifecycle_aggressiveness TEXT NOT NULL DEFAULT 'normal',
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+
+        INSERT INTO maya_calibration_settings (id) VALUES ('primary') ON CONFLICT DO NOTHING;
+
         INSERT INTO maya_extract_status (id) VALUES ('primary') ON CONFLICT DO NOTHING;
       `);
     })();

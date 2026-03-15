@@ -72,6 +72,50 @@ type HealthStatus = {
     lastLifecycleRun: string | null;
     extractCostToday: number;
   };
+  calibrationStatus?: {
+    pendingReviews: number;
+    reviewCoverageRate: number;
+    falsePositiveTrend: 'improving' | 'stable' | 'worsening';
+  };
+};
+
+type ReviewQueueItem = {
+  id: string;
+  memoryEntry: {
+    id: string;
+    tier: string;
+    topic: string;
+    content: string;
+    confidence: number;
+    reviewStatus: string;
+  };
+  priority: number;
+  tier: string;
+  createdAt: string;
+};
+
+type CalibrationMetrics = {
+  eventCount: number;
+  conflictCount: number;
+  proposedCount: number;
+  signalCount: number;
+  eventUsefulRate: number;
+  conflictFalsePositiveRate: number;
+  proposedOverreachRate: number;
+  reviewCoverageRate: number;
+  extractRunsTotal: number;
+  extractCostToday: number;
+};
+
+type DailySummary = {
+  date: string;
+  newEventsLearned: number;
+  conflictsReal: number;
+  conflictsFalsePositive: number;
+  proposedUseful: number;
+  proposedOverreach: number;
+  systemTendency: 'aggressive' | 'balanced' | 'passive';
+  reviewCount: number;
 };
 
 const MODE_LABELS: Record<StudioMode, string> = {
@@ -98,6 +142,11 @@ export function MayaChatScreen() {
   const [health, setHealth] = useState<HealthStatus | null>(null);
   const [showBriefing, setShowBriefing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Phase 1C: Calibration state
+  const [reviewQueue, setReviewQueue] = useState<ReviewQueueItem[]>([]);
+  const [calibration, setCalibration] = useState<CalibrationMetrics | null>(null);
+  const [dailySummary, setDailySummary] = useState<DailySummary | null>(null);
+  const [briefingTab, setBriefingTab] = useState<'review' | 'metrics' | 'activity'>('review');
 
   // Load providers
   useEffect(() => {
@@ -119,9 +168,12 @@ export function MayaChatScreen() {
   // Load briefing and health
   const loadBriefingAndHealth = useCallback(async () => {
     try {
-      const [briefingRes, healthRes] = await Promise.all([
+      const [briefingRes, healthRes, queueRes, calRes, summaryRes] = await Promise.all([
         fetch(`/api/maya/briefing?mode=${mode}`),
-        fetch('/api/maya/health')
+        fetch('/api/maya/health'),
+        fetch('/api/maya/review?action=queue&unresolved=true&limit=10'),
+        fetch('/api/maya/calibration'),
+        fetch('/api/maya/summary/daily')
       ]);
 
       if (briefingRes.ok) {
@@ -132,6 +184,21 @@ export function MayaChatScreen() {
       if (healthRes.ok) {
         const data = await healthRes.json();
         setHealth(data);
+      }
+
+      if (queueRes.ok) {
+        const data = await queueRes.json();
+        setReviewQueue(data.queue || []);
+      }
+
+      if (calRes.ok) {
+        const data = await calRes.json();
+        setCalibration(data.metrics);
+      }
+
+      if (summaryRes.ok) {
+        const data = await summaryRes.json();
+        setDailySummary(data.summary);
       }
     } catch {
       // Silent fail for background data
@@ -229,6 +296,26 @@ export function MayaChatScreen() {
       loadBriefingAndHealth();
     } catch {
       setError('Failed to deny memory');
+    }
+  };
+
+  // Phase 1C: Submit review
+  const submitReview = async (memoryEntryId: string, tier: string, label: string) => {
+    try {
+      const reviewType = tier === 'conflict' ? 'conflict' : tier === 'proposed' ? 'proposed' : tier === 'signal' ? 'signal' : 'event';
+      await fetch('/api/maya/review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          memoryEntryId,
+          entryTier: tier,
+          reviewType,
+          reviewLabel: label
+        })
+      });
+      loadBriefingAndHealth();
+    } catch {
+      setError('Failed to submit review');
     }
   };
 
@@ -402,133 +489,349 @@ export function MayaChatScreen() {
         </div>
 
         {/* Briefing Panel */}
-        {showBriefing && briefing && (
-          <div className="w-80 border-l bg-white overflow-y-auto">
+        {showBriefing && (
+          <div className="w-96 border-l bg-white overflow-y-auto">
             <div className="p-4">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Briefing</h2>
 
-              {/* Context Summary */}
-              <div className="mb-6">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Context</h3>
-                <p className="text-sm text-gray-600 whitespace-pre-wrap">
-                  {briefing.contextSummary || 'No active context'}
-                </p>
+              {/* Tab Navigation */}
+              <div className="flex bg-gray-100 rounded-lg p-1 mb-4">
+                {(['review', 'metrics', 'activity'] as const).map(tab => (
+                  <button
+                    key={tab}
+                    onClick={() => setBriefingTab(tab)}
+                    className={`flex-1 px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                      briefingTab === tab
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  </button>
+                ))}
               </div>
 
-              {/* Open Proposed */}
-              {briefing.openProposed.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">
-                    Proposed ({briefing.openProposed.length})
-                  </h3>
-                  <div className="space-y-2">
-                    {briefing.openProposed.map(proposed => (
-                      <div key={proposed.id} className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                        <div className="font-medium text-yellow-900 text-sm">{proposed.title}</div>
-                        <div className="text-xs text-yellow-700 mt-1">{proposed.summary}</div>
-                        {proposed.entityId && (
-                          <div className="mt-2 flex gap-2">
-                            <button
-                              onClick={() => confirmProposed(proposed.entityId!)}
-                              className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
-                            >
-                              Confirm
-                            </button>
-                            <button
-                              onClick={() => denyProposed(proposed.entityId!)}
-                              className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
-                            >
-                              Deny
-                            </button>
+              {/* Review Tab */}
+              {briefingTab === 'review' && (
+                <>
+                  {/* Calibration Status */}
+                  {health?.calibrationStatus && (
+                    <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-600">Pending Reviews</span>
+                        <span className="font-bold text-gray-900">{health.calibrationStatus.pendingReviews}</span>
+                      </div>
+                      <div className="flex justify-between text-xs mt-1">
+                        <span className="text-gray-600">Coverage</span>
+                        <span className="font-bold text-gray-900">{Math.round(health.calibrationStatus.reviewCoverageRate * 100)}%</span>
+                      </div>
+                      <div className="flex justify-between text-xs mt-1">
+                        <span className="text-gray-600">FP Trend</span>
+                        <span className={`font-bold ${
+                          health.calibrationStatus.falsePositiveTrend === 'improving' ? 'text-green-600' :
+                          health.calibrationStatus.falsePositiveTrend === 'worsening' ? 'text-red-600' : 'text-gray-600'
+                        }`}>
+                          {health.calibrationStatus.falsePositiveTrend}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Review Queue */}
+                  {reviewQueue.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="text-sm font-medium text-gray-700 mb-2">
+                        Review Queue ({reviewQueue.length})
+                      </h3>
+                      <div className="space-y-2">
+                        {reviewQueue.slice(0, 5).map(item => (
+                          <div key={item.id} className="p-3 bg-gray-50 border rounded-lg">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className={`px-1.5 py-0.5 text-xs rounded ${
+                                item.tier === 'conflict' ? 'bg-red-100 text-red-800' :
+                                item.tier === 'proposed' ? 'bg-yellow-100 text-yellow-800' :
+                                item.tier === 'signal' ? 'bg-purple-100 text-purple-800' :
+                                'bg-indigo-100 text-indigo-800'
+                              }`}>
+                                {item.tier}
+                              </span>
+                              <span className="text-xs text-gray-500">{item.memoryEntry.confidence}%</span>
+                            </div>
+                            <div className="text-sm font-medium text-gray-900 truncate">{item.memoryEntry.topic}</div>
+                            <div className="text-xs text-gray-600 mt-1 line-clamp-2">{item.memoryEntry.content}</div>
+                            
+                            {/* Review Buttons */}
+                            <div className="mt-2 flex gap-1 flex-wrap">
+                              {item.tier === 'conflict' ? (
+                                <>
+                                  <button
+                                    onClick={() => submitReview(item.memoryEntry.id, item.tier, 'real_conflict')}
+                                    className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                                  >
+                                    Real
+                                  </button>
+                                  <button
+                                    onClick={() => submitReview(item.memoryEntry.id, item.tier, 'false_positive')}
+                                    className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
+                                  >
+                                    FP
+                                  </button>
+                                  <button
+                                    onClick={() => submitReview(item.memoryEntry.id, item.tier, 'unclear')}
+                                    className="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
+                                  >
+                                    Unclear
+                                  </button>
+                                </>
+                              ) : item.tier === 'proposed' ? (
+                                <>
+                                  <button
+                                    onClick={() => submitReview(item.memoryEntry.id, item.tier, 'useful')}
+                                    className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                                  >
+                                    Useful
+                                  </button>
+                                  <button
+                                    onClick={() => submitReview(item.memoryEntry.id, item.tier, 'overreach')}
+                                    className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
+                                  >
+                                    Overreach
+                                  </button>
+                                  <button
+                                    onClick={() => submitReview(item.memoryEntry.id, item.tier, 'redundant')}
+                                    className="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
+                                  >
+                                    Redundant
+                                  </button>
+                                </>
+                              ) : item.tier === 'signal' ? (
+                                <>
+                                  <button
+                                    onClick={() => submitReview(item.memoryEntry.id, item.tier, 'promising')}
+                                    className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                                  >
+                                    Promising
+                                  </button>
+                                  <button
+                                    onClick={() => submitReview(item.memoryEntry.id, item.tier, 'noise')}
+                                    className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
+                                  >
+                                    Noise
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  <button
+                                    onClick={() => submitReview(item.memoryEntry.id, item.tier, 'useful')}
+                                    className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                                  >
+                                    Useful
+                                  </button>
+                                  <button
+                                    onClick={() => submitReview(item.memoryEntry.id, item.tier, 'trivial')}
+                                    className="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
+                                  >
+                                    Trivial
+                                  </button>
+                                  <button
+                                    onClick={() => submitReview(item.memoryEntry.id, item.tier, 'wrong')}
+                                    className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
+                                  >
+                                    Wrong
+                                  </button>
+                                </>
+                              )}
+                            </div>
                           </div>
-                        )}
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                    </div>
+                  )}
 
-              {/* Conflicts */}
-              {briefing.conflicts.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">
-                    Conflicts ({briefing.conflicts.length})
-                  </h3>
-                  <div className="space-y-2">
-                    {briefing.conflicts.map(conflict => (
-                      <div key={conflict.id} className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div className="font-medium text-red-900 text-sm">{conflict.title}</div>
-                          {conflict.severity && (
-                            <span className="px-1.5 py-0.5 bg-red-200 text-red-800 text-xs rounded">
-                              Sev {conflict.severity}
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-xs text-red-700 mt-1">{conflict.summary}</div>
-                        {conflict.entityId && (
-                          <div className="mt-2 flex gap-2">
-                            <button
-                              onClick={() => {/* Open conflict resolution */}}
-                              className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
-                            >
-                              Resolve
-                            </button>
-                            <button
-                              onClick={() => conflict.entityId && denyProposed(conflict.entityId)}
-                              className="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
-                            >
-                              Dismiss
-                            </button>
+                  {/* Open Proposed from Briefing */}
+                  {briefing && briefing.openProposed.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="text-sm font-medium text-gray-700 mb-2">
+                        Proposed ({briefing.openProposed.length})
+                      </h3>
+                      <div className="space-y-2">
+                        {briefing.openProposed.map(proposed => (
+                          <div key={proposed.id} className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <div className="font-medium text-yellow-900 text-sm">{proposed.title}</div>
+                            <div className="text-xs text-yellow-700 mt-1">{proposed.summary}</div>
+                            {proposed.entityId && (
+                              <div className="mt-2 flex gap-2">
+                                <button
+                                  onClick={() => confirmProposed(proposed.entityId!)}
+                                  className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                                >
+                                  Confirm
+                                </button>
+                                <button
+                                  onClick={() => denyProposed(proposed.entityId!)}
+                                  className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
+                                >
+                                  Deny
+                                </button>
+                              </div>
+                            )}
                           </div>
-                        )}
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                    </div>
+                  )}
 
-              {/* Signals */}
-              {briefing.signals.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">
-                    Signals ({briefing.signals.length})
-                  </h3>
-                  <div className="space-y-2">
-                    {briefing.signals.map(signal => (
-                      <div key={signal.id} className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
-                        <div className="font-medium text-purple-900 text-sm">{signal.title}</div>
-                        <div className="text-xs text-purple-700 mt-1">{signal.summary}</div>
+                  {/* Conflicts from Briefing */}
+                  {briefing && briefing.conflicts.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="text-sm font-medium text-gray-700 mb-2">
+                        Conflicts ({briefing.conflicts.length})
+                      </h3>
+                      <div className="space-y-2">
+                        {briefing.conflicts.map(conflict => (
+                          <div key={conflict.id} className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <div className="flex items-center justify-between">
+                              <div className="font-medium text-red-900 text-sm">{conflict.title}</div>
+                              {conflict.severity && (
+                                <span className="px-1.5 py-0.5 bg-red-200 text-red-800 text-xs rounded">
+                                  Sev {conflict.severity}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs text-red-700 mt-1">{conflict.summary}</div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </div>
+                    </div>
+                  )}
+                </>
               )}
 
-              {/* Extract Stats */}
-              {briefing.extractStats && (
-                <div className="mb-6">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Learning Activity</h3>
-                  <div className="text-xs text-gray-600 space-y-1">
-                    <div>Events extracted: {briefing.extractStats.eventsExtracted}</div>
-                    <div>Conflicts detected: {briefing.extractStats.conflictsDetected}</div>
-                    {briefing.extractStats.lastRun && (
-                      <div>Last run: {new Date(briefing.extractStats.lastRun).toLocaleTimeString()}</div>
-                    )}
+              {/* Metrics Tab */}
+              {briefingTab === 'metrics' && calibration && (
+                <>
+                  <div className="mb-6">
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Tier Counts</h3>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="p-2 bg-indigo-50 rounded">
+                        <span className="text-indigo-600">Events:</span>
+                        <span className="font-bold text-indigo-700 ml-1">{calibration.eventCount}</span>
+                      </div>
+                      <div className="p-2 bg-red-50 rounded">
+                        <span className="text-red-600">Conflicts:</span>
+                        <span className="font-bold text-red-700 ml-1">{calibration.conflictCount}</span>
+                      </div>
+                      <div className="p-2 bg-yellow-50 rounded">
+                        <span className="text-yellow-600">Proposed:</span>
+                        <span className="font-bold text-yellow-700 ml-1">{calibration.proposedCount}</span>
+                      </div>
+                      <div className="p-2 bg-purple-50 rounded">
+                        <span className="text-purple-600">Signals:</span>
+                        <span className="font-bold text-purple-700 ml-1">{calibration.signalCount}</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
+
+                  <div className="mb-6">
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Quality Rates</h3>
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Event Useful Rate</span>
+                        <span className="font-bold">{Math.round(calibration.eventUsefulRate * 100)}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Conflict FP Rate</span>
+                        <span className={`font-bold ${calibration.conflictFalsePositiveRate > 0.3 ? 'text-red-600' : ''}`}>
+                          {Math.round(calibration.conflictFalsePositiveRate * 100)}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Proposed Overreach Rate</span>
+                        <span className={`font-bold ${calibration.proposedOverreachRate > 0.3 ? 'text-red-600' : ''}`}>
+                          {Math.round(calibration.proposedOverreachRate * 100)}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Review Coverage</span>
+                        <span className="font-bold">{Math.round(calibration.reviewCoverageRate * 100)}%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mb-6">
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Extract Stats</h3>
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Total Runs</span>
+                        <span className="font-bold">{calibration.extractRunsTotal}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Cost Today</span>
+                        <span className="font-bold">{calibration.extractCostToday}¢</span>
+                      </div>
+                    </div>
+                  </div>
+                </>
               )}
 
-              {/* Cost Today */}
-              <div className="border-t pt-4">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Cost Today</h3>
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-gray-900">{briefing.costToday}¢</span>
-                  <span className="text-sm text-gray-500">{briefing.tokensToday} tokens</span>
-                </div>
-              </div>
+              {/* Activity Tab */}
+              {briefingTab === 'activity' && dailySummary && (
+                <>
+                  <div className="mb-6">
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Daily Summary - {dailySummary.date}</h3>
+                    
+                    <div className="p-3 bg-gray-50 rounded-lg mb-4">
+                      <div className={`text-center py-2 rounded ${
+                        dailySummary.systemTendency === 'aggressive' ? 'bg-red-100 text-red-800' :
+                        dailySummary.systemTendency === 'passive' ? 'bg-blue-100 text-blue-800' :
+                        'bg-green-100 text-green-800'
+                      }`}>
+                        System Tendency: <span className="font-bold">{dailySummary.systemTendency}</span>
+                      </div>
+                    </div>
 
-              {/* Store Counts */}
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">New Events Learned</span>
+                        <span className="font-bold text-green-700">{dailySummary.newEventsLearned}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Conflicts Real</span>
+                        <span className="font-bold text-green-700">{dailySummary.conflictsReal}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Conflicts False Positive</span>
+                        <span className="font-bold text-red-700">{dailySummary.conflictsFalsePositive}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Proposed Useful</span>
+                        <span className="font-bold text-green-700">{dailySummary.proposedUseful}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Proposed Overreach</span>
+                        <span className="font-bold text-red-700">{dailySummary.proposedOverreach}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Reviews Today</span>
+                        <span className="font-bold">{dailySummary.reviewCount}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Cost Today */}
+                  {briefing && (
+                    <div className="border-t pt-4">
+                      <h3 className="text-sm font-medium text-gray-700 mb-2">Cost Today</h3>
+                      <div className="flex items-center justify-between">
+                        <span className="text-2xl font-bold text-gray-900">{briefing.costToday}¢</span>
+                        <span className="text-sm text-gray-500">{briefing.tokensToday} tokens</span>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Store Counts (always visible at bottom) */}
               {health && (
                 <div className="border-t pt-4 mt-4">
                   <h3 className="text-sm font-medium text-gray-700 mb-2">Memory Store</h3>
