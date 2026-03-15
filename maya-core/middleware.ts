@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getMayaLoginHref, isMayaRequestAuthorized } from '@/lib/maya-auth';
 import { isMayaAuthConfigured } from '@/lib/maya-env';
+
+const MAYA_AUTH_COOKIE = 'maya_session';
 
 function isPublicPath(pathname: string) {
   return pathname === '/login'
@@ -19,6 +20,10 @@ function isApiPath(pathname: string) {
   return pathname.startsWith('/api/');
 }
 
+function getMayaLoginHref(nextPath = '/') {
+  return `/login?next=${encodeURIComponent(nextPath)}`;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
@@ -34,7 +39,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login?mode=misconfigured', request.url));
   }
 
-  if (await isMayaRequestAuthorized(request)) {
+  if (request.cookies.get(MAYA_AUTH_COOKIE)?.value) {
     return NextResponse.next();
   }
 

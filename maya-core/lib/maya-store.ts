@@ -156,6 +156,7 @@ export function createInitialMayaStore(language: AppLanguage = getMayaRuntimeCon
     projects,
     memoryItems,
     sessions: [session],
+    authVersion: 1,
     activeSessionId: session.id,
     activeProjectId: projects[0]?.id || null,
     language
@@ -180,6 +181,7 @@ export function normalizeMayaStore(store: Partial<MayaStore> | undefined): MayaS
     ? store.sessions.map((session, index) => normalizeSession(session, base.sessions[index]))
     : base.sessions;
   const sessionIds = new Set(sessions.map((session) => session.id));
+  const authVersion = Number.isInteger(store?.authVersion) && Number(store?.authVersion) > 0 ? Number(store?.authVersion) : base.authVersion;
   const activeSessionId = sessionIds.has(String(store?.activeSessionId || '')) ? String(store?.activeSessionId) : sessions[0].id;
   const activeProjectId = projectIds.has(String(store?.activeProjectId || '')) ? String(store?.activeProjectId) : projects[0]?.id || null;
 
@@ -188,6 +190,7 @@ export function normalizeMayaStore(store: Partial<MayaStore> | undefined): MayaS
     projects,
     memoryItems,
     sessions,
+    authVersion,
     activeSessionId,
     activeProjectId,
     language

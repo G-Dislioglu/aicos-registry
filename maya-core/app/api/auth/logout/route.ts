@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 
-import { MAYA_AUTH_COOKIE } from '@/lib/maya-auth';
+import { isMayaSessionAuthorized, MAYA_AUTH_COOKIE, revokeMayaSessions } from '@/lib/maya-auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function POST() {
+  if (await isMayaSessionAuthorized()) {
+    await revokeMayaSessions();
+  }
+
   const response = NextResponse.json({ ok: true }, { status: 200 });
   response.cookies.set(MAYA_AUTH_COOKIE, '', {
     httpOnly: true,

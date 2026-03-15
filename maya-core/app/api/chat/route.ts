@@ -1,11 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { isMayaSessionAuthorized } from '@/lib/maya-auth';
 import { getLocale } from '@/lib/i18n';
 import { buildMayaChatResponse } from '@/lib/maya-engine';
 import { readMayaStore, writeMayaStore } from '@/lib/maya-store';
 import { ChatMessage } from '@/lib/types';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
+  if (!(await isMayaSessionAuthorized())) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const message = String(body?.message || '').trim();

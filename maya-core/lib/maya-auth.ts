@@ -3,8 +3,15 @@ import { redirect } from 'next/navigation';
 import { NextRequest } from 'next/server';
 
 import { assertMayaAuthConfigured, isMayaAuthConfigured } from '@/lib/maya-env';
+import { readMayaStore, writeMayaStore } from '@/lib/maya-store';
 
 export const MAYA_AUTH_COOKIE = 'maya_session';
+
+type MayaSessionPayload = {
+  authVersion: number;
+  passphrase: string;
+  scope: 'maya-single-user';
+};
 
 function bytesToBase64Url(bytes: Uint8Array) {
   let binary = '';
@@ -18,6 +25,12 @@ function bytesToBase64Url(bytes: Uint8Array) {
 
 function toBase64Url(value: string) {
   return bytesToBase64Url(new TextEncoder().encode(value));
+}
+
+function fromBase64Url(value: string) {
+  const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4);
+  return atob(padded);
 }
 
 async function signPayload(payload: string, secret: string) {
@@ -37,14 +50,37 @@ async function stableHash(value: string) {
   return Array.from(new Uint8Array(digest));
 }
 
-function buildExpectedPayload(passphrase: string) {
-  return JSON.stringify({ scope: 'maya-single-user', passphrase });
+function buildSessionPayload(passphrase: string, authVersion: number): MayaSessionPayload {
+  return { scope: 'maya-single-user', passphrase, authVersion };
+}
+
+function readPayload(encodedPayload: string) {
+  try {
+    const parsed = JSON.parse(fromBase64Url(encodedPayload)) as Partial<MayaSessionPayload>;
+
+    if (parsed.scope !== 'maya-single-user' || typeof parsed.passphrase !== 'string') {
+      return null;
+    }
+
+    return {
+      scope: 'maya-single-user' as const,
+      passphrase: parsed.passphrase,
+      authVersion: Number.isInteger(parsed.authVersion) && Number(parsed.authVersion) > 0 ? Number(parsed.authVersion) : 0
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function getCurrentAuthVersion() {
+  const store = await readMayaStore();
+  return store.authVersion;
 }
 
 export async function createMayaSessionToken() {
   const config = assertMayaAuthConfigured();
-  const payload = buildExpectedPayload(config.passphrase);
-  const encodedPayload = toBase64Url(payload);
+  const payload = buildSessionPayload(config.passphrase, await getCurrentAuthVersion());
+  const encodedPayload = toBase64Url(JSON.stringify(payload));
   const signature = await signPayload(encodedPayload, config.authSecret);
   return `${encodedPayload}.${signature}`;
 }
@@ -63,7 +99,15 @@ async function verifyToken(token: string) {
     return false;
   }
 
-  return encodedPayload === toBase64Url(buildExpectedPayload(config.passphrase));
+  const payload = readPayload(encodedPayload);
+
+  if (!payload) {
+    return false;
+  }
+
+  const currentAuthVersion = await getCurrentAuthVersion();
+
+  return payload.passphrase === config.passphrase && payload.authVersion === currentAuthVersion;
 }
 
 export async function isMayaPassphraseValid(input: string) {
@@ -81,6 +125,10 @@ export async function isMayaPassphraseValid(input: string) {
   }
 
   return candidateHash.every((value, index) => value === expectedHash[index]);
+}
+
+export function hasMayaSessionCookie(request: NextRequest) {
+  return Boolean(request.cookies.get(MAYA_AUTH_COOKIE)?.value);
 }
 
 export async function isMayaRequestAuthorized(request: NextRequest) {
@@ -129,4 +177,12 @@ export async function getMayaAuthStatus() {
     authorized: await isMayaSessionAuthorized(),
     configured: true
   };
+}
+
+export async function revokeMayaSessions() {
+  const store = await readMayaStore();
+  await writeMayaStore({
+    ...store,
+    authVersion: store.authVersion + 1
+  });
 }

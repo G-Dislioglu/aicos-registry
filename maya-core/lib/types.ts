@@ -78,6 +78,7 @@ export type MayaStore = {
   projects: Project[];
   memoryItems: MemoryItem[];
   sessions: ChatSession[];
+  authVersion: number;
   activeSessionId: string;
   activeProjectId: string | null;
   language: AppLanguage;
