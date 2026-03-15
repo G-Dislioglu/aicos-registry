@@ -139,6 +139,20 @@ export async function ensureMayaPostgresSchema() {
           updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
 
+        -- Add Phase 1B-A columns to existing tables
+        DO $$
+        BEGIN
+          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'maya_memory' AND column_name = 'severity') THEN
+            ALTER TABLE maya_memory ADD COLUMN severity INTEGER NOT NULL DEFAULT 1;
+          END IF;
+          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'maya_memory' AND column_name = 'review_status') THEN
+            ALTER TABLE maya_memory ADD COLUMN review_status TEXT NOT NULL DEFAULT 'pending';
+          END IF;
+          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'maya_memory' AND column_name = 'meta_json') THEN
+            ALTER TABLE maya_memory ADD COLUMN meta_json JSONB NOT NULL DEFAULT '{}';
+          END IF;
+        END $$;
+
         CREATE TABLE IF NOT EXISTS maya_messages (
           id TEXT PRIMARY KEY,
           role TEXT NOT NULL,
