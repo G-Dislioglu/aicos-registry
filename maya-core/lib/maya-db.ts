@@ -113,6 +113,74 @@ export async function ensureMayaPostgresSchema() {
         CREATE INDEX IF NOT EXISTS idx_action_status ON supervisor_action(status);
         CREATE INDEX IF NOT EXISTS idx_decision_workspace ON supervisor_decision(workspace_id);
         CREATE INDEX IF NOT EXISTS idx_run_workspace ON supervisor_run(workspace_id);
+
+        -- Maya Spec Phase 1A Tables
+        CREATE TABLE IF NOT EXISTS maya_memory (
+          id TEXT PRIMARY KEY,
+          tier TEXT NOT NULL DEFAULT 'working',
+          category TEXT NOT NULL DEFAULT 'insight',
+          topic TEXT NOT NULL,
+          content TEXT NOT NULL,
+          confidence INTEGER NOT NULL DEFAULT 50,
+          domain TEXT NOT NULL DEFAULT 'personal',
+          source TEXT NOT NULL DEFAULT 'user',
+          ttl_days INTEGER,
+          expires_at TIMESTAMPTZ,
+          is_deleted BOOLEAN NOT NULL DEFAULT false,
+          archived_at TIMESTAMPTZ,
+          usage_score INTEGER NOT NULL DEFAULT 0,
+          contradicts_id TEXT,
+          assumption BOOLEAN NOT NULL DEFAULT false,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+
+        CREATE TABLE IF NOT EXISTS maya_messages (
+          id TEXT PRIMARY KEY,
+          role TEXT NOT NULL,
+          content TEXT NOT NULL,
+          studio_mode TEXT NOT NULL DEFAULT 'personal',
+          provider TEXT NOT NULL DEFAULT 'mock',
+          model TEXT NOT NULL DEFAULT 'mock',
+          context_used JSONB NOT NULL DEFAULT '[]',
+          context_referenced JSONB NOT NULL DEFAULT '[]',
+          token_input INTEGER NOT NULL DEFAULT 0,
+          token_output INTEGER NOT NULL DEFAULT 0,
+          cost_cents INTEGER NOT NULL DEFAULT 0,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+
+        CREATE TABLE IF NOT EXISTS maya_audit (
+          id TEXT PRIMARY KEY,
+          action TEXT NOT NULL,
+          entity_id TEXT NOT NULL,
+          entity_type TEXT NOT NULL,
+          details_json JSONB NOT NULL DEFAULT '{}',
+          actor TEXT NOT NULL DEFAULT 'user',
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+
+        CREATE TABLE IF NOT EXISTS maya_app_context (
+          id TEXT PRIMARY KEY,
+          app_type TEXT NOT NULL,
+          mock_data_json JSONB NOT NULL DEFAULT '{}',
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+
+        CREATE TABLE IF NOT EXISTS maya_cost_daily (
+          id TEXT PRIMARY KEY,
+          date TEXT NOT NULL UNIQUE,
+          total_cents INTEGER NOT NULL DEFAULT 0,
+          total_tokens INTEGER NOT NULL DEFAULT 0,
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_memory_tier ON maya_memory(tier);
+        CREATE INDEX IF NOT EXISTS idx_memory_category ON maya_memory(category);
+        CREATE INDEX IF NOT EXISTS idx_memory_deleted ON maya_memory(is_deleted);
+        CREATE INDEX IF NOT EXISTS idx_messages_created ON maya_messages(created_at);
+        CREATE INDEX IF NOT EXISTS idx_audit_entity ON maya_audit(entity_id);
+        CREATE INDEX IF NOT EXISTS idx_cost_date ON maya_cost_daily(date);
       `);
     })();
   }
