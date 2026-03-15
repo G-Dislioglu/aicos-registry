@@ -1,0 +1,472 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+
+type WorkspaceMode = 'explore' | 'plan' | 'execute' | 'review';
+type WorkspaceStatus = 'active' | 'paused' | 'completed' | 'archived';
+type AnalysisKind = 'observation' | 'analysis' | 'risk' | 'option' | 'recommendation' | 'summary';
+type ActionType = 'update_workspace' | 'create_note' | 'set_focus' | 'resolve_question' | 'archive_card' | 'promote_option_to_plan' | 'create_execution_step';
+type ActionStatus = 'proposed' | 'approved' | 'rejected' | 'running' | 'done' | 'failed';
+
+type Workspace = {
+  id: string;
+  title: string;
+  goal: string;
+  currentFocus: string | null;
+  mode: WorkspaceMode;
+  constraintsJson: string;
+  openQuestionsJson: string;
+  status: WorkspaceStatus;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type AnalysisCard = {
+  id: string;
+  workspaceId: string;
+  kind: AnalysisKind;
+  title: string;
+  body: string;
+  confidence: number;
+  priority: 'high' | 'medium' | 'low';
+  sourceScope: string;
+  metaJson: string;
+  createdAt: string;
+};
+
+type Action = {
+  id: string;
+  workspaceId: string;
+  actionType: ActionType;
+  title: string;
+  description: string;
+  payloadJson: string;
+  status: ActionStatus;
+  priority: 'high' | 'medium' | 'low';
+  requiresApproval: boolean;
+  proposedBy: string;
+  approvedBy: string | null;
+  resultJson: string;
+  errorText: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type Decision = {
+  id: string;
+  workspaceId: string;
+  actionId: string;
+  decision: 'approve' | 'reject' | 'defer' | 'comment';
+  reason: string;
+  actor: string;
+  createdAt: string;
+};
+
+type Run = {
+  id: string;
+  workspaceId: string;
+  startedAt: string;
+  endedAt: string | null;
+  triggerType: 'manual' | 'scheduled' | 'event';
+  objective: string;
+  status: 'running' | 'completed' | 'failed' | 'cancelled';
+  summary: string;
+  metricsJson: string;
+};
+
+const KIND_COLORS: Record<AnalysisKind, string> = {
+  observation: 'bg-blue-100 text-blue-800',
+  analysis: 'bg-purple-100 text-purple-800',
+  risk: 'bg-red-100 text-red-800',
+  option: 'bg-yellow-100 text-yellow-800',
+  recommendation: 'bg-green-100 text-green-800',
+  summary: 'bg-gray-100 text-gray-800'
+};
+
+const STATUS_COLORS: Record<ActionStatus, string> = {
+  proposed: 'bg-yellow-100 text-yellow-800',
+  approved: 'bg-green-100 text-green-800',
+  rejected: 'bg-red-100 text-red-800',
+  running: 'bg-blue-100 text-blue-800',
+  done: 'bg-gray-100 text-gray-800',
+  failed: 'bg-red-200 text-red-900'
+};
+
+export function SupervisorScreen() {
+  const [workspace, setWorkspace] = useState<Workspace | null>(null);
+  const [cards, setCards] = useState<AnalysisCard[]>([]);
+  const [actions, setActions] = useState<Action[]>([]);
+  const [decisions, setDecisions] = useState<Decision[]>([]);
+  const [runs, setRuns] = useState<Run[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const [wsRes, cardsRes, actionsRes, decisionsRes, runsRes] = await Promise.all([
+        fetch('/api/supervisor/workspace'),
+        fetch(workspace ? `/api/supervisor/analysis?workspaceId=${workspace.id}` : '/api/supervisor/analysis?workspaceId=none'),
+        fetch(workspace ? `/api/supervisor/actions?workspaceId=${workspace.id}` : '/api/supervisor/actions?workspaceId=none'),
+        fetch(workspace ? `/api/supervisor/decisions?workspaceId=${workspace.id}` : '/api/supervisor/decisions?workspaceId=none'),
+        fetch(workspace ? `/api/supervisor/runs?workspaceId=${workspace.id}` : '/api/supervisor/runs?workspaceId=none')
+      ]);
+
+      if (wsRes.ok) {
+        const wsData = await wsRes.json();
+        setWorkspace(wsData.workspace);
+        if (wsData.workspace) {
+          const [c, a, d, r] = await Promise.all([
+            cardsRes.json(),
+            actionsRes.json(),
+            decisionsRes.json(),
+            runsRes.json()
+          ]);
+          setCards(c.cards || []);
+          setActions(a.actions || []);
+          setDecisions(d.decisions || []);
+          setRuns(r.runs || []);
+        }
+      }
+      setError(null);
+    } catch (e) {
+      setError('Failed to load workspace');
+    } finally {
+      setLoading(false);
+    }
+  }, [workspace?.id]);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const createWorkspace = async () => {
+    try {
+      const res = await fetch('/api/supervisor/workspace', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: crypto.randomUUID(),
+          title: 'New Workspace',
+          goal: 'Define your goal here',
+          mode: 'explore'
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setWorkspace(data.workspace);
+        fetchData();
+      }
+    } catch (e) {
+      setError('Failed to create workspace');
+    }
+  };
+
+  const handleDecision = async (actionId: string, decision: 'approve' | 'reject' | 'defer', reason: string = '') => {
+    try {
+      const res = await fetch(`/api/supervisor/actions/${actionId}/${decision}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason })
+      });
+      if (res.ok) {
+        fetchData();
+      }
+    } catch (e) {
+      setError('Failed to record decision');
+    }
+  };
+
+  const handleRun = async (actionId: string) => {
+    try {
+      const res = await fetch(`/api/supervisor/actions/${actionId}/run`, {
+        method: 'POST'
+      });
+      if (res.ok) {
+        fetchData();
+      }
+    } catch (e) {
+      setError('Failed to run action');
+    }
+  };
+
+  const topRisks = cards.filter((c) => c.kind === 'risk').slice(0, 3);
+  const topRecommendation = cards.find((c) => c.kind === 'recommendation');
+  const openQuestions = workspace ? JSON.parse(workspace.openQuestionsJson || '[]') : [];
+  const proposedActions = actions.filter((a) => a.status === 'proposed');
+  const recentRuns = runs.slice(0, 5);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="animate-pulse space-y-4">
+            <div className="h-32 bg-gray-200 rounded-lg" />
+            <div className="h-64 bg-gray-200 rounded-lg" />
+            <div className="h-48 bg-gray-200 rounded-lg" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!workspace) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-white rounded-lg shadow p-8 text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">No Active Workspace</h1>
+            <p className="text-gray-600 mb-6">Create a new workspace to start working with Maya.</p>
+            <button
+              onClick={createWorkspace}
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700"
+            >
+              Create Workspace
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-4">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Workspace Header */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">{workspace.title}</h1>
+              <p className="text-gray-600 mt-1">{workspace.goal}</p>
+            </div>
+            <div className="flex gap-2">
+              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                workspace.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+              }`}>
+                {workspace.status}
+              </span>
+              <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                {workspace.mode}
+              </span>
+            </div>
+          </div>
+          {workspace.currentFocus && (
+            <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+              <span className="text-sm font-medium text-yellow-800">Current Focus:</span>
+              <span className="ml-2 text-yellow-900">{workspace.currentFocus}</span>
+            </div>
+          )}
+          <div className="mt-4 text-xs text-gray-500">
+            Last updated: {new Date(workspace.updatedAt).toLocaleString()}
+          </div>
+        </div>
+
+        {/* Current Situation */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Current Situation</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Top Risks</h3>
+              {topRisks.length > 0 ? (
+                <ul className="space-y-2">
+                  {topRisks.map((risk) => (
+                    <li key={risk.id} className="p-2 bg-red-50 rounded border border-red-200">
+                      <span className="font-medium text-red-900">{risk.title}</span>
+                      <span className="block text-sm text-red-700 mt-1">{risk.body.slice(0, 100)}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500 text-sm">No risks identified</p>
+              )}
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Top Recommendation</h3>
+              {topRecommendation ? (
+                <div className="p-3 bg-green-50 rounded border border-green-200">
+                  <span className="font-medium text-green-900">{topRecommendation.title}</span>
+                  <span className="block text-sm text-green-700 mt-1">{topRecommendation.body.slice(0, 150)}</span>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm">No recommendation yet</p>
+              )}
+              <h3 className="text-sm font-medium text-gray-700 mt-4 mb-2">Open Questions</h3>
+              {openQuestions.length > 0 ? (
+                <ul className="space-y-1">
+                  {openQuestions.slice(0, 3).map((q: { id: string; question: string }, i: number) => (
+                    <li key={q.id || i} className="text-sm text-gray-600">• {q.question}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500 text-sm">No open questions</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Analysis Stream */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Analysis Stream</h2>
+          {cards.length > 0 ? (
+            <div className="space-y-3">
+              {cards.map((card) => (
+                <div key={card.id} className="p-4 border rounded-lg">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${KIND_COLORS[card.kind]}`}>
+                        {card.kind}
+                      </span>
+                      <h3 className="font-medium text-gray-900 mt-2">{card.title}</h3>
+                      <p className="text-sm text-gray-600 mt-1">{card.body}</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs text-gray-500">Confidence: {card.confidence}%</div>
+                      <div className={`text-xs font-medium ${
+                        card.priority === 'high' ? 'text-red-600' : card.priority === 'low' ? 'text-gray-500' : 'text-yellow-600'
+                      }`}>
+                        {card.priority}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">No analysis cards yet</p>
+          )}
+        </div>
+
+        {/* Action Queue */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Action Queue</h2>
+          {proposedActions.length > 0 ? (
+            <div className="space-y-3">
+              {proposedActions.map((action) => (
+                <div key={action.id} className="p-4 border rounded-lg">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${STATUS_COLORS[action.status]}`}>
+                        {action.status}
+                      </span>
+                      <span className="ml-2 text-xs text-gray-500">{action.actionType}</span>
+                      <h3 className="font-medium text-gray-900 mt-2">{action.title}</h3>
+                      <p className="text-sm text-gray-600 mt-1">{action.description}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleDecision(action.id, 'approve')}
+                        className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleDecision(action.id, 'reject')}
+                        className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                      >
+                        Reject
+                      </button>
+                      <button
+                        onClick={() => handleDecision(action.id, 'defer')}
+                        className="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700"
+                      >
+                        Defer
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">No proposed actions</p>
+          )}
+
+          {/* Approved actions ready to run */}
+          {actions.filter((a) => a.status === 'approved').length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-sm font-medium text-gray-700 mb-3">Ready to Execute</h3>
+              <div className="space-y-2">
+                {actions.filter((a) => a.status === 'approved').map((action) => (
+                  <div key={action.id} className="p-3 bg-green-50 border border-green-200 rounded flex items-center justify-between">
+                    <div>
+                      <span className="font-medium text-green-900">{action.title}</span>
+                      <span className="block text-sm text-green-700">{action.description}</span>
+                    </div>
+                    <button
+                      onClick={() => handleRun(action.id)}
+                      className="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+                    >
+                      Run
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Run Timeline */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Run Timeline</h2>
+          {recentRuns.length > 0 ? (
+            <div className="space-y-2">
+              {recentRuns.map((run) => (
+                <div key={run.id} className="p-3 border rounded flex items-center justify-between">
+                  <div>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                      run.status === 'running' ? 'bg-blue-100 text-blue-800' :
+                      run.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {run.status}
+                    </span>
+                    <span className="ml-2 font-medium text-gray-900">{run.objective}</span>
+                    {run.summary && <span className="block text-sm text-gray-600 mt-1">{run.summary}</span>}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {new Date(run.startedAt).toLocaleString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">No runs recorded</p>
+          )}
+        </div>
+
+        {/* Decision Log */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Decision Log</h2>
+          {decisions.length > 0 ? (
+            <div className="space-y-2">
+              {decisions.slice(0, 10).map((decision) => (
+                <div key={decision.id} className="p-3 border rounded flex items-center justify-between">
+                  <div>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                      decision.decision === 'approve' ? 'bg-green-100 text-green-800' :
+                      decision.decision === 'reject' ? 'bg-red-100 text-red-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {decision.decision}
+                    </span>
+                    <span className="ml-2 text-gray-700">{decision.reason || 'No reason provided'}</span>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {decision.actor} • {new Date(decision.createdAt).toLocaleString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">No decisions recorded</p>
+          )}
+        </div>
+
+        {error && (
+          <div className="fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded shadow">
+            {error}
+            <button onClick={() => setError(null)} className="ml-2 font-bold">×</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
