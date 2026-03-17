@@ -12,13 +12,14 @@ export function PrimaryNav() {
   const text = getUiText(language);
   const items = [
     { href: '/', label: text.nav.home, hint: text.nav.homeHint },
+    { href: '/maya', label: text.nav.maya, hint: text.nav.mayaHint },
     { href: '/chat', label: text.nav.chat, hint: text.nav.chatHint },
     { href: '/context', label: text.nav.context, hint: text.nav.contextHint }
   ] as const;
 
   return (
     <nav className="fixed inset-x-4 bottom-4 z-50 rounded-[28px] border border-white/10 bg-slate-950/90 p-2 shadow-shell backdrop-blur lg:static lg:inset-auto lg:bottom-auto lg:border-none lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-0">
-      <div className="grid grid-cols-3 gap-2 lg:flex lg:flex-col">
+      <div className="grid grid-cols-4 gap-2 lg:flex lg:flex-col">
         {items.map((item) => {
           const active = pathname === item.href;
           return (

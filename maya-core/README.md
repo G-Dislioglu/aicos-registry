@@ -2,22 +2,58 @@
 
 Maya is a separate product web app inside this repo: a mobile-first, text-only, single-user personal assistive surface.
 
-## Phase 1 scope
+## Phase 1.3 runtime
 
-- Home screen with focus cards
-- Chat screen with a simple local chat API
-- Context screen with profile, projects, and curated memory
-- small seed data model
-- de/en language switching with `de` as default
+Maya Phase 1.3 keeps the Phase 1.2 product surface intact while making the runtime deployable as a real single-user web service.
+
+The app now includes:
+
+- editable personal layer for profile, projects, and curated memory
+- persistent sessions and chat history
+- single-user passphrase gate with signed cookie session
+- deployable persistent storage with Postgres on Render
+- local file-backed fallback for local development only
+- de/en UI with `de` as the default seed language
 - PWA manifest + service worker registration
-- Render-ready deployment config
 
 ## Stack
 
-- Next.js
+- Next.js App Router
 - TypeScript
 - Tailwind CSS
-- App Router
+- Postgres via `pg`
+
+## Runtime model
+
+Maya uses a small storage adapter controlled by `MAYA_STORAGE_DRIVER`.
+
+- `postgres`
+  - intended production/runtime path
+  - durable storage on Render via `DATABASE_URL`
+- `file`
+  - local development path
+  - persists to `data/maya-store.json`
+
+When the store is empty, Maya bootstraps from `lib/seed-data.ts` and writes the normalized initial state into the active storage backend.
+
+## Required environment variables
+
+Copy `.env.example` and fill the values you need.
+
+```bash
+MAYA_STORAGE_DRIVER=postgres
+DATABASE_URL=
+MAYA_AUTH_SECRET=
+MAYA_PASSPHRASE=
+MAYA_SEED_LANGUAGE=de
+```
+
+Notes:
+
+- On Render, Maya should run with `MAYA_STORAGE_DRIVER=postgres`.
+- In local development, Maya defaults to `file` if no storage driver is set.
+- In local development only, Maya falls back to a local passphrase `maya-local` if no explicit auth envs are set.
+- In production/Render, auth secrets must be explicitly configured.
 
 ## Local start
 
@@ -27,17 +63,31 @@ Maya is a separate product web app inside this repo: a mobile-first, text-only, 
 npm install
 ```
 
-2. Start dev server:
+2. Choose a local runtime mode:
+
+- simplest local mode:
+
+```bash
+set MAYA_STORAGE_DRIVER=file
+set MAYA_PASSPHRASE=maya-local
+set MAYA_AUTH_SECRET=maya-local-auth-secret
+```
+
+- or use Postgres locally by setting `MAYA_STORAGE_DRIVER=postgres` and `DATABASE_URL`
+
+3. Start the app:
 
 ```bash
 npm run dev
 ```
 
-3. Open:
+4. Open:
 
 ```text
 http://localhost:3000
 ```
+
+5. Unlock Maya with your passphrase.
 
 ## Production build
 
@@ -52,25 +102,67 @@ npm start
 npm run typecheck
 ```
 
-## Screens
+## Routes
 
-- `/` Home
-- `/chat` Chat
-- `/context` Context
-- `/api/chat` Local chat API
+- `/` Gateway / Start
+- `/maya` Empfohlener Maya-Arbeitsbereich
+- `/chat` Älterer Chat-Pfad
+- `/context` Unterstützender Kontextbereich
+- `/supervisor` Interner Supervisor-Raum
+- `/login` Single-user gate
+- `/api/state` Persistent state API
+- `/api/chat` Persistent chat API
+- `/api/maya/*` Maya workspace APIs
+- `/api/supervisor/*` Supervisor APIs
+- `/api/auth/login` Login endpoint
+- `/api/auth/logout` Logout endpoint
+- `/api/auth/session` Session status endpoint
 - `/api/health` Health endpoint
 
-## Language
+## Health endpoint
 
-- visible product name: `Maya`
-- supported languages: `de`, `en`
-- default language: `de`
-- language choice is stored in local browser storage
-- UI text, seed data, and local Maya responses follow the selected language
+`/api/health` is the public lightweight runtime health endpoint.
+
+It is distinct from the authenticated Maya workspace health surface under `/api/maya/health`.
+
+In the current code, `/api/health` returns a lightweight JSON response for runtime availability:
+
+- `status`
+- `app`
+
+It does not currently perform database, auth, provider, or workspace health checks.
+
+## Render deploy
+
+This project ships with its own `render.yaml` inside `maya-core/`.
+
+The blueprint now provisions:
+
+- one Node web service
+- one Render Postgres database
+- generated `MAYA_AUTH_SECRET`
+- required `DATABASE_URL`
+- explicit `MAYA_STORAGE_DRIVER=postgres`
+
+Manual Render setup should match:
+
+- Root Directory: `maya-core`
+- Build Command: `npm install && npm run build`
+- Start Command: `npm start`
+- Health Check Path: `/api/health`
+- Node: `20.x`
+- Environment:
+  - `MAYA_STORAGE_DRIVER=postgres`
+  - `DATABASE_URL=<Render Postgres connection string>`
+  - `MAYA_AUTH_SECRET=<strong random secret>`
+  - `MAYA_PASSPHRASE=<your private single-user passphrase>`
+  - `MAYA_SEED_LANGUAGE=de` or `en`
+
+If you use Render Blueprint support, point it at `maya-core/render.yaml`.
 
 ## Product boundaries
 
-Maya Phase 1 intentionally does **not** include:
+Maya intentionally does **not** include:
 
 - voice
 - vision
@@ -78,26 +170,19 @@ Maya Phase 1 intentionally does **not** include:
 - device control
 - hidden AICOS or Soulmatch write paths
 - broad provider integrations
+- multi-user/team auth
 - governance/scoring expansion
 
-## Render deploy
+Visible repo note:
 
-This project ships with its own `render.yaml` inside `maya-core/`.
-
-Recommended setup:
-
-- Root Directory: `maya-core`
-- Build Command: `npm install && npm run build`
-- Start Command: `npm start`
-- Health Check Path: `/api/health`
-- Node: `20.x`
-
-If you use Render Blueprint support, point it at `maya-core/render.yaml`.
+- the current repo does include additional Maya workspace surfaces under `/maya` and `/api/maya/*`
+- it also includes an internal supervisor surface under `/supervisor` and `/api/supervisor/*`
+- these visible surfaces should not be read as proof that the product is already fully consolidated
 
 ## Notes
 
-- The current chat loop is intentionally simple and local.
-- Seed data is in `lib/seed-data.ts`.
-- The assistant response logic is in `lib/maya-engine.ts`.
-- The visible product name is `Maya`; the folder can remain `maya-core/` for now.
-- This project is intentionally isolated from the registry runtime app.
+- The older `/chat` path still uses `lib/maya-engine.ts`.
+- The visible `/maya` workspace runs through the `/api/maya/*` stack.
+- The visible product name remains `Maya`.
+- The folder can remain `maya-core/`.
+- This product remains intentionally isolated from the registry runtime app.

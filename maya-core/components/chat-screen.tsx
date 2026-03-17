@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 
 import { AppShell } from '@/components/app-shell';
 import { useLanguage } from '@/components/language-provider';
@@ -175,6 +176,21 @@ export function ChatScreen() {
       }
     >
       <div className="flex flex-col gap-4">
+        <section className="rounded-[28px] border border-violet-400/20 bg-violet-500/10 p-4 shadow-shell sm:p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="text-xs uppercase tracking-[0.22em] text-violet-200">{text.chat.primaryWorkspace}</div>
+              <p className="mt-2 text-sm leading-6 text-slate-200">{text.chat.primaryWorkspaceBody}</p>
+            </div>
+            <Link
+              href="/maya"
+              className="inline-flex rounded-full border border-violet-300/40 bg-violet-500/15 px-4 py-2 text-sm font-medium text-violet-50 transition hover:border-violet-200 hover:bg-violet-500/25"
+            >
+              {text.chat.openMaya}
+            </Link>
+          </div>
+        </section>
+
         <section className="rounded-[28px] border border-white/10 bg-slate-950/60 p-4 shadow-shell sm:p-5">
           <div className="space-y-4">
             {activeSession?.messages && activeSession.messages.length > 0 ? activeSession.messages.map((message) => {

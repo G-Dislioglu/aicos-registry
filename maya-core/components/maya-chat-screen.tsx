@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import { useState, useEffect, useCallback } from 'react';
 
 type StudioMode = 'personal' | 'soulmatch_studio' | 'aicos_studio';
@@ -154,11 +156,59 @@ const MODE_ICONS: Record<StudioMode, string> = {
   aicos_studio: '📋'
 };
 
+const MAYA_SETTINGS_KEY = 'maya-settings';
+
+const TIER_LABELS: Record<string, string> = {
+  event: 'Event',
+  signal: 'Signal',
+  proposed: 'Vorgeschlagen',
+  conflict: 'Konflikt'
+};
+
+const FALSE_POSITIVE_TREND_LABELS: Record<'improving' | 'stable' | 'worsening', string> = {
+  improving: 'verbessert',
+  stable: 'stabil',
+  worsening: 'kritisch'
+};
+
+const SYSTEM_TENDENCY_LABELS: Record<'aggressive' | 'balanced' | 'passive', string> = {
+  aggressive: 'aggressiv',
+  balanced: 'balanciert',
+  passive: 'passiv'
+};
+
+type MayaSettings = {
+  mode: StudioMode;
+  role: ModelRole;
+  provider: string;
+  model: string;
+};
+
+function loadSettings(): MayaSettings | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(MAYA_SETTINGS_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveSettings(settings: MayaSettings) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(MAYA_SETTINGS_KEY, JSON.stringify(settings));
+  } catch {
+    // ignore
+  }
+}
+
 export function MayaChatScreen() {
-  const [mode, setMode] = useState<StudioMode>('personal');
-  const [role, setRole] = useState<ModelRole>('worker');
-  const [provider, setProvider] = useState<string>('mock');
-  const [model, setModel] = useState<string>('mock');
+  const [savedSettings] = useState(() => loadSettings());
+  const [mode, setMode] = useState<StudioMode>(() => savedSettings?.mode || 'personal');
+  const [role, setRole] = useState<ModelRole>(() => savedSettings?.role || 'worker');
+  const [provider, setProvider] = useState<string>(() => savedSettings?.provider || 'mock');
+  const [model, setModel] = useState<string>(() => savedSettings?.model || 'mock');
   const [providers, setProviders] = useState<Provider[]>([]);
   const [roleDefaults, setRoleDefaults] = useState<RoleDefaults | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -174,6 +224,11 @@ export function MayaChatScreen() {
   const [dailySummary, setDailySummary] = useState<DailySummary | null>(null);
   const [briefingTab, setBriefingTab] = useState<'review' | 'metrics' | 'activity'>('review');
 
+  // Persist settings on change
+  useEffect(() => {
+    saveSettings({ mode, role, provider, model });
+  }, [mode, role, provider, model]);
+
   // Load providers
   useEffect(() => {
     fetch('/api/maya/providers')
@@ -181,17 +236,17 @@ export function MayaChatScreen() {
       .then(data => {
         setProviders(data.providers || []);
         setRoleDefaults(data.roleDefaults || null);
-        // Set default based on role defaults
-        if (data.roleDefaults?.worker) {
+        // Only override if no saved settings
+        if (!savedSettings?.provider && data.roleDefaults?.worker) {
           setProvider(data.roleDefaults.worker.providerId);
           setModel(data.roleDefaults.worker.modelId);
-        } else if (data.providers?.length > 0) {
+        } else if (!savedSettings?.provider && data.providers?.length > 0) {
           const firstProvider = data.providers[0];
           setProvider(firstProvider.id);
           setModel(firstProvider.defaultModel);
         }
       })
-      .catch(() => setError('Failed to load providers'));
+      .catch(() => setError('Provider konnten nicht geladen werden'));
   }, []);
 
   // Load briefing and health
@@ -279,7 +334,7 @@ export function MayaChatScreen() {
       const data = await res.json();
 
       if (data.blocked) {
-        setError(data.message?.content || 'Request blocked');
+        setError(data.message?.content || 'Anfrage wurde blockiert');
       } else if (data.message) {
         setMessages(prev => [...prev, {
           id: data.message.id,
@@ -297,7 +352,7 @@ export function MayaChatScreen() {
       // Refresh briefing/health after chat
       loadBriefingAndHealth();
     } catch {
-      setError('Failed to send message');
+      setError('Nachricht konnte nicht gesendet werden');
     } finally {
       setLoading(false);
     }
@@ -313,7 +368,7 @@ export function MayaChatScreen() {
       });
       loadBriefingAndHealth();
     } catch {
-      setError('Failed to confirm memory');
+      setError('Memory konnte nicht bestätigt werden');
     }
   };
 
@@ -327,7 +382,7 @@ export function MayaChatScreen() {
       });
       loadBriefingAndHealth();
     } catch {
-      setError('Failed to deny memory');
+      setError('Memory konnte nicht abgelehnt werden');
     }
   };
 
@@ -347,7 +402,7 @@ export function MayaChatScreen() {
       });
       loadBriefingAndHealth();
     } catch {
-      setError('Failed to submit review');
+      setError('Review konnte nicht übermittelt werden');
     }
   };
 
@@ -356,7 +411,15 @@ export function MayaChatScreen() {
       {/* Header */}
       <div className="bg-white border-b px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold text-gray-900">Maya</h1>
+          <div>
+            <div className="text-xs uppercase tracking-[0.22em] text-violet-600">Empfohlener Arbeitsbereich</div>
+            <h1 className="text-xl font-bold text-gray-900">Maya-Arbeitsbereich</h1>
+            <div className="mt-1 flex flex-wrap gap-2 text-xs text-gray-600">
+              <Link href="/" className="rounded-full border border-gray-200 px-2.5 py-1 hover:border-violet-300 hover:text-violet-700">Start</Link>
+              <Link href="/chat" className="rounded-full border border-gray-200 px-2.5 py-1 hover:border-violet-300 hover:text-violet-700">Älterer Chat-Pfad</Link>
+              <Link href="/context" className="rounded-full border border-gray-200 px-2.5 py-1 hover:border-violet-300 hover:text-violet-700">Kontextbereich</Link>
+            </div>
+          </div>
 
           {/* Mode Switch */}
           <div className="flex bg-gray-100 rounded-lg p-1">
@@ -391,9 +454,9 @@ export function MayaChatScreen() {
             }}
             className="px-3 py-1.5 border rounded-lg text-sm bg-white"
           >
-            <option value="scout">Scout (Fast)</option>
+            <option value="scout">Scout (schnell)</option>
             <option value="worker">Worker (Standard)</option>
-            <option value="reasoner">Reasoner (Deep)</option>
+            <option value="reasoner">Reasoner (tief)</option>
             <option value="vision_ocr">Vision/OCR</option>
             <option value="tts">TTS</option>
           </select>
@@ -411,9 +474,9 @@ export function MayaChatScreen() {
                 health.chatProvider.isMockMode ? 'bg-orange-500' : 'bg-green-500'
               }`}></span>
               {health.chatProvider.isMockMode ? (
-                <span>MOCK MODE - Set API Key</span>
+                <span>Mock-Modus - API-Key fehlt</span>
               ) : (
-                <span>LIVE: {health.chatProvider.primaryProvider} / {health.chatProvider.primaryModel}</span>
+                <span>Live: {health.chatProvider.primaryProvider} / {health.chatProvider.primaryModel}</span>
               )}
             </div>
           )}
@@ -471,6 +534,10 @@ export function MayaChatScreen() {
         </div>
       </div>
 
+      <div className="border-b border-violet-100 bg-violet-50 px-4 py-3 text-sm text-violet-900">
+        Maya ist hier die sichtbare Hauptfläche für Rolle, Provider, Modell, Briefing und Review. `/chat` bleibt der ältere Pfad, `/context` der begleitende Bereich. `/supervisor` ist weiterhin ein interner Supervisor-Raum.
+      </div>
+
       <div className="flex flex-1 overflow-hidden">
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col">
@@ -478,12 +545,12 @@ export function MayaChatScreen() {
           {health?.chatProvider?.isMockMode && (
             <div className="bg-orange-50 border-b border-orange-200 px-4 py-3">
               <div className="flex items-center gap-2">
-                <span className="text-orange-600 text-sm font-medium">⚠️ Mock Mode Active</span>
+                <span className="text-orange-600 text-sm font-medium">⚠️ Mock-Modus aktiv</span>
               </div>
               <p className="text-xs text-orange-700 mt-1">
-                Maya is running in mock mode. Set <code className="bg-orange-100 px-1 rounded">OPENAI_API_KEY</code>,{' '}
-                <code className="bg-orange-100 px-1 rounded">ANTHROPIC_API_KEY</code>, or{' '}
-                <code className="bg-orange-100 px-1 rounded">GOOGLE_AI_KEY</code> in your environment for real responses.
+                Maya läuft im Mock-Modus. Setze <code className="bg-orange-100 px-1 rounded">OPENAI_API_KEY</code>,{' '}
+                <code className="bg-orange-100 px-1 rounded">ANTHROPIC_API_KEY</code> oder{' '}
+                <code className="bg-orange-100 px-1 rounded">GOOGLE_AI_KEY</code> in deiner Umgebung für reale Antworten.
               </p>
             </div>
           )}
@@ -492,8 +559,8 @@ export function MayaChatScreen() {
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.length === 0 && (
               <div className="text-center text-gray-500 mt-20">
-                <p className="text-lg">Start a conversation with Maya</p>
-                <p className="text-sm mt-2">Mode: {MODE_LABELS[mode]} • Provider: {currentProvider?.name || provider}</p>
+                <p className="text-lg">Starte ein Gespräch mit Maya</p>
+                <p className="text-sm mt-2">Modus: {MODE_LABELS[mode]} • Provider: {currentProvider?.name || provider}</p>
               </div>
             )}
 
@@ -555,7 +622,7 @@ export function MayaChatScreen() {
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-                placeholder="Type a message..."
+                placeholder="Nachricht an Maya schreiben…"
                 className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={loading}
               />
@@ -564,7 +631,7 @@ export function MayaChatScreen() {
                 disabled={loading || !input.trim()}
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Send
+                Senden
               </button>
             </div>
 
@@ -592,7 +659,7 @@ export function MayaChatScreen() {
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
-                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                    {tab === 'review' ? 'Review' : tab === 'metrics' ? 'Metriken' : 'Aktivität'}
                   </button>
                 ))}
               </div>
@@ -604,20 +671,20 @@ export function MayaChatScreen() {
                   {health?.calibrationStatus && (
                     <div className="mb-4 p-3 bg-gray-50 rounded-lg">
                       <div className="flex justify-between text-xs">
-                        <span className="text-gray-600">Pending Reviews</span>
+                        <span className="text-gray-600">Offene Reviews</span>
                         <span className="font-bold text-gray-900">{health.calibrationStatus.pendingReviews}</span>
                       </div>
                       <div className="flex justify-between text-xs mt-1">
-                        <span className="text-gray-600">Coverage</span>
+                        <span className="text-gray-600">Abdeckung</span>
                         <span className="font-bold text-gray-900">{Math.round(health.calibrationStatus.reviewCoverageRate * 100)}%</span>
                       </div>
                       <div className="flex justify-between text-xs mt-1">
-                        <span className="text-gray-600">FP Trend</span>
+                        <span className="text-gray-600">FP-Trend</span>
                         <span className={`font-bold ${
                           health.calibrationStatus.falsePositiveTrend === 'improving' ? 'text-green-600' :
                           health.calibrationStatus.falsePositiveTrend === 'worsening' ? 'text-red-600' : 'text-gray-600'
                         }`}>
-                          {health.calibrationStatus.falsePositiveTrend}
+                          {FALSE_POSITIVE_TREND_LABELS[health.calibrationStatus.falsePositiveTrend]}
                         </span>
                       </div>
                     </div>
@@ -627,7 +694,7 @@ export function MayaChatScreen() {
                   {reviewQueue.length > 0 && (
                     <div className="mb-6">
                       <h3 className="text-sm font-medium text-gray-700 mb-2">
-                        Review Queue ({reviewQueue.length})
+                        Review-Queue ({reviewQueue.length})
                       </h3>
                       <div className="space-y-2">
                         {reviewQueue.slice(0, 5).map(item => (
@@ -639,7 +706,7 @@ export function MayaChatScreen() {
                                 item.tier === 'signal' ? 'bg-purple-100 text-purple-800' :
                                 'bg-indigo-100 text-indigo-800'
                               }`}>
-                                {item.tier}
+                                {TIER_LABELS[item.tier] || item.tier}
                               </span>
                               <span className="text-xs text-gray-500">{item.memoryEntry.confidence}%</span>
                             </div>
@@ -654,19 +721,19 @@ export function MayaChatScreen() {
                                     onClick={() => submitReview(item.memoryEntry.id, item.tier, 'real_conflict')}
                                     className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
                                   >
-                                    Real
+                                    Echt
                                   </button>
                                   <button
                                     onClick={() => submitReview(item.memoryEntry.id, item.tier, 'false_positive')}
                                     className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
                                   >
-                                    FP
+                                    Fehlalarm
                                   </button>
                                   <button
                                     onClick={() => submitReview(item.memoryEntry.id, item.tier, 'unclear')}
                                     className="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
                                   >
-                                    Unclear
+                                    Unklar
                                   </button>
                                 </>
                               ) : item.tier === 'proposed' ? (
@@ -675,19 +742,19 @@ export function MayaChatScreen() {
                                     onClick={() => submitReview(item.memoryEntry.id, item.tier, 'useful')}
                                     className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
                                   >
-                                    Useful
+                                    Nützlich
                                   </button>
                                   <button
                                     onClick={() => submitReview(item.memoryEntry.id, item.tier, 'overreach')}
                                     className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
                                   >
-                                    Overreach
+                                    Übergriff
                                   </button>
                                   <button
                                     onClick={() => submitReview(item.memoryEntry.id, item.tier, 'redundant')}
                                     className="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
                                   >
-                                    Redundant
+                                    Doppelt
                                   </button>
                                 </>
                               ) : item.tier === 'signal' ? (
@@ -696,13 +763,13 @@ export function MayaChatScreen() {
                                     onClick={() => submitReview(item.memoryEntry.id, item.tier, 'promising')}
                                     className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
                                   >
-                                    Promising
+                                    Vielversprechend
                                   </button>
                                   <button
                                     onClick={() => submitReview(item.memoryEntry.id, item.tier, 'noise')}
                                     className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
                                   >
-                                    Noise
+                                    Rauschen
                                   </button>
                                 </>
                               ) : (
@@ -711,7 +778,7 @@ export function MayaChatScreen() {
                                     onClick={() => submitReview(item.memoryEntry.id, item.tier, 'useful')}
                                     className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
                                   >
-                                    Useful
+                                    Nützlich
                                   </button>
                                   <button
                                     onClick={() => submitReview(item.memoryEntry.id, item.tier, 'trivial')}
@@ -723,7 +790,7 @@ export function MayaChatScreen() {
                                     onClick={() => submitReview(item.memoryEntry.id, item.tier, 'wrong')}
                                     className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
                                   >
-                                    Wrong
+                                    Falsch
                                   </button>
                                 </>
                               )}
@@ -738,7 +805,7 @@ export function MayaChatScreen() {
                   {briefing && briefing.openProposed.length > 0 && (
                     <div className="mb-6">
                       <h3 className="text-sm font-medium text-gray-700 mb-2">
-                        Proposed ({briefing.openProposed.length})
+                        Vorgeschlagen ({briefing.openProposed.length})
                       </h3>
                       <div className="space-y-2">
                         {briefing.openProposed.map(proposed => (
@@ -751,13 +818,13 @@ export function MayaChatScreen() {
                                   onClick={() => confirmProposed(proposed.entityId!)}
                                   className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
                                 >
-                                  Confirm
+                                  Bestätigen
                                 </button>
                                 <button
                                   onClick={() => denyProposed(proposed.entityId!)}
                                   className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
                                 >
-                                  Deny
+                                  Ablehnen
                                 </button>
                               </div>
                             )}
@@ -771,7 +838,7 @@ export function MayaChatScreen() {
                   {briefing && briefing.conflicts.length > 0 && (
                     <div className="mb-6">
                       <h3 className="text-sm font-medium text-gray-700 mb-2">
-                        Conflicts ({briefing.conflicts.length})
+                        Konflikte ({briefing.conflicts.length})
                       </h3>
                       <div className="space-y-2">
                         {briefing.conflicts.map(conflict => (
@@ -780,7 +847,7 @@ export function MayaChatScreen() {
                               <div className="font-medium text-red-900 text-sm">{conflict.title}</div>
                               {conflict.severity && (
                                 <span className="px-1.5 py-0.5 bg-red-200 text-red-800 text-xs rounded">
-                                  Sev {conflict.severity}
+                                  Schwere {conflict.severity}
                                 </span>
                               )}
                             </div>
@@ -797,62 +864,62 @@ export function MayaChatScreen() {
               {briefingTab === 'metrics' && calibration && (
                 <>
                   <div className="mb-6">
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">Tier Counts</h3>
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Tier-Zahlen</h3>
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <div className="p-2 bg-indigo-50 rounded">
                         <span className="text-indigo-600">Events:</span>
                         <span className="font-bold text-indigo-700 ml-1">{calibration.eventCount}</span>
                       </div>
                       <div className="p-2 bg-red-50 rounded">
-                        <span className="text-red-600">Conflicts:</span>
+                        <span className="text-red-600">Konflikte:</span>
                         <span className="font-bold text-red-700 ml-1">{calibration.conflictCount}</span>
                       </div>
                       <div className="p-2 bg-yellow-50 rounded">
-                        <span className="text-yellow-600">Proposed:</span>
+                        <span className="text-yellow-600">Vorgeschlagen:</span>
                         <span className="font-bold text-yellow-700 ml-1">{calibration.proposedCount}</span>
                       </div>
                       <div className="p-2 bg-purple-50 rounded">
-                        <span className="text-purple-600">Signals:</span>
+                        <span className="text-purple-600">Signale:</span>
                         <span className="font-bold text-purple-700 ml-1">{calibration.signalCount}</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="mb-6">
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">Quality Rates</h3>
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Qualitätsraten</h3>
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Event Useful Rate</span>
+                        <span className="text-gray-600">Event-Nützlichkeitsrate</span>
                         <span className="font-bold">{Math.round(calibration.eventUsefulRate * 100)}%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Conflict FP Rate</span>
+                        <span className="text-gray-600">Konflikt-FP-Rate</span>
                         <span className={`font-bold ${calibration.conflictFalsePositiveRate > 0.3 ? 'text-red-600' : ''}`}>
                           {Math.round(calibration.conflictFalsePositiveRate * 100)}%
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Proposed Overreach Rate</span>
+                        <span className="text-gray-600">Übergriffsrate vorgeschlagener Einträge</span>
                         <span className={`font-bold ${calibration.proposedOverreachRate > 0.3 ? 'text-red-600' : ''}`}>
                           {Math.round(calibration.proposedOverreachRate * 100)}%
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Review Coverage</span>
+                        <span className="text-gray-600">Review-Abdeckung</span>
                         <span className="font-bold">{Math.round(calibration.reviewCoverageRate * 100)}%</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="mb-6">
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">Extract Stats</h3>
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Extract-Statistik</h3>
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Total Runs</span>
+                        <span className="text-gray-600">Gesamtläufe</span>
                         <span className="font-bold">{calibration.extractRunsTotal}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Cost Today</span>
+                        <span className="text-gray-600">Kosten heute</span>
                         <span className="font-bold">{calibration.extractCostToday}¢</span>
                       </div>
                     </div>
@@ -864,7 +931,7 @@ export function MayaChatScreen() {
               {briefingTab === 'activity' && dailySummary && (
                 <>
                   <div className="mb-6">
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">Daily Summary - {dailySummary.date}</h3>
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Tagesübersicht - {dailySummary.date}</h3>
                     
                     <div className="p-3 bg-gray-50 rounded-lg mb-4">
                       <div className={`text-center py-2 rounded ${
@@ -872,33 +939,33 @@ export function MayaChatScreen() {
                         dailySummary.systemTendency === 'passive' ? 'bg-blue-100 text-blue-800' :
                         'bg-green-100 text-green-800'
                       }`}>
-                        System Tendency: <span className="font-bold">{dailySummary.systemTendency}</span>
+                        Systemtendenz: <span className="font-bold">{SYSTEM_TENDENCY_LABELS[dailySummary.systemTendency]}</span>
                       </div>
                     </div>
 
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-gray-600">New Events Learned</span>
+                        <span className="text-gray-600">Neue Events gelernt</span>
                         <span className="font-bold text-green-700">{dailySummary.newEventsLearned}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Conflicts Real</span>
+                        <span className="text-gray-600">Konflikte real</span>
                         <span className="font-bold text-green-700">{dailySummary.conflictsReal}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Conflicts False Positive</span>
+                        <span className="text-gray-600">Konflikte falsch positiv</span>
                         <span className="font-bold text-red-700">{dailySummary.conflictsFalsePositive}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Proposed Useful</span>
+                        <span className="text-gray-600">Vorschläge nützlich</span>
                         <span className="font-bold text-green-700">{dailySummary.proposedUseful}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Proposed Overreach</span>
+                        <span className="text-gray-600">Vorschläge übergriffig</span>
                         <span className="font-bold text-red-700">{dailySummary.proposedOverreach}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Reviews Today</span>
+                        <span className="text-gray-600">Reviews heute</span>
                         <span className="font-bold">{dailySummary.reviewCount}</span>
                       </div>
                     </div>
@@ -907,10 +974,10 @@ export function MayaChatScreen() {
                   {/* Cost Today */}
                   {briefing && (
                     <div className="border-t pt-4">
-                      <h3 className="text-sm font-medium text-gray-700 mb-2">Cost Today</h3>
+                      <h3 className="text-sm font-medium text-gray-700 mb-2">Kosten heute</h3>
                       <div className="flex items-center justify-between">
                         <span className="text-2xl font-bold text-gray-900">{briefing.costToday}¢</span>
-                        <span className="text-sm text-gray-500">{briefing.tokensToday} tokens</span>
+                        <span className="text-sm text-gray-500">{briefing.tokensToday} Tokens</span>
                       </div>
                     </div>
                   )}
@@ -920,19 +987,19 @@ export function MayaChatScreen() {
               {/* Store Counts (always visible at bottom) */}
               {health && (
                 <div className="border-t pt-4 mt-4">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Memory Store</h3>
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">Memory-Store</h3>
                   <div className="grid grid-cols-4 gap-2 text-center text-xs">
                     <div className="p-2 bg-blue-50 rounded">
                       <div className="text-lg font-bold text-blue-700">{health.storeCounts.core}</div>
-                      <div className="text-blue-600">Core</div>
+                      <div className="text-blue-600">Kern</div>
                     </div>
                     <div className="p-2 bg-green-50 rounded">
                       <div className="text-lg font-bold text-green-700">{health.storeCounts.working}</div>
-                      <div className="text-green-600">Working</div>
+                      <div className="text-green-600">Arbeit</div>
                     </div>
                     <div className="p-2 bg-gray-50 rounded">
                       <div className="text-lg font-bold text-gray-700">{health.storeCounts.ephemeral}</div>
-                      <div className="text-gray-600">Ephemeral</div>
+                      <div className="text-gray-600">Flüchtig</div>
                     </div>
                     <div className="p-2 bg-indigo-50 rounded">
                       <div className="text-lg font-bold text-indigo-700">{health.storeCounts.event}</div>
@@ -944,15 +1011,15 @@ export function MayaChatScreen() {
                     </div>
                     <div className="p-2 bg-yellow-50 rounded">
                       <div className="text-lg font-bold text-yellow-700">{health.storeCounts.proposed}</div>
-                      <div className="text-yellow-600">Proposed</div>
+                      <div className="text-yellow-600">Vorgeschlagen</div>
                     </div>
                     <div className="p-2 bg-red-50 rounded">
                       <div className="text-lg font-bold text-red-700">{health.storeCounts.conflict}</div>
-                      <div className="text-red-600">Conflict</div>
+                      <div className="text-red-600">Konflikt</div>
                     </div>
                     <div className="p-2 bg-slate-50 rounded">
                       <div className="text-lg font-bold text-slate-700">{health.storeCounts.total}</div>
-                      <div className="text-slate-600">Total</div>
+                      <div className="text-slate-600">Gesamt</div>
                     </div>
                   </div>
                 </div>
