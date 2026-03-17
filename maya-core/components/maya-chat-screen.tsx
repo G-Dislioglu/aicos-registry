@@ -218,6 +218,7 @@ export function MayaChatScreen() {
   const [health, setHealth] = useState<HealthStatus | null>(null);
   const [showBriefing, setShowBriefing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [capabilityNotice, setCapabilityNotice] = useState<string | null>(null);
   // Phase 1C: Calibration state
   const [reviewQueue, setReviewQueue] = useState<ReviewQueueItem[]>([]);
   const [calibration, setCalibration] = useState<CalibrationMetrics | null>(null);
@@ -260,29 +261,48 @@ export function MayaChatScreen() {
         fetch('/api/maya/summary/daily')
       ]);
 
-      if (briefingRes.ok) {
-        const data = await briefingRes.json();
-        setBriefing(data.briefing);
+      const [briefingData, healthData, queueData, calData, summaryData] = await Promise.all([
+        briefingRes.json().catch(() => null),
+        healthRes.json().catch(() => null),
+        queueRes.json().catch(() => null),
+        calRes.json().catch(() => null),
+        summaryRes.json().catch(() => null)
+      ]);
+
+      const responses = [briefingRes, healthRes, queueRes, calRes, summaryRes];
+      const payloads = [briefingData, healthData, queueData, calData, summaryData];
+      const capabilityBlocked = responses.some((response, index) => response.status === 503 && payloads[index]?.code === 'not_available_in_file_mode');
+
+      if (capabilityBlocked) {
+        setCapabilityNotice('Briefing, Review und Kalibrierung sind im lokalen file-Modus nicht verfügbar.');
+        setBriefing(null);
+        setHealth(null);
+        setReviewQueue([]);
+        setCalibration(null);
+        setDailySummary(null);
+        return;
       }
 
-      if (healthRes.ok) {
-        const data = await healthRes.json();
-        setHealth(data);
+      setCapabilityNotice(null);
+
+      if (briefingRes.ok && briefingData) {
+        setBriefing(briefingData.briefing);
       }
 
-      if (queueRes.ok) {
-        const data = await queueRes.json();
-        setReviewQueue(data.queue || []);
+      if (healthRes.ok && healthData) {
+        setHealth(healthData);
       }
 
-      if (calRes.ok) {
-        const data = await calRes.json();
-        setCalibration(data.metrics);
+      if (queueRes.ok && queueData) {
+        setReviewQueue(queueData.queue || []);
       }
 
-      if (summaryRes.ok) {
-        const data = await summaryRes.json();
-        setDailySummary(data.summary);
+      if (calRes.ok && calData) {
+        setCalibration(calData.metrics);
+      }
+
+      if (summaryRes.ok && summaryData) {
+        setDailySummary(summaryData.summary);
       }
     } catch {
       // Silent fail for background data
@@ -332,6 +352,11 @@ export function MayaChatScreen() {
       });
 
       const data = await res.json();
+
+      if (res.status === 503 && data?.code === 'not_available_in_file_mode') {
+        setError('Maya-Chat ist im lokalen file-Modus nicht verfügbar.');
+        return;
+      }
 
       if (data.blocked) {
         setError(data.message?.content || 'Anfrage wurde blockiert');
@@ -537,6 +562,12 @@ export function MayaChatScreen() {
       <div className="border-b border-violet-100 bg-violet-50 px-4 py-3 text-sm text-violet-900">
         Maya ist hier die sichtbare Hauptfläche für Rolle, Provider, Modell, Briefing und Review. `/chat` bleibt der ältere Pfad, `/context` der begleitende Bereich. `/supervisor` ist weiterhin ein interner Supervisor-Raum.
       </div>
+
+      {capabilityNotice && (
+        <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          {capabilityNotice}
+        </div>
+      )}
 
       <div className="flex flex-1 overflow-hidden">
         {/* Main Chat Area */}

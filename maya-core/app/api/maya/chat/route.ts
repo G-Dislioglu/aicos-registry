@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { isMayaRequestAuthorized } from '@/lib/maya-auth';
+import { getPostgresCapabilityErrorResponse } from '@/lib/maya-capabilities';
 import { dispatchChat, DispatchRequest } from '@/lib/maya-provider-dispatch';
 import { runDualModelExtract, saveExtractResults } from '@/lib/maya-cognitive-engine';
 import { getMemoryEntries } from '@/lib/maya-memory-store';
@@ -12,6 +13,11 @@ export const runtime = 'nodejs';
 export async function POST(request: NextRequest) {
   if (!(await isMayaRequestAuthorized(request as any))) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  const capabilityError = getPostgresCapabilityErrorResponse('maya_chat');
+  if (capabilityError) {
+    return capabilityError;
   }
 
   try {

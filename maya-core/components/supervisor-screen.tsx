@@ -164,6 +164,7 @@ export function SupervisorScreen() {
   const [runs, setRuns] = useState<Run[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [capabilityUnavailable, setCapabilityUnavailable] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -175,24 +176,69 @@ export function SupervisorScreen() {
         fetch(workspace ? `/api/supervisor/runs?workspaceId=${workspace.id}` : '/api/supervisor/runs?workspaceId=none')
       ]);
 
-      if (wsRes.ok) {
-        const wsData = await wsRes.json();
-        setWorkspace(wsData.workspace);
-        if (wsData.workspace) {
-          const [c, a, d, r] = await Promise.all([
-            cardsRes.json(),
-            actionsRes.json(),
-            decisionsRes.json(),
-            runsRes.json()
-          ]);
-          setCards(c.cards || []);
-          setActions(a.actions || []);
-          setDecisions(d.decisions || []);
-          setRuns(r.runs || []);
-        }
+      const wsData = await wsRes.json().catch(() => null);
+
+      if (wsRes.status === 503 && wsData?.code === 'not_available_in_file_mode') {
+        setCapabilityUnavailable(true);
+        setWorkspace(null);
+        setCards([]);
+        setActions([]);
+        setDecisions([]);
+        setRuns([]);
+        setError('Supervisor ist im lokalen file-Modus nicht verfügbar.');
+        return;
       }
+
+      if (wsRes.status === 404) {
+        setCapabilityUnavailable(false);
+        setWorkspace(null);
+        setCards([]);
+        setActions([]);
+        setDecisions([]);
+        setRuns([]);
+        setError(null);
+        return;
+      }
+
+      if (!wsRes.ok || !wsData?.workspace) {
+        throw new Error('workspace_load_failed');
+      }
+
+      const [c, a, d, r] = await Promise.all([
+        cardsRes.json().catch(() => null),
+        actionsRes.json().catch(() => null),
+        decisionsRes.json().catch(() => null),
+        runsRes.json().catch(() => null)
+      ]);
+
+      const relatedResponses = [cardsRes, actionsRes, decisionsRes, runsRes];
+      const relatedPayloads = [c, a, d, r];
+      const capabilityBlocked = relatedResponses.some((response, index) => response.status === 503 && relatedPayloads[index]?.code === 'not_available_in_file_mode');
+
+      if (capabilityBlocked) {
+        setCapabilityUnavailable(true);
+        setWorkspace(null);
+        setCards([]);
+        setActions([]);
+        setDecisions([]);
+        setRuns([]);
+        setError('Supervisor ist im lokalen file-Modus nicht verfügbar.');
+        return;
+      }
+
+      if (relatedResponses.some((response) => !response.ok)) {
+        throw new Error('workspace_detail_load_failed');
+      }
+
+      setCapabilityUnavailable(false);
+      setWorkspace(wsData.workspace);
+      setCards(c?.cards || []);
+      setActions(a?.actions || []);
+      setDecisions(d?.decisions || []);
+      setRuns(r?.runs || []);
       setError(null);
     } catch (e) {
+      setCapabilityUnavailable(false);
       setError('Workspace konnte nicht geladen werden');
     } finally {
       setLoading(false);
@@ -215,11 +261,21 @@ export function SupervisorScreen() {
           mode: 'explore'
         })
       });
-      if (res.ok) {
-        const data = await res.json();
-        setWorkspace(data.workspace);
-        fetchData();
+
+      const data = await res.json().catch(() => null);
+      if (res.status === 503 && data?.code === 'not_available_in_file_mode') {
+        setCapabilityUnavailable(true);
+        setError('Supervisor ist im lokalen file-Modus nicht verfügbar.');
+        return;
       }
+
+      if (!res.ok || !data?.workspace) {
+        throw new Error('workspace_create_failed');
+      }
+
+      setCapabilityUnavailable(false);
+      setWorkspace(data.workspace);
+      fetchData();
     } catch (e) {
       setError('Workspace konnte nicht angelegt werden');
     }
@@ -232,9 +288,19 @@ export function SupervisorScreen() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason })
       });
-      if (res.ok) {
-        fetchData();
+
+      const data = await res.json().catch(() => null);
+      if (res.status === 503 && data?.code === 'not_available_in_file_mode') {
+        setCapabilityUnavailable(true);
+        setError('Supervisor ist im lokalen file-Modus nicht verfügbar.');
+        return;
       }
+
+      if (!res.ok) {
+        throw new Error('decision_failed');
+      }
+
+      fetchData();
     } catch (e) {
       setError('Entscheidung konnte nicht gespeichert werden');
     }
@@ -245,9 +311,19 @@ export function SupervisorScreen() {
       const res = await fetch(`/api/supervisor/actions/${actionId}/run`, {
         method: 'POST'
       });
-      if (res.ok) {
-        fetchData();
+
+      const data = await res.json().catch(() => null);
+      if (res.status === 503 && data?.code === 'not_available_in_file_mode') {
+        setCapabilityUnavailable(true);
+        setError('Supervisor ist im lokalen file-Modus nicht verfügbar.');
+        return;
       }
+
+      if (!res.ok) {
+        throw new Error('run_failed');
+      }
+
+      fetchData();
     } catch (e) {
       setError('Aktion konnte nicht ausgeführt werden');
     }
@@ -270,6 +346,24 @@ export function SupervisorScreen() {
             <div className="h-32 bg-gray-200 rounded-lg" />
             <div className="h-64 bg-gray-200 rounded-lg" />
             <div className="h-48 bg-gray-200 rounded-lg" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (capabilityUnavailable) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-white rounded-lg shadow p-8 text-center">
+            <div className="text-xs uppercase tracking-[0.22em] text-violet-600">Interner Supervisor-Raum</div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Supervisor lokal nicht verfügbar</h1>
+            <p className="text-gray-600 mb-4">Diese Fläche benötigt derzeit eine Postgres-gestützte Maya-Umgebung und ist im lokalen file-Modus nicht aktiv.</p>
+            <p className="text-gray-600 mb-6">Nutze lokal den Maya-Arbeitsbereich weiter oder aktiviere später bewusst die passende Storage-Umgebung.</p>
+            <Link href="/maya" className="inline-flex rounded-full border border-violet-300/40 bg-violet-500/10 px-4 py-2 text-sm font-medium text-violet-700 hover:border-violet-400 hover:bg-violet-500/15">
+              Zurück zum Maya-Arbeitsbereich
+            </Link>
           </div>
         </div>
       </div>

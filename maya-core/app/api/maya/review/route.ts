@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { isMayaRequestAuthorized } from '@/lib/maya-auth';
+import { getPostgresCapabilityErrorResponse } from '@/lib/maya-capabilities';
 import { createReview, getReviews, getReviewQueue } from '@/lib/maya-calibration-store';
 import { MemoryTier, ReviewLabel, ReviewType } from '@/lib/maya-spec-types';
 
@@ -10,6 +11,11 @@ export const runtime = 'nodejs';
 export async function GET(request: NextRequest) {
   if (!(await isMayaRequestAuthorized(request as any))) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  const capabilityError = getPostgresCapabilityErrorResponse('maya_review');
+  if (capabilityError) {
+    return capabilityError;
   }
 
   try {
@@ -45,6 +51,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   if (!(await isMayaRequestAuthorized(request as any))) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  const capabilityError = getPostgresCapabilityErrorResponse('maya_review');
+  if (capabilityError) {
+    return capabilityError;
   }
 
   try {

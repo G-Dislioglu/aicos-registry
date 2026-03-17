@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { isMayaRequestAuthorized } from '@/lib/maya-auth';
+import { getPostgresCapabilityErrorResponse } from '@/lib/maya-capabilities';
 import { getAppContext, updateAppContext } from '@/lib/maya-memory-store';
 import { AppContextType } from '@/lib/maya-spec-types';
 
@@ -13,6 +14,11 @@ export async function GET(
 ) {
   if (!(await isMayaRequestAuthorized(request as any))) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  const capabilityError = getPostgresCapabilityErrorResponse('maya_app_context');
+  if (capabilityError) {
+    return capabilityError;
   }
 
   try {
@@ -37,6 +43,11 @@ export async function PUT(
 ) {
   if (!(await isMayaRequestAuthorized(request as any))) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  const capabilityError = getPostgresCapabilityErrorResponse('maya_app_context');
+  if (capabilityError) {
+    return capabilityError;
   }
 
   try {

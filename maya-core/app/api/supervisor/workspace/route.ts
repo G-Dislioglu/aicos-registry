@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { isMayaRequestAuthorized } from '@/lib/maya-auth';
+import { getPostgresCapabilityErrorResponse } from '@/lib/maya-capabilities';
 import { getActiveWorkspace, getWorkspace, createWorkspace, updateWorkspace } from '@/lib/supervisor-store';
 import { WorkspaceMode, WorkspaceStatus } from '@/lib/supervisor-types';
 
@@ -10,6 +11,11 @@ export const runtime = 'nodejs';
 export async function GET(request: Request) {
   if (!(await isMayaRequestAuthorized(request as any))) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  const capabilityError = getPostgresCapabilityErrorResponse('supervisor_workspace');
+  if (capabilityError) {
+    return capabilityError;
   }
 
   const { searchParams } = new URL(request.url);
@@ -29,6 +35,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
+  const capabilityError = getPostgresCapabilityErrorResponse('supervisor_workspace');
+  if (capabilityError) {
+    return capabilityError;
+  }
+
   try {
     const body = await request.json();
     const id = body.id || crypto.randomUUID();
@@ -46,6 +57,11 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   if (!(await isMayaRequestAuthorized(request as any))) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  const capabilityError = getPostgresCapabilityErrorResponse('supervisor_workspace');
+  if (capabilityError) {
+    return capabilityError;
   }
 
   try {

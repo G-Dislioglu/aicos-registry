@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { isMayaRequestAuthorized } from '@/lib/maya-auth';
+import { getPostgresCapabilityErrorResponse } from '@/lib/maya-capabilities';
 import { getDailySummary } from '@/lib/maya-calibration-store';
 import { createAuditEntry } from '@/lib/maya-memory-store';
 
@@ -10,6 +11,11 @@ export const runtime = 'nodejs';
 export async function GET(request: NextRequest) {
   if (!(await isMayaRequestAuthorized(request as any))) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  const capabilityError = getPostgresCapabilityErrorResponse('maya_summary_daily');
+  if (capabilityError) {
+    return capabilityError;
   }
 
   try {

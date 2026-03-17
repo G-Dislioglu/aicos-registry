@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { isMayaRequestAuthorized } from '@/lib/maya-auth';
+import { getPostgresCapabilityErrorResponse } from '@/lib/maya-capabilities';
 import { getAction } from '@/lib/supervisor-store';
 import { dispatchAction } from '@/lib/supervisor-executor';
 
@@ -10,6 +11,11 @@ export const runtime = 'nodejs';
 export async function POST(request: Request) {
   if (!(await isMayaRequestAuthorized(request as any))) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  const capabilityError = getPostgresCapabilityErrorResponse('supervisor_action_run');
+  if (capabilityError) {
+    return capabilityError;
   }
 
   try {
