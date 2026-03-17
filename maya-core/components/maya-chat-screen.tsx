@@ -41,6 +41,7 @@ type Message = {
   tokenInput?: number;
   tokenOutput?: number;
   costCents?: number;
+  contextUsed?: boolean;
   createdAt: string;
 };
 
@@ -370,6 +371,7 @@ export function MayaChatScreen() {
           tokenInput: data.message.tokenInput,
           tokenOutput: data.message.tokenOutput,
           costCents: data.message.costCents,
+          contextUsed: data.contextUsed,
           createdAt: data.message.createdAt
         }]);
       }
@@ -565,28 +567,33 @@ export function MayaChatScreen() {
 
       {capabilityNotice && (
         <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          {capabilityNotice}
+          <div className="flex items-start gap-2">
+            <span className="text-amber-600">ℹ️</span>
+            <div>
+              <span className="font-medium">Lokaler Datei-Modus:</span> {capabilityNotice}
+              <span className="block mt-1 text-xs">Für vollständige Maya-Funktionen: Deploy auf Render mit PostgreSQL.</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mock Mode Warning - prominent above chat */}
+      {health?.chatProvider?.isMockMode && (
+        <div className="bg-orange-50 border-b border-orange-200 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span className="text-orange-600 text-sm font-medium">⚠️ Mock-Modus aktiv</span>
+          </div>
+          <p className="text-xs text-orange-700 mt-1">
+            Maya läuft im Mock-Modus. Setze <code className="bg-orange-100 px-1 rounded">OPENAI_API_KEY</code>,{' '}
+            <code className="bg-orange-100 px-1 rounded">ANTHROPIC_API_KEY</code> oder{' '}
+            <code className="bg-orange-100 px-1 rounded">GOOGLE_AI_KEY</code> in deiner Umgebung für reale Antworten.
+          </p>
         </div>
       )}
 
       <div className="flex flex-1 overflow-hidden">
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col">
-          {/* Mock Mode Warning Banner */}
-          {health?.chatProvider?.isMockMode && (
-            <div className="bg-orange-50 border-b border-orange-200 px-4 py-3">
-              <div className="flex items-center gap-2">
-                <span className="text-orange-600 text-sm font-medium">⚠️ Mock-Modus aktiv</span>
-              </div>
-              <p className="text-xs text-orange-700 mt-1">
-                Maya läuft im Mock-Modus. Setze <code className="bg-orange-100 px-1 rounded">OPENAI_API_KEY</code>,{' '}
-                <code className="bg-orange-100 px-1 rounded">ANTHROPIC_API_KEY</code> oder{' '}
-                <code className="bg-orange-100 px-1 rounded">GOOGLE_AI_KEY</code> in deiner Umgebung für reale Antworten.
-              </p>
-            </div>
-          )}
-
-          {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.length === 0 && (
               <div className="text-center text-gray-500 mt-20">
@@ -610,6 +617,11 @@ export function MayaChatScreen() {
                   {/* Message Badge */}
                   {msg.role === 'assistant' && (msg.provider || msg.model) && (
                     <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
+                      {msg.contextUsed && (
+                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded flex items-center gap-1">
+                          <span>🧠</span> Kontext
+                        </span>
+                      )}
                       {msg.provider && (
                         <span className="px-2 py-0.5 bg-gray-100 rounded">
                           {msg.provider}

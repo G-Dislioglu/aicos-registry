@@ -41,6 +41,7 @@ export type DispatchResult = {
   blocked: boolean;
   blockReason?: string;
   modelUsed: ProviderRegistryEntry;
+  contextUsed?: boolean;
   warnings: string[];
 };
 
@@ -216,6 +217,7 @@ export async function dispatchChat(request: DispatchRequest): Promise<DispatchRe
     message,
     blocked: false,
     modelUsed: modelEntry,
+    contextUsed: contextIds.length > 0,
     warnings
   };
 }

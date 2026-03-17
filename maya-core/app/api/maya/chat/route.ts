@@ -75,6 +75,7 @@ export async function POST(request: NextRequest) {
         modelId: result.modelUsed.modelId,
         label: result.modelUsed.label
       },
+      contextUsed: result.contextUsed || false,
       warnings: result.warnings
     });
   } catch (error) {
