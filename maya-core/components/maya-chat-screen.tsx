@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import { useState, useEffect, useCallback } from 'react';
 
-type StudioMode = 'personal' | 'soulmatch_studio' | 'aicos_studio';
+type StudioMode = 'personal';
 type ModelRole = 'scout' | 'worker' | 'reasoner' | 'vision_ocr' | 'tts';
 
 type Provider = {
@@ -146,15 +146,11 @@ type DailySummary = {
 };
 
 const MODE_LABELS: Record<StudioMode, string> = {
-  personal: 'Personal',
-  soulmatch_studio: 'Soulmatch Studio',
-  aicos_studio: 'AICOS Studio'
+  personal: 'Personal'
 };
 
 const MODE_ICONS: Record<StudioMode, string> = {
-  personal: '👤',
-  soulmatch_studio: '💕',
-  aicos_studio: '📋'
+  personal: '👤'
 };
 
 const MAYA_SETTINGS_KEY = 'maya-settings';
@@ -439,8 +435,8 @@ export function MayaChatScreen() {
       <div className="bg-white border-b px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div>
-            <div className="text-xs uppercase tracking-[0.22em] text-violet-600">Empfohlener Arbeitsbereich</div>
-            <h1 className="text-xl font-bold text-gray-900">Maya-Arbeitsbereich</h1>
+            <div className="text-xs uppercase tracking-[0.22em] text-violet-600">Maya</div>
+            <h1 className="text-xl font-bold text-gray-900">Maya</h1>
             <div className="mt-1 flex flex-wrap gap-2 text-xs text-gray-600">
               <Link href="/" className="rounded-full border border-gray-200 px-2.5 py-1 hover:border-violet-300 hover:text-violet-700">Start</Link>
               <Link href="/chat" className="rounded-full border border-gray-200 px-2.5 py-1 hover:border-violet-300 hover:text-violet-700">Älterer Chat-Pfad</Link>
@@ -448,22 +444,20 @@ export function MayaChatScreen() {
             </div>
           </div>
 
-          {/* Mode Switch */}
+          {/* Mode Switch - only Personal for now */}
           <div className="flex bg-gray-100 rounded-lg p-1">
-            {(Object.keys(MODE_LABELS) as StudioMode[]).map(m => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                  mode === m
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <span className="mr-1">{MODE_ICONS[m]}</span>
-                {MODE_LABELS[m]}
-              </button>
-            ))}
+            <button
+              key="personal"
+              onClick={() => setMode('personal')}
+              className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                mode === 'personal'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <span className="mr-1">{MODE_ICONS['personal']}</span>
+              {MODE_LABELS['personal']}
+            </button>
           </div>
 
           {/* Role Selector */}
