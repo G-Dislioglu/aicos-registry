@@ -138,6 +138,14 @@
   border-color: var(--border);
 }
 
+a.rail-logo {
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--txt1);
+  transition: opacity 0.15s;
+}
+a.rail-logo:hover { opacity: 0.7; }
+
 .rail-user {
   width: 28px;
   height: 28px;
@@ -517,6 +525,27 @@
   color: var(--txt2);
 }
 
+/* ── Feed clear row ──────────────────────────────────────── */
+.feed-clear-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: -4px;
+}
+
+.feed-clear-btn {
+  background: none;
+  border: none;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--txt3);
+  opacity: 0.4;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: opacity 0.15s;
+}
+.feed-clear-btn:hover { opacity: 0.75; }
+
 /* ── Messages ─────────────────────────────────────────────── */
 .maya-message {
   display: flex;
@@ -540,6 +569,7 @@
   color: var(--txt0);
   font-size: 13px;
   line-height: 1.6;
+  min-width: 100px;
 }
 
 .maya-message.assistant .msg-bubble {

@@ -235,6 +235,7 @@ export function MayaChatScreen() {
   const [topbarMetaOpen, setTopbarMetaOpen] = useState(false);
   const [contextAnchors, setContextAnchors] = useState<ContextAnchorEntry[]>([]);
   const feedRef = useRef<HTMLDivElement>(null);
+  const sendingRef = useRef(false);
 
   // Persist settings on change
   useEffect(() => {
@@ -381,10 +382,21 @@ export function MayaChatScreen() {
     }
   }, []);
 
+  // Clear conversation history
+  const clearMessages = useCallback(() => {
+    setMessages([]);
+    setError(null);
+  }, []);
+
   // Send message with Presence-State machine + streaming simulation
   const sendMessage = useCallback(async (overrideText?: string) => {
+    if (sendingRef.current) return;
+    sendingRef.current = true;
     const text = overrideText ?? input;
-    if (!text.trim() || loading) return;
+    if (!text.trim() || loading) {
+      sendingRef.current = false;
+      return;
+    }
 
     const userMessage: Message = {
       id: `user-${Date.now()}`,
@@ -462,6 +474,7 @@ export function MayaChatScreen() {
     } finally {
       setLoading(false);
       setMayaState('idle');
+      sendingRef.current = false;
     }
   }, [input, loading, messages, provider, model, role, mode, simulateStream, loadBriefingAndHealth]);
 
@@ -563,6 +576,12 @@ export function MayaChatScreen() {
             />
           ) : (
             <>
+              <div className="feed-clear-row">
+                <button className="feed-clear-btn" onClick={clearMessages} title="Verlauf löschen">
+                  Verlauf löschen
+                </button>
+              </div>
+
               {messages.map(msg => (
                 <div key={msg.id} className={`maya-message ${msg.role}`}>
                   <div className="msg-bubble">

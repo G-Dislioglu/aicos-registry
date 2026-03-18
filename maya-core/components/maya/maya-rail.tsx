@@ -7,7 +7,7 @@ type MayaRailProps = {
 export function MayaRail({ onOpenReview: _onOpenReview }: MayaRailProps) {
   return (
     <nav className="maya-rail" aria-label="Maya Navigation">
-      <div className="rail-logo" aria-label="Maya">M</div>
+      <a href="/" className="rail-logo" aria-label="Startseite" title="Startseite">M</a>
 
       <div className="rail-nav">
         <button className="rail-btn rail-btn--active" aria-label="Chat" title="Chat">
