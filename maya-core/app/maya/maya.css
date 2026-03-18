@@ -35,8 +35,8 @@
   --blue:      #3b82f6;
   --red:       #ef4444;
 
-  --border:      rgba(255,255,255,0.07);
-  --border-soft: rgba(255,255,255,0.04);
+  --border:      rgba(255,255,255,0.12);
+  --border-soft: rgba(255,255,255,0.08);
 
   --rail-w:    48px;
   --topbar-h:  48px;
@@ -454,7 +454,7 @@ a.rail-logo:hover { opacity: 0.7; }
 
 .starter {
   padding: 9px 14px;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid var(--border-soft);
   background: var(--s2);
 }
 
@@ -489,7 +489,7 @@ a.rail-logo:hover { opacity: 0.7; }
 /* ── Context Anchor ───────────────────────────────────────── */
 .context-anchor {
   padding: 8px 0;
-  border-top: 1px solid rgba(255,255,255,0.05);
+  border-top: 1px solid var(--border-soft);
   max-width: 460px;
 }
 
@@ -528,28 +528,27 @@ a.rail-logo:hover { opacity: 0.7; }
   color: var(--txt2);
 }
 
-/* ── Feed clear row ──────────────────────────────────────── */
-.feed-clear-row {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: -4px;
+/* ── Topbar spacer + clear button ────────────────────────── */
+.tb-spacer {
+  flex: 1;
 }
 
-.feed-clear-btn {
+.tb-clear-btn {
   background: var(--s2);
   border: 1px solid var(--border);
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--txt2);
   cursor: pointer;
-  padding: 4px 10px;
+  padding: 3px 9px;
   border-radius: 6px;
   letter-spacing: 0.01em;
+  white-space: nowrap;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
-.feed-clear-btn:hover {
+.tb-clear-btn:hover {
   background: var(--s3);
-  border-color: var(--border-soft);
+  border-color: rgba(255,255,255,0.16);
   color: var(--txt1);
 }
 
@@ -572,7 +571,7 @@ a.rail-logo:hover { opacity: 0.7; }
 
 .maya-message.user .msg-bubble {
   background: rgba(139,92,246,0.18);
-  border: 1px solid rgba(139,92,246,0.15);
+  border: 1px solid rgba(139,92,246,0.28);
   color: var(--txt0);
   font-size: 13px;
   line-height: 1.6;

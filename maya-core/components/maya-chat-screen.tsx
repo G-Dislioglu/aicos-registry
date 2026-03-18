@@ -561,10 +561,12 @@ export function MayaChatScreen() {
           reviewCount={reviewCount}
           topbarMetaOpen={topbarMetaOpen}
           isFileMode={isFileMode}
+          hasMessages={messages.length > 0}
           onToggleMeta={() => setTopbarMetaOpen(v => !v)}
           onProviderChange={handleProviderChange}
           onModelChange={setModel}
           onOpenReview={() => setShowReviewSheet(true)}
+          onClearMessages={clearMessages}
         />
 
         <div className="maya-feed" ref={feedRef}>
@@ -576,12 +578,6 @@ export function MayaChatScreen() {
             />
           ) : (
             <>
-              <div className="feed-clear-row">
-                <button className="feed-clear-btn" onClick={clearMessages} title="Verlauf löschen">
-                  Verlauf löschen
-                </button>
-              </div>
-
               {messages.map(msg => (
                 <div key={msg.id} className={`maya-message ${msg.role}`}>
                   <div className="msg-bubble">

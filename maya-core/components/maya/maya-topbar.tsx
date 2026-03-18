@@ -39,10 +39,12 @@ type MayaTopbarProps = {
   reviewCount: number;
   topbarMetaOpen: boolean;
   isFileMode?: boolean;
+  hasMessages?: boolean;
   onToggleMeta: () => void;
   onProviderChange: (providerId: string) => void;
   onModelChange: (modelId: string) => void;
   onOpenReview: () => void;
+  onClearMessages?: () => void;
 };
 
 const STATE_LABELS: Record<MayaPresenceState, string> = {
@@ -68,10 +70,12 @@ export function MayaTopbar({
   reviewCount,
   topbarMetaOpen,
   isFileMode,
+  hasMessages,
   onToggleMeta,
   onProviderChange,
   onModelChange,
-  onOpenReview
+  onOpenReview,
+  onClearMessages
 }: MayaTopbarProps) {
   const currentProvider = providers.find(p => p.id === provider);
   const availableModels = currentProvider?.models ?? [];
@@ -142,6 +146,18 @@ export function MayaTopbar({
           <span>{costDisplay}</span>
         </div>
       </div>
+
+      <div className="tb-spacer" />
+
+      {hasMessages && onClearMessages && (
+        <button
+          className="tb-clear-btn"
+          onClick={onClearMessages}
+          title="Verlauf löschen"
+        >
+          Verlauf löschen
+        </button>
+      )}
 
       {!isFileMode && (
         <button
