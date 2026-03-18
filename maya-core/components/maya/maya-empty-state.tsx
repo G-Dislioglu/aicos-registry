@@ -1,12 +1,14 @@
 'use client';
 
+import { type WorkMode } from './maya-local-response';
+
 export type ContextAnchorEntry = {
   tier: 'anchor' | 'active';
   label: string;
 };
 
 type MayaEmptyStateProps = {
-  onSendStarter: (text: string) => void;
+  onSendStarter: (text: string, mode: WorkMode) => void;
   anchors: ContextAnchorEntry[];
   isFileMode?: boolean;
 };
@@ -17,11 +19,11 @@ function shouldShowContextAnchor(anchors: ContextAnchorEntry[]): boolean {
   return anchors.length > 0;
 }
 
-const STARTERS = [
-  { text: 'Nächsten Schritt klären', icon: '↓' },
-  { text: 'Was nicht ignorieren?',   icon: '○' },
-  { text: 'Annahmen prüfen',         icon: '□' }
-] as const;
+const STARTERS: Array<{ text: string; icon: string; workMode: WorkMode }> = [
+  { text: 'Nächsten Schritt klären', icon: '↓', workMode: 'step'       },
+  { text: 'Was nicht ignorieren?',   icon: '○', workMode: 'risk'       },
+  { text: 'Annahmen prüfen',         icon: '□', workMode: 'assumption' },
+];
 
 export function MayaEmptyState({ onSendStarter, anchors, isFileMode }: MayaEmptyStateProps) {
   const showAnchor = shouldShowContextAnchor(anchors);
@@ -40,7 +42,7 @@ export function MayaEmptyState({ onSendStarter, anchors, isFileMode }: MayaEmpty
           <button
             key={s.text}
             className="starter"
-            onClick={() => onSendStarter(s.text)}
+            onClick={() => onSendStarter(s.text, s.workMode)}
           >
             <span className="s-icon">{s.icon}</span>
             <span className="s-txt">{s.text}</span>

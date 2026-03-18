@@ -8,6 +8,7 @@ import { MayaEmptyState, type ContextAnchorEntry } from '@/components/maya/maya-
 import { MayaComposer }    from '@/components/maya/maya-composer';
 import { MayaReviewSheet } from '@/components/maya/maya-review-sheet';
 import { FALLBACK_PROVIDERS } from '@/components/maya/fallback-providers';
+import { type WorkMode, detectWorkMode, generateLocalResponse } from '@/components/maya/maya-local-response';
 
 type MayaPresenceState = 'idle' | 'thinking' | 'retrieving' | 'streaming';
 
@@ -389,7 +390,7 @@ export function MayaChatScreen() {
   }, []);
 
   // Send message with Presence-State machine + streaming simulation
-  const sendMessage = useCallback(async (overrideText?: string) => {
+  const sendMessage = useCallback(async (overrideText?: string, workMode?: WorkMode) => {
     if (sendingRef.current) return;
     sendingRef.current = true;
     const text = overrideText ?? input;
@@ -423,15 +424,16 @@ export function MayaChatScreen() {
           provider,
           model,
           role,
-          studioMode: mode
+          studioMode: mode,
+          workMode: workMode ?? detectWorkMode(text)
         })
       });
 
       const data = await res.json();
 
       if (res.status === 503 && data?.code === 'not_available_in_file_mode') {
-        // Local stub — neutral, no file-mode repetition (topbar + notice already show it)
-        const stubText = 'Ich bin noch ohne Anbieter. Sobald du einen API-Key konfigurierst, kann ich wirklich antworten.';
+        const effectiveMode = workMode ?? detectWorkMode(text);
+        const stubText = generateLocalResponse(text, effectiveMode);
         setMayaState('streaming');
         await simulateStream(stubText, (partial) => setStreamingText(partial));
         setStreamingText('');
@@ -572,7 +574,7 @@ export function MayaChatScreen() {
         <div className="maya-feed" ref={feedRef}>
           {messages.length === 0 && !loading ? (
             <MayaEmptyState
-              onSendStarter={(text) => sendMessage(text)}
+              onSendStarter={(text, wm) => sendMessage(text, wm)}
               anchors={contextAnchors}
               isFileMode={isFileMode}
             />
