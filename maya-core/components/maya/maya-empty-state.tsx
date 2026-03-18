@@ -8,6 +8,7 @@ export type ContextAnchorEntry = {
 type MayaEmptyStateProps = {
   onSendStarter: (text: string) => void;
   anchors: ContextAnchorEntry[];
+  isFileMode?: boolean;
 };
 
 // Phase B: Context Anchor is shown only when real data is present.
@@ -17,26 +18,28 @@ function shouldShowContextAnchor(anchors: ContextAnchorEntry[]): boolean {
 }
 
 const STARTERS = [
-  { text: 'Nächsten Schritt klären', primary: true,  icon: '↓' },
-  { text: 'Was nicht ignorieren?',   primary: false, icon: '○' },
-  { text: 'Annahmen prüfen',         primary: false, icon: '□' }
+  { text: 'Nächsten Schritt klären', icon: '↓' },
+  { text: 'Was nicht ignorieren?',   icon: '○' },
+  { text: 'Annahmen prüfen',         icon: '□' }
 ] as const;
 
-export function MayaEmptyState({ onSendStarter, anchors }: MayaEmptyStateProps) {
+export function MayaEmptyState({ onSendStarter, anchors, isFileMode }: MayaEmptyStateProps) {
   const showAnchor = shouldShowContextAnchor(anchors);
 
   return (
     <div className="maya-empty">
       <div>
-        <div className="empty-heading">Dein aktueller Stand ist bereit.</div>
-        <div className="empty-sub">Womit beginnen wir heute?</div>
+        <div className="empty-heading">
+          {isFileMode ? 'Womit kann ich dir helfen?' : 'Dein aktueller Stand ist bereit.'}
+        </div>
+        {!isFileMode && <div className="empty-sub">Womit beginnen wir heute?</div>}
       </div>
 
       <div className="starters">
         {STARTERS.map(s => (
           <button
             key={s.text}
-            className={`starter ${s.primary ? 'primary' : 'secondary'}`}
+            className="starter"
             onClick={() => onSendStarter(s.text)}
           >
             <span className="s-icon">{s.icon}</span>

@@ -441,13 +441,7 @@
 
 .starter:hover { opacity: 0.82; }
 
-.starter.primary {
-  padding: 11px 14px;
-  border: 1px solid var(--gold-b);
-  background: var(--gold-bg);
-}
-
-.starter.secondary {
+.starter {
   padding: 9px 14px;
   border: 1px solid rgba(255,255,255,0.05);
   background: var(--s2);
@@ -464,13 +458,7 @@
   flex-shrink: 0;
 }
 
-.starter.primary .s-icon {
-  background: var(--gold-bg);
-  border: 1px solid var(--gold-b);
-  color: var(--gold);
-}
-
-.starter.secondary .s-icon {
+.starter .s-icon {
   background: var(--s3);
   border: 1px solid var(--border);
   color: var(--txt3);
@@ -482,7 +470,7 @@
   color: var(--txt0);
 }
 
-.starter.secondary .s-txt {
+.starter .s-txt {
   font-weight: 400;
   color: var(--txt1);
 }

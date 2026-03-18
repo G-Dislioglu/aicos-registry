@@ -418,8 +418,8 @@ export function MayaChatScreen() {
       const data = await res.json();
 
       if (res.status === 503 && data?.code === 'not_available_in_file_mode') {
-        // Local stub — simulate gracefully instead of red error
-        const stubText = 'Ich bin im lokalen Dateimodus. Verbinde einen API-Key, um echte Antworten zu erhalten.';
+        // Local stub — neutral, no file-mode repetition (topbar + notice already show it)
+        const stubText = 'Ich bin noch ohne Anbieter. Sobald du einen API-Key konfigurierst, kann ich wirklich antworten.';
         setMayaState('streaming');
         await simulateStream(stubText, (partial) => setStreamingText(partial));
         setStreamingText('');
@@ -518,6 +518,7 @@ export function MayaChatScreen() {
     (reviewQueue?.length ?? 0) +
     (briefing?.openProposed?.length ?? 0) +
     (briefing?.conflicts?.length ?? 0);
+  const isFileMode = !!capabilityNotice;
 
   const handleProviderChange = (newProviderId: string) => {
     setProvider(newProviderId);
@@ -546,6 +547,7 @@ export function MayaChatScreen() {
           health={health}
           reviewCount={reviewCount}
           topbarMetaOpen={topbarMetaOpen}
+          isFileMode={isFileMode}
           onToggleMeta={() => setTopbarMetaOpen(v => !v)}
           onProviderChange={handleProviderChange}
           onModelChange={setModel}
@@ -557,6 +559,7 @@ export function MayaChatScreen() {
             <MayaEmptyState
               onSendStarter={(text) => sendMessage(text)}
               anchors={contextAnchors}
+              isFileMode={isFileMode}
             />
           ) : (
             <>
@@ -607,10 +610,10 @@ export function MayaChatScreen() {
           onSend={() => sendMessage()}
           disabled={loading}
           capabilityNotice={
-            capabilityNotice ||
-            (health?.chatProvider?.isMockMode
-              ? 'Lokaler Dateimodus · Antworten sind simuliert'
-              : null)
+            messages.length === 0
+              ? (capabilityNotice ||
+                 (health?.chatProvider?.isMockMode ? 'Lokaler Dateimodus · Antworten sind simuliert' : null))
+              : null
           }
           error={error}
         />

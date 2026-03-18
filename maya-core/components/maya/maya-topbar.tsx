@@ -38,6 +38,7 @@ type MayaTopbarProps = {
   health: HealthStatus | null;
   reviewCount: number;
   topbarMetaOpen: boolean;
+  isFileMode?: boolean;
   onToggleMeta: () => void;
   onProviderChange: (providerId: string) => void;
   onModelChange: (modelId: string) => void;
@@ -66,6 +67,7 @@ export function MayaTopbar({
   health,
   reviewCount,
   topbarMetaOpen,
+  isFileMode,
   onToggleMeta,
   onProviderChange,
   onModelChange,
@@ -142,16 +144,18 @@ export function MayaTopbar({
         </div>
       </div>
 
-      <button
-        className={`review-btn ${reviewCount > 0 ? 'has-items' : 'empty'}`}
-        onClick={onOpenReview}
-        aria-label={`Review öffnen — ${reviewCount} offen`}
-      >
-        {reviewCount > 0 && (
-          <span className="review-badge">{reviewCount > 99 ? '99+' : reviewCount}</span>
-        )}
-        <span>Review</span>
-      </button>
+      {!isFileMode && (
+        <button
+          className={`review-btn ${reviewCount > 0 ? 'has-items' : 'empty'}`}
+          onClick={onOpenReview}
+          aria-label={`Review öffnen — ${reviewCount} offen`}
+        >
+          {reviewCount > 0 && (
+            <span className="review-badge">{reviewCount > 99 ? '99+' : reviewCount}</span>
+          )}
+          <span>Review</span>
+        </button>
+      )}
     </header>
   );
 }
