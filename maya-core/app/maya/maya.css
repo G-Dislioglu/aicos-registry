@@ -177,9 +177,7 @@ a.rail-logo:hover { opacity: 0.7; }
 
 .mobile-escape:hover { color: var(--txt1); background: var(--s2); }
 
-@media (min-width: 768px) {
-  .mobile-escape { display: none; }
-}
+/* mobile-escape is visible on all viewports — rail M is secondary on desktop */
 
 /* ── Topbar ───────────────────────────────────────────────── */
 .maya-topbar {
