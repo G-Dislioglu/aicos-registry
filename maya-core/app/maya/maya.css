@@ -169,13 +169,18 @@ a.rail-logo:hover { opacity: 0.7; }
   width: 30px;
   height: 30px;
   border-radius: 7px;
-  color: var(--txt3);
+  border: 1px solid transparent;
+  color: var(--txt2);
   text-decoration: none;
   flex-shrink: 0;
-  transition: color 0.15s, background 0.15s;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
 }
 
-.mobile-escape:hover { color: var(--txt1); background: var(--s2); }
+.mobile-escape:hover {
+  color: var(--txt0);
+  background: var(--s2);
+  border-color: var(--border);
+}
 
 /* mobile-escape is visible on all viewports — rail M is secondary on desktop */
 
@@ -531,18 +536,22 @@ a.rail-logo:hover { opacity: 0.7; }
 }
 
 .feed-clear-btn {
-  background: none;
-  border: none;
+  background: var(--s2);
+  border: 1px solid var(--border);
   font-family: var(--mono);
-  font-size: 10px;
-  color: var(--txt3);
-  opacity: 0.4;
+  font-size: 11px;
+  color: var(--txt2);
   cursor: pointer;
-  padding: 2px 4px;
-  border-radius: 4px;
-  transition: opacity 0.15s;
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.01em;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
-.feed-clear-btn:hover { opacity: 0.75; }
+.feed-clear-btn:hover {
+  background: var(--s3);
+  border-color: var(--border-soft);
+  color: var(--txt1);
+}
 
 /* ── Messages ─────────────────────────────────────────────── */
 .maya-message {
