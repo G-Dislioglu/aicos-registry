@@ -20,6 +20,7 @@ import { buildFullSystemPrompt } from '@/lib/maya-prompt-contract';
 import { createMessage, recordCost } from '@/lib/maya-memory-store';
 import { getCostGuardState } from '@/lib/maya-memory-store';
 import { MayaMessage, StudioMode } from '@/lib/maya-spec-types';
+import { type WorkMode, getSystemInstruction } from '@/components/maya/maya-local-response';
 
 // === Dispatch Types ===
 
@@ -30,6 +31,7 @@ export type DispatchRequest = {
   providerId?: string;
   modelId?: string;
   studioMode?: StudioMode;
+  workMode?: WorkMode;
   maxTokens?: number;
   temperature?: number;
   reasoningEffort?: 'low' | 'medium' | 'high';
@@ -156,7 +158,10 @@ export async function dispatchChat(request: DispatchRequest): Promise<DispatchRe
   
   // Build context
   const context = await buildContext(request.studioMode || 'personal');
-  const systemPrompt = buildFullSystemPrompt(context.systemPrompt, request.studioMode || 'personal');
+  let systemPrompt = buildFullSystemPrompt(context.systemPrompt, request.studioMode || 'personal');
+  if (request.workMode) {
+    systemPrompt += `\n\n---\n\n## Arbeitsmodus\n${getSystemInstruction(request.workMode)}`;
+  }
   
   // Prepare messages
   const messagesWithSystem = [

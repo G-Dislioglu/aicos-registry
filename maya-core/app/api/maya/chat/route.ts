@@ -6,7 +6,7 @@ import { dispatchChat, DispatchRequest } from '@/lib/maya-provider-dispatch';
 import { runDualModelExtract, saveExtractResults } from '@/lib/maya-cognitive-engine';
 import { getMemoryEntries } from '@/lib/maya-memory-store';
 import { StudioMode, ModelRole } from '@/lib/maya-spec-types';
-import { type WorkMode, getSystemInstruction } from '@/components/maya/maya-local-response';
+import { type WorkMode } from '@/components/maya/maya-local-response';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -37,21 +37,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'messages_required' }, { status: 400 });
     }
 
-    const parsedMessages = messages.map((m: { role: string; content: string }) => ({
-      role: m.role as 'user' | 'assistant' | 'system',
-      content: m.content
-    }));
-
-    const messagesWithSystem = workMode
-      ? [{ role: 'system' as const, content: getSystemInstruction(workMode) }, ...parsedMessages]
-      : parsedMessages;
-
     const dispatchRequest: DispatchRequest = {
-      messages: messagesWithSystem,
+      messages: messages.map((m: { role: string; content: string }) => ({
+        role: m.role as 'user' | 'assistant' | 'system',
+        content: m.content
+      })),
       providerId,
       modelId,
       role,
       studioMode,
+      workMode,
       maxTokens,
       temperature,
       reasoningEffort

@@ -446,6 +446,21 @@ export function MayaChatScreen() {
         return;
       }
 
+      if (data.blocked && data.blockReason === 'provider_not_configured') {
+        const effectiveMode = workMode ?? detectWorkMode(text);
+        const stubText = generateLocalResponse(text, effectiveMode);
+        setMayaState('streaming');
+        await simulateStream(stubText, (partial) => setStreamingText(partial));
+        setStreamingText('');
+        setMessages(prev => [...prev, {
+          id: `local-${Date.now()}`,
+          role: 'assistant' as const,
+          content: stubText,
+          createdAt: new Date().toISOString()
+        }]);
+        return;
+      }
+
       if (data.blocked) {
         setError(data.message?.content || 'Anfrage wurde blockiert');
       } else if (data.message) {
