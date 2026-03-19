@@ -159,8 +159,11 @@ export async function dispatchChat(request: DispatchRequest): Promise<DispatchRe
   // Build context
   const context = await buildContext(request.studioMode || 'personal');
   let systemPrompt = buildFullSystemPrompt(context.systemPrompt, request.studioMode || 'personal');
+  const latestUserText = [...request.messages]
+    .reverse()
+    .find(message => message.role === 'user')?.content || '';
   if (request.workMode) {
-    systemPrompt += `\n\n---\n\n## Arbeitsmodus\n${getSystemInstruction(request.workMode)}`;
+    systemPrompt += `\n\n---\n\n## Arbeitsmodus\n${getSystemInstruction(request.workMode, latestUserText)}`;
   }
   
   // Prepare messages

@@ -17,20 +17,66 @@ export function detectWorkMode(text: string): WorkMode {
   return 'free';
 }
 
+export type ResponsePolicy = 'full_work_block' | 'compact_work_block' | 'clarify' | 'light_social';
+
+function normalizeInput(text: string): string {
+  return text.trim().toLowerCase();
+}
+
+function isLightSocialInput(text: string): boolean {
+  const t = normalizeInput(text);
+  if (!t) return false;
+  return /^(?:(hi|hey|hallo|moin|guten morgen|guten tag|guten abend|na|servus|yo)(?:[,!?.\s]+(wie geht'?s))?|wie geht'?s)[!?.\s]*$/.test(t);
+}
+
+function isThinContext(text: string): boolean {
+  const trimmed = text.trim();
+  if (!trimmed) return true;
+  if (trimmed.length < 48) return true;
+  const wordCount = trimmed.split(/\s+/).filter(Boolean).length;
+  return wordCount < 8;
+}
+
+function needsClarification(text: string, mode: WorkMode): boolean {
+  if (mode === 'free') return false;
+  return isThinContext(text);
+}
+
+export function classifyResponsePolicy(text: string, mode: WorkMode): ResponsePolicy {
+  if (isLightSocialInput(text)) return 'light_social';
+  if (needsClarification(text, mode)) return 'clarify';
+  if (mode === 'free') {
+    return isThinContext(text) ? 'clarify' : 'compact_work_block';
+  }
+  return isThinContext(text) ? 'compact_work_block' : 'full_work_block';
+}
+
 /** System instruction injected into the messages array when a real provider is available. */
-const SYSTEM_INSTRUCTIONS: Record<WorkMode, string> = {
-  step:
-    'Du bist Maya, eine fokussierte Arbeitsbegleiterin. Fokus: nächster konkreter Schritt. Strukturiere deine Antwort mit den vier Abschnitten KERNLAGE, ANNAHMEN, NICHT IGNORIEREN, NÄCHSTER SCHRITT. Antworte prägnant und auf Deutsch.',
-  risk:
-    'Du bist Maya, eine fokussierte Arbeitsbegleiterin. Fokus: Risiken, blinde Flecken und Dinge, die man nicht ignorieren sollte. Strukturiere mit KERNLAGE, ANNAHMEN, NICHT IGNORIEREN, NÄCHSTER SCHRITT. Antworte prägnant und auf Deutsch.',
-  assumption:
-    'Du bist Maya, eine fokussierte Arbeitsbegleiterin. Fokus: implizite Annahmen sichtbar machen und prüfbar formulieren. Strukturiere mit KERNLAGE, ANNAHMEN, NICHT IGNORIEREN, NÄCHSTER SCHRITT. Antworte prägnant und auf Deutsch.',
-  free:
-    'Du bist Maya, eine fokussierte Arbeitsbegleiterin. Strukturiere deine Antwort mit KERNLAGE, ANNAHMEN, NICHT IGNORIEREN, NÄCHSTER SCHRITT. Antworte prägnant und auf Deutsch.',
+const MODE_FOCUS: Record<WorkMode, string> = {
+  step: 'Fokus: nächster konkreter Schritt.',
+  risk: 'Fokus: Risiken, blinde Flecken und Dinge, die man nicht ignorieren sollte.',
+  assumption: 'Fokus: implizite Annahmen sichtbar machen und prüfbar formulieren.',
+  free: 'Fokus: hilfreiche Einordnung ohne unnötige Schwere.'
 };
 
-export function getSystemInstruction(mode: WorkMode): string {
-  return SYSTEM_INSTRUCTIONS[mode];
+const POLICY_INSTRUCTIONS: Record<ResponsePolicy, string> = {
+  full_work_block:
+    'Wenn genug Kontext vorhanden ist und der Arbeitsmodus klar ist, darfst du den vollen 4-Block verwenden: KERNLAGE, ANNAHMEN, NICHT IGNORIEREN, NÄCHSTER SCHRITT. Bleibe prägnant, arbeitsnah und konkret.',
+  compact_work_block:
+    'Wenn der Arbeitsmodus klar ist, aber der Kontext noch dünn oder allgemein ist, antworte kompakter. Nutze keinen schweren Vollblock. Gib stattdessen eine kurze Kernlage, 1–2 relevante Punkte und genau einen provisorischen nächsten Schritt oder eine gezielte Rückfrage.',
+  clarify:
+    'Wenn wesentliche Angaben für eine belastbare Arbeitsantwort fehlen, antworte kurz. Sage knapp, was noch fehlt, und stelle genau eine gute Rückfrage. Vermeide einen vollen 4-Block und vermeide Schemakaskaden.',
+  light_social:
+    'Bei Begrüßung, Smalltalk oder sehr leichter sozialer Eingabe antworte kurz, natürlich und warm, ohne Kitsch. Verwende keinen 4-Block und keine künstliche Tiefenanalyse. Biete nur sanft an, ins Arbeiten zu wechseln, wenn es passt.'
+};
+
+export function getSystemInstruction(mode: WorkMode, text = ''): string {
+  const policy = classifyResponsePolicy(text, mode);
+  return [
+    'Du bist Maya, eine fokussierte Arbeitsbegleiterin. Antworte prägnant und auf Deutsch.',
+    MODE_FOCUS[mode],
+    POLICY_INSTRUCTIONS[policy]
+  ].join(' ');
 }
 
 function excerpt(text: string, max = 60): string {
