@@ -5,7 +5,7 @@ import { ensureMayaPostgresSchema, getMayaPostgresPool } from '@/lib/maya-db';
 import { getMayaRuntimeConfig } from '@/lib/maya-env';
 import { isLanguage } from '@/lib/i18n';
 import { getMayaState } from '@/lib/seed-data';
-import { AppLanguage, ChatMessage, ChatSession, MayaStore, MemoryItem, Profile, Project } from '@/lib/types';
+import { AppLanguage, ChatMessage, ChatSession, MayaCheckpoint, MayaCheckpointBoard, MayaStore, MayaThreadHandoff, MayaWorkspaceContext, MayaWorkrun, MemoryItem, Profile, Project, ThreadDigest } from '@/lib/types';
 
 const DATA_DIRECTORY = path.join(process.cwd(), 'data');
 const STORE_FILE_PATH = path.join(DATA_DIRECTORY, 'maya-store.json');
@@ -24,7 +24,10 @@ function readStringArray(value: unknown) {
     return [];
   }
 
-  return value.map((item) => String(item).trim()).filter(Boolean);
+  return value
+    .filter((item): item is string => typeof item === 'string')
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function readStage(value: unknown, fallback: Project['stage']) {
@@ -119,6 +122,190 @@ function normalizeMessage(message: Partial<ChatMessage> | undefined): ChatMessag
   };
 }
 
+function readDigestConfidence(value: unknown, fallback: ThreadDigest['confidence']): ThreadDigest['confidence'] {
+  return value === 'high' || value === 'medium' || value === 'low' ? value : fallback;
+}
+
+function normalizeThreadDigest(digest: Partial<ThreadDigest> | undefined, sessionId: string, messageCount: number): ThreadDigest | undefined {
+  if (!digest || typeof digest !== 'object') {
+    return undefined;
+  }
+
+  return {
+    threadId: readString(digest.threadId, sessionId),
+    title: readString(digest.title),
+    summary: readString(digest.summary),
+    currentState: readString(digest.currentState),
+    openLoops: readStringArray(digest.openLoops),
+    nextEntry: readString(digest.nextEntry),
+    confidence: readDigestConfidence(digest.confidence, 'low'),
+    updatedAt: readString(digest.updatedAt, nowIso()),
+    sourceMessageCount: Number.isInteger(digest.sourceMessageCount) && Number(digest.sourceMessageCount) >= 0
+      ? Number(digest.sourceMessageCount)
+      : messageCount,
+    needsRefresh: typeof digest.needsRefresh === 'boolean' ? digest.needsRefresh : messageCount > 0
+  };
+}
+
+function readWorkrunStatus(value: unknown, fallback: MayaWorkrun['status']): MayaWorkrun['status'] {
+  return value === 'completed' || value === 'open' ? value : fallback;
+}
+
+function readWorkrunSource(value: unknown, fallback: MayaWorkrun['source']): MayaWorkrun['source'] {
+  return value === 'manual' || value === 'derived' ? value : fallback;
+}
+
+function readCheckpointStatus(value: unknown, fallback: MayaCheckpoint['status']): MayaCheckpoint['status'] {
+  return value === 'completed' || value === 'open' ? value : fallback;
+}
+
+function readCheckpointSource(value: unknown, fallback: MayaCheckpoint['source']): MayaCheckpoint['source'] {
+  return value === 'manual' || value === 'derived' ? value : fallback;
+}
+
+function readThreadHandoffStatus(value: unknown, fallback: MayaThreadHandoff['status']): MayaThreadHandoff['status'] {
+  return value === 'active' || value === 'paused' || value === 'completed' ? value : fallback;
+}
+
+function readThreadHandoffSource(value: unknown, fallback: MayaThreadHandoff['source']): MayaThreadHandoff['source'] {
+  return value === 'manual' || value === 'derived' ? value : fallback;
+}
+
+function readWorkspaceStatus(value: unknown, fallback: MayaWorkspaceContext['status']): MayaWorkspaceContext['status'] {
+  return value === 'active' || value === 'paused' || value === 'completed' ? value : fallback;
+}
+
+function readWorkspaceSource(value: unknown, fallback: MayaWorkspaceContext['source']): MayaWorkspaceContext['source'] {
+  return value === 'manual' || value === 'derived' ? value : fallback;
+}
+
+function normalizeCheckpoint(checkpoint: Partial<MayaCheckpoint> | undefined, index: number): MayaCheckpoint | undefined {
+  if (!checkpoint || typeof checkpoint !== 'object') {
+    return undefined;
+  }
+
+  const label = readString(checkpoint.label);
+  const detail = readString(checkpoint.detail, '') || null;
+
+  if (!label && !detail) {
+    return undefined;
+  }
+
+  return {
+    id: readString(checkpoint.id, `checkpoint-${index + 1}`),
+    label: label || detail || `Checkpoint ${index + 1}`,
+    detail,
+    status: readCheckpointStatus(checkpoint.status, 'open'),
+    source: readCheckpointSource(checkpoint.source, 'derived'),
+    updatedAt: readString(checkpoint.updatedAt, nowIso())
+  };
+}
+
+function normalizeCheckpointBoard(board: Partial<MayaCheckpointBoard> | undefined): MayaCheckpointBoard | undefined {
+  if (!board || typeof board !== 'object') {
+    return undefined;
+  }
+
+  const checkpoints = Array.isArray(board.checkpoints)
+    ? board.checkpoints
+        .map((checkpoint, index) => normalizeCheckpoint(checkpoint, index))
+        .filter((checkpoint): checkpoint is MayaCheckpoint => Boolean(checkpoint))
+    : [];
+  const focus = readString(board.focus);
+  const title = readString(board.title, focus ? 'Arbeitsboard' : '');
+
+  if (!title && !focus && checkpoints.length === 0) {
+    return undefined;
+  }
+
+  return {
+    title: title || 'Arbeitsboard',
+    focus: focus || title || 'Aktueller Thread',
+    checkpoints,
+    updatedAt: readString(board.updatedAt, nowIso()),
+    source: readCheckpointSource(board.source, 'derived')
+  };
+}
+
+function normalizeThreadHandoff(handoff: Partial<MayaThreadHandoff> | undefined): MayaThreadHandoff | undefined {
+  if (!handoff || typeof handoff !== 'object') {
+    return undefined;
+  }
+
+  const achieved = readString(handoff.achieved);
+  const openItems = readStringArray(handoff.openItems);
+  const nextEntry = readString(handoff.nextEntry);
+
+  if (!achieved && openItems.length === 0 && !nextEntry) {
+    return undefined;
+  }
+
+  return {
+    status: readThreadHandoffStatus(handoff.status, 'active'),
+    achieved,
+    openItems,
+    nextEntry,
+    updatedAt: readString(handoff.updatedAt, nowIso()),
+    source: readThreadHandoffSource(handoff.source, 'derived')
+  };
+}
+
+function normalizeWorkspaceContext(workspace: Partial<MayaWorkspaceContext> | undefined, index: number): MayaWorkspaceContext | undefined {
+  if (!workspace || typeof workspace !== 'object') {
+    return undefined;
+  }
+
+  const title = readString(workspace.title);
+  const focus = readString(workspace.focus);
+  const goal = readString(workspace.goal);
+  const currentState = readString(workspace.currentState);
+  const openItems = readStringArray(workspace.openItems);
+  const nextMilestone = readString(workspace.nextMilestone);
+  const threadIds = readStringArray(workspace.threadIds);
+  const workspaceId = readString(workspace.id);
+
+  if (!title && !focus && !goal && !currentState && openItems.length === 0 && !nextMilestone) {
+    return undefined;
+  }
+
+  return {
+    id: workspaceId || `workspace-${index + 1}`,
+    title: title || focus || goal || `Arbeitsraum ${index + 1}`,
+    focus: focus || title || goal || currentState || 'Aktiver Arbeitsraum',
+    goal: goal || focus || title || 'Arbeitsziel klären',
+    currentState: currentState || focus || title || 'Noch kein Gesamtstand hinterlegt.',
+    openItems,
+    nextMilestone: nextMilestone || openItems[0] || focus || title || 'Nächsten Arbeitsblock festlegen',
+    threadIds,
+    updatedAt: readString(workspace.updatedAt, nowIso()),
+    source: readWorkspaceSource(workspace.source, 'derived'),
+    status: readWorkspaceStatus(workspace.status, 'active')
+  };
+}
+
+function normalizeWorkrun(workrun: Partial<MayaWorkrun> | undefined): MayaWorkrun | undefined {
+  if (!workrun || typeof workrun !== 'object') {
+    return undefined;
+  }
+
+  const nextStep = readString(workrun.nextStep);
+  const focus = readString(workrun.focus, nextStep);
+
+  if (!focus && !nextStep) {
+    return undefined;
+  }
+
+  return {
+    focus: focus || nextStep,
+    status: readWorkrunStatus(workrun.status, 'open'),
+    lastOutput: readString(workrun.lastOutput, '') || null,
+    lastStep: readString(workrun.lastStep, '') || null,
+    nextStep: nextStep || focus,
+    updatedAt: readString(workrun.updatedAt, nowIso()),
+    source: readWorkrunSource(workrun.source, 'derived')
+  };
+}
+
 function normalizeSession(session: Partial<ChatSession> | undefined, fallback?: ChatSession): ChatSession {
   const timestamp = nowIso();
   const base: ChatSession = fallback || {
@@ -135,6 +322,15 @@ function normalizeSession(session: Partial<ChatSession> | undefined, fallback?: 
     title: readString(session?.title, base.title),
     intent: readString(session?.intent, base.intent),
     messages: Array.isArray(session?.messages) ? session.messages.map((message) => normalizeMessage(message)) : base.messages.map((message) => normalizeMessage(message)),
+    workspaceId: session?.workspaceId === null ? null : readString(session?.workspaceId, base.workspaceId || '' ) || null,
+    digest: normalizeThreadDigest(
+      session?.digest,
+      readString(session?.id, base.id),
+      Array.isArray(session?.messages) ? session.messages.length : base.messages.length
+    ),
+    workrun: normalizeWorkrun(session?.workrun),
+    checkpointBoard: normalizeCheckpointBoard(session?.checkpointBoard),
+    handoff: normalizeThreadHandoff(session?.handoff),
     createdAt: readString(session?.createdAt, base.createdAt || timestamp),
     updatedAt: readString(session?.updatedAt, base.updatedAt || timestamp)
   };
@@ -155,9 +351,11 @@ export function createInitialMayaStore(language: AppLanguage = getMayaRuntimeCon
     profile: normalizeProfile(seed.profile, seed.profile),
     projects,
     memoryItems,
+    workspaces: [],
     sessions: [session],
     authVersion: 1,
     activeSessionId: session.id,
+    activeWorkspaceId: null,
     activeProjectId: projects[0]?.id || null,
     language
   };
@@ -177,21 +375,43 @@ export function normalizeMayaStore(store: Partial<MayaStore> | undefined): MayaS
         }))
         .sort((left, right) => Number(Boolean(right.pinned)) - Number(Boolean(left.pinned)) || left.title.localeCompare(right.title))
     : base.memoryItems;
+  const workspaces = Array.isArray(store?.workspaces)
+    ? store.workspaces
+        .map((workspace, index) => normalizeWorkspaceContext(workspace, index))
+        .filter((workspace): workspace is MayaWorkspaceContext => Boolean(workspace))
+    : base.workspaces;
+  const workspaceIds = new Set(workspaces.map((workspace) => workspace.id));
   const sessions = Array.isArray(store?.sessions) && store.sessions.length > 0
-    ? store.sessions.map((session, index) => normalizeSession(session, base.sessions[index]))
+    ? store.sessions.map((session, index) => {
+        const normalized = normalizeSession(session, base.sessions[index]);
+        return {
+          ...normalized,
+          workspaceId: normalized.workspaceId && workspaceIds.has(normalized.workspaceId) ? normalized.workspaceId : null
+        };
+      })
     : base.sessions;
+  const reconciledWorkspaces = workspaces.map((workspace) => ({
+    ...workspace,
+    threadIds: workspace.threadIds.filter((threadId) => sessions.some((session) => session.id === threadId))
+  }));
   const sessionIds = new Set(sessions.map((session) => session.id));
+  const reconciledWorkspaceIds = new Set(reconciledWorkspaces.map((workspace) => workspace.id));
   const authVersion = Number.isInteger(store?.authVersion) && Number(store?.authVersion) > 0 ? Number(store?.authVersion) : base.authVersion;
   const activeSessionId = sessionIds.has(String(store?.activeSessionId || '')) ? String(store?.activeSessionId) : sessions[0].id;
+  const activeWorkspaceId = reconciledWorkspaceIds.has(String(store?.activeWorkspaceId || ''))
+    ? String(store?.activeWorkspaceId)
+    : sessions.find((session) => session.id === activeSessionId)?.workspaceId || reconciledWorkspaces[0]?.id || null;
   const activeProjectId = projectIds.has(String(store?.activeProjectId || '')) ? String(store?.activeProjectId) : projects[0]?.id || null;
 
   return {
     profile: normalizeProfile(store?.profile, base.profile),
     projects,
     memoryItems,
+    workspaces: reconciledWorkspaces,
     sessions,
     authVersion,
     activeSessionId,
+    activeWorkspaceId,
     activeProjectId,
     language
   };
