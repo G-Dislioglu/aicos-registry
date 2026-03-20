@@ -56,11 +56,89 @@ export type ChatMessage = {
   relatedMemoryIds?: string[];
 };
 
+export type ThreadDigestConfidence = 'high' | 'medium' | 'low';
+
+export type ThreadDigest = {
+  threadId: string;
+  title: string;
+  summary: string;
+  currentState: string;
+  openLoops: string[];
+  nextEntry: string;
+  confidence: ThreadDigestConfidence;
+  updatedAt: string;
+  sourceMessageCount: number;
+  needsRefresh: boolean;
+};
+
+export type MayaWorkrunStatus = 'open' | 'completed';
+
+export type MayaWorkrun = {
+  focus: string;
+  status: MayaWorkrunStatus;
+  lastOutput: string | null;
+  lastStep: string | null;
+  nextStep: string;
+  updatedAt: string;
+  source: 'derived' | 'manual';
+};
+
+export type MayaCheckpointStatus = 'open' | 'completed';
+
+export type MayaCheckpoint = {
+  id: string;
+  label: string;
+  detail: string | null;
+  status: MayaCheckpointStatus;
+  source: 'derived' | 'manual';
+  updatedAt: string;
+};
+
+export type MayaCheckpointBoard = {
+  title: string;
+  focus: string;
+  checkpoints: MayaCheckpoint[];
+  updatedAt: string;
+  source: 'derived' | 'manual';
+};
+
+export type MayaThreadHandoffStatus = 'active' | 'paused' | 'completed';
+
+export type MayaThreadHandoff = {
+  status: MayaThreadHandoffStatus;
+  achieved: string;
+  openItems: string[];
+  nextEntry: string;
+  updatedAt: string;
+  source: 'derived' | 'manual';
+};
+
+export type MayaWorkspaceStatus = 'active' | 'paused' | 'completed';
+
+export type MayaWorkspaceContext = {
+  id: string;
+  title: string;
+  focus: string;
+  goal: string;
+  currentState: string;
+  openItems: string[];
+  nextMilestone: string;
+  threadIds: string[];
+  updatedAt: string;
+  source: 'derived' | 'manual';
+  status: MayaWorkspaceStatus;
+};
+
 export type ChatSession = {
   id: string;
   title: string;
   intent: string;
   messages: ChatMessage[];
+  workspaceId?: string | null;
+  digest?: ThreadDigest;
+  workrun?: MayaWorkrun;
+  checkpointBoard?: MayaCheckpointBoard;
+  handoff?: MayaThreadHandoff;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -77,9 +155,11 @@ export type MayaStore = {
   profile: Profile;
   projects: Project[];
   memoryItems: MemoryItem[];
+  workspaces: MayaWorkspaceContext[];
   sessions: ChatSession[];
   authVersion: number;
   activeSessionId: string;
+  activeWorkspaceId: string | null;
   activeProjectId: string | null;
   language: AppLanguage;
 };
