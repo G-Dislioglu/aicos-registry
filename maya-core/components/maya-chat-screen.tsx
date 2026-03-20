@@ -9,6 +9,7 @@ import { MayaComposer }    from '@/components/maya/maya-composer';
 import { MayaReviewSheet } from '@/components/maya/maya-review-sheet';
 import { FALLBACK_PROVIDERS } from '@/components/maya/fallback-providers';
 import { type WorkMode, detectWorkMode, generateLocalResponse } from '@/components/maya/maya-local-response';
+import { formatMayaTimestamp } from '@/lib/maya-date';
 import { buildActiveCheckpointBoard, buildActiveThreadHandoff, buildActiveWorkrun, buildContinuityBriefing, buildDerivedWorkspaceContext, buildPersistedCheckpointBoard, buildPersistedThreadHandoff, buildPersistedWorkrun, buildPersistedWorkspaceContext, buildResumeActions, buildThreadDigest } from '@/lib/maya-thread-digest';
 import { type ChatSession, type MayaCheckpoint, type MayaCheckpointBoard, type MayaStore, type MayaThreadHandoff, type MayaWorkspaceContext, type MayaWorkrun, type ThreadDigest } from '@/lib/types';
 
@@ -344,6 +345,61 @@ function buildWorkspaceIdFromTitle(title: string) {
   return slug ? `workspace-${slug}` : `workspace-${Date.now()}`;
 }
 
+function normalizeMayaSurfaceSignal(value: string | null | undefined) {
+  return (value || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase()
+    .replace(/^[^a-z0-9äöüß]+|[^a-z0-9äöüß]+$/gi, '');
+}
+
+function isDistinctMayaSurfaceSignal(candidate: string | null | undefined, references: Array<string | null | undefined>) {
+  const normalizedCandidate = normalizeMayaSurfaceSignal(candidate);
+  if (!normalizedCandidate) {
+    return false;
+  }
+
+  return references.every((reference) => {
+    const normalizedReference = normalizeMayaSurfaceSignal(reference);
+
+    if (!normalizedReference) {
+      return true;
+    }
+
+    if (normalizedReference === normalizedCandidate) {
+      return false;
+    }
+
+    const hasLongOverlap = normalizedCandidate.length >= 24 && normalizedReference.length >= 24;
+    if (hasLongOverlap && (normalizedCandidate.includes(normalizedReference) || normalizedReference.includes(normalizedCandidate))) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
+function collectDistinctMayaSurfaceSignals(
+  values: Array<string | null | undefined>,
+  references: Array<string | null | undefined>,
+  limit?: number
+) {
+  const distinct: string[] = [];
+
+  for (const value of values) {
+    if (!isDistinctMayaSurfaceSignal(value, [...references, ...distinct])) {
+      continue;
+    }
+
+    distinct.push(value!.trim());
+    if (limit && distinct.length >= limit) {
+      break;
+    }
+  }
+
+  return distinct;
+}
+
 function buildPersistedSession(
   baseSession: ChatSession,
   messages: Message[],
@@ -657,10 +713,86 @@ export function MayaChatScreen() {
               )
             )
       )
-    : null;
+  : null;
   const relatedWorkspaceThreads = activeWorkspace
     ? visibleSessions.filter((session) => activeWorkspace.threadIds.includes(session.id))
     : [];
+
+  const activeWorkspaceUpdatedAtLabel = formatMayaTimestamp(activeWorkspace?.updatedAt);
+  const activeWorkrunUpdatedAtLabel = formatMayaTimestamp(activeWorkrun?.updatedAt);
+  const activeThreadHandoffUpdatedAtLabel = formatMayaTimestamp(activeThreadHandoff?.updatedAt);
+  const continuityBriefingUpdatedAtLabel = formatMayaTimestamp(continuityBriefing?.lastUpdatedAt);
+  const threadDigestUpdatedAtLabel = formatMayaTimestamp(threadDigest?.updatedAt);
+  const primaryFocus = activeWorkrun?.focus || continuityBriefing?.focus || activeWorkspace?.focus || activeSession?.intent || activeSession?.title || null;
+  const primaryNextStep = activeWorkrun?.nextStep || activeThreadHandoff?.nextEntry || continuityBriefing?.nextStep || activeWorkspace?.nextMilestone || null;
+  const primaryOpenPoint = activeThreadHandoff?.openItems[0] || activeWorkspace?.openItems[0] || continuityBriefing?.openLoops[0] || null;
+  const workspaceOpenItems = collectDistinctMayaSurfaceSignals(
+    activeWorkspace?.openItems || [],
+    [primaryOpenPoint, activeWorkrun?.focus, activeWorkrun?.nextStep, activeThreadHandoff?.nextEntry, continuityBriefing?.nextStep],
+    2
+  );
+  const briefingOpenLoops = collectDistinctMayaSurfaceSignals(
+    continuityBriefing?.openLoops || [],
+    [
+      primaryOpenPoint,
+      ...(activeThreadHandoff?.openItems || []),
+      ...(activeWorkspace?.openItems || []),
+      activeWorkrun?.focus,
+      activeWorkrun?.nextStep,
+      activeThreadHandoff?.nextEntry
+    ],
+    2
+  );
+  const secondaryResumeActions = resumeActions.reduce<typeof resumeActions>((actions, action) => {
+    if (!isDistinctMayaSurfaceSignal(action.prompt, [primaryNextStep, primaryOpenPoint, primaryFocus, ...actions.map((entry) => entry.prompt)])) {
+      return actions;
+    }
+
+    if (actions.some((entry) => entry.source === action.source)) {
+      return actions;
+    }
+
+    actions.push(action);
+    return actions;
+  }, []).slice(0, 2);
+  const handoffOpenItems = collectDistinctMayaSurfaceSignals(
+    activeThreadHandoff?.openItems || [],
+    [primaryOpenPoint, activeWorkrun?.focus, activeWorkrun?.nextStep, activeWorkspace?.nextMilestone],
+    2
+  );
+  const showWorkspaceOpenItems = workspaceOpenItems.length > 0;
+  const workspaceMilestoneAddsSignal = isDistinctMayaSurfaceSignal(activeWorkspace?.nextMilestone, [primaryNextStep, primaryFocus]);
+  const workspaceStateAddsSignal = isDistinctMayaSurfaceSignal(activeWorkspace?.currentState, [activeWorkrun?.lastOutput, activeThreadHandoff?.achieved, continuityBriefing?.currentState]);
+  const handoffHasDistinctAchieved = isDistinctMayaSurfaceSignal(activeThreadHandoff?.achieved, [activeWorkrun?.lastOutput, continuityBriefing?.currentState, activeWorkspace?.currentState]);
+  const handoffHasDistinctNextEntry = isDistinctMayaSurfaceSignal(activeThreadHandoff?.nextEntry, [primaryNextStep, activeWorkrun?.nextStep]);
+  const briefingHasDistinctFocus = isDistinctMayaSurfaceSignal(continuityBriefing?.focus, [primaryFocus, activeWorkspace?.focus]);
+  const briefingHasDistinctCurrentState = isDistinctMayaSurfaceSignal(continuityBriefing?.currentState, [activeWorkrun?.lastOutput, activeThreadHandoff?.achieved, activeWorkspace?.currentState]);
+  const briefingHasDistinctNextStep = isDistinctMayaSurfaceSignal(continuityBriefing?.nextStep, [primaryNextStep, activeThreadHandoff?.nextEntry]);
+  const showHandoffSection = Boolean(
+    activeThreadHandoff && (
+      activeThreadHandoff.status === 'paused' ||
+      activeThreadHandoff.status === 'completed' ||
+      handoffHasDistinctAchieved ||
+      handoffOpenItems.length > 0 ||
+      handoffHasDistinctNextEntry
+    )
+  );
+  const showContinuityBriefing = Boolean(
+    continuityBriefing && (
+      briefingHasDistinctFocus ||
+      briefingOpenLoops.length > 0 ||
+      briefingHasDistinctCurrentState ||
+      briefingHasDistinctNextStep
+    )
+  );
+  const digestOpenLoops = collectDistinctMayaSurfaceSignals(
+    threadDigest?.openLoops || [],
+    [primaryOpenPoint, ...(activeThreadHandoff?.openItems || []), ...(activeWorkspace?.openItems || []), ...(continuityBriefing?.openLoops || [])],
+    2
+  );
+  const digestHasDistinctSummary = isDistinctMayaSurfaceSignal(threadDigest?.summary, [primaryFocus, continuityBriefing?.focus, activeWorkspace?.focus]);
+  const digestHasDistinctCurrentState = isDistinctMayaSurfaceSignal(threadDigest?.currentState, [activeWorkrun?.lastOutput, continuityBriefing?.currentState, activeThreadHandoff?.achieved]);
+  const digestHasDistinctNextEntry = isDistinctMayaSurfaceSignal(threadDigest?.nextEntry, [primaryNextStep, continuityBriefing?.nextStep, activeThreadHandoff?.nextEntry]);
 
   const persistCurrentSession = useCallback(async (
     nextMessages: Message[],
@@ -1429,6 +1561,16 @@ export function MayaChatScreen() {
     ? messages.length - threadDigest.sourceMessageCount >= DIGEST_STALE_MESSAGE_THRESHOLD
     : false;
   const canBuildDigest = messages.some((message) => message.role === 'assistant' || message.role === 'user');
+  const showThreadDigestSection = Boolean(
+    messages.length > 0 && (
+      !threadDigest ||
+      digestNeedsRefresh ||
+      digestHasDistinctSummary ||
+      digestHasDistinctCurrentState ||
+      digestOpenLoops.length > 0 ||
+      digestHasDistinctNextEntry
+    )
+  );
 
   return (
     <div className="maya-shell">
@@ -1526,9 +1668,9 @@ export function MayaChatScreen() {
                       Threads: {relatedWorkspaceThreads.length}
                     </span>
                   ) : null}
-                  {activeWorkspace?.updatedAt ? (
+                  {activeWorkspaceUpdatedAtLabel ? (
                     <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                      Stand: {new Date(activeWorkspace.updatedAt).toLocaleString('de-DE')}
+                      Stand: {activeWorkspaceUpdatedAtLabel}
                     </span>
                   ) : null}
                 </div>
@@ -1605,50 +1747,46 @@ export function MayaChatScreen() {
                 </div>
 
                 <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
+                  <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Nächster größerer Block</div>
+                  <p className="mt-2 text-sm leading-6 text-slate-200">{activeWorkspace.nextMilestone}</p>
+                  {workspaceMilestoneAddsSignal ? (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => applyResumeAction(activeWorkspace.nextMilestone, false)}
+                        disabled={loading}
+                        className="rounded-full border border-emerald-300/40 bg-emerald-400/15 px-4 py-2 text-xs uppercase tracking-[0.18em] text-emerald-50 transition hover:bg-emerald-400/20 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        In Composer übernehmen
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+
+                {workspaceStateAddsSignal ? (
+                  <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
+                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Arbeitsraum-Stand</div>
+                    <p className="mt-2 text-sm leading-6 text-slate-200">{activeWorkspace.currentState}</p>
+                  </div>
+                ) : null}
+
+                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
                   <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Gesamtziel</div>
                   <p className="mt-2 text-sm leading-6 text-slate-200">{activeWorkspace.goal}</p>
                 </div>
 
-                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                  <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Aktueller Gesamtstand</div>
-                  <p className="mt-2 text-sm leading-6 text-slate-200">{activeWorkspace.currentState}</p>
-                </div>
-
-                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                  <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Nächster größerer Block</div>
-                  <p className="mt-2 text-sm leading-6 text-slate-200">{activeWorkspace.nextMilestone}</p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => applyResumeAction(activeWorkspace.nextMilestone, false)}
-                      disabled={loading}
-                      className="rounded-full border border-emerald-300/40 bg-emerald-400/15 px-4 py-2 text-xs uppercase tracking-[0.18em] text-emerald-50 transition hover:bg-emerald-400/20 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      In Composer übernehmen
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => applyResumeAction(activeWorkspace.nextMilestone, true)}
-                      disabled={loading}
-                      className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.18em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Direkt weiterarbeiten
-                    </button>
+                {showWorkspaceOpenItems ? (
+                  <div className="rounded-[20px] border border-white/10 bg-white/5 p-4 lg:col-span-2">
+                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Offene Kernpunkte</div>
+                    <div className="mt-3 space-y-2">
+                      {workspaceOpenItems.map((item) => (
+                        <div key={item} className="rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3 text-sm leading-6 text-slate-200">
+                          {item}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-
-                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                  <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Offene Kernpunkte</div>
-                  <div className="mt-3 space-y-2">
-                    {activeWorkspace.openItems.length > 0 ? activeWorkspace.openItems.map((item) => (
-                      <div key={item} className="rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3 text-sm leading-6 text-slate-200">
-                        {item}
-                      </div>
-                    )) : (
-                      <p className="text-sm leading-6 text-slate-400">Keine offenen Kernpunkte für diesen Arbeitsraum festgehalten.</p>
-                    )}
-                  </div>
-                </div>
+                ) : null}
 
                 <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -1708,27 +1846,32 @@ export function MayaChatScreen() {
                   <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
                     Status: {activeWorkrun.status === 'completed' ? 'abgeschlossen' : 'offen'}
                   </span>
-                  {activeWorkrun.updatedAt ? (
+                  {activeWorkrunUpdatedAtLabel ? (
                     <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                      Zuletzt aktiv: {new Date(activeWorkrun.updatedAt).toLocaleString('de-DE')}
+                      Zuletzt aktiv: {activeWorkrunUpdatedAtLabel}
                     </span>
                   ) : null}
                 </div>
               </div>
 
               <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                  <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Aktiver Arbeitsfokus</div>
-                  <p className="mt-2 text-sm leading-6 text-slate-100">{activeWorkrun.focus}</p>
-                </div>
-
-                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                  <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Nächster Arbeitsschritt</div>
-                  <p className="mt-2 text-sm leading-6 text-slate-200">{activeWorkrun.nextStep}</p>
+                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4 lg:col-span-2">
+                  <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Aktueller Fokus</div>
+                  <p className="mt-2 text-base font-medium leading-7 text-slate-100">{primaryFocus || activeWorkrun.focus}</p>
+                  <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                    <div>
+                      <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Nächster sinnvoller Schritt</div>
+                      <p className="mt-2 text-sm leading-6 text-slate-200">{primaryNextStep || activeWorkrun.nextStep}</p>
+                    </div>
+                    <div>
+                      <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Wichtigster offener Kernpunkt</div>
+                      <p className="mt-2 text-sm leading-6 text-slate-200">{primaryOpenPoint || 'Kein offener Kernpunkt markiert. Der Rohchat bleibt führend.'}</p>
+                    </div>
+                  </div>
                   <div className="mt-4 flex flex-wrap gap-2">
                     <button
                       type="button"
-                      onClick={() => applyResumeAction(activeWorkrun.nextStep, false)}
+                      onClick={() => applyResumeAction(primaryNextStep || activeWorkrun.nextStep, false)}
                       disabled={loading}
                       className="rounded-full border border-fuchsia-300/40 bg-fuchsia-400/15 px-4 py-2 text-xs uppercase tracking-[0.18em] text-fuchsia-50 transition hover:bg-fuchsia-400/20 disabled:cursor-not-allowed disabled:opacity-50"
                     >
@@ -1736,56 +1879,11 @@ export function MayaChatScreen() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => applyResumeAction(activeWorkrun.nextStep, true)}
+                      onClick={() => applyResumeAction(primaryNextStep || activeWorkrun.nextStep, true)}
                       disabled={loading}
                       className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.18em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       Arbeitslauf fortsetzen
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setManualWorkrunFocus(null);
-                        if (activeSession) {
-                          const nextWorkrun = buildPersistedWorkrun(activeSession, activeWorkrun || undefined, {
-                            focus: derivedWorkrun?.focus || activeWorkrun?.focus || activeSession.intent || activeSession.title,
-                            nextStep: derivedWorkrun?.nextStep || activeWorkrun?.nextStep || activeSession.intent || activeSession.title,
-                            status: activeWorkrun?.status || 'open',
-                            lastOutput: activeWorkrun?.lastOutput,
-                            lastStep: activeWorkrun?.lastStep,
-                            source: 'derived'
-                          });
-
-                          if (nextWorkrun) {
-                            const nextBoard = buildPersistedCheckpointBoard(activeSession, activeCheckpointBoard || undefined, {
-                              focus: nextWorkrun.focus,
-                              source: 'derived'
-                            });
-                            const nextHandoff = buildPersistedThreadHandoff(activeSession, activeThreadHandoff || undefined, {
-                              status: activeThreadHandoff?.status || 'active',
-                              achieved: activeThreadHandoff?.achieved || activeWorkrun?.lastOutput || activeSession.digest?.currentState || '',
-                              openItems: nextBoard?.checkpoints.filter((checkpoint) => checkpoint.status === 'open').map((checkpoint) => checkpoint.label) || [],
-                              nextEntry: nextWorkrun.nextStep,
-                              source: 'derived'
-                            });
-                            const nextWorkspace = activeWorkspace
-                              ? buildPersistedWorkspaceContext(activeSession, activeWorkspace, {
-                                  focus: nextWorkrun.focus,
-                                  currentState: nextHandoff?.achieved || nextWorkrun.lastOutput || activeWorkspace.currentState,
-                                  openItems: nextHandoff?.openItems || activeWorkspace.openItems,
-                                  nextMilestone: nextHandoff?.nextEntry || nextWorkrun.nextStep,
-                                  threadIds: activeWorkspace.threadIds,
-                                  source: 'derived'
-                                })
-                              : undefined;
-                            void persistCurrentSession(messages, threadDigest, nextWorkrun, nextBoard, nextHandoff, activeSession.workspaceId, nextWorkspace);
-                          }
-                        }
-                      }}
-                      disabled={!activeSession || loading}
-                      className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.18em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Neu aus Thread ableiten
                     </button>
                   </div>
                 </div>
@@ -1862,73 +1960,104 @@ export function MayaChatScreen() {
                     >
                       Wieder aufnehmen
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setManualWorkrunFocus(null);
+                        if (activeSession) {
+                          const nextWorkrun = buildPersistedWorkrun(activeSession, activeWorkrun || undefined, {
+                            focus: derivedWorkrun?.focus || activeWorkrun?.focus || activeSession.intent || activeSession.title,
+                            nextStep: derivedWorkrun?.nextStep || activeWorkrun?.nextStep || activeSession.intent || activeSession.title,
+                            status: activeWorkrun?.status || 'open',
+                            lastOutput: activeWorkrun?.lastOutput,
+                            lastStep: activeWorkrun?.lastStep,
+                            source: 'derived'
+                          });
+
+                          if (nextWorkrun) {
+                            const nextBoard = buildPersistedCheckpointBoard(activeSession, activeCheckpointBoard || undefined, {
+                              focus: nextWorkrun.focus,
+                              source: 'derived'
+                            });
+                            const nextHandoff = buildPersistedThreadHandoff(activeSession, activeThreadHandoff || undefined, {
+                              status: activeThreadHandoff?.status || 'active',
+                              achieved: activeThreadHandoff?.achieved || activeWorkrun?.lastOutput || activeSession.digest?.currentState || '',
+                              openItems: nextBoard?.checkpoints.filter((checkpoint) => checkpoint.status === 'open').map((checkpoint) => checkpoint.label) || [],
+                              nextEntry: nextWorkrun.nextStep,
+                              source: 'derived'
+                            });
+                            const nextWorkspace = activeWorkspace
+                              ? buildPersistedWorkspaceContext(activeSession, activeWorkspace, {
+                                  focus: nextWorkrun.focus,
+                                  currentState: nextHandoff?.achieved || nextWorkrun.lastOutput || activeWorkspace.currentState,
+                                  openItems: nextHandoff?.openItems || activeWorkspace.openItems,
+                                  nextMilestone: nextHandoff?.nextEntry || nextWorkrun.nextStep,
+                                  threadIds: activeWorkspace.threadIds,
+                                  source: 'derived'
+                                })
+                              : undefined;
+                            void persistCurrentSession(messages, threadDigest, nextWorkrun, nextBoard, nextHandoff, activeSession.workspaceId, nextWorkspace);
+                          }
+                        }
+                      }}
+                      disabled={!activeSession || loading}
+                      className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.18em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Neu aus Thread ableiten
+                    </button>
                   </div>
                 </div>
 
-                {activeThreadHandoff ? (
+                {showHandoffSection && activeThreadHandoff ? (
                   <div className="rounded-[20px] border border-white/10 bg-white/5 p-4 lg:col-span-2">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Abschluss und Übergabe</div>
                         <p className="mt-2 text-sm leading-6 text-slate-300">
-                          Dieser Thread hält kompakt fest, was erreicht wurde, was offen bleibt und wo du sinnvoll wieder einsteigst.
+                          Diese Schicht bleibt für Parken, Abschluss oder einen wirklich abweichenden Wiedereinstieg sichtbar.
                         </p>
                       </div>
                       <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em] text-slate-400">
                         <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
                           Status: {activeThreadHandoff.status === 'completed' ? 'abgeschlossen' : activeThreadHandoff.status === 'paused' ? 'geparkt' : 'aktiv'}
                         </span>
-                        {activeThreadHandoff.updatedAt ? (
+                        {activeThreadHandoffUpdatedAtLabel ? (
                           <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                            Übergabe: {new Date(activeThreadHandoff.updatedAt).toLocaleString('de-DE')}
+                            Übergabe: {activeThreadHandoffUpdatedAtLabel}
                           </span>
                         ) : null}
                       </div>
                     </div>
 
                     <div className="mt-4 grid gap-4 lg:grid-cols-3">
-                      <div className="rounded-[18px] border border-white/10 bg-slate-950/35 p-4">
+                      {handoffHasDistinctAchieved || activeThreadHandoff.status !== 'active' ? (
+                        <div className="rounded-[18px] border border-white/10 bg-slate-950/35 p-4">
                         <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Erreicht</div>
                         <p className="mt-2 text-sm leading-6 text-slate-200">
                           {activeThreadHandoff.achieved || 'Noch kein kompakter Abschlussstand festgehalten.'}
                         </p>
-                      </div>
+                        </div>
+                      ) : null}
 
-                      <div className="rounded-[18px] border border-white/10 bg-slate-950/35 p-4">
+                      {handoffOpenItems.length > 0 ? (
+                        <div className="rounded-[18px] border border-white/10 bg-slate-950/35 p-4">
                         <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Bleibt offen</div>
                         <div className="mt-3 space-y-2">
-                          {activeThreadHandoff.openItems.length > 0 ? activeThreadHandoff.openItems.map((item) => (
+                          {handoffOpenItems.map((item) => (
                             <div key={item} className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm leading-6 text-slate-200">
                               {item}
                             </div>
-                          )) : (
-                            <p className="text-sm leading-6 text-slate-400">Kein offener Rest festgehalten.</p>
-                          )}
+                          ))}
                         </div>
-                      </div>
+                        </div>
+                      ) : null}
 
-                      <div className="rounded-[18px] border border-white/10 bg-slate-950/35 p-4">
+                      {handoffHasDistinctNextEntry || activeThreadHandoff.status !== 'active' ? (
+                        <div className="rounded-[18px] border border-white/10 bg-slate-950/35 p-4">
                         <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Nächster Wiedereinstieg</div>
                         <p className="mt-2 text-sm leading-6 text-slate-200">{activeThreadHandoff.nextEntry}</p>
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            onClick={() => applyResumeAction(activeThreadHandoff.nextEntry, false)}
-                            disabled={loading}
-                            className="rounded-full border border-fuchsia-300/40 bg-fuchsia-400/15 px-4 py-2 text-xs uppercase tracking-[0.18em] text-fuchsia-50 transition hover:bg-fuchsia-400/20 disabled:cursor-not-allowed disabled:opacity-50"
-                          >
-                            Wiedereinstieg übernehmen
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => applyResumeAction(activeThreadHandoff.nextEntry, true)}
-                            disabled={loading}
-                            className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.18em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-                          >
-                            Thread weiterführen
-                          </button>
                         </div>
-                      </div>
+                      ) : null}
                     </div>
                   </div>
                 ) : null}
@@ -2030,13 +2159,13 @@ export function MayaChatScreen() {
             </section>
           ) : null}
 
-          {continuityBriefing ? (
+          {showContinuityBriefing && continuityBriefing ? (
             <section className="mb-4 rounded-[24px] border border-violet-400/20 bg-violet-500/8 p-4 text-sm text-slate-100 shadow-shell sm:p-5">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <div className="text-[11px] uppercase tracking-[0.24em] text-violet-300">Kontinuitäts-Briefing</div>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-                    Maya zeigt beim Wiedereinstieg sofort, woran ihr im aktiven Thread gerade arbeitet, ohne eine zweite Wahrheit neben Rohchat und Fadenkompass zu erzeugen.
+                    Diese Schicht bleibt als knappe Wiedereinstiegslesart sichtbar, wenn sie gegenüber Arbeitslauf und Übergabe noch zusätzliche Orientierung liefert.
                   </p>
                 </div>
 
@@ -2047,58 +2176,64 @@ export function MayaChatScreen() {
                   <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
                     Vertrauen: {continuityBriefing.confidence}
                   </span>
-                  {continuityBriefing.lastUpdatedAt ? (
+                  {continuityBriefingUpdatedAtLabel ? (
                     <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                      Stand: {new Date(continuityBriefing.lastUpdatedAt).toLocaleString('de-DE')}
+                      Stand: {continuityBriefingUpdatedAtLabel}
                     </span>
                   ) : null}
                 </div>
               </div>
 
               <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                  <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Woran Maya gerade mit dir arbeitet</div>
-                  <div className="mt-2 text-base font-medium leading-7 text-slate-100">{continuityBriefing.title}</div>
-                  <p className="mt-3 text-sm leading-6 text-slate-200">{continuityBriefing.focus}</p>
-                </div>
-
-                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                  <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Aktueller Stand</div>
-                  <p className="mt-2 text-sm leading-6 text-slate-200">{continuityBriefing.currentState}</p>
-                </div>
-
-                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                  <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Offene Punkte</div>
-                  <div className="mt-3 space-y-2">
-                    {continuityBriefing.openLoops.length > 0 ? continuityBriefing.openLoops.map((loop) => (
-                      <div key={loop} className="rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3 text-sm leading-6 text-slate-200">
-                        {loop}
-                      </div>
-                    )) : (
-                      <p className="text-sm leading-6 text-slate-400">Keine offenen Punkte extrahiert. Der Rohchat bleibt der vollständige Verlauf.</p>
-                    )}
+                {briefingHasDistinctFocus ? (
+                  <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
+                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Woran Maya gerade mit dir arbeitet</div>
+                    <div className="mt-2 text-base font-medium leading-7 text-slate-100">{continuityBriefing.title}</div>
+                    <p className="mt-3 text-sm leading-6 text-slate-200">{continuityBriefing.focus}</p>
                   </div>
-                </div>
+                ) : null}
 
-                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                  <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Nächster sinnvoller Schritt</div>
-                  <p className="mt-2 text-sm leading-6 text-slate-200">{continuityBriefing.nextStep}</p>
-                </div>
+                {briefingHasDistinctCurrentState ? (
+                  <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
+                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Knapper Stand</div>
+                    <p className="mt-2 text-sm leading-6 text-slate-200">{continuityBriefing.currentState}</p>
+                  </div>
+                ) : null}
+
+                {briefingHasDistinctNextStep ? (
+                  <div className="rounded-[20px] border border-white/10 bg-white/5 p-4 lg:col-span-2">
+                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Knapper Wiedereinstieg</div>
+                    <p className="mt-2 text-sm leading-6 text-slate-200">{continuityBriefing.nextStep}</p>
+                  </div>
+                ) : null}
+
+                {briefingOpenLoops.length > 0 ? (
+                  <div className="rounded-[20px] border border-white/10 bg-white/5 p-4 lg:col-span-2">
+                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Zusätzliche offene Punkte</div>
+                    <div className="mt-3 space-y-2">
+                      {briefingOpenLoops.map((loop) => (
+                        <div key={loop} className="rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3 text-sm leading-6 text-slate-200">
+                          {loop}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </div>
 
-              {resumeActions.length > 0 ? (
+              {secondaryResumeActions.length > 0 ? (
                 <div className="mt-4 rounded-[20px] border border-white/10 bg-white/5 p-4">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Resume-Actions</div>
                       <p className="mt-2 text-sm leading-6 text-slate-300">
-                        Nutze den aktiven Thread direkt weiter: Composer vorbefüllen oder den nächsten Schritt sofort auslösen.
+                        Nur die zusätzlichen Wiedereinstiegsoptionen bleiben hier sichtbar, wenn sie vom Hauptschritt abweichen.
                       </p>
                     </div>
                   </div>
 
-                  <div className="mt-4 grid gap-3 lg:grid-cols-3">
-                    {resumeActions.map((action) => (
+                  <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                    {secondaryResumeActions.map((action) => (
                       <div key={action.id} className="rounded-[18px] border border-white/10 bg-slate-950/35 p-4">
                         <div className="text-sm font-medium leading-6 text-slate-100">{action.label}</div>
                         <p className="mt-2 text-sm leading-6 text-slate-300">{action.prompt}</p>
@@ -2133,7 +2268,7 @@ export function MayaChatScreen() {
             </section>
           ) : null}
 
-          {messages.length > 0 ? (
+          {showThreadDigestSection ? (
             <section className="mb-4 rounded-[24px] border border-emerald-400/20 bg-emerald-500/8 p-4 text-sm text-slate-100 shadow-shell sm:p-5">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
@@ -2161,37 +2296,45 @@ export function MayaChatScreen() {
                     </div>
                   ) : null}
 
-                  <div>
-                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Faden-Kern</div>
-                    <p className="mt-2 text-sm leading-6 text-slate-200">{threadDigest.summary}</p>
-                  </div>
+                  {digestHasDistinctSummary ? (
+                    <div>
+                      <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Faden-Kern</div>
+                      <p className="mt-2 text-sm leading-6 text-slate-200">{threadDigest.summary}</p>
+                    </div>
+                  ) : null}
 
-                  <div>
+                  {digestHasDistinctCurrentState ? (
+                    <div>
                     <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Aktueller Stand</div>
                     <p className="mt-2 text-sm leading-6 text-slate-200">{threadDigest.currentState}</p>
-                  </div>
-
-                  <div>
-                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Offene Punkte</div>
-                    <div className="mt-2 space-y-2">
-                      {threadDigest.openLoops.length > 0 ? threadDigest.openLoops.map((loop) => (
-                        <div key={loop} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm leading-6 text-slate-200">
-                          {loop}
-                        </div>
-                      )) : (
-                        <p className="text-sm leading-6 text-slate-400">Noch nichts offen markiert.</p>
-                      )}
                     </div>
-                  </div>
+                  ) : null}
 
-                  <div>
+                  {digestOpenLoops.length > 0 ? (
+                    <div>
+                      <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Offene Punkte</div>
+                      <div className="mt-2 space-y-2">
+                        {digestOpenLoops.map((loop) => (
+                          <div key={loop} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm leading-6 text-slate-200">
+                            {loop}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {digestHasDistinctNextEntry ? (
+                    <div>
                     <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Nächster Einstieg</div>
                     <p className="mt-2 text-sm leading-6 text-slate-200">{threadDigest.nextEntry}</p>
-                  </div>
+                    </div>
+                  ) : null}
 
                   <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em] text-slate-400">
                     <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Vertrauen: {threadDigest.confidence}</span>
-                    <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Aktualisiert: {new Date(threadDigest.updatedAt).toLocaleString('de-DE')}</span>
+                    {threadDigestUpdatedAtLabel ? (
+                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Aktualisiert: {threadDigestUpdatedAtLabel}</span>
+                    ) : null}
                   </div>
                 </div>
               ) : (

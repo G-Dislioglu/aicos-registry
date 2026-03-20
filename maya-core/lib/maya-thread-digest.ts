@@ -145,7 +145,6 @@ function buildDerivedCheckpointList(
   const candidatePoints = dedupePoints([
     workrun?.nextStep || '',
     workrun?.lastStep || '',
-    ...resumeActions.map((action) => action.label),
     ...briefing?.openLoops || [],
     briefing?.nextStep || '',
     session.intent || ''
@@ -435,6 +434,26 @@ function buildWorkspaceNextMilestone(
   );
 }
 
+function normalizeSignal(text: string) {
+  return toSentence(text)
+    .toLowerCase()
+    .replace(/^[^a-z0-9äöüß]+|[^a-z0-9äöüß]+$/gi, '')
+    .replace(/lass uns direkt damit weitermachen:\s*/i, '')
+    .replace(/lass uns diesen offenen punkt jetzt weiterführen:\s*/i, '')
+    .replace(/fasse kurz zusammen, wo wir gerade stehen, und führe dann diesen thread weiter:\s*/i, '')
+    .replace(/daran als nächstes anknüpfen:\s*/i, '')
+    .replace(/\s+/g, ' ');
+}
+
+function isDistinctSignal(candidate: string, existing: string[]) {
+  const normalizedCandidate = normalizeSignal(candidate);
+  if (!normalizedCandidate) {
+    return false;
+  }
+
+  return !existing.some((entry) => normalizeSignal(entry) === normalizedCandidate);
+}
+
 export function buildContinuityBriefing(session: ChatSession): MayaContinuityBriefing | undefined {
   if (session.messages.length === 0 && !session.digest) {
     return undefined;
@@ -476,9 +495,11 @@ export function buildResumeActions(briefing: MayaContinuityBriefing | undefined)
   }
 
   const actions: MayaResumeAction[] = [];
+  const seenSignals: string[] = [];
 
   const nextStep = toSentence(briefing.nextStep);
-  if (nextStep) {
+  if (nextStep && isDistinctSignal(nextStep, seenSignals)) {
+    seenSignals.push(nextStep);
     actions.push({
       id: 'resume-next-step',
       label: 'Nächsten Schritt übernehmen',
@@ -489,7 +510,8 @@ export function buildResumeActions(briefing: MayaContinuityBriefing | undefined)
   }
 
   const firstOpenLoop = briefing.openLoops.map((loop) => toSentence(loop)).find(Boolean);
-  if (firstOpenLoop) {
+  if (firstOpenLoop && isDistinctSignal(firstOpenLoop, seenSignals)) {
+    seenSignals.push(firstOpenLoop);
     actions.push({
       id: 'resume-open-loop-1',
       label: 'Offenen Punkt weiterführen',
@@ -500,7 +522,7 @@ export function buildResumeActions(briefing: MayaContinuityBriefing | undefined)
   }
 
   const resumeFocus = toSentence(briefing.focus || briefing.currentState);
-  if (resumeFocus) {
+  if (resumeFocus && isDistinctSignal(resumeFocus, seenSignals)) {
     actions.push({
       id: 'resume-thread',
       label: 'Thread sinnvoll fortsetzen',

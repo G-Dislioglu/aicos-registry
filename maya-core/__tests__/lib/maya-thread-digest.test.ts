@@ -207,6 +207,32 @@ describe('maya thread digest', () => {
     expect(board?.progressPercent).toBe(0);
   });
 
+  it('does not turn generic resume action labels into derived board checkpoints', () => {
+    const session = makeSession();
+    session.digest = {
+      threadId: session.id,
+      title: 'Onboarding Optionen',
+      summary: 'Wir klären gerade, welche Onboarding-Option zuerst getestet werden soll.',
+      currentState: 'Option A wirkt als erster Aktivierungstest plausibel.',
+      openLoops: ['Option B gegen Aktivierungsziel abgleichen'],
+      nextEntry: 'Mit der Testhypothese für Option A weitermachen.',
+      confidence: 'medium',
+      updatedAt: '2026-03-19T08:01:00.000Z',
+      sourceMessageCount: 2,
+      needsRefresh: false
+    };
+
+    const briefing = buildContinuityBriefing(session);
+    const actions = buildResumeActions(briefing);
+    const workrun = buildActiveWorkrun(session, briefing, actions);
+    const board = buildActiveCheckpointBoard(session, briefing, actions, workrun);
+
+    expect(board).toBeDefined();
+    expect(board?.checkpoints.map((checkpoint) => checkpoint.label)).not.toContain('Nächsten Schritt übernehmen');
+    expect(board?.checkpoints.map((checkpoint) => checkpoint.label)).not.toContain('Offenen Punkt weiterführen');
+    expect(board?.checkpoints.map((checkpoint) => checkpoint.label)).not.toContain('Thread sinnvoll fortsetzen');
+  });
+
   it('prefers a persisted manual checkpoint board when present on the thread', () => {
     const session = makeSession();
     session.checkpointBoard = {
