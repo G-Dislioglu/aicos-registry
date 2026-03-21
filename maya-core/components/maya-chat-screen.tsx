@@ -345,12 +345,32 @@ function buildWorkspaceIdFromTitle(title: string) {
   return slug ? `workspace-${slug}` : `workspace-${Date.now()}`;
 }
 
+function isBoilerplateMayaSurfaceSignal(value: string | null | undefined) {
+  const normalized = normalizeMayaSurfaceSignal(value);
+
+  if (!normalized) {
+    return true;
+  }
+
+  return [
+    'hier ist die kürzeste nützliche lesart',
+    'ich brauche noch etwas mehr konkretion um dir wirklich gut zu helfen',
+    'frag mich zum beispiel nach einem klareren nächsten schritt',
+    'ich bin maya ich helfe dir dabei laufende arbeit klarer zu sehen'
+  ].some((entry) => normalized.includes(entry));
+}
+
 function normalizeMayaSurfaceSignal(value: string | null | undefined) {
   return (value || '')
     .replace(/\s+/g, ' ')
     .trim()
     .toLowerCase()
-    .replace(/^[^a-z0-9äöüß]+|[^a-z0-9äöüß]+$/gi, '');
+    .replace(/^[^a-z0-9äöüß]+|[^a-z0-9äöüß]+$/gi, '')
+    .replace(/lass uns direkt damit weitermachen:\s*/i, '')
+    .replace(/lass uns diesen offenen punkt jetzt weiterführen:\s*/i, '')
+    .replace(/fasse kurz zusammen, wo wir gerade stehen, und führe dann diesen thread weiter:\s*/i, '')
+    .replace(/daran als nächstes anknüpfen:\s*/i, '')
+    .replace(/hier ist die kürzeste nützliche lesart:\s*/i, '');
 }
 
 function isDistinctMayaSurfaceSignal(candidate: string | null | undefined, references: Array<string | null | undefined>) {
@@ -387,6 +407,10 @@ function collectDistinctMayaSurfaceSignals(
   const distinct: string[] = [];
 
   for (const value of values) {
+    if (isBoilerplateMayaSurfaceSignal(value)) {
+      continue;
+    }
+
     if (!isDistinctMayaSurfaceSignal(value, [...references, ...distinct])) {
       continue;
     }
@@ -744,7 +768,7 @@ export function MayaChatScreen() {
     2
   );
   const secondaryResumeActions = resumeActions.reduce<typeof resumeActions>((actions, action) => {
-    if (!isDistinctMayaSurfaceSignal(action.prompt, [primaryNextStep, primaryOpenPoint, primaryFocus, ...actions.map((entry) => entry.prompt)])) {
+    if (!isDistinctMayaSurfaceSignal(action.prompt, [primaryNextStep, primaryOpenPoint, primaryFocus, activeWorkrun?.lastOutput, ...actions.map((entry) => entry.prompt)])) {
       return actions;
     }
 
@@ -757,7 +781,7 @@ export function MayaChatScreen() {
   }, []).slice(0, 2);
   const handoffOpenItems = collectDistinctMayaSurfaceSignals(
     activeThreadHandoff?.openItems || [],
-    [primaryOpenPoint, activeWorkrun?.focus, activeWorkrun?.nextStep, activeWorkspace?.nextMilestone],
+    [primaryOpenPoint, activeWorkrun?.focus, activeWorkrun?.lastOutput, activeWorkrun?.nextStep, activeThreadHandoff?.achieved, activeWorkspace?.currentState, activeWorkspace?.nextMilestone],
     2
   );
   const showWorkspaceOpenItems = workspaceOpenItems.length > 0;
@@ -768,21 +792,31 @@ export function MayaChatScreen() {
   const briefingHasDistinctFocus = isDistinctMayaSurfaceSignal(continuityBriefing?.focus, [primaryFocus, activeWorkspace?.focus]);
   const briefingHasDistinctCurrentState = isDistinctMayaSurfaceSignal(continuityBriefing?.currentState, [activeWorkrun?.lastOutput, activeThreadHandoff?.achieved, activeWorkspace?.currentState]);
   const briefingHasDistinctNextStep = isDistinctMayaSurfaceSignal(continuityBriefing?.nextStep, [primaryNextStep, activeThreadHandoff?.nextEntry]);
+  const showActiveHandoffSection = Boolean(
+    activeThreadHandoff && (
+      handoffHasDistinctNextEntry ||
+      (handoffHasDistinctAchieved && handoffOpenItems.length > 0)
+    )
+  );
   const showHandoffSection = Boolean(
     activeThreadHandoff && (
       activeThreadHandoff.status === 'paused' ||
       activeThreadHandoff.status === 'completed' ||
-      handoffHasDistinctAchieved ||
-      handoffOpenItems.length > 0 ||
-      handoffHasDistinctNextEntry
+      showActiveHandoffSection
+    )
+  );
+  const showContinuityResumeActions = Boolean(
+    secondaryResumeActions.length > 0 && (
+      briefingHasDistinctNextStep ||
+      briefingOpenLoops.length > 0 ||
+      briefingHasDistinctFocus
     )
   );
   const showContinuityBriefing = Boolean(
     continuityBriefing && (
-      briefingHasDistinctFocus ||
-      briefingOpenLoops.length > 0 ||
-      briefingHasDistinctCurrentState ||
-      briefingHasDistinctNextStep
+      briefingHasDistinctNextStep ||
+      (briefingHasDistinctFocus && briefingHasDistinctCurrentState) ||
+      ((briefingHasDistinctFocus || briefingHasDistinctCurrentState) && briefingOpenLoops.length > 0)
     )
   );
   const digestOpenLoops = collectDistinctMayaSurfaceSignals(
@@ -2221,7 +2255,7 @@ export function MayaChatScreen() {
                 ) : null}
               </div>
 
-              {secondaryResumeActions.length > 0 ? (
+              {showContinuityResumeActions ? (
                 <div className="mt-4 rounded-[20px] border border-white/10 bg-white/5 p-4">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
