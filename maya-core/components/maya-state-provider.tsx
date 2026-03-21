@@ -52,6 +52,28 @@ export function MayaStateProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const stateRef = useRef<MayaStore | null>(null);
 
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+      return;
+    }
+
+    const cleanupLegacyWorkers = async () => {
+      try {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map((registration) => registration.unregister()));
+
+        if ('caches' in window) {
+          const keys = await window.caches.keys();
+          await Promise.all(keys.map((key) => window.caches.delete(key)));
+        }
+      } catch {
+        return;
+      }
+    };
+
+    void cleanupLegacyWorkers();
+  }, []);
+
   const redirectToLogin = useCallback(() => {
     if (typeof window === 'undefined') {
       return;
