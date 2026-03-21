@@ -535,6 +535,7 @@ export function MayaChatScreen() {
   const [manualWorkrunFocus, setManualWorkrunFocus] = useState<string | null>(null);
   const feedRef = useRef<HTMLDivElement>(null);
   const sendingRef = useRef(false);
+  const isHydratingSessionState = !sessionsLoaded && !sessionState;
 
   // Persist settings on change
   useEffect(() => {
@@ -1595,6 +1596,52 @@ export function MayaChatScreen() {
     const prov = providers.find(p => p.id === newProviderId);
     if (prov) setModel(prov.defaultModel);
   };
+
+  if (isHydratingSessionState) {
+    return (
+      <div className="maya-shell">
+        <MayaRail onOpenReview={() => setShowReviewSheet(true)} />
+
+        <div className="maya-main">
+          <MayaTopbar
+            mayaState={mayaState}
+            provider={provider}
+            model={model}
+            providers={providers}
+            health={health}
+            reviewCount={reviewCount}
+            topbarMetaOpen={topbarMetaOpen}
+            isFileMode={isFileMode}
+            hasMessages={false}
+            onToggleMeta={() => setTopbarMetaOpen(v => !v)}
+            onProviderChange={handleProviderChange}
+            onModelChange={setModel}
+            onOpenReview={() => setShowReviewSheet(true)}
+            onClearMessages={clearMessages}
+          />
+
+          <div className="maya-feed" ref={feedRef}>
+            <section className="mb-4 rounded-[24px] border border-cyan-400/20 bg-cyan-500/8 p-4 text-sm text-slate-100 shadow-shell sm:p-5">
+              <div className="animate-pulse space-y-4">
+                <div className="h-3 w-36 rounded bg-white/10" />
+                <div className="h-5 w-80 max-w-full rounded bg-white/10" />
+                <div className="h-4 w-64 max-w-full rounded bg-white/10" />
+              </div>
+            </section>
+
+            <section className="mb-4 rounded-[24px] border border-white/10 bg-white/5 p-5 shadow-shell">
+              <div className="animate-pulse space-y-4">
+                <div className="h-3 w-40 rounded bg-white/10" />
+                <div className="h-8 w-72 max-w-full rounded bg-white/10" />
+                <div className="h-4 w-full rounded bg-white/10" />
+                <div className="h-4 w-11/12 rounded bg-white/10" />
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Scroll feed to bottom when messages change
   useEffect(() => {
