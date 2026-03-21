@@ -214,16 +214,30 @@ function saveSettings(settings: MayaSettings) {
   }
 }
 
+function isWeakSessionStarterText(value?: string | null) {
+  const normalized = value?.trim().toLowerCase().replace(/[\s.!?,;:]+/g, ' ') || '';
+
+  if (!normalized) {
+    return true;
+  }
+
+  if (/^(hallo|hi|hey|moin|servus|guten tag|guten morgen|guten abend)( maya)?$/.test(normalized)) {
+    return true;
+  }
+
+  const words = normalized.split(' ').filter(Boolean);
+  return words.length <= 4 || normalized.length <= 32;
+}
+
 function buildMayaThreadSession(messages: Message[]): ChatSession {
-  const latestUserMessage = [...messages].reverse().find((message) => message.role === 'user');
   const digestMessages = messages.filter(
     (message): message is Message & { role: 'user' | 'assistant' } => message.role === 'user' || message.role === 'assistant'
   );
 
   return {
     id: 'maya-live-thread',
-    title: latestUserMessage?.content || 'Maya Fadenkompass',
-    intent: latestUserMessage?.content || '',
+    title: buildThreadTitle(messages),
+    intent: toSessionIntent(messages),
     messages: digestMessages.map((message) => ({
       id: message.id,
       role: message.role,
@@ -236,7 +250,9 @@ function buildMayaThreadSession(messages: Message[]): ChatSession {
 function buildThreadTitle(messages: Message[]) {
   const latestUserMessage = [...messages].reverse().find((message) => message.role === 'user');
   const fallbackMessage = latestUserMessage || messages.find((message) => message.role === 'assistant' || message.role === 'user');
-  const rawTitle = fallbackMessage?.content.trim() || 'Neuer Maya-Thread';
+  const rawTitle = isWeakSessionStarterText(latestUserMessage?.content)
+    ? 'Neuer Maya-Thread'
+    : fallbackMessage?.content.trim() || 'Neuer Maya-Thread';
 
   return rawTitle.length > MAYA_THREAD_TITLE_LIMIT
     ? `${rawTitle.slice(0, MAYA_THREAD_TITLE_LIMIT).trimEnd()}…`
@@ -245,7 +261,17 @@ function buildThreadTitle(messages: Message[]) {
 
 function toSessionIntent(messages: Message[]) {
   const latestUserMessage = [...messages].reverse().find((message) => message.role === 'user');
-  return latestUserMessage?.content.trim() || '';
+  return isWeakSessionStarterText(latestUserMessage?.content) ? '' : latestUserMessage?.content.trim() || '';
+}
+
+function isWeakEarlyThreadSession(messages: Message[]) {
+  const relevantMessages = messages.filter((message) => message.role === 'user' || message.role === 'assistant');
+  const latestUserMessage = [...relevantMessages].reverse().find((message) => message.role === 'user');
+  const latestAssistantMessage = [...relevantMessages].reverse().find((message) => message.role === 'assistant');
+
+  return relevantMessages.length <= 2
+    && isWeakSessionStarterText(latestUserMessage?.content)
+    && (!latestAssistantMessage?.content || isBoilerplateMayaSurfaceSignal(latestAssistantMessage.content));
 }
 
 function toStoredMessage(message: Message): ChatSession['messages'][number] {
@@ -434,6 +460,28 @@ function buildPersistedSession(
   workspaceId?: string | null
 ): ChatSession {
   const timestamp = new Date().toISOString();
+  const weakEarlyThreadSession = isWeakEarlyThreadSession(messages);
+  const persistedWorkrun = workrun
+    ? { ...workrun }
+    : weakEarlyThreadSession || baseSession.workrun?.source !== 'manual'
+      ? undefined
+      : baseSession.workrun;
+  const persistedCheckpointBoard = checkpointBoard
+    ? {
+        ...checkpointBoard,
+        checkpoints: checkpointBoard.checkpoints.map((checkpoint) => ({ ...checkpoint }))
+      }
+    : weakEarlyThreadSession || baseSession.checkpointBoard?.source !== 'manual'
+      ? undefined
+      : baseSession.checkpointBoard;
+  const persistedHandoff = handoff
+    ? {
+        ...handoff,
+        openItems: [...handoff.openItems]
+      }
+    : weakEarlyThreadSession || baseSession.handoff?.source !== 'manual'
+      ? undefined
+      : baseSession.handoff;
 
   return {
     ...baseSession,
@@ -443,15 +491,9 @@ function buildPersistedSession(
       .filter((message) => message.role === 'user' || message.role === 'assistant')
       .map((message) => toStoredMessage(message)),
     digest: digest ? { ...digest } : undefined,
-    workrun: workrun ? { ...workrun } : baseSession.workrun,
-    checkpointBoard: checkpointBoard ? {
-      ...checkpointBoard,
-      checkpoints: checkpointBoard.checkpoints.map((checkpoint) => ({ ...checkpoint }))
-    } : baseSession.checkpointBoard,
-    handoff: handoff ? {
-      ...handoff,
-      openItems: [...handoff.openItems]
-    } : baseSession.handoff,
+    workrun: persistedWorkrun,
+    checkpointBoard: persistedCheckpointBoard,
+    handoff: persistedHandoff,
     workspaceId: workspaceId === undefined ? baseSession.workspaceId || null : workspaceId,
     createdAt: baseSession.createdAt || timestamp,
     updatedAt: timestamp
@@ -606,7 +648,7 @@ export function MayaChatScreen() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/state');
+        const res = await fetch('/api/state', { cache: 'no-store' });
         if (!res.ok) {
           setSessionsLoaded(true);
           return;

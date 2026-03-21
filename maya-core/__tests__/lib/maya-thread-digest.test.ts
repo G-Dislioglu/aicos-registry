@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildActiveCheckpointBoard, buildActiveThreadHandoff, buildActiveWorkrun, buildContinuityBriefing, buildPersistedCheckpointBoard, buildPersistedThreadHandoff, buildResumeActions, buildThreadDigest, shouldRefreshThreadDigest } from '@/lib/maya-thread-digest';
+import { buildActiveCheckpointBoard, buildActiveThreadHandoff, buildActiveWorkrun, buildContinuityBriefing, buildDerivedWorkspaceContext, buildPersistedCheckpointBoard, buildPersistedThreadHandoff, buildResumeActions, buildThreadDigest, shouldRefreshThreadDigest } from '@/lib/maya-thread-digest';
 import { ChatSession } from '@/lib/types';
 
 function makeSession(): ChatSession {
@@ -231,6 +231,154 @@ describe('maya thread digest', () => {
     expect(board?.checkpoints.map((checkpoint) => checkpoint.label)).not.toContain('Nächsten Schritt übernehmen');
     expect(board?.checkpoints.map((checkpoint) => checkpoint.label)).not.toContain('Offenen Punkt weiterführen');
     expect(board?.checkpoints.map((checkpoint) => checkpoint.label)).not.toContain('Thread sinnvoll fortsetzen');
+  });
+
+  it('gives a weak early thread a differentiated start-state focus, next step, and open point without inflated guidance', () => {
+    const session: ChatSession = {
+      id: 'thread-early',
+      title: 'Neuer Maya-Thread',
+      intent: '',
+      messages: [
+        {
+          id: 'm1',
+          role: 'user',
+          content: 'hallo Maya',
+          timestamp: '10:00'
+        },
+        {
+          id: 'm2',
+          role: 'assistant',
+          content: 'Hier ist die kürzeste nützliche Lesart: Ich brauche noch etwas mehr Konkretion, um dir wirklich gut zu helfen. Im Moment ist Maya der stärkste aktive Kontext.',
+          timestamp: '10:01'
+        }
+      ],
+      createdAt: '2026-03-21T08:00:00.000Z',
+      updatedAt: '2026-03-21T08:01:00.000Z'
+    };
+
+    const digest = buildThreadDigest(session);
+    const briefing = buildContinuityBriefing(session);
+    const actions = buildResumeActions(briefing);
+    const workrun = buildActiveWorkrun(session, briefing, actions);
+    const board = buildActiveCheckpointBoard(session, briefing, actions, workrun);
+    const handoff = buildActiveThreadHandoff(session, briefing, workrun, board);
+
+    expect(digest?.summary).toContain('zu unscharf');
+    expect(briefing?.focus).toBe('Anliegen für diesen Thread schärfen');
+    expect(workrun?.focus).toBe('Anliegen für diesen Thread schärfen');
+    expect(workrun?.nextStep).toContain('Beschreibe kurz Ziel, Kontext oder Entscheidung');
+    expect(briefing?.openLoops).toEqual([
+      'Es fehlt noch das konkrete Ziel oder die Entscheidung, auf die Maya den Arbeitslauf ausrichten soll.'
+    ]);
+    expect(actions).toHaveLength(0);
+    expect(board?.checkpoints.length).toBeLessThanOrEqual(2);
+    expect(board?.checkpoints.map((checkpoint) => checkpoint.label)).not.toContain('hallo Maya');
+    expect(handoff?.openItems).toEqual([
+      'Es fehlt noch das konkrete Ziel oder die Entscheidung, auf die Maya den Arbeitslauf ausrichten soll.'
+    ]);
+  });
+
+  it('prefers early-thread derivation over stale persisted surfaces from an older workspace context', () => {
+    const session: ChatSession = {
+      id: 'thread-early-stale',
+      title: 'Neuer Maya-Thread',
+      intent: '',
+      workspaceId: 'workspace-daily-assist',
+      messages: [
+        {
+          id: 'm1',
+          role: 'user',
+          content: 'hallo Maya',
+          timestamp: '10:00'
+        },
+        {
+          id: 'm2',
+          role: 'assistant',
+          content: 'Hier ist die kürzeste nützliche Lesart: Ich brauche noch etwas mehr Konkretion, um dir wirklich gut zu helfen. Im Moment ist Maya der stärkste aktive Kontext.',
+          timestamp: '10:01'
+        }
+      ],
+      digest: {
+        threadId: 'thread-older',
+        title: 'Maya Fadenkompass',
+        summary: 'Ich bin Maya. Ich helfe dir dabei, laufende Arbeit klarer zu sehen, relevanten Kontext nach vorne zu holen und offenen Druck in einen nächsten Schritt zu verwandeln.',
+        currentState: 'Ich bin Maya. Ich helfe dir dabei, laufende Arbeit klarer zu sehen, relevanten Kontext nach vorne zu holen und offenen Druck in einen nächsten Schritt zu verwandeln.',
+        openLoops: ['Ich bin Maya. Ich helfe dir dabei, laufende Arbeit klarer zu sehen, relevanten Kontext nach vorne zu holen und offenen Druck in einen nächsten Schritt zu verwandeln.'],
+        nextEntry: 'Ich bin Maya. Ich helfe dir dabei, laufende Arbeit klarer zu sehen, relevanten Kontext nach vorne zu holen und offenen Druck in einen nächsten Schritt zu verwandeln.',
+        confidence: 'low',
+        updatedAt: '2026-03-21T07:00:00.000Z',
+        sourceMessageCount: 1,
+        needsRefresh: false
+      },
+      workrun: {
+        focus: 'Ich bin Maya. Ich helfe dir dabei, laufende Arbeit klarer zu sehen, relevanten Kontext nach vorne zu holen und offenen Druck in einen nächsten Schritt zu verwandeln.',
+        status: 'open',
+        lastOutput: 'Ich bin Maya. Ich helfe dir dabei, laufende Arbeit klarer zu sehen, relevanten Kontext nach vorne zu holen und offenen Druck in einen nächsten Schritt zu verwandeln.',
+        lastStep: null,
+        nextStep: 'Ich bin Maya. Ich helfe dir dabei, laufende Arbeit klarer zu sehen, relevanten Kontext nach vorne zu holen und offenen Druck in einen nächsten Schritt zu verwandeln.',
+        updatedAt: '2026-03-21T07:00:00.000Z',
+        source: 'derived'
+      },
+      checkpointBoard: {
+        title: 'Arbeitsboard',
+        focus: 'Ich bin Maya. Ich helfe dir dabei, laufende Arbeit klarer zu sehen, relevanten Kontext nach vorne zu holen und offenen Druck in einen nächsten Schritt zu verwandeln.',
+        checkpoints: [
+          {
+            id: 'checkpoint-old',
+            label: 'Ich bin Maya. Ich helfe dir dabei, laufende Arbeit klarer zu sehen, relevanten Kontext nach vorne zu holen und offenen Druck in einen nächsten Schritt zu verwandeln.',
+            detail: null,
+            status: 'open',
+            source: 'derived',
+            updatedAt: '2026-03-21T07:00:00.000Z'
+          }
+        ],
+        updatedAt: '2026-03-21T07:00:00.000Z',
+        source: 'derived'
+      },
+      handoff: {
+        status: 'active',
+        achieved: 'Ich bin Maya. Ich helfe dir dabei, laufende Arbeit klarer zu sehen, relevanten Kontext nach vorne zu holen und offenen Druck in einen nächsten Schritt zu verwandeln.',
+        openItems: ['Ich bin Maya. Ich helfe dir dabei, laufende Arbeit klarer zu sehen, relevanten Kontext nach vorne zu holen und offenen Druck in einen nächsten Schritt zu verwandeln.'],
+        nextEntry: 'Ich bin Maya. Ich helfe dir dabei, laufende Arbeit klarer zu sehen, relevanten Kontext nach vorne zu holen und offenen Druck in einen nächsten Schritt zu verwandeln.',
+        updatedAt: '2026-03-21T07:00:00.000Z',
+        source: 'derived'
+      },
+      createdAt: '2026-03-21T08:00:00.000Z',
+      updatedAt: '2026-03-21T08:01:00.000Z'
+    };
+
+    const persistedWorkspace = {
+      id: 'workspace-daily-assist',
+      title: 'Deine tägliche Assistenz',
+      focus: 'Klären, verdichten und aktive Kontexte lesbar halten.',
+      goal: 'Deine tägliche Assistenz',
+      currentState: 'Ich bin Maya. Ich helfe dir dabei, laufende Arbeit klarer zu sehen, relevanten Kontext nach vorne zu holen und offenen Druck in einen nächsten Schritt zu verwandeln.',
+      openItems: ['Klären, verdichten und aktive Kontexte lesbar halten.'],
+      nextMilestone: 'Ich bin Maya. Ich helfe dir dabei, laufende Arbeit klarer zu sehen, relevanten Kontext nach vorne zu holen und offenen Druck in einen nächsten Schritt zu verwandeln.',
+      threadIds: ['thread-older'],
+      updatedAt: '2026-03-21T07:00:00.000Z',
+      source: 'derived' as const,
+      status: 'active' as const
+    };
+
+    const briefing = buildContinuityBriefing(session);
+    const actions = buildResumeActions(briefing);
+    const workrun = buildActiveWorkrun(session, briefing, actions);
+    const board = buildActiveCheckpointBoard(session, briefing, actions, workrun);
+    const handoff = buildActiveThreadHandoff(session, briefing, workrun, board);
+    const workspace = buildDerivedWorkspaceContext(session, persistedWorkspace, briefing, workrun, board, handoff);
+
+    expect(briefing?.focus).toBe('Anliegen für diesen Thread schärfen');
+    expect(workrun?.focus).toBe('Anliegen für diesen Thread schärfen');
+    expect(workrun?.nextStep).toContain('Beschreibe kurz Ziel, Kontext oder Entscheidung');
+    expect(handoff?.openItems).toEqual([
+      'Es fehlt noch das konkrete Ziel oder die Entscheidung, auf die Maya den Arbeitslauf ausrichten soll.'
+    ]);
+    expect(board?.checkpoints.map((checkpoint) => checkpoint.label)).not.toContain('Ich bin Maya. Ich helfe dir dabei, laufende Arbeit klarer zu sehen, relevanten Kontext nach vorne zu holen und offenen Druck in einen nächsten Schritt zu verwandeln.');
+    expect(workspace?.title).toBe('Neuer Maya-Thread');
+    expect(workspace?.focus).toBe('Anliegen für diesen Thread schärfen');
+    expect(workspace?.goal).toBe('Arbeitsziel klären');
+    expect(workspace?.nextMilestone).toContain('Beschreibe kurz Ziel, Kontext oder Entscheidung');
   });
 
   it('prefers a persisted manual checkpoint board when present on the thread', () => {

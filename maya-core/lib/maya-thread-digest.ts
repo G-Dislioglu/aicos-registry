@@ -3,6 +3,8 @@ import { ChatMessage, ChatSession, MayaCheckpoint, MayaCheckpointBoard, MayaThre
 const DIGEST_STALE_MESSAGE_THRESHOLD = 8;
 const MAX_SUMMARY_LENGTH = 220;
 const MAX_OPEN_LOOPS = 4;
+const START_STATE_OPEN_POINT = 'Es fehlt noch das konkrete Ziel oder die Entscheidung, auf die Maya den Arbeitslauf ausrichten soll.';
+const START_STATE_NEXT_STEP = 'Beschreibe kurz Ziel, Kontext oder Entscheidung, bei der Maya dich jetzt als Nächstes unterstützen soll.';
 
 export type MayaContinuityBriefing = {
   title: string;
@@ -125,6 +127,62 @@ function dedupePoints(points: string[]) {
   });
 }
 
+function normalizeMeaning(text: string) {
+  return toSentence(text)
+    .toLowerCase()
+    .replace(/^[^a-z0-9äöüß]+|[^a-z0-9äöüß]+$/gi, '')
+    .replace(/\s+/g, ' ');
+}
+
+function isGenericMayaMessage(text: string) {
+  const normalized = normalizeMeaning(text);
+
+  if (!normalized) {
+    return true;
+  }
+
+  return [
+    'hier ist die kürzeste nützliche lesart',
+    'ich brauche noch etwas mehr konkretion um dir wirklich gut zu helfen',
+    'im moment ist maya der stärkste aktive kontext',
+    'der wichtigste rahmen im blick ist',
+    'ich bin maya ich helfe dir dabei',
+    'sag bescheid wenn ich dich bei etwas unterstützen soll'
+  ].some((entry) => normalized.includes(entry));
+}
+
+function isWeakStartSignal(text: string) {
+  const normalized = normalizeMeaning(text);
+
+  if (!normalized) {
+    return true;
+  }
+
+  if (['hallo maya', 'hallo', 'hey', 'hi', 'test'].includes(normalized)) {
+    return true;
+  }
+
+  const words = normalized.split(' ').filter(Boolean);
+  return words.length <= 4 || normalized.length <= 32;
+}
+
+function isEarlyThreadState(session: ChatSession, latestUserText: string, latestAssistantText: string) {
+  const messageCount = session.messages.length;
+  const weakUserSignal = isWeakStartSignal(latestUserText);
+  const genericAssistantSignal = isGenericMayaMessage(latestAssistantText);
+
+  return messageCount <= 2 && weakUserSignal && (!latestAssistantText || genericAssistantSignal);
+}
+
+function buildStartStateFocus(session: ChatSession) {
+  const subject = toSentence(session.intent || session.title);
+  if (subject && !isGenericMayaMessage(subject) && !isWeakStartSignal(subject)) {
+    return truncate(`Anliegen im Thread schärfen: ${subject}`, 160);
+  }
+
+  return 'Anliegen für diesen Thread schärfen';
+}
+
 function toCheckpointDetail(label: string, focus: string) {
   const normalizedLabel = toSentence(label);
   const normalizedFocus = toSentence(focus);
@@ -142,18 +200,25 @@ function buildDerivedCheckpointList(
   resumeActions: MayaResumeAction[],
   workrun: MayaActiveWorkrun | undefined
 ) {
+  const latestUserText = getLastUserMessage(session.messages)?.content || '';
+  const latestAssistantText = getLastAssistantMessage(session.messages)?.content || '';
+  const earlyThreadState = isEarlyThreadState(session, latestUserText, latestAssistantText);
   const candidatePoints = dedupePoints([
     workrun?.nextStep || '',
     workrun?.lastStep || '',
     ...briefing?.openLoops || [],
     briefing?.nextStep || '',
     session.intent || ''
-  ]).slice(0, MAX_BOARD_CHECKPOINTS);
+  ])
+    .filter((point) => point !== START_STATE_NEXT_STEP)
+    .filter((point) => !isWeakStartSignal(point))
+    .filter((point) => !isGenericMayaMessage(point))
+    .slice(0, earlyThreadState ? 2 : MAX_BOARD_CHECKPOINTS);
 
   return candidatePoints.map((point, index) => ({
     id: toCheckpointId(point, index),
     label: truncate(point, 120),
-    detail: toCheckpointDetail(workrun?.focus || briefing?.focus || session.intent || session.title, point),
+    detail: earlyThreadState ? null : toCheckpointDetail(workrun?.focus || briefing?.focus || session.intent || session.title, point),
     status: 'open' as const,
     source: 'derived' as const,
     updatedAt: session.updatedAt || briefing?.lastUpdatedAt || workrun?.updatedAt || new Date().toISOString()
@@ -166,33 +231,51 @@ function deriveTitle(session: ChatSession, latestUserText: string) {
 }
 
 function deriveSummary(session: ChatSession, latestUserText: string, latestAssistantText: string) {
+  if (isEarlyThreadState(session, latestUserText, latestAssistantText)) {
+    return 'Der Thread ist gestartet, aber Ziel und Kontext sind noch zu unscharf für einen belastbaren Arbeitslauf.';
+  }
+
   const pieces = [latestUserText, latestAssistantText, session.intent]
     .map((part) => toSentence(part))
+    .filter((part) => !isGenericMayaMessage(part))
     .filter(Boolean);
 
   return truncate(pieces.slice(0, 2).join(' '), MAX_SUMMARY_LENGTH);
 }
 
-function deriveCurrentState(latestAssistantText: string, latestUserText: string) {
+function deriveCurrentState(session: ChatSession, latestAssistantText: string, latestUserText: string) {
+  if (isEarlyThreadState(session, latestUserText, latestAssistantText)) {
+    return 'Maya hat den Thread aufgenommen, aber der konkrete Arbeitsauftrag ist noch nicht klar genug benannt.';
+  }
+
   const assistant = toSentence(latestAssistantText);
-  if (assistant) {
+  if (assistant && !isGenericMayaMessage(assistant)) {
     return truncate(assistant, 180);
   }
 
   return truncate(toSentence(latestUserText), 180);
 }
 
-function deriveOpenLoops(latestUserText: string, latestAssistantText: string) {
+function deriveOpenLoops(session: ChatSession, latestUserText: string, latestAssistantText: string) {
+  if (isEarlyThreadState(session, latestUserText, latestAssistantText)) {
+    return [START_STATE_OPEN_POINT];
+  }
+
   const userPoints = splitIntoPoints(latestUserText);
   const assistantPoints = splitIntoPoints(latestAssistantText);
   const combined = [...assistantPoints, ...userPoints]
     .map((point) => truncate(point, 110))
+    .filter((point) => !isGenericMayaMessage(point))
     .filter(Boolean);
 
   return combined.slice(0, MAX_OPEN_LOOPS);
 }
 
-function deriveNextEntry(latestAssistantText: string, latestUserText: string) {
+function deriveNextEntry(session: ChatSession, latestAssistantText: string, latestUserText: string) {
+  if (isEarlyThreadState(session, latestUserText, latestAssistantText)) {
+    return START_STATE_NEXT_STEP;
+  }
+
   const assistantPoints = splitIntoPoints(latestAssistantText);
   if (assistantPoints.length > 0) {
     return truncate(assistantPoints[0], 140);
@@ -219,18 +302,22 @@ function deriveConfidence(messageCount: number, hasAssistantReply: boolean): Thr
 }
 
 function deriveSessionFocus(session: ChatSession, latestUserText: string, latestAssistantText: string) {
+  if (isEarlyThreadState(session, latestUserText, latestAssistantText)) {
+    return buildStartStateFocus(session);
+  }
+
   const base = toSentence(session.intent || latestUserText || latestAssistantText || session.title || 'Noch kein klarer Arbeitsfokus.');
   return truncate(base, 160);
 }
 
 function deriveSessionOpenLoops(session: ChatSession, latestUserText: string, latestAssistantText: string) {
-  const fromMessages = deriveOpenLoops(latestUserText, latestAssistantText);
+  const fromMessages = deriveOpenLoops(session, latestUserText, latestAssistantText);
   if (fromMessages.length > 0) {
     return fromMessages;
   }
 
   const fallback = toSentence(session.intent || latestUserText || latestAssistantText);
-  return fallback ? [truncate(fallback, 110)] : [];
+  return fallback && !isGenericMayaMessage(fallback) ? [truncate(fallback, 110)] : [];
 }
 
 function deriveWorkrunStatus(latestMessageText: string) {
@@ -271,7 +358,7 @@ function buildDerivedOpenItems(
   return dedupePoints([
     ...boardOpenItems,
     ...briefing?.openLoops || [],
-    workrun?.status === 'completed' ? '' : workrun?.nextStep || ''
+    workrun?.status === 'completed' || workrun?.nextStep === START_STATE_NEXT_STEP ? '' : workrun?.nextStep || ''
   ]).slice(0, MAX_OPEN_LOOPS);
 }
 
@@ -281,11 +368,16 @@ function buildAchievedSummary(
   board: MayaActiveCheckpointBoard | undefined,
   briefing: MayaContinuityBriefing | undefined
 ) {
+  const latestUserText = getLastUserMessage(session.messages)?.content || '';
+  const latestAssistantText = getLastAssistantMessage(session.messages)?.content || '';
+  const earlyThreadState = isEarlyThreadState(session, latestUserText, latestAssistantText);
   const completedCheckpoints = board?.checkpoints
     .filter((checkpoint) => checkpoint.status === 'completed')
     .map((checkpoint) => checkpoint.label) || [];
 
-  const baseSummary = session.handoff?.achieved || workrun?.lastOutput || briefing?.currentState || session.digest?.summary || '';
+  const baseSummary = earlyThreadState
+    ? ''
+    : session.handoff?.achieved || workrun?.lastOutput || briefing?.currentState || session.digest?.summary || '';
   if (completedCheckpoints.length === 0) {
     return truncate(toSentence(baseSummary), 220);
   }
@@ -299,9 +391,13 @@ function buildNextEntryPoint(
   briefing: MayaContinuityBriefing | undefined,
   openItems: string[]
 ) {
+  const latestUserMessage = getLastUserMessage(session.messages);
+  const latestAssistantMessage = getLastAssistantMessage(session.messages);
+  const earlyThreadState = isEarlyThreadState(session, latestUserMessage?.content || '', latestAssistantMessage?.content || '');
+
   return truncate(
     toSentence(
-      session.handoff?.nextEntry ||
+      (earlyThreadState ? '' : session.handoff?.nextEntry) ||
       workrun?.nextStep ||
       openItems[0] ||
       briefing?.nextStep ||
@@ -383,6 +479,10 @@ function buildWorkspaceGoal(
   briefing: MayaContinuityBriefing | undefined,
   handoff: MayaActiveThreadHandoff | undefined
 ) {
+  if (briefing?.nextStep === START_STATE_NEXT_STEP) {
+    return 'Arbeitsziel klären';
+  }
+
   return truncate(
     toSentence(
       persisted?.goal ||
@@ -459,7 +559,13 @@ export function buildContinuityBriefing(session: ChatSession): MayaContinuityBri
     return undefined;
   }
 
-  if (session.digest) {
+  const latestUserMessage = getLastUserMessage(session.messages);
+  const latestAssistantMessage = getLastAssistantMessage(session.messages);
+  const latestUserText = latestUserMessage?.content || '';
+  const latestAssistantText = latestAssistantMessage?.content || '';
+  const earlyThreadState = isEarlyThreadState(session, latestUserText, latestAssistantText);
+
+  if (session.digest && !earlyThreadState) {
     return {
       title: session.digest.title || toSentence(session.title || 'Kontinuitäts-Briefing'),
       focus: session.digest.summary || toSentence(session.intent || session.title || 'Noch kein klarer Arbeitsfokus.'),
@@ -472,17 +578,12 @@ export function buildContinuityBriefing(session: ChatSession): MayaContinuityBri
     };
   }
 
-  const latestUserMessage = getLastUserMessage(session.messages);
-  const latestAssistantMessage = getLastAssistantMessage(session.messages);
-  const latestUserText = latestUserMessage?.content || '';
-  const latestAssistantText = latestAssistantMessage?.content || '';
-
   return {
     title: deriveTitle(session, latestUserText),
     focus: deriveSessionFocus(session, latestUserText, latestAssistantText),
-    currentState: deriveCurrentState(latestAssistantText, latestUserText),
+    currentState: deriveCurrentState(session, latestAssistantText, latestUserText),
     openLoops: deriveSessionOpenLoops(session, latestUserText, latestAssistantText),
-    nextStep: deriveNextEntry(latestAssistantText, latestUserText),
+    nextStep: deriveNextEntry(session, latestAssistantText, latestUserText),
     lastUpdatedAt: session.updatedAt || latestAssistantMessage?.timestamp || latestUserMessage?.timestamp || null,
     confidence: 'pending',
     source: 'session'
@@ -491,6 +592,10 @@ export function buildContinuityBriefing(session: ChatSession): MayaContinuityBri
 
 export function buildResumeActions(briefing: MayaContinuityBriefing | undefined): MayaResumeAction[] {
   if (!briefing) {
+    return [];
+  }
+
+  if (briefing.nextStep === START_STATE_NEXT_STEP) {
     return [];
   }
 
@@ -547,10 +652,11 @@ export function buildActiveWorkrun(
   const latestUserMessage = getLastUserMessage(session.messages);
   const latestAssistantMessage = getLastAssistantMessage(session.messages);
   const latestMessage = getLastMessage(session.messages);
-  const persistedWorkrun = session.workrun;
+  const earlyThreadState = isEarlyThreadState(session, latestUserMessage?.content || '', latestAssistantMessage?.content || '');
+  const persistedWorkrun = earlyThreadState ? undefined : session.workrun;
   const focus = toSentence(
     persistedWorkrun?.focus ||
-      briefing?.focus ||
+      (earlyThreadState ? buildStartStateFocus(session) : briefing?.focus) ||
       latestUserMessage?.content ||
       session.intent ||
       session.title ||
@@ -558,13 +664,17 @@ export function buildActiveWorkrun(
   );
   const nextStep = toSentence(
     persistedWorkrun?.nextStep ||
-      briefing?.nextStep ||
+      (earlyThreadState ? START_STATE_NEXT_STEP : briefing?.nextStep) ||
       resumeActions[0]?.prompt ||
       latestUserMessage?.content ||
       'Mit dem aktuellen Thread weiterarbeiten.'
   );
-  const lastOutput = persistedWorkrun?.lastOutput || (latestAssistantMessage?.content ? truncate(toSentence(latestAssistantMessage.content), 220) : null);
-  const lastStep = persistedWorkrun?.lastStep || (latestUserMessage?.content ? truncate(toSentence(latestUserMessage.content), 180) : null);
+  const lastOutput = earlyThreadState
+    ? null
+    : persistedWorkrun?.lastOutput || (latestAssistantMessage?.content ? truncate(toSentence(latestAssistantMessage.content), 220) : null);
+  const lastStep = earlyThreadState || isWeakStartSignal(latestUserMessage?.content || '')
+    ? null
+    : persistedWorkrun?.lastStep || (latestUserMessage?.content ? truncate(toSentence(latestUserMessage.content), 180) : null);
   const statusSource = toSentence(latestMessage?.content || briefing?.currentState || persistedWorkrun?.focus || '');
 
   return {
@@ -575,6 +685,71 @@ export function buildActiveWorkrun(
     nextStep: truncate(nextStep, 160),
     updatedAt: persistedWorkrun?.updatedAt || latestMessage?.timestamp || briefing?.lastUpdatedAt || session.updatedAt || null,
     source: persistedWorkrun?.source || 'derived'
+  };
+}
+
+export function buildActiveCheckpointBoard(
+  session: ChatSession,
+  briefing: MayaContinuityBriefing | undefined,
+  resumeActions: MayaResumeAction[],
+  workrun: MayaActiveWorkrun | undefined
+): MayaActiveCheckpointBoard | undefined {
+  const latestUserMessage = getLastUserMessage(session.messages);
+  const latestAssistantMessage = getLastAssistantMessage(session.messages);
+  const earlyThreadState = isEarlyThreadState(session, latestUserMessage?.content || '', latestAssistantMessage?.content || '');
+  const persistedBoard = earlyThreadState ? undefined : session.checkpointBoard;
+  const checkpoints = persistedBoard?.checkpoints?.length
+    ? persistedBoard.checkpoints.map((checkpoint) => ({ ...checkpoint }))
+    : buildDerivedCheckpointList(session, briefing, resumeActions, workrun);
+
+  if (checkpoints.length === 0 && !workrun && !briefing) {
+    return undefined;
+  }
+
+  const completedCount = checkpoints.filter((checkpoint) => checkpoint.status === 'completed').length;
+  const openCount = checkpoints.length - completedCount;
+  const progressPercent = checkpoints.length === 0 ? 0 : Math.round((completedCount / checkpoints.length) * 100);
+
+  return {
+    title: persistedBoard?.title || 'Arbeitsboard',
+    focus: persistedBoard?.focus || workrun?.focus || briefing?.focus || session.intent || session.title || 'Aktueller Thread',
+    checkpoints,
+    updatedAt: persistedBoard?.updatedAt || workrun?.updatedAt || briefing?.lastUpdatedAt || session.updatedAt || null,
+    source: persistedBoard?.source || 'derived',
+    completedCount,
+    openCount,
+    progressPercent
+  };
+}
+
+export function buildActiveThreadHandoff(
+  session: ChatSession,
+  briefing: MayaContinuityBriefing | undefined,
+  workrun: MayaActiveWorkrun | undefined,
+  board: MayaActiveCheckpointBoard | undefined
+): MayaActiveThreadHandoff | undefined {
+  const latestUserMessage = getLastUserMessage(session.messages);
+  const latestAssistantMessage = getLastAssistantMessage(session.messages);
+  const earlyThreadState = isEarlyThreadState(session, latestUserMessage?.content || '', latestAssistantMessage?.content || '');
+  const persistedHandoff = earlyThreadState ? undefined : session.handoff;
+  const openItems = persistedHandoff?.openItems?.length
+    ? persistedHandoff.openItems.map((item) => truncate(toSentence(item), 110)).filter(Boolean)
+    : buildDerivedOpenItems(briefing, board, workrun);
+  const achieved = truncate(toSentence(persistedHandoff?.achieved || buildAchievedSummary(session, workrun, board, briefing)), 220);
+  const nextEntry = buildNextEntryPoint(session, workrun, briefing, openItems);
+  const status = deriveHandoffStatus(session, workrun);
+
+  if (!achieved && openItems.length === 0 && !nextEntry) {
+    return undefined;
+  }
+
+  return {
+    status,
+    achieved,
+    openItems,
+    nextEntry,
+    updatedAt: persistedHandoff?.updatedAt || workrun?.updatedAt || board?.updatedAt || briefing?.lastUpdatedAt || session.updatedAt || null,
+    source: persistedHandoff?.source || 'derived'
   };
 }
 
@@ -605,37 +780,6 @@ export function buildPersistedWorkrun(
   };
 }
 
-export function buildActiveCheckpointBoard(
-  session: ChatSession,
-  briefing: MayaContinuityBriefing | undefined,
-  resumeActions: MayaResumeAction[],
-  workrun: MayaActiveWorkrun | undefined
-): MayaActiveCheckpointBoard | undefined {
-  const persistedBoard = session.checkpointBoard;
-  const checkpoints = persistedBoard?.checkpoints?.length
-    ? persistedBoard.checkpoints.map((checkpoint) => ({ ...checkpoint }))
-    : buildDerivedCheckpointList(session, briefing, resumeActions, workrun);
-
-  if (checkpoints.length === 0 && !workrun && !briefing) {
-    return undefined;
-  }
-
-  const completedCount = checkpoints.filter((checkpoint) => checkpoint.status === 'completed').length;
-  const openCount = checkpoints.length - completedCount;
-  const progressPercent = checkpoints.length === 0 ? 0 : Math.round((completedCount / checkpoints.length) * 100);
-
-  return {
-    title: persistedBoard?.title || 'Arbeitsboard',
-    focus: persistedBoard?.focus || workrun?.focus || briefing?.focus || session.intent || session.title || 'Aktueller Thread',
-    checkpoints,
-    updatedAt: persistedBoard?.updatedAt || workrun?.updatedAt || briefing?.lastUpdatedAt || session.updatedAt || null,
-    source: persistedBoard?.source || 'derived',
-    completedCount,
-    openCount,
-    progressPercent
-  };
-}
-
 export function buildPersistedCheckpointBoard(
   session: ChatSession,
   currentBoard: MayaActiveCheckpointBoard | undefined,
@@ -646,8 +790,8 @@ export function buildPersistedCheckpointBoard(
       id: checkpoint.id || toCheckpointId(checkpoint.label, index),
       label: truncate(toSentence(checkpoint.label || checkpoint.detail || `Checkpoint ${index + 1}`), 120),
       detail: checkpoint.detail ? truncate(toSentence(checkpoint.detail), 180) : null,
-      status: checkpoint.status === 'completed' ? 'completed' : 'open',
-      source: checkpoint.source === 'manual' ? 'manual' : 'derived',
+      status: checkpoint.status || 'open',
+      source: checkpoint.source || 'manual',
       updatedAt: checkpoint.updatedAt || new Date().toISOString()
     }))
     .filter((checkpoint) => checkpoint.label);
@@ -665,34 +809,6 @@ export function buildPersistedCheckpointBoard(
     checkpoints: checkpoints.slice(0, MAX_BOARD_CHECKPOINTS),
     updatedAt: new Date().toISOString(),
     source: update.source || currentBoard?.source || 'manual'
-  };
-}
-
-export function buildActiveThreadHandoff(
-  session: ChatSession,
-  briefing: MayaContinuityBriefing | undefined,
-  workrun: MayaActiveWorkrun | undefined,
-  board: MayaActiveCheckpointBoard | undefined
-): MayaActiveThreadHandoff | undefined {
-  const persistedHandoff = session.handoff;
-  const openItems = persistedHandoff?.openItems?.length
-    ? persistedHandoff.openItems.map((item) => truncate(toSentence(item), 110)).filter(Boolean)
-    : buildDerivedOpenItems(briefing, board, workrun);
-  const achieved = truncate(toSentence(persistedHandoff?.achieved || buildAchievedSummary(session, workrun, board, briefing)), 220);
-  const nextEntry = buildNextEntryPoint(session, workrun, briefing, openItems);
-  const status = deriveHandoffStatus(session, workrun);
-
-  if (!achieved && openItems.length === 0 && !nextEntry) {
-    return undefined;
-  }
-
-  return {
-    status,
-    achieved,
-    openItems,
-    nextEntry,
-    updatedAt: persistedHandoff?.updatedAt || workrun?.updatedAt || board?.updatedAt || briefing?.lastUpdatedAt || session.updatedAt || null,
-    source: persistedHandoff?.source || 'derived'
   };
 }
 
@@ -727,20 +843,24 @@ export function buildDerivedWorkspaceContext(
   board: MayaActiveCheckpointBoard | undefined,
   handoff: MayaActiveThreadHandoff | undefined
 ): MayaActiveWorkspaceContext | undefined {
-  const title = buildWorkspaceTitle(session, workspace, briefing);
-  const focus = buildWorkspaceFocus(session, workspace, briefing, workrun);
-  const goal = buildWorkspaceGoal(session, workspace, briefing, handoff);
-  const currentState = buildWorkspaceCurrentState(workspace, briefing, handoff, workrun);
-  const openItems = buildWorkspaceOpenItems(workspace, handoff, board, briefing);
-  const nextMilestone = buildWorkspaceNextMilestone(workspace, handoff, workrun, openItems, briefing);
-  const threadIds = dedupePoints([...(workspace?.threadIds || []), session.id]).slice(0, MAX_WORKSPACE_THREADS);
+  const latestUserMessage = getLastUserMessage(session.messages);
+  const latestAssistantMessage = getLastAssistantMessage(session.messages);
+  const earlyThreadState = isEarlyThreadState(session, latestUserMessage?.content || '', latestAssistantMessage?.content || '');
+  const persistedWorkspace = earlyThreadState ? undefined : workspace;
+  const title = buildWorkspaceTitle(session, persistedWorkspace, briefing);
+  const focus = buildWorkspaceFocus(session, persistedWorkspace, briefing, workrun);
+  const goal = buildWorkspaceGoal(session, persistedWorkspace, briefing, handoff);
+  const currentState = buildWorkspaceCurrentState(persistedWorkspace, briefing, handoff, workrun);
+  const openItems = buildWorkspaceOpenItems(persistedWorkspace, handoff, board, briefing);
+  const nextMilestone = buildWorkspaceNextMilestone(persistedWorkspace, handoff, workrun, openItems, briefing);
+  const threadIds = dedupePoints([...(persistedWorkspace?.threadIds || []), session.id]).slice(0, MAX_WORKSPACE_THREADS);
 
   if (!title && !focus && !goal && !currentState && openItems.length === 0 && !nextMilestone) {
     return undefined;
   }
 
   return {
-    id: workspace?.id || session.workspaceId || toWorkspaceId(title || focus || goal || session.id),
+    id: persistedWorkspace?.id || session.workspaceId || toWorkspaceId(title || focus || goal || session.id),
     title,
     focus,
     goal,
@@ -748,9 +868,9 @@ export function buildDerivedWorkspaceContext(
     openItems,
     nextMilestone,
     threadIds,
-    updatedAt: workspace?.updatedAt || handoff?.updatedAt || workrun?.updatedAt || briefing?.lastUpdatedAt || session.updatedAt || null,
-    source: workspace?.source || 'derived',
-    status: deriveWorkspaceStatus(workspace, handoff, workrun)
+    updatedAt: persistedWorkspace?.updatedAt || handoff?.updatedAt || workrun?.updatedAt || briefing?.lastUpdatedAt || session.updatedAt || null,
+    source: persistedWorkspace?.source || 'derived',
+    status: deriveWorkspaceStatus(persistedWorkspace, handoff, workrun)
   };
 }
 
@@ -809,9 +929,9 @@ export function buildThreadDigest(session: ChatSession): ThreadDigest | undefine
     threadId: session.id,
     title: deriveTitle(session, latestUserText),
     summary: deriveSummary(session, latestUserText, latestAssistantText),
-    currentState: deriveCurrentState(latestAssistantText, latestUserText),
-    openLoops: deriveOpenLoops(latestUserText, latestAssistantText),
-    nextEntry: deriveNextEntry(latestAssistantText, latestUserText),
+    currentState: deriveCurrentState(session, latestAssistantText, latestUserText),
+    openLoops: deriveOpenLoops(session, latestUserText, latestAssistantText),
+    nextEntry: deriveNextEntry(session, latestAssistantText, latestUserText),
     confidence: deriveConfidence(messageCount, Boolean(latestAssistantText)),
     updatedAt: new Date().toISOString(),
     sourceMessageCount: messageCount,

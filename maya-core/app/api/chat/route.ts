@@ -4,7 +4,7 @@ import { isMayaSessionAuthorized } from '@/lib/maya-auth';
 import { getLocale } from '@/lib/i18n';
 import { buildMayaChatResponse } from '@/lib/maya-engine';
 import { readMayaStore, writeMayaStore } from '@/lib/maya-store';
-import { ChatMessage } from '@/lib/types';
+import { ChatMessage, ChatSession } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -50,9 +50,15 @@ export async function POST(request: NextRequest) {
       memoryItems: store.memoryItems,
       activeProjectId: store.activeProjectId
     });
-    const updatedSession = {
+    const updatedSession: ChatSession = {
       ...session,
       messages: [...session.messages, userMessage, payload.message],
+      digest: session.digest
+        ? {
+            ...session.digest,
+            needsRefresh: true
+          }
+        : undefined,
       updatedAt: new Date().toISOString()
     };
     const nextState = await writeMayaStore({

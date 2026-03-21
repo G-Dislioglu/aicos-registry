@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:maya": "playwright test tests-e2e/maya-smoke.spec.ts",
+    "test:all": "vitest run && playwright test"
   },
   "dependencies": {
     "next": "14.2.24",
@@ -15,14 +20,25 @@
     "react-dom": "18.3.1"
   },
   "devDependencies": {
-    "@types/pg": "8.11.10",
+    "@playwright/test": "^1.49.1",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "22.10.2",
+    "@types/pg": "8.11.10",
     "@types/react": "18.3.12",
     "@types/react-dom": "18.3.1",
+    "@types/supertest": "^6.0.3",
+    "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "10.4.20",
+    "jsdom": "^25.0.1",
     "postcss": "8.4.49",
+    "supertest": "^7.2.2",
     "tailwindcss": "3.4.16",
-    "typescript": "5.7.2"
+    "typescript": "5.7.2",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^2.1.9"
   },
   "engines": {
     "node": ">=20"

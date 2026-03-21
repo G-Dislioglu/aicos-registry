@@ -90,6 +90,19 @@ export function ChatScreen() {
           </section>
 
           <section className="rounded-[28px] border border-white/10 bg-slate-950/60 p-5 shadow-shell">
+            <div className="text-xs uppercase tracking-[0.22em] text-emerald-300">Maya-Hauptfläche</div>
+            <p className="mt-3 text-sm leading-6 text-slate-300">
+              Der Fadenkompass lebt jetzt direkt in der Maya-Hauptfläche. Nutze /maya für die aktuelle Maya-Chatansicht und ihre Orientierungsschicht.
+            </p>
+            <Link
+              href="/maya"
+              className="mt-4 inline-flex rounded-full border border-emerald-300/30 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-100 transition hover:bg-emerald-500/20"
+            >
+              Maya öffnen
+            </Link>
+          </section>
+
+          <section className="rounded-[28px] border border-white/10 bg-slate-950/60 p-5 shadow-shell">
             <div className="text-xs uppercase tracking-[0.22em] text-violet-300">{productText.chat.createSession}</div>
             <div className="mt-4 space-y-3">
               <input

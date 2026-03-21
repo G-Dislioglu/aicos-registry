@@ -4,6 +4,7 @@ import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, 
 import { usePathname } from 'next/navigation';
 
 import { useLanguage } from '@/components/language-provider';
+import { buildThreadDigest } from '@/lib/maya-thread-digest';
 import { ChatApiResponse, ChatSession, MayaStore, MemoryItem, Profile, Project } from '@/lib/types';
 
 type SessionInput = {
@@ -29,6 +30,7 @@ type MayaStateContextValue = {
   createSession: (input?: SessionInput) => Promise<string | undefined>;
   selectSession: (sessionId: string) => Promise<void>;
   sendMessage: (message: string) => Promise<ChatApiResponse>;
+  refreshThreadDigest: (sessionId?: string) => Promise<void>;
 };
 
 const MayaStateContext = createContext<MayaStateContextValue | null>(null);
@@ -333,6 +335,34 @@ export function MayaStateProvider({ children }: { children: ReactNode }) {
     }
   }, [language, redirectToLogin, replaceState]);
 
+  const refreshThreadDigest = useCallback(async (sessionId?: string) => {
+    await mutateState((current) => {
+      const targetSessionId = sessionId || current.activeSessionId;
+
+      return {
+        ...current,
+        sessions: current.sessions.map((session) => {
+          if (session.id !== targetSessionId) {
+            return session;
+          }
+
+          const digest = buildThreadDigest(session);
+
+          return {
+            ...session,
+            digest: digest
+              ? {
+                  ...digest,
+                  needsRefresh: false
+                }
+              : undefined,
+            updatedAt: new Date().toISOString()
+          };
+        })
+      };
+    });
+  }, [mutateState]);
+
   const activeSession = useMemo(() => {
     if (!state) {
       return null;
@@ -366,8 +396,9 @@ export function MayaStateProvider({ children }: { children: ReactNode }) {
     setActiveProjectId,
     createSession,
     selectSession,
-    sendMessage
-  }), [activeProject, activeSession, createSession, deleteMemoryItem, error, isLoading, isSaving, refresh, selectSession, sendMessage, setActiveProjectId, setMemoryPinned, state, updateProfile, upsertMemoryItem, upsertProject, deleteProject]);
+    sendMessage,
+    refreshThreadDigest
+  }), [activeProject, activeSession, createSession, deleteMemoryItem, error, isLoading, isSaving, refresh, refreshThreadDigest, selectSession, sendMessage, setActiveProjectId, setMemoryPinned, state, updateProfile, upsertMemoryItem, upsertProject, deleteProject]);
 
   return <MayaStateContext.Provider value={value}>{children}</MayaStateContext.Provider>;
 }

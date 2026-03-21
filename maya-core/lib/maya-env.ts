@@ -28,7 +28,7 @@ export function getMayaRuntimeConfig(): MayaRuntimeConfig {
   const renderRuntime = isRenderRuntime();
   const productionRuntime = isProductionRuntime();
   const fallbackAuthSecret = !renderRuntime && !productionRuntime ? 'maya-local-auth-secret' : '';
-  const fallbackPassphrase = !renderRuntime && !productionRuntime ? 'maya-local' : '';
+  const fallbackPassphrase = !renderRuntime && !productionRuntime ? 'geselle' : '';
 
   return {
     authSecret: readTrimmedEnv('MAYA_AUTH_SECRET') || fallbackAuthSecret,
