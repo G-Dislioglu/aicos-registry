@@ -26,9 +26,8 @@ export function getMayaRuntimeConfig(): MayaRuntimeConfig {
   const driver = readTrimmedEnv('MAYA_STORAGE_DRIVER');
   const seedLanguage = readTrimmedEnv('MAYA_SEED_LANGUAGE') === 'en' ? 'en' : 'de';
   const renderRuntime = isRenderRuntime();
-  const productionRuntime = isProductionRuntime();
-  const fallbackAuthSecret = !renderRuntime && !productionRuntime ? 'maya-local-auth-secret' : '';
-  const fallbackPassphrase = !renderRuntime && !productionRuntime ? 'geselle' : '';
+  const fallbackAuthSecret = !renderRuntime ? 'maya-local-auth-secret' : '';
+  const fallbackPassphrase = !renderRuntime ? 'geselle' : '';
 
   return {
     authSecret: readTrimmedEnv('MAYA_AUTH_SECRET') || fallbackAuthSecret,

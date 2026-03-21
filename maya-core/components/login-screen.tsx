@@ -2,7 +2,6 @@
 
 import { FormEvent, useState } from 'react';
 import type { Route } from 'next';
-import { useRouter } from 'next/navigation';
 
 type LoginScreenProps = {
   mode?: string;
@@ -10,7 +9,6 @@ type LoginScreenProps = {
 };
 
 export function LoginScreen({ mode, nextPath }: LoginScreenProps) {
-  const router = useRouter();
   const [passphrase, setPassphrase] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,8 +32,7 @@ export function LoginScreen({ mode, nextPath }: LoginScreenProps) {
         throw new Error(payload?.error || 'login_failed');
       }
 
-      router.replace(nextPath);
-      router.refresh();
+      window.location.assign(nextPath);
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : 'login_failed');
     } finally {

@@ -10,7 +10,7 @@ import { MayaReviewSheet } from '@/components/maya/maya-review-sheet';
 import { FALLBACK_PROVIDERS } from '@/components/maya/fallback-providers';
 import { type WorkMode, detectWorkMode, generateLocalResponse } from '@/components/maya/maya-local-response';
 import { formatMayaTimestamp } from '@/lib/maya-date';
-import { buildActiveCheckpointBoard, buildActiveThreadHandoff, buildActiveWorkrun, buildContinuityBriefing, buildDerivedWorkspaceContext, buildPersistedCheckpointBoard, buildPersistedThreadHandoff, buildPersistedWorkrun, buildPersistedWorkspaceContext, buildResumeActions, buildThreadDigest } from '@/lib/maya-thread-digest';
+import { buildActiveCheckpointBoard, buildActiveThreadHandoff, buildActiveWorkrun, buildContinuityBriefing, buildDerivedWorkspaceContext, buildMayaMainSurfaceDerivation, buildPersistedCheckpointBoard, buildPersistedThreadHandoff, buildPersistedWorkrun, buildPersistedWorkspaceContext, buildResumeActions, buildThreadDigest } from '@/lib/maya-thread-digest';
 import { type ChatSession, type MayaCheckpoint, type MayaCheckpointBoard, type MayaStore, type MayaThreadHandoff, type MayaWorkspaceContext, type MayaWorkrun, type ThreadDigest } from '@/lib/types';
 
 type MayaPresenceState = 'idle' | 'thinking' | 'retrieving' | 'streaming';
@@ -736,51 +736,33 @@ export function MayaChatScreen() {
     ? visibleWorkspaces.find((workspace) => workspace.id === activeWorkspaceId) || null
     : null;
   const workspaceAnchorSession = buildWorkspaceAnchorSession(selectedWorkspace, activeSession, visibleSessions);
-  const continuityBriefing = activeSession ? buildContinuityBriefing(activeSession) : null;
-  const resumeActions = buildResumeActions(continuityBriefing || undefined);
-  const derivedWorkrun = activeSession ? buildActiveWorkrun(activeSession, continuityBriefing || undefined, resumeActions) : null;
+  const activeSurface = activeSession
+    ? buildMayaMainSurfaceDerivation(activeSession, selectedWorkspace || undefined)
+    : null;
+  const continuityBriefing = activeSurface?.briefing || null;
+  const resumeActions = activeSurface?.resumeActions || [];
+  const derivedWorkrun = activeSurface?.workrun || null;
   const activeWorkrun = derivedWorkrun
     ? {
         ...derivedWorkrun,
         focus: manualWorkrunFocus || derivedWorkrun.focus
       }
     : null;
-  const activeCheckpointBoard = activeSession ? buildActiveCheckpointBoard(activeSession, continuityBriefing || undefined, resumeActions, activeWorkrun || undefined) : null;
-  const activeThreadHandoff = activeSession ? buildActiveThreadHandoff(activeSession, continuityBriefing || undefined, activeWorkrun || undefined, activeCheckpointBoard || undefined) : null;
+  const activeCheckpointBoard = activeWorkrun && activeSurface?.board
+    ? {
+        ...activeSurface.board,
+        focus: activeWorkrun.focus
+      }
+    : activeSurface?.board || null;
+  const activeThreadHandoff = activeSurface?.handoff || null;
   const assignedWorkspace = workspaceAnchorSession?.workspaceId
     ? visibleWorkspaces.find((workspace) => workspace.id === workspaceAnchorSession.workspaceId) || null
     : null;
   const activeWorkspace = workspaceAnchorSession
-    ? buildDerivedWorkspaceContext(
-        workspaceAnchorSession,
-        selectedWorkspace || assignedWorkspace || undefined,
-        workspaceAnchorSession.id === activeSession?.id ? continuityBriefing || undefined : buildContinuityBriefing(workspaceAnchorSession),
-        workspaceAnchorSession.id === activeSession?.id
-          ? activeWorkrun || undefined
-          : buildActiveWorkrun(workspaceAnchorSession, buildContinuityBriefing(workspaceAnchorSession), buildResumeActions(buildContinuityBriefing(workspaceAnchorSession))),
-        workspaceAnchorSession.id === activeSession?.id
-          ? activeCheckpointBoard || undefined
-          : buildActiveCheckpointBoard(
-              workspaceAnchorSession,
-              buildContinuityBriefing(workspaceAnchorSession),
-              buildResumeActions(buildContinuityBriefing(workspaceAnchorSession)),
-              buildActiveWorkrun(workspaceAnchorSession, buildContinuityBriefing(workspaceAnchorSession), buildResumeActions(buildContinuityBriefing(workspaceAnchorSession)))
-            ),
-        workspaceAnchorSession.id === activeSession?.id
-          ? activeThreadHandoff || undefined
-          : buildActiveThreadHandoff(
-              workspaceAnchorSession,
-              buildContinuityBriefing(workspaceAnchorSession),
-              buildActiveWorkrun(workspaceAnchorSession, buildContinuityBriefing(workspaceAnchorSession), buildResumeActions(buildContinuityBriefing(workspaceAnchorSession))),
-              buildActiveCheckpointBoard(
-                workspaceAnchorSession,
-                buildContinuityBriefing(workspaceAnchorSession),
-                buildResumeActions(buildContinuityBriefing(workspaceAnchorSession)),
-                buildActiveWorkrun(workspaceAnchorSession, buildContinuityBriefing(workspaceAnchorSession), buildResumeActions(buildContinuityBriefing(workspaceAnchorSession)))
-              )
-            )
-      )
-  : null;
+    ? workspaceAnchorSession.id === activeSession?.id
+      ? activeSurface?.workspace || null
+      : buildMayaMainSurfaceDerivation(workspaceAnchorSession, selectedWorkspace || assignedWorkspace || undefined).workspace || null
+    : null;
   const relatedWorkspaceThreads = activeWorkspace
     ? visibleSessions.filter((session) => activeWorkspace.threadIds.includes(session.id))
     : [];
@@ -790,9 +772,9 @@ export function MayaChatScreen() {
   const activeThreadHandoffUpdatedAtLabel = formatMayaTimestamp(activeThreadHandoff?.updatedAt);
   const continuityBriefingUpdatedAtLabel = formatMayaTimestamp(continuityBriefing?.lastUpdatedAt);
   const threadDigestUpdatedAtLabel = formatMayaTimestamp(threadDigest?.updatedAt);
-  const primaryFocus = activeWorkrun?.focus || continuityBriefing?.focus || activeWorkspace?.focus || activeSession?.intent || activeSession?.title || null;
-  const primaryNextStep = activeWorkrun?.nextStep || activeThreadHandoff?.nextEntry || continuityBriefing?.nextStep || activeWorkspace?.nextMilestone || null;
-  const primaryOpenPoint = activeThreadHandoff?.openItems[0] || activeWorkspace?.openItems[0] || continuityBriefing?.openLoops[0] || null;
+  const primaryFocus = activeSurface?.primaryFocus || activeWorkrun?.focus || continuityBriefing?.focus || activeWorkspace?.focus || activeSession?.intent || activeSession?.title || null;
+  const primaryNextStep = activeSurface?.primaryNextStep || activeWorkrun?.nextStep || activeThreadHandoff?.nextEntry || continuityBriefing?.nextStep || activeWorkspace?.nextMilestone || null;
+  const primaryOpenPoint = activeSurface?.primaryOpenPoint || activeThreadHandoff?.openItems[0] || activeWorkspace?.openItems[0] || continuityBriefing?.openLoops[0] || null;
   const workspaceOpenItems = collectDistinctMayaSurfaceSignals(
     activeWorkspace?.openItems || [],
     [primaryOpenPoint, activeWorkrun?.focus, activeWorkrun?.nextStep, activeThreadHandoff?.nextEntry, continuityBriefing?.nextStep],
@@ -1597,52 +1579,6 @@ export function MayaChatScreen() {
     if (prov) setModel(prov.defaultModel);
   };
 
-  if (isHydratingSessionState) {
-    return (
-      <div className="maya-shell">
-        <MayaRail onOpenReview={() => setShowReviewSheet(true)} />
-
-        <div className="maya-main">
-          <MayaTopbar
-            mayaState={mayaState}
-            provider={provider}
-            model={model}
-            providers={providers}
-            health={health}
-            reviewCount={reviewCount}
-            topbarMetaOpen={topbarMetaOpen}
-            isFileMode={isFileMode}
-            hasMessages={false}
-            onToggleMeta={() => setTopbarMetaOpen(v => !v)}
-            onProviderChange={handleProviderChange}
-            onModelChange={setModel}
-            onOpenReview={() => setShowReviewSheet(true)}
-            onClearMessages={clearMessages}
-          />
-
-          <div className="maya-feed" ref={feedRef}>
-            <section className="mb-4 rounded-[24px] border border-cyan-400/20 bg-cyan-500/8 p-4 text-sm text-slate-100 shadow-shell sm:p-5">
-              <div className="animate-pulse space-y-4">
-                <div className="h-3 w-36 rounded bg-white/10" />
-                <div className="h-5 w-80 max-w-full rounded bg-white/10" />
-                <div className="h-4 w-64 max-w-full rounded bg-white/10" />
-              </div>
-            </section>
-
-            <section className="mb-4 rounded-[24px] border border-white/10 bg-white/5 p-5 shadow-shell">
-              <div className="animate-pulse space-y-4">
-                <div className="h-3 w-40 rounded bg-white/10" />
-                <div className="h-8 w-72 max-w-full rounded bg-white/10" />
-                <div className="h-4 w-full rounded bg-white/10" />
-                <div className="h-4 w-11/12 rounded bg-white/10" />
-              </div>
-            </section>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // Scroll feed to bottom when messages change
   useEffect(() => {
     if (feedRef.current) {
@@ -1695,6 +1631,52 @@ export function MayaChatScreen() {
     )
   );
 
+  if (isHydratingSessionState) {
+    return (
+      <div className="maya-shell">
+        <MayaRail onOpenReview={() => setShowReviewSheet(true)} />
+
+        <div className="maya-main">
+          <MayaTopbar
+            mayaState={mayaState}
+            provider={provider}
+            model={model}
+            providers={providers}
+            health={health}
+            reviewCount={reviewCount}
+            topbarMetaOpen={topbarMetaOpen}
+            isFileMode={isFileMode}
+            hasMessages={false}
+            onToggleMeta={() => setTopbarMetaOpen(v => !v)}
+            onProviderChange={handleProviderChange}
+            onModelChange={setModel}
+            onOpenReview={() => setShowReviewSheet(true)}
+            onClearMessages={clearMessages}
+          />
+
+          <div className="maya-feed" ref={feedRef}>
+            <section className="mb-4 rounded-[24px] border border-cyan-400/20 bg-cyan-500/8 p-4 text-sm text-slate-100 shadow-shell sm:p-5">
+              <div className="animate-pulse space-y-4">
+                <div className="h-3 w-36 rounded bg-white/10" />
+                <div className="h-5 w-80 max-w-full rounded bg-white/10" />
+                <div className="h-4 w-64 max-w-full rounded bg-white/10" />
+              </div>
+            </section>
+
+            <section className="mb-4 rounded-[24px] border border-white/10 bg-white/5 p-5 shadow-shell">
+              <div className="animate-pulse space-y-4">
+                <div className="h-3 w-40 rounded bg-white/10" />
+                <div className="h-8 w-72 max-w-full rounded bg-white/10" />
+                <div className="h-4 w-full rounded bg-white/10" />
+                <div className="h-4 w-11/12 rounded bg-white/10" />
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="maya-shell">
 
@@ -1719,55 +1701,55 @@ export function MayaChatScreen() {
         />
 
         <div className="maya-feed" ref={feedRef}>
-          <section className="mb-4 rounded-[24px] border border-cyan-400/20 bg-cyan-500/8 p-4 text-sm text-slate-100 shadow-shell sm:p-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <div className="text-[11px] uppercase tracking-[0.24em] text-cyan-300">Thread-Kontinuität</div>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-                  Maya setzt den letzten aktiven Thread nach Reload oder Wiedereinstieg wieder auf derselben Hauptfläche fort.
-                </p>
-              </div>
+              <section className="mb-4 rounded-[24px] border border-cyan-400/20 bg-cyan-500/8 p-4 text-sm text-slate-100 shadow-shell sm:p-5">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <div className="text-[11px] uppercase tracking-[0.24em] text-cyan-300">Thread-Kontinuität</div>
+                    <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+                      Maya setzt den letzten aktiven Thread nach Reload oder Wiedereinstieg wieder auf derselben Hauptfläche fort.
+                    </p>
+                  </div>
 
-              <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em] text-slate-400">
-                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                  {sessionsLoaded ? `Threads: ${visibleSessions.length}` : 'Threads werden geladen'}
-                </span>
-                {activeSession ? (
-                  <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                    Aktiv: {activeSession.title}
-                  </span>
+                  <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em] text-slate-400">
+                    <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                      {sessionsLoaded ? `Threads: ${visibleSessions.length}` : 'Threads werden geladen'}
+                    </span>
+                    {activeSession ? (
+                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                        Aktiv: {activeSession.title}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+
+                {visibleSessions.length > 0 ? (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {visibleSessions.slice(0, 6).map((session) => (
+                      <button
+                        key={session.id}
+                        type="button"
+                        onClick={() => selectThread(session.id)}
+                        disabled={loading || session.id === activeSessionId}
+                        className={[
+                          'rounded-full border px-4 py-2 text-xs uppercase tracking-[0.18em] transition',
+                          session.id === activeSessionId
+                            ? 'border-cyan-300/40 bg-cyan-400/15 text-cyan-50'
+                            : 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10',
+                          loading ? 'disabled:cursor-not-allowed disabled:opacity-50' : ''
+                        ].join(' ')}
+                      >
+                        {session.title}
+                      </button>
+                    ))}
+                  </div>
+                ) : sessionsLoaded ? (
+                  <p className="mt-4 text-sm leading-6 text-slate-300">
+                    Noch kein persistierter Thread vorhanden. Der nächste Einstieg wird hier als fortsetzbarer Maya-Thread gespeichert.
+                  </p>
                 ) : null}
-              </div>
-            </div>
+              </section>
 
-            {visibleSessions.length > 0 ? (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {visibleSessions.slice(0, 6).map((session) => (
-                  <button
-                    key={session.id}
-                    type="button"
-                    onClick={() => selectThread(session.id)}
-                    disabled={loading || session.id === activeSessionId}
-                    className={[
-                      'rounded-full border px-4 py-2 text-xs uppercase tracking-[0.18em] transition',
-                      session.id === activeSessionId
-                        ? 'border-cyan-300/40 bg-cyan-400/15 text-cyan-50'
-                        : 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10',
-                      loading ? 'disabled:cursor-not-allowed disabled:opacity-50' : ''
-                    ].join(' ')}
-                  >
-                    {session.title}
-                  </button>
-                ))}
-              </div>
-            ) : sessionsLoaded ? (
-              <p className="mt-4 text-sm leading-6 text-slate-300">
-                Noch kein persistierter Thread vorhanden. Der nächste Einstieg wird hier als fortsetzbarer Maya-Thread gespeichert.
-              </p>
-            ) : null}
-          </section>
-
-          {activeSession ? (
+              {activeSession ? (
             <section className="mb-4 rounded-[24px] border border-emerald-400/20 bg-emerald-500/8 p-4 text-sm text-slate-100 shadow-shell sm:p-5">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
@@ -2532,17 +2514,17 @@ export function MayaChatScreen() {
         />
       </div>
 
-      {showReviewSheet && (
+      {showReviewSheet ? (
         <MayaReviewSheet
           briefing={briefing}
+          onClose={() => setShowReviewSheet(false)}
           reviewQueue={reviewQueue}
           health={health}
-          onClose={() => setShowReviewSheet(false)}
           onConfirmProposed={confirmProposed}
           onDenyProposed={denyProposed}
           onSubmitReview={submitReview}
         />
-      )}
+      ) : null}
     </div>
   );
 }

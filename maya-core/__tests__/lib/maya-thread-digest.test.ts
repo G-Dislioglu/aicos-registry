@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildActiveCheckpointBoard, buildActiveThreadHandoff, buildActiveWorkrun, buildContinuityBriefing, buildDerivedWorkspaceContext, buildPersistedCheckpointBoard, buildPersistedThreadHandoff, buildResumeActions, buildThreadDigest, shouldRefreshThreadDigest } from '@/lib/maya-thread-digest';
+import { buildActiveCheckpointBoard, buildActiveThreadHandoff, buildActiveWorkrun, buildContinuityBriefing, buildDerivedWorkspaceContext, buildMayaMainSurfaceDerivation, buildPersistedCheckpointBoard, buildPersistedThreadHandoff, buildResumeActions, buildThreadDigest, shouldRefreshThreadDigest } from '@/lib/maya-thread-digest';
 import { ChatSession } from '@/lib/types';
 
 function makeSession(): ChatSession {
@@ -379,6 +379,47 @@ describe('maya thread digest', () => {
     expect(workspace?.focus).toBe('Anliegen für diesen Thread schärfen');
     expect(workspace?.goal).toBe('Arbeitsziel klären');
     expect(workspace?.nextMilestone).toContain('Beschreibe kurz Ziel, Kontext oder Entscheidung');
+  });
+
+  it('builds the maya main surface from one authoritative derivation path', () => {
+    const session = makeSession();
+    session.digest = {
+      threadId: session.id,
+      title: 'Onboarding Optionen',
+      summary: 'Wir klären gerade, welche Onboarding-Option zuerst getestet werden soll.',
+      currentState: 'Option A wirkt als erster Aktivierungstest plausibel.',
+      openLoops: ['Option B gegen Aktivierungsziel abgleichen'],
+      nextEntry: 'Mit der Testhypothese für Option A weitermachen.',
+      confidence: 'medium',
+      updatedAt: '2026-03-19T08:01:00.000Z',
+      sourceMessageCount: 2,
+      needsRefresh: false
+    };
+
+    const workspace = {
+      id: 'workspace-1',
+      title: 'Onboarding Priorisierung',
+      focus: 'Onboarding sauber priorisieren',
+      goal: 'Den ersten sinnvollen Test festziehen',
+      currentState: 'Option A ist aktuell die führende Spur.',
+      openItems: ['Option B gegen Aktivierungsziel abgleichen'],
+      nextMilestone: 'Testhypothese für Option A schärfen',
+      threadIds: [session.id],
+      updatedAt: '2026-03-19T08:01:00.000Z',
+      source: 'manual' as const,
+      status: 'active' as const
+    };
+
+    const surface = buildMayaMainSurfaceDerivation(session, workspace);
+
+    expect(surface.briefing?.focus).toContain('Onboarding-Option');
+    expect(surface.workrun?.focus).toContain('Onboarding-Option');
+    expect(surface.board?.focus).toContain('Onboarding-Option');
+    expect(surface.handoff?.nextEntry).toContain('Option A');
+    expect(surface.workspace?.goal).toContain('Den ersten sinnvollen Test');
+    expect(surface.primaryFocus).toBe(surface.workrun?.focus || null);
+    expect(surface.primaryNextStep).toBe(surface.workrun?.nextStep || null);
+    expect(surface.primaryOpenPoint).toBe(surface.handoff?.openItems[0] || null);
   });
 
   it('prefers a persisted manual checkpoint board when present on the thread', () => {

@@ -1,5 +1,9 @@
 import { defineConfig, devices } from '@playwright/test'
 
+const mayaPlaywrightPort = Number(process.env.MAYA_PLAYWRIGHT_PORT || 3005)
+const mayaPlaywrightBaseUrl = `http://localhost:${mayaPlaywrightPort}`
+const mayaPlaywrightReadyUrl = `${mayaPlaywrightBaseUrl}/login`
+
 export default defineConfig({
   testDir: './tests-e2e',
   fullyParallel: false,
@@ -8,7 +12,7 @@ export default defineConfig({
   workers: 1,
   reporter: 'list',
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: mayaPlaywrightBaseUrl,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
@@ -16,8 +20,8 @@ export default defineConfig({
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
   ],
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
+    command: `npm run build && npm run start -- --port ${mayaPlaywrightPort}`,
+    url: mayaPlaywrightReadyUrl,
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
   },

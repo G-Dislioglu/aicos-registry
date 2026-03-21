@@ -69,6 +69,18 @@ export type MayaActiveWorkspaceContext = {
   status: MayaWorkspaceContext['status'];
 };
 
+export type MayaMainSurfaceDerivation = {
+  briefing: MayaContinuityBriefing | undefined;
+  resumeActions: MayaResumeAction[];
+  workrun: MayaActiveWorkrun | undefined;
+  board: MayaActiveCheckpointBoard | undefined;
+  handoff: MayaActiveThreadHandoff | undefined;
+  workspace: MayaActiveWorkspaceContext | undefined;
+  primaryFocus: string | null;
+  primaryNextStep: string | null;
+  primaryOpenPoint: string | null;
+};
+
 const MAX_BOARD_CHECKPOINTS = 4;
 const MAX_WORKSPACE_THREADS = 6;
 
@@ -871,6 +883,33 @@ export function buildDerivedWorkspaceContext(
     updatedAt: persistedWorkspace?.updatedAt || handoff?.updatedAt || workrun?.updatedAt || briefing?.lastUpdatedAt || session.updatedAt || null,
     source: persistedWorkspace?.source || 'derived',
     status: deriveWorkspaceStatus(persistedWorkspace, handoff, workrun)
+  };
+}
+
+export function buildMayaMainSurfaceDerivation(
+  session: ChatSession,
+  workspace: MayaWorkspaceContext | undefined
+): MayaMainSurfaceDerivation {
+  const briefing = buildContinuityBriefing(session);
+  const resumeActions = buildResumeActions(briefing);
+  const workrun = buildActiveWorkrun(session, briefing, resumeActions);
+  const board = buildActiveCheckpointBoard(session, briefing, resumeActions, workrun);
+  const handoff = buildActiveThreadHandoff(session, briefing, workrun, board);
+  const derivedWorkspace = buildDerivedWorkspaceContext(session, workspace, briefing, workrun, board, handoff);
+  const primaryFocus = workrun?.focus || briefing?.focus || derivedWorkspace?.focus || session.intent || session.title || null;
+  const primaryNextStep = workrun?.nextStep || handoff?.nextEntry || briefing?.nextStep || derivedWorkspace?.nextMilestone || null;
+  const primaryOpenPoint = handoff?.openItems[0] || derivedWorkspace?.openItems[0] || briefing?.openLoops[0] || null;
+
+  return {
+    briefing,
+    resumeActions,
+    workrun,
+    board,
+    handoff,
+    workspace: derivedWorkspace,
+    primaryFocus,
+    primaryNextStep,
+    primaryOpenPoint
   };
 }
 
