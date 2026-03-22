@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { isMayaAuthConfigured } from '@/lib/maya-env';
 
+import { isMayaRequestEdgeAuthorized } from '@/lib/maya-auth-edge';
+
 const MAYA_AUTH_COOKIE = 'maya_session';
 
 function isPublicPath(pathname: string) {
@@ -39,7 +41,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login?mode=misconfigured', request.url));
   }
 
-  if (request.cookies.get(MAYA_AUTH_COOKIE)?.value) {
+  if (request.cookies.get(MAYA_AUTH_COOKIE)?.value && await isMayaRequestEdgeAuthorized(request)) {
     return NextResponse.next();
   }
 
