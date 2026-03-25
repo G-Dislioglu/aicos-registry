@@ -4,10 +4,11 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 
 import { MayaRail }        from '@/components/maya/maya-rail';
 import { MayaTopbar }      from '@/components/maya/maya-topbar';
-import { MayaEmptyState, type ContextAnchorEntry } from '@/components/maya/maya-empty-state';
+import { type ContextAnchorEntry } from '@/components/maya/maya-empty-state';
 import { MayaComposer }    from '@/components/maya/maya-composer';
 import { MayaHydrationSkeleton } from '@/components/maya/maya-hydration-skeleton';
 import { MayaActiveWorkrunPanel } from '@/components/maya/maya-active-workrun-panel';
+import { MayaMessageFeed } from '@/components/maya/maya-message-feed';
 import { MayaWorkspaceContext as MayaWorkspaceContextPanel } from '@/components/maya/maya-workspace-context';
 import { MayaReviewSheet } from '@/components/maya/maya-review-sheet';
 import { FALLBACK_PROVIDERS } from '@/components/maya/fallback-providers';
@@ -821,8 +822,6 @@ export function MayaChatScreen() {
   const activeWorkspaceUpdatedAtLabel = formatMayaTimestamp(activeWorkspace?.updatedAt);
   const activeWorkrunUpdatedAtLabel = formatMayaTimestamp(activeWorkrun?.updatedAt);
   const activeThreadHandoffUpdatedAtLabel = formatMayaTimestamp(activeThreadHandoff?.updatedAt);
-  const continuityBriefingUpdatedAtLabel = formatMayaTimestamp(continuityBriefing?.lastUpdatedAt);
-  const threadDigestUpdatedAtLabel = formatMayaTimestamp(threadDigest?.updatedAt);
   const primaryFocus = activeSurface?.primaryFocus || activeWorkrun?.focus || continuityBriefing?.focus || activeWorkspace?.focus || activeSession?.intent || activeSession?.title || null;
   const primaryNextStep = activeSurface?.primaryNextStep || activeWorkrun?.nextStep || activeThreadHandoff?.nextEntry || continuityBriefing?.nextStep || activeWorkspace?.nextMilestone || null;
   const primaryOpenPoint = activeSurface?.primaryOpenPoint || activeThreadHandoff?.openItems[0] || activeWorkspace?.openItems[0] || continuityBriefing?.openLoops[0] || null;
@@ -831,30 +830,6 @@ export function MayaChatScreen() {
     [primaryOpenPoint, activeWorkrun?.focus, activeWorkrun?.nextStep, activeThreadHandoff?.nextEntry, continuityBriefing?.nextStep],
     2
   );
-  const briefingOpenLoops = collectDistinctMayaSurfaceSignals(
-    continuityBriefing?.openLoops || [],
-    [
-      primaryOpenPoint,
-      ...(activeThreadHandoff?.openItems || []),
-      ...(activeWorkspace?.openItems || []),
-      activeWorkrun?.focus,
-      activeWorkrun?.nextStep,
-      activeThreadHandoff?.nextEntry
-    ],
-    2
-  );
-  const secondaryResumeActions = resumeActions.reduce<typeof resumeActions>((actions, action) => {
-    if (!isDistinctMayaSurfaceSignal(action.prompt, [primaryNextStep, primaryOpenPoint, primaryFocus, activeWorkrun?.lastOutput, ...actions.map((entry) => entry.prompt)])) {
-      return actions;
-    }
-
-    if (actions.some((entry) => entry.source === action.source)) {
-      return actions;
-    }
-
-    actions.push(action);
-    return actions;
-  }, []).slice(0, 2);
   const handoffOpenItems = collectDistinctMayaSurfaceSignals(
     activeThreadHandoff?.openItems || [],
     [primaryOpenPoint, activeWorkrun?.focus, activeWorkrun?.lastOutput, activeWorkrun?.nextStep, activeThreadHandoff?.achieved, activeWorkspace?.currentState, activeWorkspace?.nextMilestone],
@@ -865,9 +840,6 @@ export function MayaChatScreen() {
   const workspaceStateAddsSignal = isDistinctMayaSurfaceSignal(activeWorkspace?.currentState, [activeWorkrun?.lastOutput, activeThreadHandoff?.achieved, continuityBriefing?.currentState]);
   const handoffHasDistinctAchieved = isDistinctMayaSurfaceSignal(activeThreadHandoff?.achieved, [activeWorkrun?.lastOutput, continuityBriefing?.currentState, activeWorkspace?.currentState]);
   const handoffHasDistinctNextEntry = isDistinctMayaSurfaceSignal(activeThreadHandoff?.nextEntry, [primaryNextStep, activeWorkrun?.nextStep]);
-  const briefingHasDistinctFocus = isDistinctMayaSurfaceSignal(continuityBriefing?.focus, [primaryFocus, activeWorkspace?.focus]);
-  const briefingHasDistinctCurrentState = isDistinctMayaSurfaceSignal(continuityBriefing?.currentState, [activeWorkrun?.lastOutput, activeThreadHandoff?.achieved, activeWorkspace?.currentState]);
-  const briefingHasDistinctNextStep = isDistinctMayaSurfaceSignal(continuityBriefing?.nextStep, [primaryNextStep, activeThreadHandoff?.nextEntry]);
   const showActiveHandoffSection = Boolean(
     activeThreadHandoff && (
       handoffHasDistinctNextEntry ||
@@ -881,28 +853,6 @@ export function MayaChatScreen() {
       showActiveHandoffSection
     )
   );
-  const showContinuityResumeActions = Boolean(
-    secondaryResumeActions.length > 0 && (
-      briefingHasDistinctNextStep ||
-      briefingOpenLoops.length > 0 ||
-      briefingHasDistinctFocus
-    )
-  );
-  const showContinuityBriefing = Boolean(
-    continuityBriefing && (
-      briefingHasDistinctNextStep ||
-      (briefingHasDistinctFocus && briefingHasDistinctCurrentState) ||
-      ((briefingHasDistinctFocus || briefingHasDistinctCurrentState) && briefingOpenLoops.length > 0)
-    )
-  );
-  const digestOpenLoops = collectDistinctMayaSurfaceSignals(
-    threadDigest?.openLoops || [],
-    [primaryOpenPoint, ...(activeThreadHandoff?.openItems || []), ...(activeWorkspace?.openItems || []), ...(continuityBriefing?.openLoops || [])],
-    2
-  );
-  const digestHasDistinctSummary = isDistinctMayaSurfaceSignal(threadDigest?.summary, [primaryFocus, continuityBriefing?.focus, activeWorkspace?.focus]);
-  const digestHasDistinctCurrentState = isDistinctMayaSurfaceSignal(threadDigest?.currentState, [activeWorkrun?.lastOutput, continuityBriefing?.currentState, activeThreadHandoff?.achieved]);
-  const digestHasDistinctNextEntry = isDistinctMayaSurfaceSignal(threadDigest?.nextEntry, [primaryNextStep, continuityBriefing?.nextStep, activeThreadHandoff?.nextEntry]);
 
   const persistCurrentSession = useCallback(async (
     nextMessages: Message[],
@@ -1670,17 +1620,6 @@ export function MayaChatScreen() {
   const digestNeedsRefresh = threadDigest
     ? messages.length - threadDigest.sourceMessageCount >= DIGEST_STALE_MESSAGE_THRESHOLD
     : false;
-  const canBuildDigest = messages.some((message) => message.role === 'assistant' || message.role === 'user');
-  const showThreadDigestSection = Boolean(
-    messages.length > 0 && (
-      !threadDigest ||
-      digestNeedsRefresh ||
-      digestHasDistinctSummary ||
-      digestHasDistinctCurrentState ||
-      digestOpenLoops.length > 0 ||
-      digestHasDistinctNextEntry
-    )
-  );
 
   if (isHydratingSessionState) {
     return (
@@ -1737,79 +1676,6 @@ export function MayaChatScreen() {
         />
 
         <div className="maya-feed" ref={feedRef}>
-              <section className="mb-4 rounded-[24px] border border-cyan-400/20 bg-cyan-500/8 p-4 text-sm text-slate-100 shadow-shell sm:p-5">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <div className="text-[11px] uppercase tracking-[0.24em] text-cyan-300">Thread-Kontinuität</div>
-                    <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-                      Maya setzt den letzten aktiven Thread nach Reload oder Wiedereinstieg wieder auf derselben Hauptfläche fort.
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em] text-slate-400">
-                    <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                      {sessionsLoaded ? `Threads: ${visibleSessions.length}` : 'Threads werden geladen'}
-                    </span>
-                    {activeSession ? (
-                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                        Aktiv: {activeSession.title}
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-
-                {visibleSessions.length > 0 ? (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {visibleSessions.slice(0, 6).map((session) => (
-                      <button
-                        key={session.id}
-                        type="button"
-                        onClick={() => selectThread(session.id)}
-                        disabled={loading || session.id === activeSessionId}
-                        className={[
-                          'rounded-full border px-4 py-2 text-xs uppercase tracking-[0.18em] transition',
-                          session.id === activeSessionId
-                            ? 'border-cyan-300/40 bg-cyan-400/15 text-cyan-50'
-                            : 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10',
-                          loading ? 'disabled:cursor-not-allowed disabled:opacity-50' : ''
-                        ].join(' ')}
-                      >
-                        {session.title}
-                      </button>
-                    ))}
-                  </div>
-                ) : sessionsLoaded ? (
-                  <p className="mt-4 text-sm leading-6 text-slate-300">
-                    Noch kein persistierter Thread vorhanden. Der nächste Einstieg wird hier als fortsetzbarer Maya-Thread gespeichert.
-                  </p>
-                ) : null}
-              </section>
-
-              {activeSession ? (
-            <MayaWorkspaceContextPanel
-              activeWorkspace={activeWorkspace}
-              visibleWorkspaces={visibleWorkspaces}
-              relatedWorkspaceThreads={relatedWorkspaceThreads}
-              activeWorkspaceUpdatedAtLabel={activeWorkspaceUpdatedAtLabel}
-              workspaceMilestoneAddsSignal={workspaceMilestoneAddsSignal}
-              workspaceStateAddsSignal={workspaceStateAddsSignal}
-              showWorkspaceOpenItems={showWorkspaceOpenItems}
-              workspaceOpenItems={workspaceOpenItems}
-              activeWorkspaceId={activeWorkspaceId}
-              activeSessionId={activeSessionId}
-              hasActiveSession={Boolean(activeSession)}
-              loading={loading}
-              input={input}
-              onCreateWorkspace={() => void createWorkspace()}
-              onRenameActiveWorkspace={() => void renameActiveWorkspace()}
-              onClearMessages={clearMessages}
-              onSetActiveWorkspace={(workspaceId) => void setActiveWorkspace(workspaceId)}
-              onApplyResumeAction={applyResumeAction}
-              onAssignActiveThreadToWorkspace={(workspaceId) => void assignActiveThreadToWorkspace(workspaceId)}
-              onSelectThread={selectThread}
-            />
-          ) : null}
-
           {activeWorkrun ? (
             <MayaActiveWorkrunPanel
               activeWorkrun={activeWorkrun}
@@ -1899,239 +1765,96 @@ export function MayaChatScreen() {
             />
           ) : null}
 
-          {showContinuityBriefing && continuityBriefing ? (
-            <section className="mb-4 rounded-[24px] border border-violet-400/20 bg-violet-500/8 p-4 text-sm text-slate-100 shadow-shell sm:p-5">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <div className="text-[11px] uppercase tracking-[0.24em] text-violet-300">Kontinuitäts-Briefing</div>
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-                    Diese Schicht bleibt als knappe Wiedereinstiegslesart sichtbar, wenn sie gegenüber Arbeitslauf und Übergabe noch zusätzliche Orientierung liefert.
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em] text-slate-400">
-                  <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                    Quelle: {continuityBriefing.source === 'digest' ? 'Fadenkompass' : 'Aktiver Thread'}
-                  </span>
-                  <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                    Vertrauen: {continuityBriefing.confidence}
-                  </span>
-                  {continuityBriefingUpdatedAtLabel ? (
-                    <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                      Stand: {continuityBriefingUpdatedAtLabel}
-                    </span>
-                  ) : null}
-                </div>
-              </div>
-
-              <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                {briefingHasDistinctFocus ? (
-                  <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Woran Maya gerade mit dir arbeitet</div>
-                    <div className="mt-2 text-base font-medium leading-7 text-slate-100">{continuityBriefing.title}</div>
-                    <p className="mt-3 text-sm leading-6 text-slate-200">{continuityBriefing.focus}</p>
-                  </div>
-                ) : null}
-
-                {briefingHasDistinctCurrentState ? (
-                  <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Knapper Stand</div>
-                    <p className="mt-2 text-sm leading-6 text-slate-200">{continuityBriefing.currentState}</p>
-                  </div>
-                ) : null}
-
-                {briefingHasDistinctNextStep ? (
-                  <div className="rounded-[20px] border border-white/10 bg-white/5 p-4 lg:col-span-2">
-                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Knapper Wiedereinstieg</div>
-                    <p className="mt-2 text-sm leading-6 text-slate-200">{continuityBriefing.nextStep}</p>
-                  </div>
-                ) : null}
-
-                {briefingOpenLoops.length > 0 ? (
-                  <div className="rounded-[20px] border border-white/10 bg-white/5 p-4 lg:col-span-2">
-                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Zusätzliche offene Punkte</div>
-                    <div className="mt-3 space-y-2">
-                      {briefingOpenLoops.map((loop) => (
-                        <div key={loop} className="rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3 text-sm leading-6 text-slate-200">
-                          {loop}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-
-              {showContinuityResumeActions ? (
-                <div className="mt-4 rounded-[20px] border border-white/10 bg-white/5 p-4">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Resume-Actions</div>
-                      <p className="mt-2 text-sm leading-6 text-slate-300">
-                        Nur die zusätzlichen Wiedereinstiegsoptionen bleiben hier sichtbar, wenn sie vom Hauptschritt abweichen.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid gap-3 lg:grid-cols-2">
-                    {secondaryResumeActions.map((action) => (
-                      <div key={action.id} className="rounded-[18px] border border-white/10 bg-slate-950/35 p-4">
-                        <div className="text-sm font-medium leading-6 text-slate-100">{action.label}</div>
-                        <p className="mt-2 text-sm leading-6 text-slate-300">{action.prompt}</p>
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            onClick={() => applyResumeAction(action.prompt, false)}
-                            disabled={loading}
-                            className={[
-                              'rounded-full border px-4 py-2 text-xs uppercase tracking-[0.18em] transition disabled:cursor-not-allowed disabled:opacity-50',
-                              action.emphasis === 'primary'
-                                ? 'border-violet-300/40 bg-violet-400/15 text-violet-50 hover:bg-violet-400/20'
-                                : 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10'
-                            ].join(' ')}
-                          >
-                            In Composer übernehmen
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => applyResumeAction(action.prompt, true)}
-                            disabled={loading}
-                            className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.18em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-                          >
-                            Direkt fortsetzen
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-            </section>
+          {activeSession ? (
+            <MayaWorkspaceContextPanel
+              activeWorkspace={activeWorkspace}
+              visibleWorkspaces={visibleWorkspaces}
+              relatedWorkspaceThreads={relatedWorkspaceThreads}
+              activeWorkspaceUpdatedAtLabel={activeWorkspaceUpdatedAtLabel}
+              workspaceMilestoneAddsSignal={workspaceMilestoneAddsSignal}
+              workspaceStateAddsSignal={workspaceStateAddsSignal}
+              showWorkspaceOpenItems={showWorkspaceOpenItems}
+              workspaceOpenItems={workspaceOpenItems}
+              activeWorkspaceId={activeWorkspaceId}
+              activeSessionId={activeSessionId}
+              hasActiveSession={Boolean(activeSession)}
+              loading={loading}
+              input={input}
+              onCreateWorkspace={() => void createWorkspace()}
+              onRenameActiveWorkspace={() => void renameActiveWorkspace()}
+              onClearMessages={clearMessages}
+              onSetActiveWorkspace={(workspaceId) => void setActiveWorkspace(workspaceId)}
+              onApplyResumeAction={applyResumeAction}
+              onAssignActiveThreadToWorkspace={(workspaceId) => void assignActiveThreadToWorkspace(workspaceId)}
+              onSelectThread={selectThread}
+            />
           ) : null}
 
-          {showThreadDigestSection ? (
-            <section className="mb-4 rounded-[24px] border border-emerald-400/20 bg-emerald-500/8 p-4 text-sm text-slate-100 shadow-shell sm:p-5">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <div className="text-[11px] uppercase tracking-[0.24em] text-emerald-300">Fadenkompass</div>
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-                    Rohchat bleibt führend. Der Fadenkompass ist nur die kompakte Orientierungsschicht für den aktuellen Maya-Thread.
-                  </p>
-                </div>
+          <section className="mb-4 rounded-[20px] border border-cyan-400/15 bg-cyan-500/6 p-4 text-sm text-slate-100 shadow-shell sm:p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="text-[11px] uppercase tracking-[0.22em] text-cyan-300">Thread-Navigation</div>
+                <p className="mt-1 text-sm leading-6 text-slate-300">
+                  Threadwechsel bleibt verfügbar, aber sekundär zur aktiven Arbeitsfläche.
+                </p>
+              </div>
 
+              <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em] text-slate-400">
+                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                  {sessionsLoaded ? `Threads: ${visibleSessions.length}` : 'Threads werden geladen'}
+                </span>
+                {activeSession ? (
+                  <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                    Aktiv: {activeSession.title}
+                  </span>
+                ) : null}
                 <button
                   type="button"
                   onClick={refreshThreadDigest}
-                  disabled={!canBuildDigest || loading}
-                  className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.18em] text-slate-100 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={loading || messages.length === 0}
+                  className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.18em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Faden verdichten
+                  {threadDigest ? (digestNeedsRefresh ? 'Digest erneuern' : 'Digest aktualisieren') : 'Digest erzeugen'}
                 </button>
               </div>
+            </div>
 
-              {threadDigest ? (
-                <div className="mt-4 space-y-4">
-                  {digestNeedsRefresh ? (
-                    <div className="rounded-2xl border border-amber-300/20 bg-amber-400/10 px-4 py-3 text-sm leading-6 text-amber-100">
-                      Seit dem letzten Digest sind neue Nachrichten dazugekommen.
-                    </div>
-                  ) : null}
+            {visibleSessions.length > 0 ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {visibleSessions.slice(0, 6).map((session) => (
+                  <button
+                    key={session.id}
+                    type="button"
+                    onClick={() => selectThread(session.id)}
+                    disabled={loading || session.id === activeSessionId}
+                    className={[
+                      'rounded-full border px-4 py-2 text-xs uppercase tracking-[0.18em] transition',
+                      session.id === activeSessionId
+                        ? 'border-cyan-300/40 bg-cyan-400/15 text-cyan-50'
+                        : 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10',
+                      loading ? 'disabled:cursor-not-allowed disabled:opacity-50' : ''
+                    ].join(' ')}
+                  >
+                    {session.title}
+                  </button>
+                ))}
+              </div>
+            ) : sessionsLoaded ? (
+              <p className="mt-3 text-sm leading-6 text-slate-300">
+                Noch kein persistierter Thread vorhanden. Der nächste Einstieg wird hier als fortsetzbarer Maya-Thread gespeichert.
+              </p>
+            ) : null}
+          </section>
 
-                  {digestHasDistinctSummary ? (
-                    <div>
-                      <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Faden-Kern</div>
-                      <p className="mt-2 text-sm leading-6 text-slate-200">{threadDigest.summary}</p>
-                    </div>
-                  ) : null}
-
-                  {digestHasDistinctCurrentState ? (
-                    <div>
-                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Aktueller Stand</div>
-                    <p className="mt-2 text-sm leading-6 text-slate-200">{threadDigest.currentState}</p>
-                    </div>
-                  ) : null}
-
-                  {digestOpenLoops.length > 0 ? (
-                    <div>
-                      <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Offene Punkte</div>
-                      <div className="mt-2 space-y-2">
-                        {digestOpenLoops.map((loop) => (
-                          <div key={loop} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm leading-6 text-slate-200">
-                            {loop}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {digestHasDistinctNextEntry ? (
-                    <div>
-                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Nächster Einstieg</div>
-                    <p className="mt-2 text-sm leading-6 text-slate-200">{threadDigest.nextEntry}</p>
-                    </div>
-                  ) : null}
-
-                  <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em] text-slate-400">
-                    <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Vertrauen: {threadDigest.confidence}</span>
-                    {threadDigestUpdatedAtLabel ? (
-                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Aktualisiert: {threadDigestUpdatedAtLabel}</span>
-                    ) : null}
-                  </div>
-                </div>
-              ) : (
-                <p className="mt-4 text-sm leading-6 text-slate-300">
-                  Noch kein Digest vorhanden. Verdichte den Faden, wenn du eine kompakte Orientierung für diesen Maya-Thread willst.
-                </p>
-              )}
-            </section>
-          ) : null}
-
-          {messages.length === 0 && !loading ? (
-            <MayaEmptyState
-              onSendStarter={(text, wm) => sendMessage(text, wm)}
-              anchors={contextAnchors}
-              isFileMode={isFileMode}
-            />
-          ) : (
-            <>
-              {messages.map(msg => (
-                <div key={msg.id} className={`maya-message ${msg.role}`}>
-                  <div className="msg-bubble">
-                    <div style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</div>
-                    {msg.role === 'assistant' && (msg.provider || msg.model) && (
-                      <div className="msg-meta">
-                        {msg.contextUsed && <span className="msg-chip">🧠 Kontext</span>}
-                        {msg.provider && <span className="msg-chip">{msg.provider}</span>}
-                        {msg.model && <span className="msg-chip">{msg.model}</span>}
-                        {msg.costCents !== undefined && msg.costCents > 0 && (
-                          <span>{msg.costCents}¢</span>
-                        )}
-                        {msg.tokenInput !== undefined && msg.tokenOutput !== undefined && (
-                          <span>{msg.tokenInput + msg.tokenOutput} tok</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-
-              {mayaState === 'streaming' && streamingText && (
-                <div className="maya-message assistant">
-                  <div className="msg-bubble">
-                    <span style={{ whiteSpace: 'pre-wrap' }}>{streamingText}</span>
-                    <span className="stream-cursor" />
-                  </div>
-                </div>
-              )}
-
-              {mayaState === 'thinking' && !streamingText && (
-                <div className="thinking-indicator">
-                  <div className="think-dot" />
-                  <div className="think-dot" />
-                  <div className="think-dot" />
-                </div>
-              )}
-            </>
-          )}
+          <MayaMessageFeed
+            messages={messages}
+            loading={loading}
+            mayaState={mayaState}
+            streamingText={streamingText}
+            contextAnchors={contextAnchors}
+            isFileMode={isFileMode}
+            onSendStarter={(text, wm) => void sendMessage(text, wm)}
+          />
         </div>
 
         <MayaComposer
