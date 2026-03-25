@@ -442,4 +442,56 @@ describe('normalizeMayaStore', () => {
     expect(store.sessions[0].workspaceId).toBe('workspace-1');
     expect(store.sessions[1].workspaceId).toBeNull();
   });
+
+  it('repairs known persisted umlaut corruption in maya text fields', () => {
+    const store = normalizeMayaStore({
+      sessions: [
+        {
+          id: 'thread-a',
+          title: 'Sekund?rschichten prüfen',
+          intent: 'Führende Lesart vor Sekund?rschichten halten.',
+          messages: [
+            {
+              id: 'msg-a1',
+              role: 'assistant',
+              content: 'Wir halten den Fokus auf dem klaren n?chsten Schritt und vermeiden doppelte Sekund?rsignale.',
+              timestamp: '2026-03-20T19:04:00.000Z'
+            },
+            {
+              id: 'msg-a2',
+              role: 'user',
+              content: 'Bitte die Sekund?rschichten eng an der Hauptlesart halten.',
+              timestamp: '2026-03-20T19:05:00.000Z'
+            }
+          ],
+          workrun: {
+            focus: 'Den n?chsten Review-Schritt festziehen',
+            status: 'open',
+            lastOutput: 'Den n?chsten Review-Schritt festziehen',
+            lastStep: 'Sekund?rschichten auf Wiederholungen prüfen',
+            nextStep: 'Den n?chsten Review-Schritt festziehen',
+            updatedAt: '2026-03-20T19:05:00.000Z',
+            source: 'manual'
+          },
+          handoff: {
+            status: 'active',
+            achieved: 'Den n?chsten Review-Schritt festziehen',
+            openItems: ['Offene Risiken b?ndeln'],
+            nextEntry: 'Den n?chsten Review-Schritt festziehen',
+            updatedAt: '2026-03-20T19:05:00.000Z',
+            source: 'manual'
+          }
+        }
+      ]
+    });
+
+    expect(store.sessions[0].title).toBe('Sekundärschichten prüfen');
+    expect(store.sessions[0].intent).toBe('Führende Lesart vor Sekundärschichten halten.');
+    expect(store.sessions[0].messages[0].content).toContain('nächsten Schritt');
+    expect(store.sessions[0].messages[0].content).toContain('Sekundärsignale');
+    expect(store.sessions[0].messages[1].content).toContain('Sekundärschichten');
+    expect(store.sessions[0].workrun?.focus).toBe('Den nächsten Review-Schritt festziehen');
+    expect(store.sessions[0].workrun?.lastStep).toBe('Sekundärschichten auf Wiederholungen prüfen');
+    expect(store.sessions[0].handoff?.openItems).toEqual(['Offene Risiken bündeln']);
+  });
 });

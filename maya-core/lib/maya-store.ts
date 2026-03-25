@@ -1,3 +1,7 @@
+// K5-LEGACY: Diese Datei gehört zu Achse A (Kontinuität/Persistenz).
+// Ziel: schrittweise Entlastung zugunsten von Achse B an klar markierten Übergabepunkten.
+// Nicht anfassen ohne K5_RUNTIME_AXIS_DECISION_NOTE.md gelesen zu haben.
+
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -15,8 +19,29 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+const UMLAUT_REPAIRS: Array<[RegExp, string]> = [
+  [/Sekund\?rschichten/g, 'Sekundärschichten'],
+  [/Sekund\?rsignale/g, 'Sekundärsignale'],
+  [/sekund\?rschichten/g, 'sekundärschichten'],
+  [/sekund\?rsignale/g, 'sekundärsignale'],
+  [/n\?chsten/g, 'nächsten'],
+  [/N\?chsten/g, 'Nächsten'],
+  [/b\?ndeln/g, 'bündeln'],
+  [/B\?ndeln/g, 'Bündeln'],
+  [/n\?tzlichen/g, 'nützlichen'],
+  [/N\?tzlichen/g, 'Nützlichen']
+];
+
+function repairPersistedText(value: string) {
+  if (!value.includes('?')) {
+    return value;
+  }
+
+  return UMLAUT_REPAIRS.reduce((current, [pattern, replacement]) => current.replace(pattern, replacement), value);
+}
+
 function readString(value: unknown, fallback = '') {
-  return typeof value === 'string' ? value : fallback;
+  return typeof value === 'string' ? repairPersistedText(value) : fallback;
 }
 
 function readStringArray(value: unknown) {
@@ -26,7 +51,7 @@ function readStringArray(value: unknown) {
 
   return value
     .filter((item): item is string => typeof item === 'string')
-    .map((item) => item.trim())
+    .map((item) => repairPersistedText(item).trim())
     .filter(Boolean);
 }
 
