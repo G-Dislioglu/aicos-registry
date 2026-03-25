@@ -10,7 +10,7 @@ import { MayaReviewSheet } from '@/components/maya/maya-review-sheet';
 import { FALLBACK_PROVIDERS } from '@/components/maya/fallback-providers';
 import { type WorkMode, detectWorkMode, generateLocalResponse } from '@/components/maya/maya-local-response';
 import { formatMayaTimestamp } from '@/lib/maya-date';
-import { buildActiveCheckpointBoard, buildActiveThreadHandoff, buildActiveWorkrun, buildContinuityBriefing, buildDerivedWorkspaceContext, buildMayaMainSurfaceDerivation, buildPersistedCheckpointBoard, buildPersistedThreadHandoff, buildPersistedWorkrun, buildPersistedWorkspaceContext, buildResumeActions, buildThreadDigest } from '@/lib/maya-thread-digest';
+import { buildActiveCheckpointBoard, buildActiveThreadHandoff, buildActiveWorkrun, buildContinuityBriefing, buildDerivedWorkspaceContext, buildMayaMainSurfaceDerivation, buildPersistedCheckpointBoard, buildPersistedThreadHandoff, buildPersistedWorkrun, buildPersistedWorkspaceContext, buildResumeActions, buildThreadDigest, type MayaMainSurfaceDerivation } from '@/lib/maya-thread-digest';
 import { type ChatSession, type MayaCheckpoint, type MayaCheckpointBoard, type MayaStore, type MayaThreadHandoff, type MayaWorkspaceContext, type MayaWorkrun, type ThreadDigest } from '@/lib/types';
 
 type MayaPresenceState = 'idle' | 'thinking' | 'retrieving' | 'streaming';
@@ -193,6 +193,12 @@ type MayaSettings = {
   role: ModelRole;
   provider: string;
   model: string;
+};
+
+type MayaSurfaceStateResponse = {
+  activeSession: ChatSession | null;
+  activeWorkspace: MayaWorkspaceContext | null;
+  surface: MayaMainSurfaceDerivation | null;
 };
 
 function loadSettings(): MayaSettings | null {
@@ -533,6 +539,9 @@ export function MayaChatScreen() {
   const [threadDigest, setThreadDigest] = useState<ThreadDigest | null>(null);
   const [sessionsLoaded, setSessionsLoaded] = useState(false);
   const [manualWorkrunFocus, setManualWorkrunFocus] = useState<string | null>(null);
+  const [activeSurfaceSnapshot, setActiveSurfaceSnapshot] = useState<MayaMainSurfaceDerivation | null>(null);
+  const [activeSurfaceSessionId, setActiveSurfaceSessionId] = useState<string | null>(null);
+  const [activeSurfaceWorkspaceId, setActiveSurfaceWorkspaceId] = useState<string | null>(null);
   const feedRef = useRef<HTMLDivElement>(null);
   const sendingRef = useRef(false);
   const isHydratingSessionState = !sessionsLoaded && !sessionState;
@@ -646,16 +655,43 @@ export function MayaChatScreen() {
     loadBriefingAndHealth();
   }, [loadBriefingAndHealth]);
 
+  const loadActiveSurfaceState = useCallback(async () => {
+    try {
+      const res = await fetch('/api/maya/surface-state', { cache: 'no-store' });
+      if (!res.ok) {
+        return;
+      }
+
+      const data = await res.json().catch(() => null) as Partial<MayaSurfaceStateResponse> | null;
+      setActiveSurfaceSnapshot(data?.surface ?? null);
+      setActiveSurfaceSessionId(data?.activeSession?.id ?? null);
+      setActiveSurfaceWorkspaceId(data?.activeWorkspace?.id ?? null);
+    } catch {
+      // Keep Maya usable even when surface-state cannot be read.
+    }
+  }, []);
+
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/state', { cache: 'no-store' });
-        if (!res.ok) {
+        const [stateRes, surfaceRes] = await Promise.all([
+          fetch('/api/state', { cache: 'no-store' }),
+          fetch('/api/maya/surface-state', { cache: 'no-store' })
+        ]);
+
+        if (surfaceRes.ok) {
+          const surfaceData = await surfaceRes.json().catch(() => null) as Partial<MayaSurfaceStateResponse> | null;
+          setActiveSurfaceSnapshot(surfaceData?.surface ?? null);
+          setActiveSurfaceSessionId(surfaceData?.activeSession?.id ?? null);
+          setActiveSurfaceWorkspaceId(surfaceData?.activeWorkspace?.id ?? null);
+        }
+
+        if (!stateRes.ok) {
           setSessionsLoaded(true);
           return;
         }
 
-        const data = await res.json().catch(() => null);
+        const data = await stateRes.json().catch(() => null);
         const state = data?.state as MayaStore | undefined;
 
         if (!state || !Array.isArray(state.sessions) || state.sessions.length === 0) {
@@ -719,15 +755,19 @@ export function MayaChatScreen() {
     setSessionState(nextState);
 
     try {
-      await fetch('/api/state', {
+      const res = await fetch('/api/state', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ state: nextState })
       });
+
+      if (res.ok) {
+        await loadActiveSurfaceState();
+      }
     } catch {
       // Keep the Maya thread locally visible even if persistence write fails.
     }
-  }, []);
+  }, [loadActiveSurfaceState]);
 
   const visibleSessions = sessionState?.sessions || [];
   const visibleWorkspaces = sessionState?.workspaces || [];
@@ -736,9 +776,17 @@ export function MayaChatScreen() {
     ? visibleWorkspaces.find((workspace) => workspace.id === activeWorkspaceId) || null
     : null;
   const workspaceAnchorSession = buildWorkspaceAnchorSession(selectedWorkspace, activeSession, visibleSessions);
-  const activeSurface = activeSession
+  const activeContextWorkspaceId = selectedWorkspace?.id || activeSession?.workspaceId || null;
+  const activeSurfaceFromSnapshot = activeSession
+    && activeSurfaceSnapshot
+    && activeSession.id === activeSurfaceSessionId
+    && activeContextWorkspaceId === activeSurfaceWorkspaceId
+    ? activeSurfaceSnapshot
+    : null;
+  const activeSurfaceBootstrapFallback = !activeSurfaceFromSnapshot && activeSession
     ? buildMayaMainSurfaceDerivation(activeSession, selectedWorkspace || undefined)
     : null;
+  const activeSurface = activeSurfaceFromSnapshot || activeSurfaceBootstrapFallback;
   const continuityBriefing = activeSurface?.briefing || null;
   const resumeActions = activeSurface?.resumeActions || [];
   const derivedWorkrun = activeSurface?.workrun || null;
