@@ -6,6 +6,9 @@ import { MayaRail }        from '@/components/maya/maya-rail';
 import { MayaTopbar }      from '@/components/maya/maya-topbar';
 import { MayaEmptyState, type ContextAnchorEntry } from '@/components/maya/maya-empty-state';
 import { MayaComposer }    from '@/components/maya/maya-composer';
+import { MayaHydrationSkeleton } from '@/components/maya/maya-hydration-skeleton';
+import { MayaActiveWorkrunPanel } from '@/components/maya/maya-active-workrun-panel';
+import { MayaWorkspaceContext as MayaWorkspaceContextPanel } from '@/components/maya/maya-workspace-context';
 import { MayaReviewSheet } from '@/components/maya/maya-review-sheet';
 import { FALLBACK_PROVIDERS } from '@/components/maya/fallback-providers';
 import { type WorkMode, detectWorkMode, generateLocalResponse } from '@/components/maya/maya-local-response';
@@ -1703,22 +1706,7 @@ export function MayaChatScreen() {
           />
 
           <div className="maya-feed" ref={feedRef}>
-            <section className="mb-4 rounded-[24px] border border-cyan-400/20 bg-cyan-500/8 p-4 text-sm text-slate-100 shadow-shell sm:p-5">
-              <div className="animate-pulse space-y-4">
-                <div className="h-3 w-36 rounded bg-white/10" />
-                <div className="h-5 w-80 max-w-full rounded bg-white/10" />
-                <div className="h-4 w-64 max-w-full rounded bg-white/10" />
-              </div>
-            </section>
-
-            <section className="mb-4 rounded-[24px] border border-white/10 bg-white/5 p-5 shadow-shell">
-              <div className="animate-pulse space-y-4">
-                <div className="h-3 w-40 rounded bg-white/10" />
-                <div className="h-8 w-72 max-w-full rounded bg-white/10" />
-                <div className="h-4 w-full rounded bg-white/10" />
-                <div className="h-4 w-11/12 rounded bg-white/10" />
-              </div>
-            </section>
+            <MayaHydrationSkeleton />
           </div>
         </div>
       </div>
@@ -1798,518 +1786,117 @@ export function MayaChatScreen() {
               </section>
 
               {activeSession ? (
-            <section className="mb-4 rounded-[24px] border border-emerald-400/20 bg-emerald-500/8 p-4 text-sm text-slate-100 shadow-shell sm:p-5">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <div className="text-[11px] uppercase tracking-[0.24em] text-emerald-300">Arbeitsraum-Kontext</div>
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-                    Maya zeigt über dem einzelnen Thread den kleinen stabilen Projektkontext, damit Fokus, Gesamtziel und nächster größerer Block beim Threadwechsel sichtbar bleiben.
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em] text-slate-400">
-                  {activeWorkspace ? (
-                    <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                      Status: {activeWorkspace.status === 'completed' ? 'abgeschlossen' : activeWorkspace.status === 'paused' ? 'geparkt' : 'aktiv'}
-                    </span>
-                  ) : null}
-                  <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                    Arbeitsräume: {visibleWorkspaces.length}
-                  </span>
-                  {activeWorkspace ? (
-                    <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                      Threads: {relatedWorkspaceThreads.length}
-                    </span>
-                  ) : null}
-                  {activeWorkspaceUpdatedAtLabel ? (
-                    <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                      Stand: {activeWorkspaceUpdatedAtLabel}
-                    </span>
-                  ) : null}
-                </div>
-              </div>
-
-              <div className="mt-4 rounded-[20px] border border-white/10 bg-white/5 p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Raumsteuerung</div>
-                    <p className="mt-2 text-sm leading-6 text-slate-300">
-                      Arbeitsräume lassen sich hier anlegen, umbenennen, aktiv setzen und direkt mit neuen Threads weiterführen.
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => void createWorkspace()}
-                      disabled={loading}
-                      className="rounded-full border border-emerald-300/40 bg-emerald-400/15 px-4 py-2 text-xs uppercase tracking-[0.18em] text-emerald-50 transition hover:bg-emerald-400/20 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Arbeitsraum anlegen
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void renameActiveWorkspace()}
-                      disabled={loading || !activeWorkspace || !input.trim()}
-                      className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.18em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Aktiven Raum umbenennen
-                    </button>
-                    <button
-                      type="button"
-                      onClick={clearMessages}
-                      disabled={loading || !activeWorkspaceId}
-                      className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.18em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Neuer Thread im Raum
-                    </button>
-                  </div>
-                </div>
-
-                {visibleWorkspaces.length > 0 ? (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {visibleWorkspaces.map((workspace) => (
-                      <button
-                        key={workspace.id}
-                        type="button"
-                        onClick={() => void setActiveWorkspace(workspace.id)}
-                        disabled={loading || workspace.id === activeWorkspaceId}
-                        className={[
-                          'rounded-full border px-4 py-2 text-xs uppercase tracking-[0.18em] transition disabled:cursor-not-allowed disabled:opacity-50',
-                          workspace.id === activeWorkspaceId
-                            ? 'border-emerald-300/40 bg-emerald-400/15 text-emerald-50'
-                            : 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10'
-                        ].join(' ')}
-                      >
-                        {workspace.title}
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="mt-4 text-sm leading-6 text-slate-400">
-                    Noch kein Arbeitsraum angelegt. Lege den ersten Raum direkt aus dem aktiven Thread an.
-                  </p>
-                )}
-              </div>
-
-              {activeWorkspace ? (
-                <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                  <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Arbeitsraum</div>
-                  <div className="mt-2 text-base font-medium leading-7 text-slate-100">{activeWorkspace.title}</div>
-                  <p className="mt-3 text-sm leading-6 text-slate-200">{activeWorkspace.focus}</p>
-                </div>
-
-                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                  <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Nächster größerer Block</div>
-                  <p className="mt-2 text-sm leading-6 text-slate-200">{activeWorkspace.nextMilestone}</p>
-                  {workspaceMilestoneAddsSignal ? (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => applyResumeAction(activeWorkspace.nextMilestone, false)}
-                        disabled={loading}
-                        className="rounded-full border border-emerald-300/40 bg-emerald-400/15 px-4 py-2 text-xs uppercase tracking-[0.18em] text-emerald-50 transition hover:bg-emerald-400/20 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        In Composer übernehmen
-                      </button>
-                    </div>
-                  ) : null}
-                </div>
-
-                {workspaceStateAddsSignal ? (
-                  <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Arbeitsraum-Stand</div>
-                    <p className="mt-2 text-sm leading-6 text-slate-200">{activeWorkspace.currentState}</p>
-                  </div>
-                ) : null}
-
-                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                  <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Gesamtziel</div>
-                  <p className="mt-2 text-sm leading-6 text-slate-200">{activeWorkspace.goal}</p>
-                </div>
-
-                {showWorkspaceOpenItems ? (
-                  <div className="rounded-[20px] border border-white/10 bg-white/5 p-4 lg:col-span-2">
-                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Offene Kernpunkte</div>
-                    <div className="mt-3 space-y-2">
-                      {workspaceOpenItems.map((item) => (
-                        <div key={item} className="rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3 text-sm leading-6 text-slate-200">
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-
-                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Verbundene Threads</div>
-                      <p className="mt-2 text-sm leading-6 text-slate-300">
-                        Der aktive Thread bleibt diesem Arbeitsraum zugeordnet und der Kontext bleibt beim Wechsel zwischen zusammengehörigen Threads sichtbar.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => void assignActiveThreadToWorkspace(activeWorkspace.id)}
-                      disabled={!activeSession || loading}
-                      className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.18em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Aktiven Thread zuordnen
-                    </button>
-                  </div>
-
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {relatedWorkspaceThreads.length > 0 ? relatedWorkspaceThreads.map((session) => (
-                      <button
-                        key={session.id}
-                        type="button"
-                        onClick={() => selectThread(session.id)}
-                        disabled={loading || session.id === activeSessionId}
-                        className={[
-                          'rounded-full border px-4 py-2 text-xs uppercase tracking-[0.18em] transition disabled:cursor-not-allowed disabled:opacity-50',
-                          session.id === activeSessionId
-                            ? 'border-emerald-300/40 bg-emerald-400/15 text-emerald-50'
-                            : 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10'
-                        ].join(' ')}
-                      >
-                        {session.title}
-                      </button>
-                    )) : (
-                      <p className="text-sm leading-6 text-slate-400">Aktuell ist nur der aktive Thread diesem Arbeitsraum zugeordnet.</p>
-                    )}
-                  </div>
-                </div>
-                </div>
-              ) : null}
-            </section>
+            <MayaWorkspaceContextPanel
+              activeWorkspace={activeWorkspace}
+              visibleWorkspaces={visibleWorkspaces}
+              relatedWorkspaceThreads={relatedWorkspaceThreads}
+              activeWorkspaceUpdatedAtLabel={activeWorkspaceUpdatedAtLabel}
+              workspaceMilestoneAddsSignal={workspaceMilestoneAddsSignal}
+              workspaceStateAddsSignal={workspaceStateAddsSignal}
+              showWorkspaceOpenItems={showWorkspaceOpenItems}
+              workspaceOpenItems={workspaceOpenItems}
+              activeWorkspaceId={activeWorkspaceId}
+              activeSessionId={activeSessionId}
+              hasActiveSession={Boolean(activeSession)}
+              loading={loading}
+              input={input}
+              onCreateWorkspace={() => void createWorkspace()}
+              onRenameActiveWorkspace={() => void renameActiveWorkspace()}
+              onClearMessages={clearMessages}
+              onSetActiveWorkspace={(workspaceId) => void setActiveWorkspace(workspaceId)}
+              onApplyResumeAction={applyResumeAction}
+              onAssignActiveThreadToWorkspace={(workspaceId) => void assignActiveThreadToWorkspace(workspaceId)}
+              onSelectThread={selectThread}
+            />
           ) : null}
 
           {activeWorkrun ? (
-            <section className="mb-4 rounded-[24px] border border-fuchsia-400/20 bg-fuchsia-500/8 p-4 text-sm text-slate-100 shadow-shell sm:p-5">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <div className="text-[11px] uppercase tracking-[0.24em] text-fuchsia-300">Aktiver Arbeitslauf</div>
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-                    Maya trägt den aktuellen Arbeitsfokus dieses Threads sichtbar weiter und hält letzten Output, nächsten Schritt und Status auf derselben Hauptfläche zusammen.
-                  </p>
-                </div>
+            <MayaActiveWorkrunPanel
+              activeWorkrun={activeWorkrun}
+              activeWorkrunUpdatedAtLabel={activeWorkrunUpdatedAtLabel}
+              primaryFocus={primaryFocus}
+              primaryNextStep={primaryNextStep}
+              primaryOpenPoint={primaryOpenPoint}
+              loading={loading}
+              canRebuildWorkrunFromThread={Boolean(activeSession)}
+              showHandoffSection={showHandoffSection}
+              activeThreadHandoff={activeThreadHandoff}
+              activeThreadHandoffUpdatedAtLabel={activeThreadHandoffUpdatedAtLabel}
+              handoffHasDistinctAchieved={handoffHasDistinctAchieved}
+              handoffHasDistinctNextEntry={handoffHasDistinctNextEntry}
+              handoffOpenItems={handoffOpenItems}
+              activeCheckpointBoard={activeCheckpointBoard}
+              onApplyPrimaryNextStepToComposer={() => applyResumeAction(primaryNextStep || activeWorkrun.nextStep, false)}
+              onResumePrimaryNextStepNow={() => applyResumeAction(primaryNextStep || activeWorkrun.nextStep, true)}
+              onSetFocusFromInputOrNextStep={() => {
+                const nextFocus = input.trim() || activeWorkrun.nextStep;
+                setManualWorkrunFocus(nextFocus);
+                void updateActiveWorkrun({
+                  focus: nextFocus,
+                  nextStep: nextFocus,
+                  status: 'open',
+                  lastStep: activeWorkrun.lastStep,
+                  source: 'manual'
+                });
+              }}
+              onMarkWorkrunCompleted={() => updateActiveWorkrun({ status: 'completed', source: 'manual' })}
+              onReopenWorkrun={() => updateActiveWorkrun({ status: 'open', source: 'manual' })}
+              onPauseThreadFromWorkrun={() => updateThreadHandoff({
+                status: 'paused',
+                achieved: activeThreadHandoff?.achieved || activeWorkrun.lastOutput || activeSession?.digest?.currentState || '',
+                openItems: activeCheckpointBoard?.checkpoints.filter((checkpoint) => checkpoint.status === 'open').map((checkpoint) => checkpoint.label) || activeThreadHandoff?.openItems || [],
+                nextEntry: activeWorkrun.nextStep,
+                source: 'manual'
+              })}
+              onResumeThreadFromWorkrun={() => updateThreadHandoff({
+                status: 'active',
+                nextEntry: activeThreadHandoff?.nextEntry || activeWorkrun.nextStep,
+                openItems: activeThreadHandoff?.openItems || activeCheckpointBoard?.checkpoints.filter((checkpoint) => checkpoint.status === 'open').map((checkpoint) => checkpoint.label) || [],
+                achieved: activeThreadHandoff?.achieved || activeWorkrun.lastOutput || activeSession?.digest?.currentState || '',
+                source: 'manual'
+              })}
+              onRebuildWorkrunFromThread={() => {
+                setManualWorkrunFocus(null);
+                if (activeSession) {
+                  const nextWorkrun = buildPersistedWorkrun(activeSession, activeWorkrun || undefined, {
+                    focus: derivedWorkrun?.focus || activeWorkrun?.focus || activeSession.intent || activeSession.title,
+                    nextStep: derivedWorkrun?.nextStep || activeWorkrun?.nextStep || activeSession.intent || activeSession.title,
+                    status: activeWorkrun?.status || 'open',
+                    lastOutput: activeWorkrun?.lastOutput,
+                    lastStep: activeWorkrun?.lastStep,
+                    source: 'derived'
+                  });
 
-                <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em] text-slate-400">
-                  <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                    Status: {activeWorkrun.status === 'completed' ? 'abgeschlossen' : 'offen'}
-                  </span>
-                  {activeWorkrunUpdatedAtLabel ? (
-                    <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                      Zuletzt aktiv: {activeWorkrunUpdatedAtLabel}
-                    </span>
-                  ) : null}
-                </div>
-              </div>
-
-              <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4 lg:col-span-2">
-                  <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Aktueller Fokus</div>
-                  <p className="mt-2 text-base font-medium leading-7 text-slate-100">{primaryFocus || activeWorkrun.focus}</p>
-                  <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                    <div>
-                      <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Nächster sinnvoller Schritt</div>
-                      <p className="mt-2 text-sm leading-6 text-slate-200">{primaryNextStep || activeWorkrun.nextStep}</p>
-                    </div>
-                    <div>
-                      <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Wichtigster offener Kernpunkt</div>
-                      <p className="mt-2 text-sm leading-6 text-slate-200">{primaryOpenPoint || 'Kein offener Kernpunkt markiert. Der Rohchat bleibt führend.'}</p>
-                    </div>
-                  </div>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => applyResumeAction(primaryNextStep || activeWorkrun.nextStep, false)}
-                      disabled={loading}
-                      className="rounded-full border border-fuchsia-300/40 bg-fuchsia-400/15 px-4 py-2 text-xs uppercase tracking-[0.18em] text-fuchsia-50 transition hover:bg-fuchsia-400/20 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Schritt übernehmen
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => applyResumeAction(primaryNextStep || activeWorkrun.nextStep, true)}
-                      disabled={loading}
-                      className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.18em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Arbeitslauf fortsetzen
-                    </button>
-                  </div>
-                </div>
-
-                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                  <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Letzter sinnvoller Schritt</div>
-                  <p className="mt-2 text-sm leading-6 text-slate-200">
-                    {activeWorkrun.lastStep || 'Noch kein letzter Schritt für diesen Arbeitslauf festgehalten.'}
-                  </p>
-                </div>
-
-                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                  <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Manuelle Steuerung</div>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const nextFocus = input.trim() || activeWorkrun.nextStep;
-                        setManualWorkrunFocus(nextFocus);
-                        void updateActiveWorkrun({
-                          focus: nextFocus,
-                          nextStep: nextFocus,
-                          status: 'open',
-                          lastStep: activeWorkrun.lastStep,
-                          source: 'manual'
-                        });
-                      }}
-                      disabled={loading}
-                      className="rounded-full border border-fuchsia-300/40 bg-fuchsia-400/15 px-4 py-2 text-xs uppercase tracking-[0.18em] text-fuchsia-50 transition hover:bg-fuchsia-400/20 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Fokus setzen
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void updateActiveWorkrun({ status: 'completed', source: 'manual' })}
-                      disabled={loading || activeWorkrun.status === 'completed'}
-                      className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.18em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Als abgeschlossen markieren
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void updateActiveWorkrun({ status: 'open', source: 'manual' })}
-                      disabled={loading || activeWorkrun.status === 'open'}
-                      className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.18em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Wieder öffnen
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void updateThreadHandoff({
-                        status: 'paused',
-                        achieved: activeThreadHandoff?.achieved || activeWorkrun.lastOutput || activeSession?.digest?.currentState || '',
-                        openItems: activeCheckpointBoard?.checkpoints.filter((checkpoint) => checkpoint.status === 'open').map((checkpoint) => checkpoint.label) || activeThreadHandoff?.openItems || [],
-                        nextEntry: activeWorkrun.nextStep,
-                        source: 'manual'
-                      })}
-                      disabled={loading || activeThreadHandoff?.status === 'paused'}
-                      className="rounded-full border border-amber-300/30 bg-amber-400/10 px-4 py-2 text-xs uppercase tracking-[0.18em] text-amber-50 transition hover:bg-amber-400/15 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Thread parken
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void updateThreadHandoff({
-                        status: 'active',
-                        nextEntry: activeThreadHandoff?.nextEntry || activeWorkrun.nextStep,
-                        openItems: activeThreadHandoff?.openItems || activeCheckpointBoard?.checkpoints.filter((checkpoint) => checkpoint.status === 'open').map((checkpoint) => checkpoint.label) || [],
-                        achieved: activeThreadHandoff?.achieved || activeWorkrun.lastOutput || activeSession?.digest?.currentState || '',
-                        source: 'manual'
-                      })}
-                      disabled={loading || activeThreadHandoff?.status === 'active'}
-                      className="rounded-full border border-cyan-300/30 bg-cyan-400/10 px-4 py-2 text-xs uppercase tracking-[0.18em] text-cyan-50 transition hover:bg-cyan-400/15 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Wieder aufnehmen
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setManualWorkrunFocus(null);
-                        if (activeSession) {
-                          const nextWorkrun = buildPersistedWorkrun(activeSession, activeWorkrun || undefined, {
-                            focus: derivedWorkrun?.focus || activeWorkrun?.focus || activeSession.intent || activeSession.title,
-                            nextStep: derivedWorkrun?.nextStep || activeWorkrun?.nextStep || activeSession.intent || activeSession.title,
-                            status: activeWorkrun?.status || 'open',
-                            lastOutput: activeWorkrun?.lastOutput,
-                            lastStep: activeWorkrun?.lastStep,
-                            source: 'derived'
-                          });
-
-                          if (nextWorkrun) {
-                            const nextBoard = buildPersistedCheckpointBoard(activeSession, activeCheckpointBoard || undefined, {
-                              focus: nextWorkrun.focus,
-                              source: 'derived'
-                            });
-                            const nextHandoff = buildPersistedThreadHandoff(activeSession, activeThreadHandoff || undefined, {
-                              status: activeThreadHandoff?.status || 'active',
-                              achieved: activeThreadHandoff?.achieved || activeWorkrun?.lastOutput || activeSession.digest?.currentState || '',
-                              openItems: nextBoard?.checkpoints.filter((checkpoint) => checkpoint.status === 'open').map((checkpoint) => checkpoint.label) || [],
-                              nextEntry: nextWorkrun.nextStep,
-                              source: 'derived'
-                            });
-                            const nextWorkspace = activeWorkspace
-                              ? buildPersistedWorkspaceContext(activeSession, activeWorkspace, {
-                                  focus: nextWorkrun.focus,
-                                  currentState: nextHandoff?.achieved || nextWorkrun.lastOutput || activeWorkspace.currentState,
-                                  openItems: nextHandoff?.openItems || activeWorkspace.openItems,
-                                  nextMilestone: nextHandoff?.nextEntry || nextWorkrun.nextStep,
-                                  threadIds: activeWorkspace.threadIds,
-                                  source: 'derived'
-                                })
-                              : undefined;
-                            void persistCurrentSession(messages, threadDigest, nextWorkrun, nextBoard, nextHandoff, activeSession.workspaceId, nextWorkspace);
-                          }
-                        }
-                      }}
-                      disabled={!activeSession || loading}
-                      className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.18em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Neu aus Thread ableiten
-                    </button>
-                  </div>
-                </div>
-
-                {showHandoffSection && activeThreadHandoff ? (
-                  <div className="rounded-[20px] border border-white/10 bg-white/5 p-4 lg:col-span-2">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Abschluss und Übergabe</div>
-                        <p className="mt-2 text-sm leading-6 text-slate-300">
-                          Diese Schicht bleibt für Parken, Abschluss oder einen wirklich abweichenden Wiedereinstieg sichtbar.
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em] text-slate-400">
-                        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                          Status: {activeThreadHandoff.status === 'completed' ? 'abgeschlossen' : activeThreadHandoff.status === 'paused' ? 'geparkt' : 'aktiv'}
-                        </span>
-                        {activeThreadHandoffUpdatedAtLabel ? (
-                          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                            Übergabe: {activeThreadHandoffUpdatedAtLabel}
-                          </span>
-                        ) : null}
-                      </div>
-                    </div>
-
-                    <div className="mt-4 grid gap-4 lg:grid-cols-3">
-                      {handoffHasDistinctAchieved || activeThreadHandoff.status !== 'active' ? (
-                        <div className="rounded-[18px] border border-white/10 bg-slate-950/35 p-4">
-                        <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Erreicht</div>
-                        <p className="mt-2 text-sm leading-6 text-slate-200">
-                          {activeThreadHandoff.achieved || 'Noch kein kompakter Abschlussstand festgehalten.'}
-                        </p>
-                        </div>
-                      ) : null}
-
-                      {handoffOpenItems.length > 0 ? (
-                        <div className="rounded-[18px] border border-white/10 bg-slate-950/35 p-4">
-                        <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Bleibt offen</div>
-                        <div className="mt-3 space-y-2">
-                          {handoffOpenItems.map((item) => (
-                            <div key={item} className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm leading-6 text-slate-200">
-                              {item}
-                            </div>
-                          ))}
-                        </div>
-                        </div>
-                      ) : null}
-
-                      {handoffHasDistinctNextEntry || activeThreadHandoff.status !== 'active' ? (
-                        <div className="rounded-[18px] border border-white/10 bg-slate-950/35 p-4">
-                        <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Nächster Wiedereinstieg</div>
-                        <p className="mt-2 text-sm leading-6 text-slate-200">{activeThreadHandoff.nextEntry}</p>
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-                ) : null}
-
-                {activeCheckpointBoard ? (
-                  <div className="rounded-[20px] border border-white/10 bg-white/5 p-4 lg:col-span-2">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Arbeitsboard</div>
-                        <p className="mt-2 text-sm leading-6 text-slate-300">
-                          Kleine sichtbare Checkpoints halten den Arbeitslauf dieses Threads offen, erledigt und wiederaufnehmbar.
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em] text-slate-400">
-                        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                          Fortschritt: {activeCheckpointBoard.progressPercent}%
-                        </span>
-                        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                          Offen: {activeCheckpointBoard.openCount}
-                        </span>
-                        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                          Erledigt: {activeCheckpointBoard.completedCount}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-900/80">
-                      <div
-                        className="h-full rounded-full bg-fuchsia-400/80 transition-all"
-                        style={{ width: `${activeCheckpointBoard.progressPercent}%` }}
-                      />
-                    </div>
-
-                    <div className="mt-4 grid gap-3">
-                      {activeCheckpointBoard.checkpoints.map((checkpoint) => (
-                        <div key={checkpoint.id} className="rounded-[18px] border border-white/10 bg-slate-950/35 p-4">
-                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                            <div>
-                              <div className="text-sm font-medium leading-6 text-slate-100">{checkpoint.label}</div>
-                              {checkpoint.detail ? (
-                                <p className="mt-2 text-sm leading-6 text-slate-300">{checkpoint.detail}</p>
-                              ) : null}
-                            </div>
-                            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-slate-300">
-                              {checkpoint.status === 'completed' ? 'erledigt' : 'offen'}
-                            </span>
-                          </div>
-
-                          <div className="mt-4 flex flex-wrap gap-2">
-                            <button
-                              type="button"
-                              onClick={() => void toggleCheckpointStatus(checkpoint.id, 'completed')}
-                              disabled={loading || checkpoint.status === 'completed'}
-                              className="rounded-full border border-fuchsia-300/40 bg-fuchsia-400/15 px-4 py-2 text-xs uppercase tracking-[0.18em] text-fuchsia-50 transition hover:bg-fuchsia-400/20 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                              Abhaken
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => void toggleCheckpointStatus(checkpoint.id, 'open')}
-                              disabled={loading || checkpoint.status === 'open'}
-                              className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.18em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                              Wieder öffnen
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => applyResumeAction(checkpoint.label, false)}
-                              disabled={loading}
-                              className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.18em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                              In Composer übernehmen
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => void addBoardCheckpointFromFocus()}
-                        disabled={loading || activeCheckpointBoard.checkpoints.length >= 4}
-                        className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.18em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        Checkpoint ergänzen
-                      </button>
-                    </div>
-                  </div>
-                ) : null}
-
-                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4 lg:col-span-2">
-                  <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Letzter relevanter Output</div>
-                  <p className="mt-2 text-sm leading-6 text-slate-200">
-                    {activeWorkrun.lastOutput || 'Noch kein Assistant-Output im aktiven Arbeitslauf vorhanden.'}
-                  </p>
-                </div>
-              </div>
-            </section>
+                  if (nextWorkrun) {
+                    const nextBoard = buildPersistedCheckpointBoard(activeSession, activeCheckpointBoard || undefined, {
+                      focus: nextWorkrun.focus,
+                      source: 'derived'
+                    });
+                    const nextHandoff = buildPersistedThreadHandoff(activeSession, activeThreadHandoff || undefined, {
+                      status: activeThreadHandoff?.status || 'active',
+                      achieved: activeThreadHandoff?.achieved || activeWorkrun?.lastOutput || activeSession.digest?.currentState || '',
+                      openItems: nextBoard?.checkpoints.filter((checkpoint) => checkpoint.status === 'open').map((checkpoint) => checkpoint.label) || [],
+                      nextEntry: nextWorkrun.nextStep,
+                      source: 'derived'
+                    });
+                    const nextWorkspace = activeWorkspace
+                      ? buildPersistedWorkspaceContext(activeSession, activeWorkspace, {
+                          focus: nextWorkrun.focus,
+                          currentState: nextHandoff?.achieved || nextWorkrun.lastOutput || activeWorkspace.currentState,
+                          openItems: nextHandoff?.openItems || activeWorkspace.openItems,
+                          nextMilestone: nextHandoff?.nextEntry || nextWorkrun.nextStep,
+                          threadIds: activeWorkspace.threadIds,
+                          source: 'derived'
+                        })
+                      : undefined;
+                    void persistCurrentSession(messages, threadDigest, nextWorkrun, nextBoard, nextHandoff, activeSession.workspaceId, nextWorkspace);
+                  }
+                }
+              }}
+              onToggleCheckpointStatus={toggleCheckpointStatus}
+              onApplyCheckpointToComposer={(prompt) => applyResumeAction(prompt, false)}
+              onAddBoardCheckpointFromFocus={addBoardCheckpointFromFocus}
+            />
           ) : null}
 
           {showContinuityBriefing && continuityBriefing ? (
