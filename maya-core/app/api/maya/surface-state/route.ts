@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { isMayaRequestAuthorized } from '@/lib/maya-auth';
-import { readMayaStore } from '@/lib/maya-store';
-import { buildMayaMainSurfaceDerivation } from '@/lib/maya-thread-digest';
+import { readMayaSurfaceState } from '@/lib/maya-surface-state';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -13,20 +12,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const state = await readMayaStore();
-    const activeSession = state.sessions.find((session) => session.id === state.activeSessionId) || state.sessions[0] || null;
-    const activeWorkspace = state.activeWorkspaceId
-      ? state.workspaces.find((workspace) => workspace.id === state.activeWorkspaceId) || null
-      : activeSession?.workspaceId
-        ? state.workspaces.find((workspace) => workspace.id === activeSession.workspaceId) || null
-        : null;
-    const surface = activeSession ? buildMayaMainSurfaceDerivation(activeSession, activeWorkspace || undefined) : null;
-
-    return NextResponse.json({
-      activeSession,
-      activeWorkspace,
-      surface
-    });
+    return NextResponse.json(await readMayaSurfaceState());
   } catch {
     return NextResponse.json({ error: 'surface_state_failed' }, { status: 500 });
   }

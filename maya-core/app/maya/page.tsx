@@ -1,9 +1,6 @@
-import { cookies, headers } from 'next/headers';
-
 import { MayaChatScreen } from '@/components/maya-chat-screen';
 import { requireMayaPageAuth } from '@/lib/maya-auth';
-import { MayaMainSurfaceDerivation } from '@/lib/maya-thread-digest';
-import { ChatSession, MayaWorkspaceContext } from '@/lib/types';
+import { readMayaSurfaceState } from '@/lib/maya-surface-state';
 
 function readText(value: string | null | undefined, fallback: string) {
   const trimmed = value?.trim();
@@ -38,40 +35,6 @@ function readConfidenceLabel(confidence: string | null | undefined) {
     default:
       return 'offen';
   }
-}
-
-type MayaSurfaceStateResponse = {
-  activeSession: ChatSession | null;
-  activeWorkspace: MayaWorkspaceContext | null;
-  surface: MayaMainSurfaceDerivation | null;
-};
-
-async function readMayaSurfaceState(): Promise<MayaSurfaceStateResponse> {
-  const requestHeaders = headers();
-  const host = requestHeaders.get('x-forwarded-host') || requestHeaders.get('host');
-
-  if (!host) {
-    throw new Error('maya_surface_state_host_missing');
-  }
-
-  const protocol = requestHeaders.get('x-forwarded-proto') || (host.startsWith('localhost') || host.startsWith('127.0.0.1') ? 'http' : 'https');
-  const cookieHeader = cookies().getAll().map((entry) => `${entry.name}=${entry.value}`).join('; ');
-  const response = await fetch(`${protocol}://${host}/api/maya/surface-state`, {
-    cache: 'no-store',
-    headers: cookieHeader ? { cookie: cookieHeader } : undefined
-  });
-
-  if (!response.ok) {
-    throw new Error(`maya_surface_state_failed_${response.status}`);
-  }
-
-  const data = await response.json() as Partial<MayaSurfaceStateResponse> | null;
-
-  return {
-    activeSession: data?.activeSession ?? null,
-    activeWorkspace: data?.activeWorkspace ?? null,
-    surface: data?.surface ?? null
-  };
 }
 
 export default async function MayaPage() {
