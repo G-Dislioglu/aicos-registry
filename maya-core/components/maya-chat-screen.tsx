@@ -837,7 +837,6 @@ export function MayaChatScreen() {
   );
   const showWorkspaceOpenItems = workspaceOpenItems.length > 0;
   const workspaceMilestoneAddsSignal = isDistinctMayaSurfaceSignal(activeWorkspace?.nextMilestone, [primaryNextStep, primaryFocus]);
-  const workspaceStateAddsSignal = isDistinctMayaSurfaceSignal(activeWorkspace?.currentState, [activeWorkrun?.lastOutput, activeThreadHandoff?.achieved, continuityBriefing?.currentState]);
   const handoffHasDistinctAchieved = isDistinctMayaSurfaceSignal(activeThreadHandoff?.achieved, [activeWorkrun?.lastOutput, continuityBriefing?.currentState, activeWorkspace?.currentState]);
   const handoffHasDistinctNextEntry = isDistinctMayaSurfaceSignal(activeThreadHandoff?.nextEntry, [primaryNextStep, activeWorkrun?.nextStep]);
   const showActiveHandoffSection = Boolean(
@@ -1015,28 +1014,6 @@ export function MayaChatScreen() {
       nextWorkspace
     );
   }, [sessionState, activeSession, input, activeWorkrun, activeWorkspace, activeThreadHandoff, messages, threadDigest, persistCurrentSession]);
-
-  const renameActiveWorkspace = useCallback(async (nextTitle?: string) => {
-    if (!activeSession || !activeWorkspace) {
-      return;
-    }
-
-    const title = (nextTitle || input.trim()).trim();
-    if (!title) {
-      return;
-    }
-
-    await persistWorkspaceForActiveSession({
-      title,
-      focus: activeWorkspace.focus,
-      goal: activeWorkspace.goal,
-      currentState: activeWorkspace.currentState,
-      openItems: activeWorkspace.openItems,
-      nextMilestone: activeWorkspace.nextMilestone,
-      source: 'manual',
-      threadIds: activeWorkspace.threadIds
-    });
-  }, [activeSession, activeWorkspace, input, persistWorkspaceForActiveSession]);
 
   const selectThread = useCallback((sessionId: string) => {
     if (!sessionState) {
@@ -1772,17 +1749,13 @@ export function MayaChatScreen() {
               relatedWorkspaceThreads={relatedWorkspaceThreads}
               activeWorkspaceUpdatedAtLabel={activeWorkspaceUpdatedAtLabel}
               workspaceMilestoneAddsSignal={workspaceMilestoneAddsSignal}
-              workspaceStateAddsSignal={workspaceStateAddsSignal}
               showWorkspaceOpenItems={showWorkspaceOpenItems}
               workspaceOpenItems={workspaceOpenItems}
               activeWorkspaceId={activeWorkspaceId}
               activeSessionId={activeSessionId}
               hasActiveSession={Boolean(activeSession)}
               loading={loading}
-              input={input}
               onCreateWorkspace={() => void createWorkspace()}
-              onRenameActiveWorkspace={() => void renameActiveWorkspace()}
-              onClearMessages={clearMessages}
               onSetActiveWorkspace={(workspaceId) => void setActiveWorkspace(workspaceId)}
               onApplyResumeAction={applyResumeAction}
               onAssignActiveThreadToWorkspace={(workspaceId) => void assignActiveThreadToWorkspace(workspaceId)}
@@ -1790,48 +1763,50 @@ export function MayaChatScreen() {
             />
           ) : null}
 
-          <section className="mb-4 rounded-[20px] border border-cyan-400/15 bg-cyan-500/6 p-4 text-sm text-slate-100 shadow-shell sm:p-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <section className="mb-4 rounded-[18px] border border-white/10 bg-white/5 p-3 text-sm text-slate-100 shadow-shell sm:p-4">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <div className="text-[11px] uppercase tracking-[0.22em] text-cyan-300">Thread-Navigation</div>
-                <p className="mt-1 text-sm leading-6 text-slate-300">
-                  Threadwechsel bleibt verfügbar, aber sekundär zur aktiven Arbeitsfläche.
-                </p>
+                <div className="text-[11px] uppercase tracking-[0.22em] text-cyan-300">Thread-Steuerung</div>
+                <div className="mt-2 flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em] text-slate-400">
+                  <span className="rounded-full border border-white/10 bg-slate-950/40 px-3 py-1">
+                    {sessionsLoaded ? `Threads: ${visibleSessions.length}` : 'Threads werden geladen'}
+                  </span>
+                  {activeSession ? (
+                    <span className="rounded-full border border-white/10 bg-slate-950/40 px-3 py-1">
+                      Aktiv: {activeSession.title}
+                    </span>
+                  ) : null}
+                  {threadDigest ? (
+                    <span className="rounded-full border border-white/10 bg-slate-950/40 px-3 py-1">
+                      {digestNeedsRefresh ? 'Digest veraltet' : 'Digest bereit'}
+                    </span>
+                  ) : null}
+                </div>
               </div>
 
-              <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em] text-slate-400">
-                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                  {sessionsLoaded ? `Threads: ${visibleSessions.length}` : 'Threads werden geladen'}
-                </span>
-                {activeSession ? (
-                  <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                    Aktiv: {activeSession.title}
-                  </span>
-                ) : null}
-                <button
-                  type="button"
-                  onClick={refreshThreadDigest}
-                  disabled={loading || messages.length === 0}
-                  className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.18em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {threadDigest ? (digestNeedsRefresh ? 'Digest erneuern' : 'Digest aktualisieren') : 'Digest erzeugen'}
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={refreshThreadDigest}
+                disabled={loading || messages.length === 0}
+                className="rounded-full border border-white/10 bg-slate-950/40 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {threadDigest ? (digestNeedsRefresh ? 'Digest erneuern' : 'Digest aktualisieren') : 'Digest erzeugen'}
+              </button>
             </div>
 
             {visibleSessions.length > 0 ? (
               <div className="mt-3 flex flex-wrap gap-2">
-                {visibleSessions.slice(0, 6).map((session) => (
+                {visibleSessions.slice(0, 5).map((session) => (
                   <button
                     key={session.id}
                     type="button"
                     onClick={() => selectThread(session.id)}
                     disabled={loading || session.id === activeSessionId}
                     className={[
-                      'rounded-full border px-4 py-2 text-xs uppercase tracking-[0.18em] transition',
+                      'rounded-full border px-3 py-2 text-[11px] uppercase tracking-[0.18em] transition',
                       session.id === activeSessionId
                         ? 'border-cyan-300/40 bg-cyan-400/15 text-cyan-50'
-                        : 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10',
+                        : 'border-white/10 bg-slate-950/40 text-slate-200 hover:bg-white/10',
                       loading ? 'disabled:cursor-not-allowed disabled:opacity-50' : ''
                     ].join(' ')}
                   >
@@ -1840,8 +1815,8 @@ export function MayaChatScreen() {
                 ))}
               </div>
             ) : sessionsLoaded ? (
-              <p className="mt-3 text-sm leading-6 text-slate-300">
-                Noch kein persistierter Thread vorhanden. Der nächste Einstieg wird hier als fortsetzbarer Maya-Thread gespeichert.
+              <p className="mt-3 text-sm leading-6 text-slate-400">
+                Noch kein persistierter Thread vorhanden.
               </p>
             ) : null}
           </section>
