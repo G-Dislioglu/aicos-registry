@@ -191,7 +191,7 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
 
 ### Kandidat A — Focus / Re-Entry / Ops-Lens Surface Consolidation
 
-- `Status`: `active`
+- `Status`: `adopted`
 - `Herkunft`: `spec_pack`, `chat_derived`, `cross_combined`, `distilled`, `maya_fit_high`, `adoption_candidate`
 - `Quellen`:
   - `docs/spec-packs/products/maya/proposals/2026-03-maya-companion-surface-refresh.md`
@@ -214,7 +214,7 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
 - `empfohlener Blockzuschnitt`:
   - zuerst nur Re-Entry-vs.-Tuning-Trennung und eine erste echte Ops-Lens für sekundäre Inhalte
 - `Urteil`:
-  - jetzt, aber nur als kleiner begrenzter UI-Block
+  - als enger UI-Pfad übernommen; Ops-Lens-Auslagerung, Workrun-Downshift und Handoff-Prominenz-Nachschärfung sind repo-sichtbar umgesetzt
 
 ### Kandidat B — Surface-State Axis Shift Follow-Up
 
@@ -297,7 +297,7 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
 
 ### Kandidat E1 — Post-Dispatch Epistemic Guardrail
 
-- `Status`: `active`
+- `Status`: `adopted`
 - `Herkunft`: `web_ai_derived`, `cross_combined`, `distilled`, `maya_fit_high`, `adoption_candidate`
 - `Quellen`:
   - externe Inline-Spec `Maya Governed Compression Shell — Spezifikation V2 (26.03.2026)` aus Claude-/ChatGPT-Ausarbeitung
@@ -322,7 +322,7 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
 - `empfohlener Blockzuschnitt`:
   - nur Mirror-/Overclaim-/Warning-Patch nach `dispatchChat()` ohne neue Surface-State-Felder und ohne Memory-Lifecycle-Expansion
 - `Urteil`:
-  - jetzt als enger Kandidat sinnvoll, aber nicht mit UI- oder Memory-Scope zu mischen
+  - als enger Achse-B-Block übernommen; der API-Nachlauf ist repo-sichtbar implementiert und die sekundäre Lens-Anzeige blieb in einem separaten UI-Folgeblock
 
 ### Kandidat E2 — Governed Compression Shell Deep
 
@@ -356,9 +356,9 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
 ## Crossings aus dem aktuellen Scan
 
 - `A × E1`:
-  - ein später stabiler Post-Dispatch-Guardrail kann sekundäre Mirror-/Warning-Signale in Ops-Lens oder Digest speisen, ist aber kein Grund, UI-Nachschärfung und Runtime-Hardening in denselben Block zu ziehen.
+  - wurde als sequenzielle Kombination teilweise realisiert: erst enger post-dispatch Guardrail auf Achse B, danach sekundäres Lens-Surfacing ohne die Primärfläche wieder aufzublähen.
 - `E1 × meta-001 × meta-004`:
-  - `Mirror Overlay` und `Freshness Sentinel` liefern die engste card-nahe Form für Mirror-, Warning- und Freshness-Hinweise ohne Deep-Mode oder Memory-Lifecycle-Sprung.
+  - `Mirror Overlay` und `Freshness Sentinel` liefern die card-nahe Form für Mirror-, Warning- und Freshness-Hinweise; in Maya wurde dies bewusst nur als heuristischer, post-dispatch Nachlauf ohne Deep-Mode umgesetzt.
 - `STATE`/`AGENTS` × `sol-cross-058`:
   - die Idee externer Checkpoints ist für Maya bereits materiell als `STATE.md`-/`AGENTS.md`-Anker übernommen; daraus folgt aktuell kein separater Produktblock.
 
@@ -391,7 +391,8 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
 | Primary Maya Surface Evidence Closure | `adopted` | `chat_derived` | Evidenz / Produktordnung | Die repo-sichtbare Rahmung von `/`, `/maya` und `/chat` wurde belegt und in den Zustandsdokumenten nachgezogen | `STATE.md`, `docs/spec-packs/products/maya/STATUS.md` |
 | Focus / Re-Entry / Ops-Lens Surface Consolidation | `adopted` | `chat_derived` | UI / Hauptflächenfokus | Arbeitsraum- und Thread-Steuerung wurden als sekundäre Lens aus dem Primärfluss der Maya-Hauptfläche herausgezogen | `STATE.md`, `components/maya-chat-screen.tsx`, `components/maya/maya-ops-lens.tsx` |
 | Active Workrun Detail Downshift | `adopted` | `chat_derived` | UI / Arbeitslauf-Fokus | Manuelle Arbeitslauf-Steuerung, Handoff-Details und Checkpoint-Pflege wurden aus der Primärfläche in die Ops-Lens verlagert | `STATE.md`, `components/maya/maya-active-workrun-panel.tsx`, `components/maya/maya-workrun-details.tsx` |
-| Post-Dispatch Epistemic Guardrail | `active` | `web_ai_derived`, `cross_combined` | Execution / epistemic hardening | Enger Kandidat für Mirror-/Warning-/Freshness-Nachlauf auf Achse B, solange response-nah und ohne Schema-/Memory-Umbau | externe Spec `2026-03-26`, `cards/meta/meta-001.json`, `cards/meta/meta-004.json` |
+| Post-Dispatch Epistemic Guardrail | `adopted` | `web_ai_derived`, `cross_combined` | Execution / epistemic hardening | Mirror-/Warning-/Freshness-Nachlauf ist jetzt als enger post-dispatch Guardrail auf Achse B repo-sichtbar umgesetzt | `app/api/maya/chat/route.ts`, externe Spec `2026-03-26` |
+| Handoff Prominence Tightening + Secondary Guardrail Surfacing | `adopted` | `chat_derived`, `cross_combined` | UI / Ops Lens | Aktive Handoff-Prominenz wurde weiter reduziert und Guardrail-Signale bleiben als sekundäres Lens-Surface sichtbar statt die Primärfläche zu belasten | `components/maya-chat-screen.tsx`, `components/maya/maya-workrun-details.tsx` |
 | Governed Compression Shell Deep | `parked` | `web_ai_derived` | Execution / memory / surface-state | Als Gesamtpaket weiter zu breit; nur später nach enger Zerlegung und mehr Achse-B-Reife sinnvoll | Chat-Intake `2026-03-26` |
 
 ## Proposal- und Ideenquellen

@@ -37,28 +37,30 @@ Für neue Arbeit an `maya-core` zuerst lesen:
 
 `/maya` ist die primäre Maya-Hauptfläche in `maya-core`.
 
-Die aktuell veröffentlichte UI-Linie ist die publizierte Verdichtungslinie aus Primary-Surface-Compression, Secondary-Navigation-Rationalization, page-level Frame-Compression und dem nachgezogenen Active-Workrun-Detail-Downshift in die Ops-Lens. Damit ist `/maya` sichtbar stärker um den aktiven Arbeitslauf als Primärfläche verdichtet, ohne Handoff-, Checkpoint- und manuelle Steuerungsdetails weiter auf der Primärfläche zu bündeln.
+Die aktuell veröffentlichte Maya-Linie verbindet die publizierte UI-Verdichtung mit einem engen epistemischen Nachlauf: Primary-Surface-Compression, Secondary-Navigation-Rationalization, page-level Frame-Compression, Active-Workrun-Detail-Downshift in die Ops-Lens, ein post-dispatch Guardrail für Mirror-/Warning-Signale und eine nachgezogene Lens-Nachschärfung für geringere Handoff-Prominenz. Damit bleibt `/maya` als Primärfläche ruhig, während Guardrail- und Wiedereinstiegssignale sekundär in der Ops-Lens bleiben.
 
 Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State, ältere State-/Persistenzlinien und neuere `/api/maya/*`-Linien koexistieren weiter. Neue Arbeit darf diesen Hybridzustand nicht stillschweigend als bereits abgeschlossene Ein-Achsen-Architektur ausgeben.
 
 ## Current Published Truth
 
-- `origin/master` ist aktuell auf `dcdc9b5`
-- Die veröffentlichte Maya-Linie ist jetzt in einem Satz: Primärfläche um den aktiven Arbeitslauf verdichtet, sekundäre Navigation rationalisiert, page-level Framing gestrafft und sekundäre Arbeitslaufdetails in die Ops-Lens verlagert.
+- `origin/master` ist aktuell auf `45a7b95`
+- Die veröffentlichte Maya-Linie ist jetzt in einem Satz: Primärfläche um den aktiven Arbeitslauf verdichtet, sekundäre Navigation rationalisiert, page-level Framing gestrafft, Arbeitslaufdetails in die Ops-Lens verlagert, post-dispatch Guardrail-Signale erzeugt und in der Lens sekundär gesurfacet.
 - Die veröffentlichte Verdichtungslinie ist enthalten:
   - `9a53ac8` — `refactor(maya): compress primary surface around workrun flow`
   - `a95068f` — `refactor(maya): rationalize secondary navigation surface`
   - `ed10c06` — `refactor(maya): compress page-level hero and context framing`
   - `dcdc9b5` — `feat(maya): consolidate ops lens and workrun details`
+  - `094dd50` — `feat(maya): add post-dispatch epistemic guardrail`
+  - `45a7b95` — `feat(maya): tighten handoff prominence in ops lens`
 - `app/maya/page.tsx` rahmt den Einstieg jetzt knapper und überlässt die Hauptarbeit `MayaChatScreen`
 - `components/maya-chat-screen.tsx` bindet die extrahierten UI-Teile sichtbar ein
 - `components/maya/maya-workrun-details.tsx` hält manuelle Arbeitslaufsteuerung, Handoff-Details und Checkpoint-Pflege außerhalb der Primärkarte
+- `app/api/maya/chat/route.ts` ergänzt jetzt einen engen post-dispatch Guardrail-Nachlauf mit optionalem `epistemicGuardrail`
 
 ## Current Local Working Truth
 
 - Der lokale Working Tree ist weiterhin breit dirty
 - Relevante lokale Maya-Themen außerhalb der veröffentlichten Maya-Verdichtungslinie existieren weiterhin, u. a. in API-, Affect-, Persistenz-, Doku- und Infra-nahen Dateien
-- Diese lokale Restlage ist nicht automatisch Teil der publizierten Maya-UI-Wahrheit
 
 ## Current Architecture Reality
 
@@ -80,17 +82,17 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 - `lib/maya-thread-digest.ts` ist der aktive Continuity-/Digest-Kern
 - lokale UI-Residualdateien mit ähnlichen Namen sind nicht automatisch aktive Hauptwahrheit
 
-### Sichtbare UI-Wahrheit nach der Trilogie
+### Sichtbare UI-Wahrheit nach den Folgeblöcken
 
 - aktiver Arbeitslauf ist die Primärfläche
 - sekundäre Navigation ist verdichtet und klarer nachgeordnet
 - page-level framing ist knapper und weniger dashboard-lastig
+- Handoff- und Guardrail-Signale bleiben sekundär in der Ops-Lens statt auf der Primärfläche
 
 ## Hybrid Zones / Known Contradictions
 
 - State-/Persistenzlinie und `/api/maya/*`-Linie sind weiterhin nicht vollständig vereinheitlicht
 - Published UI-Kompression und breiter lokaler Dirty Tree existieren parallel
-- tiefere lokale Doku-, API- und Affect-Stränge dürfen nicht automatisch als Teil derselben Produktlinie gelesen werden
 
 ## Active Sources Of Truth
 
@@ -105,52 +107,53 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 
 ### Name
 
-Active Workrun Detail Downshift
+Handoff Prominence Tightening + Secondary Guardrail Surfacing
 
 ### Ergebnis
 
-Die Maya-Hauptfläche ist weiter verdichtet: Der aktive Arbeitslauf zeigt primär nur noch Fokus, nächsten Schritt, offenen Kernpunkt, letzten Output und direkte Fortsetzungsaktionen. Manuelle Steuerung, Handoff-/Wiedereinstiegsdetails und Checkpoint-Pflege liegen jetzt in der sekundären Ops-Lens, ohne Runtime- oder Persistenzpfade umzubauen.
+Die Ops-Lens wurde weiter nachgeschärft: aktive Handoff-/Wiedereinstiegsdetails erscheinen jetzt nur noch bei echter Abweichung oder bei Park-/Abschlusszuständen, und der neue post-dispatch Guardrail wird nur sekundär als Mirror-/Warning-Surface in der Lens sichtbar gemacht. Die Primärfläche bleibt beim aktiven Arbeitslauf, ohne neue Runtime- oder Persistenzpfade zu öffnen.
 
 ### Nicht Teil dieses Blocks
 
 - großer Mehrflächen-Rebuild der Maya-Hauptfläche
 - Runtime-Konsolidierung zwischen Achse A und Achse B
 - Affect-Expansion
-- API-Neuschnitt
-- Persistenzumbau
+- API-Neuschnitt jenseits des engen Guardrail-Nachlaufs
+- Persistenz- oder Surface-State-Umbau
 
 ## Next Recommended Block
 
 ### Name
 
-Handoff Prominence Tightening
+Guardrail Signal Calibration
 
 ### Ziel
 
-Die verbleibende Sichtbarkeit von Handoff-/Wiedereinstiegsdetails nur dort weiter zu reduzieren, wo sie nicht klar vom Primärfokus abweichen, ohne wichtige Park-/Resume-Signale zu verlieren.
+Die neuen Mirror-/Warning-/Freshness-Signale so nachzuschärfen, dass sie in echten Maya-Läufen nützlich bleiben, ohne Overclaim- oder Freshness-Hinweise zu nervös oder zu still zu machen.
 
 ### Aufwand / Risikoprofil
 
-- klein bis mittel, grob `0.5-1` Tag als enger Nachschärfungsblock
-- primär UI-, Lens- und View-Logic-Scope
-- kein geplanter Runtime-, Provider-, API- oder Persistenzumbau
+- klein, grob `0.5` Tag als enger Kalibrierungsblock
+- primär Route-Heuristik und sekundäres Lens-Surfacing
+- kein geplanter Provider-, Persistenz-, Memory- oder Surface-State-Umbau
 
 ### Scope
 
-- Handoff-/Wiedereinstiegsdetails in der Lens noch enger an echte Abweichung oder Park-/Abschlusszustände binden
-- Primär- und Sekundärsignale zwischen Arbeitslauf und Handoff weiter entdoppeln
-- UI nur in der vorhandenen Lens-/Workrun-Schicht nachschärfen
+- heuristische Schwellen für `overclaimWarning` und `freshnessWarning` an realen False-Positive-/False-Negative-Fällen nachschärfen
+- sekundäres Guardrail-Surfacing in der Lens nur dort weiter verdichten, wo Hinweise wirklich nutzen
+- bestehende post-dispatch Guardrail-Linie dokumentarisch und UI-seitig konsistent halten
 
 ### Nicht-Scope
 
+- zusätzlicher Vorab-LLM-Call oder Deep-Mode
+- Memory-/Review-Queue-/Surface-State-Vertragserweiterung
 - großer UI-Rebuild über mehrere Screen-Modi gleichzeitig
-- Affect-/Provider-/Persistenz-Expansion
 - implizite Architektur-Neuentscheidung
-- großer Dirty-Tree-Abbau
 
 ## Alternative Valid Next Blocks
 
 - kleiner K5-Folgeblock zur internen Surface-State-Verschiebung Richtung Achse B
+- enger Doku-/Review-Block zur Kalibrierung und Nachweisführung der neuen Guardrail-Signale
 - gezielter Doku-/Triage-Block für lokale Maya-Residuallinien und Planungsartefakte
 - begrenzte lokale Hygiene für untracked Maya-Residualdateien, aber nicht als Hauptproduktblock
 
