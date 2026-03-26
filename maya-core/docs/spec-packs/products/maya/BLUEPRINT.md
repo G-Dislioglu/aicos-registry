@@ -6,77 +6,68 @@ Dieses Dokument beschreibt das Maya-Zielbild als Ordnungs- und Architekturrahmen
 
 Es beschreibt nicht den vollständigen aktuellen Implementierungszustand.
 
-## Aktueller Architekturstatus
+## Produktentscheidung für `maya-core`
 
-Der aktuelle Architekturstatus ist uneinheitlich.
+Für das Produkt `maya-core` gilt: `/maya` ist die primäre Maya-Oberfläche.
 
-Im sichtbaren `maya-core`-Stand existieren mehrere Routen und mehrere Daten- bzw. Laufzeitachsen, die nicht als eine einzige saubere Hauptachse beschrieben werden können.
+Maya ist als Companion Surface zu führen — nicht als Dashboard und nicht als Tool-Board.
 
-Insbesondere sichtbar:
+Diese Entscheidung ordnet die sichtbare Produktlinie in `maya-core`. Sie behauptet nicht, dass bereits jede technische Achse vollständig konsolidiert oder jede Spezifikationsschicht außerhalb dieses Dokuments aktualisiert ist.
+
+## Kanonische Hauptachse
+
+**Entschieden: `/maya` ist die primäre Maya-Oberfläche in `maya-core`.**
+
+Maya ist eine Companion Surface.
+
+Primärinteraktion: orientieren · spiegeln · weiterführen · fokussieren
+
+Sekundäres gehört in unterstützende Räume oder ausgelagerte Detailflächen, nicht in eine konkurrierende Hauptoberfläche.
+
+### Raumlogik
+
+| Raum | Rolle | Status |
+|---|---|---|
+| `/maya` | Primär — Companion Surface | Produktentscheidung für `maya-core` |
+| `/chat` | Legacy/explorativ | Nicht mehr gleichrangig |
+| `/context` | Sekundär — Kontext-Raum | Unterstützend |
+| `/supervisor` | Intern — Sonderraum | Kein Primär-UX |
+
+### UI/UX-Grundprinzip
+
+- Zuerst klare Hauptführung, dann tiefe Werkzeuge
+- Keine doppelte Primäroberfläche
+- Kein Dashboard-Drift: keine dauerhaften gleichrangigen Panels auf der Hauptfläche
+- Companion Surface hat genau eine klar erkennbare Primäraktion
+- Sekundäres ist eingeklappt, ausgelagert oder in einer Lens/Drawer-Logik untergebracht
+
+### AICOS-Anschluss
+
+Maya folgt dem Mirror-Prinzip (`meta-001`): erst spiegeln, dann führen.
+
+Regime-Exit-Logik (`meta-003`): Screen-Wechsel sind definierte Exits mit Trigger und Carry-Forward.
+
+Context-Decay-Defense (`err-cross-001`): Fadenkompass als aktiver Checkpoint statt passiver Deko.
+
+Companion Surface Doctrine (`sol-maya-001`): Trennung von führender Fläche und technischem Detail.
+
+## Nicht-Ziele dieser Produktlinie
+
+- Kein gleichrangiges Feature-Dashboard
+- Keine konkurrierende Primäroberfläche neben `/maya`
+- Keine Motion/Rive/Council/Intent-Resolver als Pflicht der aktuellen Produktlinie
+- Keine implizite Gleichsetzung interner oder technischer Flächen mit der sichtbaren Hauptoberfläche
+
+## Sichtbarer aktueller Architekturstand
+
+Der aktuelle sichtbare `maya-core`-Stand bleibt technisch uneinheitlich.
+
+Im Repo bestehen weiterhin mehrere Daten- und Laufzeitachsen, insbesondere:
 - ein Legacy/Product-State-Strang über `/api/state` und `/api/chat`
 - ein separater Maya-Strang über `/api/maya/*`
 - zusätzliche Supervisor-Flächen über `/supervisor` und `/api/supervisor/*`
 
-## Grundsatz
-
-Maya braucht genau eine kanonische Hauptachse.
-
-Diese Hauptachse soll den primären Maya-Raum, seine Kerninteraktion und die zugehörige Hauptlogik eindeutig tragen.
-
-## Primärraum
-
-Der Primärraum ist der Raum, in dem Maya als Hauptarbeitsfläche erscheint.
-
-Pflichtmerkmale des Primärraums:
-- klarer Produkteinstieg
-- klare Hauptinteraktion
-- keine konkurrierende zweite Primärfläche
-- klare Zuordnung von Runtime- und Datenpfad
-
-### Aktueller Stand
-
-- Eine belastbar entschiedene kanonische Hauptachse ist im Repo nicht abschließend als formale Entscheidung dokumentiert.
-- `/maya` ist ein naheliegender Kandidat für den Primärraum.
-- Dieser Kandidatenstatus ist repo-sichtbar plausibel, aber nicht als endgültig beschlossene Wahrheit dieses Dokuments zu behandeln.
-
-### Status
-
-`offen`
-
-## Sekundärräume
-
-Sekundärräume sind unterstützende Maya-Räume ohne Anspruch, selbst das Primärsystem zu sein.
-
-Naheliegende Sekundärräume im aktuellen Stand:
-- `/context` als Kontext-, Profil- und Memory-Raum
-- mögliche begleitende Übersichts- oder Stützflächen
-
-### Status
-
-Teilweise sichtbar, aber nicht vollständig kanonisch geordnet.
-
-## Legacy-Räume
-
-Legacy-Räume sind weiter vorhandene Räume, die aus früheren Maya-Zuständen stammen oder von älteren Produktpfaden getragen werden.
-
-Im aktuellen Stand ist `/chat` als Legacy-Kandidat sichtbar.
-
-Das bedeutet nicht automatisch, dass `/chat` bereits formell deprectated, abgeschaltet oder umgeleitet ist.
-
-### Status
-
-`repo-sichtbar vorhanden`
-
-## Verborgene oder interne Räume
-
-Verborgene oder interne Räume sind nicht zwingend Primär- oder Nutzersurfaces, können aber systemisch relevant sein.
-
-Im aktuellen Stand zählen dazu insbesondere:
-- `/api/maya/*`
-- `/api/supervisor/*`
-- interne Provider-, Memory- und Review-Pfade
-
-Diese Räume sind nicht mit der sichtbaren kanonischen Maya-Hauptachse gleichzusetzen.
+Die Produktentscheidung für `/maya` hebt diese technische Drift nicht automatisch auf. Sie definiert die Ziel- und Ordnungslogik, an der weitere Umbauten auszurichten sind.
 
 ## Architekturregeln
 
@@ -86,10 +77,9 @@ Diese Räume sind nicht mit der sichtbaren kanonischen Maya-Hauptachse gleichzus
 - Eine sichtbare UI-Fläche und ihr Datenpfad sollen zusammenhängend und klar lesbar sein.
 - Proposal-only Architekturregeln dürfen nicht als bereits umgesetzte Realität ausgegeben werden.
 
-## Offene Architekturfragen
+## Weiterhin offene Architekturfragen
 
-- Welche Route ist formal die kanonische Hauptachse von Maya?
-- Bleibt `/chat` dauerhaft Legacy-Raum, oder ist ein anderer Status vorgesehen?
-- Welche Rolle hat `/supervisor` im Maya-Ordnungsmodell?
-- Soll der Product-State-Strang erhalten, migriert oder klar isoliert werden?
-- Welche Achse trägt langfristig die maßgebliche Maya-Hauptinteraktion?
+- Wie wird die bestehende technische Parallelität zwischen `/api/state`/`/api/chat` und `/api/maya/*` schrittweise konsolidiert?
+- Welche Detailflächen bleiben dauerhaft unter `/context` und welche wandern in eine Lens-/Drawer-Logik von `/maya`?
+- Welche Rolle hat `/supervisor` langfristig im Maya-Ordnungsmodell?
+- Welche Achse trägt langfristig die maßgebliche Maya-Hauptinteraktion im Runtime-Sinne?

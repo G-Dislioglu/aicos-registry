@@ -533,6 +533,33 @@ a.rail-logo:hover { opacity: 0.7; }
   flex: 1;
 }
 
+.ops-lens-trigger {
+  background: transparent;
+  border: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--txt2);
+  cursor: pointer;
+  padding: 3px 9px;
+  border-radius: 999px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.ops-lens-trigger:hover {
+  background: var(--s2);
+  border-color: rgba(255,255,255,0.16);
+  color: var(--txt1);
+}
+
+.ops-lens-trigger.open {
+  border-color: rgba(56,189,248,0.28);
+  background: rgba(34,211,238,0.12);
+  color: rgb(207,250,254);
+}
+
 .tb-clear-btn {
   background: var(--s2);
   border: 1px solid var(--border);
@@ -730,6 +757,97 @@ a.rail-logo:hover { opacity: 0.7; }
   margin-top: 6px;
   font-size: 12px;
   color: var(--red);
+}
+
+.ops-lens-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2,6,23,0.45);
+  z-index: 35;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ops-lens-sheet {
+  width: min(440px, 100%);
+  height: 100vh;
+  background: rgba(9,14,28,0.96);
+  border-left: 1px solid var(--border);
+  box-shadow: -12px 0 48px rgba(2,6,23,0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ops-lens-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.ops-lens-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: rgb(165,243,252);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+.ops-lens-subtitle {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--txt2);
+}
+
+.ops-lens-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--txt3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.ops-lens-close:hover {
+  color: var(--txt1);
+  border-color: rgba(255,255,255,0.16);
+  background: var(--s2);
+}
+
+.ops-lens-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.ops-lens-body > * + * {
+  margin-top: 12px;
+}
+
+@media (max-width: 767px) {
+  .ops-lens-backdrop {
+    align-items: flex-end;
+  }
+
+  .ops-lens-sheet {
+    width: 100%;
+    height: min(86vh, 820px);
+    border-left: none;
+    border-top: 1px solid var(--border);
+    border-radius: 18px 18px 0 0;
+  }
 }
 
 /* ── Review Sheet ─────────────────────────────────────────── */

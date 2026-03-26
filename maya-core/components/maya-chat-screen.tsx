@@ -8,7 +8,9 @@ import { type ContextAnchorEntry } from '@/components/maya/maya-empty-state';
 import { MayaComposer }    from '@/components/maya/maya-composer';
 import { MayaHydrationSkeleton } from '@/components/maya/maya-hydration-skeleton';
 import { MayaActiveWorkrunPanel } from '@/components/maya/maya-active-workrun-panel';
+import { MayaWorkrunDetails } from '@/components/maya/maya-workrun-details';
 import { MayaMessageFeed } from '@/components/maya/maya-message-feed';
+import { MayaOpsLens } from '@/components/maya/maya-ops-lens';
 import { MayaWorkspaceContext as MayaWorkspaceContextPanel } from '@/components/maya/maya-workspace-context';
 import { MayaReviewSheet } from '@/components/maya/maya-review-sheet';
 import { FALLBACK_PROVIDERS } from '@/components/maya/fallback-providers';
@@ -539,6 +541,7 @@ export function MayaChatScreen() {
   const [mayaState, setMayaState] = useState<MayaPresenceState>('idle');
   const [streamingText, setStreamingText] = useState('');
   const [topbarMetaOpen, setTopbarMetaOpen] = useState(false);
+  const [opsLensOpen, setOpsLensOpen] = useState(false);
   const [contextAnchors, setContextAnchors] = useState<ContextAnchorEntry[]>([]);
   const [threadDigest, setThreadDigest] = useState<ThreadDigest | null>(null);
   const [sessionsLoaded, setSessionsLoaded] = useState(false);
@@ -1597,6 +1600,12 @@ export function MayaChatScreen() {
   const digestNeedsRefresh = threadDigest
     ? messages.length - threadDigest.sourceMessageCount >= DIGEST_STALE_MESSAGE_THRESHOLD
     : false;
+  const secondaryControlSummary = [
+    activeWorkspace ? `Raum: ${activeWorkspace.title}` : null,
+    activeSession ? `Thread: ${activeSession.title}` : null,
+    sessionsLoaded ? `Threads: ${visibleSessions.length}` : 'Threads werden geladen',
+    threadDigest ? (digestNeedsRefresh ? 'Digest veraltet' : 'Digest bereit') : null
+  ].filter(Boolean) as string[];
 
   if (isHydratingSessionState) {
     return (
@@ -1612,9 +1621,11 @@ export function MayaChatScreen() {
             health={health}
             reviewCount={reviewCount}
             topbarMetaOpen={topbarMetaOpen}
+            opsLensOpen={opsLensOpen}
             isFileMode={isFileMode}
             hasMessages={false}
             onToggleMeta={() => setTopbarMetaOpen(v => !v)}
+            onToggleOpsLens={() => setOpsLensOpen(v => !v)}
             onProviderChange={handleProviderChange}
             onModelChange={setModel}
             onOpenReview={() => setShowReviewSheet(true)}
@@ -1643,9 +1654,11 @@ export function MayaChatScreen() {
           health={health}
           reviewCount={reviewCount}
           topbarMetaOpen={topbarMetaOpen}
+          opsLensOpen={opsLensOpen}
           isFileMode={isFileMode}
           hasMessages={messages.length > 0}
           onToggleMeta={() => setTopbarMetaOpen(v => !v)}
+          onToggleOpsLens={() => setOpsLensOpen(v => !v)}
           onProviderChange={handleProviderChange}
           onModelChange={setModel}
           onOpenReview={() => setShowReviewSheet(true)}
@@ -1661,164 +1674,46 @@ export function MayaChatScreen() {
               primaryNextStep={primaryNextStep}
               primaryOpenPoint={primaryOpenPoint}
               loading={loading}
-              canRebuildWorkrunFromThread={Boolean(activeSession)}
-              showHandoffSection={showHandoffSection}
-              activeThreadHandoff={activeThreadHandoff}
-              activeThreadHandoffUpdatedAtLabel={activeThreadHandoffUpdatedAtLabel}
-              handoffHasDistinctAchieved={handoffHasDistinctAchieved}
-              handoffHasDistinctNextEntry={handoffHasDistinctNextEntry}
-              handoffOpenItems={handoffOpenItems}
-              activeCheckpointBoard={activeCheckpointBoard}
               onApplyPrimaryNextStepToComposer={() => applyResumeAction(primaryNextStep || activeWorkrun.nextStep, false)}
               onResumePrimaryNextStepNow={() => applyResumeAction(primaryNextStep || activeWorkrun.nextStep, true)}
-              onSetFocusFromInputOrNextStep={() => {
-                const nextFocus = input.trim() || activeWorkrun.nextStep;
-                setManualWorkrunFocus(nextFocus);
-                void updateActiveWorkrun({
-                  focus: nextFocus,
-                  nextStep: nextFocus,
-                  status: 'open',
-                  lastStep: activeWorkrun.lastStep,
-                  source: 'manual'
-                });
-              }}
-              onMarkWorkrunCompleted={() => updateActiveWorkrun({ status: 'completed', source: 'manual' })}
-              onReopenWorkrun={() => updateActiveWorkrun({ status: 'open', source: 'manual' })}
-              onPauseThreadFromWorkrun={() => updateThreadHandoff({
-                status: 'paused',
-                achieved: activeThreadHandoff?.achieved || activeWorkrun.lastOutput || activeSession?.digest?.currentState || '',
-                openItems: activeCheckpointBoard?.checkpoints.filter((checkpoint) => checkpoint.status === 'open').map((checkpoint) => checkpoint.label) || activeThreadHandoff?.openItems || [],
-                nextEntry: activeWorkrun.nextStep,
-                source: 'manual'
-              })}
-              onResumeThreadFromWorkrun={() => updateThreadHandoff({
-                status: 'active',
-                nextEntry: activeThreadHandoff?.nextEntry || activeWorkrun.nextStep,
-                openItems: activeThreadHandoff?.openItems || activeCheckpointBoard?.checkpoints.filter((checkpoint) => checkpoint.status === 'open').map((checkpoint) => checkpoint.label) || [],
-                achieved: activeThreadHandoff?.achieved || activeWorkrun.lastOutput || activeSession?.digest?.currentState || '',
-                source: 'manual'
-              })}
-              onRebuildWorkrunFromThread={() => {
-                setManualWorkrunFocus(null);
-                if (activeSession) {
-                  const nextWorkrun = buildPersistedWorkrun(activeSession, activeWorkrun || undefined, {
-                    focus: derivedWorkrun?.focus || activeWorkrun?.focus || activeSession.intent || activeSession.title,
-                    nextStep: derivedWorkrun?.nextStep || activeWorkrun?.nextStep || activeSession.intent || activeSession.title,
-                    status: activeWorkrun?.status || 'open',
-                    lastOutput: activeWorkrun?.lastOutput,
-                    lastStep: activeWorkrun?.lastStep,
-                    source: 'derived'
-                  });
-
-                  if (nextWorkrun) {
-                    const nextBoard = buildPersistedCheckpointBoard(activeSession, activeCheckpointBoard || undefined, {
-                      focus: nextWorkrun.focus,
-                      source: 'derived'
-                    });
-                    const nextHandoff = buildPersistedThreadHandoff(activeSession, activeThreadHandoff || undefined, {
-                      status: activeThreadHandoff?.status || 'active',
-                      achieved: activeThreadHandoff?.achieved || activeWorkrun?.lastOutput || activeSession.digest?.currentState || '',
-                      openItems: nextBoard?.checkpoints.filter((checkpoint) => checkpoint.status === 'open').map((checkpoint) => checkpoint.label) || [],
-                      nextEntry: nextWorkrun.nextStep,
-                      source: 'derived'
-                    });
-                    const nextWorkspace = activeWorkspace
-                      ? buildPersistedWorkspaceContext(activeSession, activeWorkspace, {
-                          focus: nextWorkrun.focus,
-                          currentState: nextHandoff?.achieved || nextWorkrun.lastOutput || activeWorkspace.currentState,
-                          openItems: nextHandoff?.openItems || activeWorkspace.openItems,
-                          nextMilestone: nextHandoff?.nextEntry || nextWorkrun.nextStep,
-                          threadIds: activeWorkspace.threadIds,
-                          source: 'derived'
-                        })
-                      : undefined;
-                    void persistCurrentSession(messages, threadDigest, nextWorkrun, nextBoard, nextHandoff, activeSession.workspaceId, nextWorkspace);
-                  }
-                }
-              }}
-              onToggleCheckpointStatus={toggleCheckpointStatus}
-              onApplyCheckpointToComposer={(prompt) => applyResumeAction(prompt, false)}
-              onAddBoardCheckpointFromFocus={addBoardCheckpointFromFocus}
+              onOpenDetailsLens={() => setOpsLensOpen(true)}
             />
           ) : null}
 
-          {activeSession ? (
-            <MayaWorkspaceContextPanel
-              activeWorkspace={activeWorkspace}
-              visibleWorkspaces={visibleWorkspaces}
-              relatedWorkspaceThreads={relatedWorkspaceThreads}
-              activeWorkspaceUpdatedAtLabel={activeWorkspaceUpdatedAtLabel}
-              workspaceMilestoneAddsSignal={workspaceMilestoneAddsSignal}
-              showWorkspaceOpenItems={showWorkspaceOpenItems}
-              workspaceOpenItems={workspaceOpenItems}
-              activeWorkspaceId={activeWorkspaceId}
-              activeSessionId={activeSessionId}
-              hasActiveSession={Boolean(activeSession)}
-              loading={loading}
-              onCreateWorkspace={() => void createWorkspace()}
-              onSetActiveWorkspace={(workspaceId) => void setActiveWorkspace(workspaceId)}
-              onApplyResumeAction={applyResumeAction}
-              onAssignActiveThreadToWorkspace={(workspaceId) => void assignActiveThreadToWorkspace(workspaceId)}
-              onSelectThread={selectThread}
-            />
-          ) : null}
-
-          <section className="mb-4 rounded-[18px] border border-white/10 bg-white/5 p-3 text-sm text-slate-100 shadow-shell sm:p-4">
+          <section className="maya-secondary-summary mb-4 rounded-[18px] border border-white/10 bg-white/5 p-3 text-sm text-slate-100 shadow-shell sm:p-4">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <div className="text-[11px] uppercase tracking-[0.22em] text-cyan-300">Thread-Steuerung</div>
+                <div className="text-[11px] uppercase tracking-[0.22em] text-cyan-300">Sekundäre Steuerung</div>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+                  Arbeitsraum-Kontext, Thread-Wechsel und Digest-Pflege liegen jetzt in der Lens, damit Wiedereinstieg und Detailsteuerung nicht die Hauptfläche überladen.
+                </p>
                 <div className="mt-2 flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em] text-slate-400">
-                  <span className="rounded-full border border-white/10 bg-slate-950/40 px-3 py-1">
-                    {sessionsLoaded ? `Threads: ${visibleSessions.length}` : 'Threads werden geladen'}
-                  </span>
-                  {activeSession ? (
-                    <span className="rounded-full border border-white/10 bg-slate-950/40 px-3 py-1">
-                      Aktiv: {activeSession.title}
+                  {secondaryControlSummary.map((item) => (
+                    <span key={item} className="rounded-full border border-white/10 bg-slate-950/40 px-3 py-1">
+                      {item}
                     </span>
-                  ) : null}
-                  {threadDigest ? (
-                    <span className="rounded-full border border-white/10 bg-slate-950/40 px-3 py-1">
-                      {digestNeedsRefresh ? 'Digest veraltet' : 'Digest bereit'}
-                    </span>
-                  ) : null}
+                  ))}
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={refreshThreadDigest}
-                disabled={loading || messages.length === 0}
-                className="rounded-full border border-white/10 bg-slate-950/40 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {threadDigest ? (digestNeedsRefresh ? 'Digest erneuern' : 'Digest aktualisieren') : 'Digest erzeugen'}
-              </button>
-            </div>
-
-            {visibleSessions.length > 0 ? (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {visibleSessions.slice(0, 5).map((session) => (
-                  <button
-                    key={session.id}
-                    type="button"
-                    onClick={() => selectThread(session.id)}
-                    disabled={loading || session.id === activeSessionId}
-                    className={[
-                      'rounded-full border px-3 py-2 text-[11px] uppercase tracking-[0.18em] transition',
-                      session.id === activeSessionId
-                        ? 'border-cyan-300/40 bg-cyan-400/15 text-cyan-50'
-                        : 'border-white/10 bg-slate-950/40 text-slate-200 hover:bg-white/10',
-                      loading ? 'disabled:cursor-not-allowed disabled:opacity-50' : ''
-                    ].join(' ')}
-                  >
-                    {session.title}
-                  </button>
-                ))}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setOpsLensOpen(true)}
+                  className="rounded-full border border-cyan-300/30 bg-cyan-400/10 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-cyan-50 transition hover:bg-cyan-400/15"
+                >
+                  Lens öffnen
+                </button>
+                <button
+                  type="button"
+                  onClick={refreshThreadDigest}
+                  disabled={loading || messages.length === 0}
+                  className="rounded-full border border-white/10 bg-slate-950/40 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {threadDigest ? (digestNeedsRefresh ? 'Digest erneuern' : 'Digest aktualisieren') : 'Digest erzeugen'}
+                </button>
               </div>
-            ) : sessionsLoaded ? (
-              <p className="mt-3 text-sm leading-6 text-slate-400">
-                Noch kein persistierter Thread vorhanden.
-              </p>
-            ) : null}
+            </div>
           </section>
 
           <MayaMessageFeed
@@ -1846,6 +1741,175 @@ export function MayaChatScreen() {
           error={error}
         />
       </div>
+
+      <MayaOpsLens
+        open={opsLensOpen}
+        title="Ops Lens"
+        subtitle="Sekundäre Arbeitsraum-, Thread- und Wiedereinstiegssteuerung außerhalb der Hauptfläche."
+        onClose={() => setOpsLensOpen(false)}
+      >
+        {activeSession ? (
+          <MayaWorkspaceContextPanel
+            activeWorkspace={activeWorkspace}
+            visibleWorkspaces={visibleWorkspaces}
+            relatedWorkspaceThreads={relatedWorkspaceThreads}
+            activeWorkspaceUpdatedAtLabel={activeWorkspaceUpdatedAtLabel}
+            workspaceMilestoneAddsSignal={workspaceMilestoneAddsSignal}
+            showWorkspaceOpenItems={showWorkspaceOpenItems}
+            workspaceOpenItems={workspaceOpenItems}
+            activeWorkspaceId={activeWorkspaceId}
+            activeSessionId={activeSessionId}
+            hasActiveSession={Boolean(activeSession)}
+            loading={loading}
+            onCreateWorkspace={() => void createWorkspace()}
+            onSetActiveWorkspace={(workspaceId) => void setActiveWorkspace(workspaceId)}
+            onApplyResumeAction={applyResumeAction}
+            onAssignActiveThreadToWorkspace={(workspaceId) => void assignActiveThreadToWorkspace(workspaceId)}
+            onSelectThread={selectThread}
+          />
+        ) : null}
+
+        {activeWorkrun ? (
+          <MayaWorkrunDetails
+            activeWorkrun={activeWorkrun}
+            loading={loading}
+            canRebuildWorkrunFromThread={Boolean(activeSession)}
+            showHandoffSection={showHandoffSection}
+            activeThreadHandoff={activeThreadHandoff}
+            activeThreadHandoffUpdatedAtLabel={activeThreadHandoffUpdatedAtLabel}
+            handoffHasDistinctAchieved={handoffHasDistinctAchieved}
+            handoffHasDistinctNextEntry={handoffHasDistinctNextEntry}
+            handoffOpenItems={handoffOpenItems}
+            activeCheckpointBoard={activeCheckpointBoard}
+            onSetFocusFromInputOrNextStep={() => {
+              const nextFocus = input.trim() || activeWorkrun.nextStep;
+              setManualWorkrunFocus(nextFocus);
+              void updateActiveWorkrun({
+                focus: nextFocus,
+                nextStep: nextFocus,
+                status: 'open',
+                lastStep: activeWorkrun.lastStep,
+                source: 'manual'
+              });
+            }}
+            onMarkWorkrunCompleted={() => updateActiveWorkrun({ status: 'completed', source: 'manual' })}
+            onReopenWorkrun={() => updateActiveWorkrun({ status: 'open', source: 'manual' })}
+            onPauseThreadFromWorkrun={() => updateThreadHandoff({
+              status: 'paused',
+              achieved: activeThreadHandoff?.achieved || activeWorkrun.lastOutput || activeSession?.digest?.currentState || '',
+              openItems: activeCheckpointBoard?.checkpoints.filter((checkpoint) => checkpoint.status === 'open').map((checkpoint) => checkpoint.label) || activeThreadHandoff?.openItems || [],
+              nextEntry: activeWorkrun.nextStep,
+              source: 'manual'
+            })}
+            onResumeThreadFromWorkrun={() => updateThreadHandoff({
+              status: 'active',
+              nextEntry: activeThreadHandoff?.nextEntry || activeWorkrun.nextStep,
+              openItems: activeThreadHandoff?.openItems || activeCheckpointBoard?.checkpoints.filter((checkpoint) => checkpoint.status === 'open').map((checkpoint) => checkpoint.label) || [],
+              achieved: activeThreadHandoff?.achieved || activeWorkrun.lastOutput || activeSession?.digest?.currentState || '',
+              source: 'manual'
+            })}
+            onRebuildWorkrunFromThread={() => {
+              setManualWorkrunFocus(null);
+              if (activeSession) {
+                const nextWorkrun = buildPersistedWorkrun(activeSession, activeWorkrun || undefined, {
+                  focus: derivedWorkrun?.focus || activeWorkrun?.focus || activeSession.intent || activeSession.title,
+                  nextStep: derivedWorkrun?.nextStep || activeWorkrun?.nextStep || activeSession.intent || activeSession.title,
+                  status: activeWorkrun?.status || 'open',
+                  lastOutput: activeWorkrun?.lastOutput,
+                  lastStep: activeWorkrun?.lastStep,
+                  source: 'derived'
+                });
+
+                if (nextWorkrun) {
+                  const nextBoard = buildPersistedCheckpointBoard(activeSession, activeCheckpointBoard || undefined, {
+                    focus: nextWorkrun.focus,
+                    source: 'derived'
+                  });
+                  const nextHandoff = buildPersistedThreadHandoff(activeSession, activeThreadHandoff || undefined, {
+                    status: activeThreadHandoff?.status || 'active',
+                    achieved: activeThreadHandoff?.achieved || activeWorkrun?.lastOutput || activeSession.digest?.currentState || '',
+                    openItems: nextBoard?.checkpoints.filter((checkpoint) => checkpoint.status === 'open').map((checkpoint) => checkpoint.label) || [],
+                    nextEntry: nextWorkrun.nextStep,
+                    source: 'derived'
+                  });
+                  const nextWorkspace = activeWorkspace
+                    ? buildPersistedWorkspaceContext(activeSession, activeWorkspace, {
+                        focus: nextWorkrun.focus,
+                        currentState: nextHandoff?.achieved || nextWorkrun.lastOutput || activeWorkspace.currentState,
+                        openItems: nextHandoff?.openItems || activeWorkspace.openItems,
+                        nextMilestone: nextHandoff?.nextEntry || nextWorkrun.nextStep,
+                        threadIds: activeWorkspace.threadIds,
+                        source: 'derived'
+                      })
+                    : undefined;
+                  void persistCurrentSession(messages, threadDigest, nextWorkrun, nextBoard, nextHandoff, activeSession.workspaceId, nextWorkspace);
+                }
+              }
+            }}
+            onToggleCheckpointStatus={toggleCheckpointStatus}
+            onApplyCheckpointToComposer={(prompt: string) => applyResumeAction(prompt, false)}
+            onAddBoardCheckpointFromFocus={addBoardCheckpointFromFocus}
+          />
+        ) : null}
+
+        <section className="rounded-[18px] border border-white/10 bg-white/5 p-3 text-sm text-slate-100 shadow-shell sm:p-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="text-[11px] uppercase tracking-[0.22em] text-cyan-300">Thread-Steuerung</div>
+              <div className="mt-2 flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em] text-slate-400">
+                <span className="rounded-full border border-white/10 bg-slate-950/40 px-3 py-1">
+                  {sessionsLoaded ? `Threads: ${visibleSessions.length}` : 'Threads werden geladen'}
+                </span>
+                {activeSession ? (
+                  <span className="rounded-full border border-white/10 bg-slate-950/40 px-3 py-1">
+                    Aktiv: {activeSession.title}
+                  </span>
+                ) : null}
+                {threadDigest ? (
+                  <span className="rounded-full border border-white/10 bg-slate-950/40 px-3 py-1">
+                    {digestNeedsRefresh ? 'Digest veraltet' : 'Digest bereit'}
+                  </span>
+                ) : null}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={refreshThreadDigest}
+              disabled={loading || messages.length === 0}
+              className="rounded-full border border-white/10 bg-slate-950/40 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-slate-200 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {threadDigest ? (digestNeedsRefresh ? 'Digest erneuern' : 'Digest aktualisieren') : 'Digest erzeugen'}
+            </button>
+          </div>
+
+          {visibleSessions.length > 0 ? (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {visibleSessions.slice(0, 5).map((session) => (
+                <button
+                  key={session.id}
+                  type="button"
+                  onClick={() => void selectThread(session.id)}
+                  disabled={loading || session.id === activeSessionId}
+                  className={[
+                    'rounded-full border px-3 py-2 text-[11px] uppercase tracking-[0.18em] transition',
+                    session.id === activeSessionId
+                      ? 'border-cyan-300/40 bg-cyan-400/15 text-cyan-50'
+                      : 'border-white/10 bg-slate-950/40 text-slate-200 hover:bg-white/10',
+                    loading ? 'disabled:cursor-not-allowed disabled:opacity-50' : ''
+                  ].join(' ')}
+                >
+                  {session.title}
+                </button>
+              ))}
+            </div>
+          ) : sessionsLoaded ? (
+            <p className="mt-3 text-sm leading-6 text-slate-400">
+              Noch kein persistierter Thread vorhanden.
+            </p>
+          ) : null}
+        </section>
+      </MayaOpsLens>
 
       {showReviewSheet ? (
         <MayaReviewSheet

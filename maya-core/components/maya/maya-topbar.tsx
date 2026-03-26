@@ -38,9 +38,11 @@ type MayaTopbarProps = {
   health: HealthStatus | null;
   reviewCount: number;
   topbarMetaOpen: boolean;
+  opsLensOpen: boolean;
   isFileMode?: boolean;
   hasMessages?: boolean;
   onToggleMeta: () => void;
+  onToggleOpsLens: () => void;
   onProviderChange: (providerId: string) => void;
   onModelChange: (modelId: string) => void;
   onOpenReview: () => void;
@@ -69,9 +71,11 @@ export function MayaTopbar({
   health,
   reviewCount,
   topbarMetaOpen,
+  opsLensOpen,
   isFileMode,
   hasMessages,
   onToggleMeta,
+  onToggleOpsLens,
   onProviderChange,
   onModelChange,
   onOpenReview,
@@ -148,6 +152,16 @@ export function MayaTopbar({
       </div>
 
       <div className="tb-spacer" />
+
+      <button
+        type="button"
+        className={`ops-lens-trigger${opsLensOpen ? ' open' : ''}`}
+        onClick={onToggleOpsLens}
+        aria-label={opsLensOpen ? 'Sekundäre Steuerung schließen' : 'Sekundäre Steuerung öffnen'}
+        aria-pressed={opsLensOpen}
+      >
+        {opsLensOpen ? 'Fokus' : 'Lens'}
+      </button>
 
       {hasMessages && onClearMessages && (
         <button
