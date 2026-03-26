@@ -162,6 +162,12 @@ type DailySummary = {
   reviewCount: number;
 };
 
+type MayaEpistemicGuardrail = {
+  mirror: string;
+  overclaimWarning: string | null;
+  freshnessWarning: string | null;
+};
+
 const MODE_LABELS: Record<StudioMode, string> = {
   personal: 'Personal'
 };
@@ -549,6 +555,7 @@ export function MayaChatScreen() {
   const [activeSurfaceSnapshot, setActiveSurfaceSnapshot] = useState<MayaMainSurfaceDerivation | null>(null);
   const [activeSurfaceSessionId, setActiveSurfaceSessionId] = useState<string | null>(null);
   const [activeSurfaceWorkspaceId, setActiveSurfaceWorkspaceId] = useState<string | null>(null);
+  const [epistemicGuardrail, setEpistemicGuardrail] = useState<MayaEpistemicGuardrail | null>(null);
   const feedRef = useRef<HTMLDivElement>(null);
   const sendingRef = useRef(false);
   const isHydratingSessionState = !sessionsLoaded && !sessionState;
@@ -855,6 +862,9 @@ export function MayaChatScreen() {
       showActiveHandoffSection
     )
   );
+  const guardrailSummaryLabel = epistemicGuardrail
+    ? (epistemicGuardrail.overclaimWarning || epistemicGuardrail.freshnessWarning ? 'Guardrail-Hinweis' : 'Mirror bereit')
+    : null;
 
   const persistCurrentSession = useCallback(async (
     nextMessages: Message[],
@@ -976,6 +986,7 @@ export function MayaChatScreen() {
       setActiveSessionId(nextSession.id);
       setMessages(hydrateSessionMessages(nextSession));
       setThreadDigest(nextSession.digest || null);
+      setEpistemicGuardrail(null);
       setManualWorkrunFocus(null);
       setInput('');
       setError(null);
@@ -1032,6 +1043,7 @@ export function MayaChatScreen() {
     setActiveWorkspaceId(nextSession.workspaceId || sessionState.activeWorkspaceId || null);
     setMessages(hydrateSessionMessages(nextSession));
     setThreadDigest(nextSession.digest || null);
+    setEpistemicGuardrail(null);
     setManualWorkrunFocus(null);
     setInput('');
     setError(null);
@@ -1057,6 +1069,7 @@ export function MayaChatScreen() {
     setActiveWorkspaceId(activeWorkspaceId || null);
     setMessages([]);
     setThreadDigest(null);
+    setEpistemicGuardrail(null);
     setManualWorkrunFocus(null);
     setInput('');
     setError(null);
@@ -1270,6 +1283,7 @@ export function MayaChatScreen() {
 
     setManualWorkrunFocus(text.trim());
     setMessages(nextUserMessages);
+    setEpistemicGuardrail(null);
     setInput('');
     setLoading(true);
     setError(null);
@@ -1328,6 +1342,7 @@ export function MayaChatScreen() {
           content: stubText,
           createdAt: new Date().toISOString()
         };
+        setEpistemicGuardrail(null);
         const nextMessages = [...nextUserMessages, assistantMessage];
         setMessages(nextMessages);
         const nextWorkrun = buildPersistedWorkrun(activeSession || buildMayaThreadSession(nextMessages), activeWorkrun || undefined, {
@@ -1374,6 +1389,7 @@ export function MayaChatScreen() {
           content: stubText,
           createdAt: new Date().toISOString()
         };
+        setEpistemicGuardrail(null);
         const nextMessages = [...nextUserMessages, assistantMessage];
         setMessages(nextMessages);
         const nextWorkrun = buildPersistedWorkrun(activeSession || buildMayaThreadSession(nextMessages), activeWorkrun || undefined, {
@@ -1409,6 +1425,7 @@ export function MayaChatScreen() {
       }
 
       if (data.blocked) {
+        setEpistemicGuardrail(null);
         setError(data.message?.content || 'Anfrage wurde blockiert');
       } else if (data.message) {
         // Streaming simulation — thinking → streaming → idle
@@ -1417,6 +1434,7 @@ export function MayaChatScreen() {
           setStreamingText(partial);
         });
         setStreamingText('');
+        setEpistemicGuardrail(data.epistemicGuardrail || null);
 
         const assistantMessage: Message = {
           id: data.message.id,
@@ -1604,7 +1622,8 @@ export function MayaChatScreen() {
     activeWorkspace ? `Raum: ${activeWorkspace.title}` : null,
     activeSession ? `Thread: ${activeSession.title}` : null,
     sessionsLoaded ? `Threads: ${visibleSessions.length}` : 'Threads werden geladen',
-    threadDigest ? (digestNeedsRefresh ? 'Digest veraltet' : 'Digest bereit') : null
+    threadDigest ? (digestNeedsRefresh ? 'Digest veraltet' : 'Digest bereit') : null,
+    guardrailSummaryLabel
   ].filter(Boolean) as string[];
 
   if (isHydratingSessionState) {
@@ -1781,6 +1800,7 @@ export function MayaChatScreen() {
             handoffHasDistinctNextEntry={handoffHasDistinctNextEntry}
             handoffOpenItems={handoffOpenItems}
             activeCheckpointBoard={activeCheckpointBoard}
+            epistemicGuardrail={epistemicGuardrail}
             onSetFocusFromInputOrNextStep={() => {
               const nextFocus = input.trim() || activeWorkrun.nextStep;
               setManualWorkrunFocus(nextFocus);

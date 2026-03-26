@@ -8,6 +8,12 @@ import {
   type MayaActiveWorkrun
 } from '@/lib/maya-thread-digest';
 
+type MayaEpistemicGuardrail = {
+  mirror: string;
+  overclaimWarning: string | null;
+  freshnessWarning: string | null;
+};
+
 type MayaWorkrunDetailsProps = {
   activeWorkrun: MayaActiveWorkrun;
   loading: boolean;
@@ -19,6 +25,7 @@ type MayaWorkrunDetailsProps = {
   handoffHasDistinctNextEntry: boolean;
   handoffOpenItems: string[];
   activeCheckpointBoard: MayaActiveCheckpointBoard | null;
+  epistemicGuardrail: MayaEpistemicGuardrail | null;
   onSetFocusFromInputOrNextStep: () => void | Promise<void>;
   onMarkWorkrunCompleted: () => void | Promise<void>;
   onReopenWorkrun: () => void | Promise<void>;
@@ -41,6 +48,7 @@ export function MayaWorkrunDetails({
   handoffHasDistinctNextEntry,
   handoffOpenItems,
   activeCheckpointBoard,
+  epistemicGuardrail,
   onSetFocusFromInputOrNextStep,
   onMarkWorkrunCompleted,
   onReopenWorkrun,
@@ -51,6 +59,19 @@ export function MayaWorkrunDetails({
   onApplyCheckpointToComposer,
   onAddBoardCheckpointFromFocus
 }: MayaWorkrunDetailsProps) {
+  const showHandoffOpenItems = handoffOpenItems.length > 0 && (
+    activeThreadHandoff?.status !== 'active' || handoffHasDistinctNextEntry
+  );
+  const showHandoffAchieved = Boolean(
+    activeThreadHandoff && (activeThreadHandoff.status !== 'active' || (handoffHasDistinctAchieved && showHandoffOpenItems))
+  );
+  const showHandoffNextEntry = Boolean(
+    activeThreadHandoff && (activeThreadHandoff.status !== 'active' || handoffHasDistinctNextEntry)
+  );
+  const showEpistemicGuardrail = Boolean(
+    epistemicGuardrail && (epistemicGuardrail.overclaimWarning || epistemicGuardrail.freshnessWarning || epistemicGuardrail.mirror)
+  );
+
   return (
     <section className="rounded-[20px] border border-white/10 bg-white/5 p-4 text-sm text-slate-100 shadow-shell sm:p-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -74,6 +95,41 @@ export function MayaWorkrunDetails({
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        {showEpistemicGuardrail ? (
+          <div className="rounded-[20px] border border-cyan-300/20 bg-cyan-400/10 p-4 lg:col-span-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <div className="text-xs uppercase tracking-[0.18em] text-cyan-200">Epistemische Nachspur</div>
+                <p className="mt-2 text-sm leading-6 text-slate-200">Diese Hinweise bleiben sekundär in der Lens und schärfen Spiegelung, Überdehnung und Frische nur bei Bedarf nach.</p>
+              </div>
+              <div className="rounded-full border border-cyan-300/25 bg-slate-950/35 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-cyan-100">
+                Guardrail
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-4 lg:grid-cols-3">
+              <div className="rounded-[18px] border border-white/10 bg-slate-950/35 p-4 lg:col-span-3">
+                <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Mirror</div>
+                <p className="mt-2 text-sm leading-6 text-slate-100">{epistemicGuardrail?.mirror}</p>
+              </div>
+
+              {epistemicGuardrail?.overclaimWarning ? (
+                <div className="rounded-[18px] border border-amber-300/20 bg-amber-400/10 p-4">
+                  <div className="text-xs uppercase tracking-[0.18em] text-amber-100">Overclaim</div>
+                  <p className="mt-2 text-sm leading-6 text-amber-50">{epistemicGuardrail.overclaimWarning}</p>
+                </div>
+              ) : null}
+
+              {epistemicGuardrail?.freshnessWarning ? (
+                <div className="rounded-[18px] border border-cyan-300/20 bg-cyan-400/10 p-4">
+                  <div className="text-xs uppercase tracking-[0.18em] text-cyan-100">Freshness</div>
+                  <p className="mt-2 text-sm leading-6 text-cyan-50">{epistemicGuardrail.freshnessWarning}</p>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+
         <div className="rounded-[20px] border border-white/10 bg-slate-950/35 p-4">
           <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Letzter sinnvoller Schritt</div>
           <p className="mt-2 text-sm leading-6 text-slate-200">
@@ -157,7 +213,7 @@ export function MayaWorkrunDetails({
             </div>
 
             <div className="mt-4 grid gap-4 lg:grid-cols-3">
-              {handoffHasDistinctAchieved || activeThreadHandoff.status !== 'active' ? (
+              {showHandoffAchieved ? (
                 <div className="rounded-[18px] border border-white/10 bg-white/5 p-4">
                   <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Erreicht</div>
                   <p className="mt-2 text-sm leading-6 text-slate-200">
@@ -166,7 +222,7 @@ export function MayaWorkrunDetails({
                 </div>
               ) : null}
 
-              {handoffOpenItems.length > 0 ? (
+              {showHandoffOpenItems ? (
                 <div className="rounded-[18px] border border-white/10 bg-white/5 p-4">
                   <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Bleibt offen</div>
                   <div className="mt-3 space-y-2">
@@ -179,7 +235,7 @@ export function MayaWorkrunDetails({
                 </div>
               ) : null}
 
-              {handoffHasDistinctNextEntry || activeThreadHandoff.status !== 'active' ? (
+              {showHandoffNextEntry ? (
                 <div className="rounded-[18px] border border-white/10 bg-white/5 p-4">
                   <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Nächster Wiedereinstieg</div>
                   <p className="mt-2 text-sm leading-6 text-slate-200">{activeThreadHandoff.nextEntry}</p>
