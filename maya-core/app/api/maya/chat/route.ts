@@ -1,3 +1,5 @@
+// K5-CANONICAL: Diese Datei gehört zu Achse B (Execution/Zielpfad).
+// Neue Logik kommt hierher, nicht in Achse A.
 import { NextRequest, NextResponse } from 'next/server';
 
 import { isMayaRequestAuthorized } from '@/lib/maya-auth';
@@ -10,6 +12,12 @@ import { type WorkMode } from '@/components/maya/maya-local-response';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
+type MayaEpistemicGuardrail = {
+  mirror: string;
+  overclaimWarning: string | null;
+  freshnessWarning: string | null;
+};
 
 export async function POST(request: NextRequest) {
   if (!(await isMayaRequestAuthorized(request as any))) {
@@ -53,6 +61,10 @@ export async function POST(request: NextRequest) {
     };
 
     const result = await dispatchChat(dispatchRequest);
+    const latestUserMessage = dispatchRequest.messages.filter((message) => message.role === 'user').pop()?.content || '';
+    const epistemicGuardrail = !result.blocked && result.message
+      ? buildEpistemicGuardrail(latestUserMessage, result.message.content)
+      : null;
 
     // Trigger async extract (does not block response)
     if (!result.blocked && result.message) {
@@ -79,11 +91,85 @@ export async function POST(request: NextRequest) {
         label: result.modelUsed.label
       },
       contextUsed: result.contextUsed || false,
-      warnings: result.warnings
+      warnings: result.warnings,
+      epistemicGuardrail
     });
   } catch (error) {
     return NextResponse.json({ error: 'chat_failed' }, { status: 500 });
   }
+}
+
+function buildEpistemicGuardrail(userMessage: string, assistantMessage: string): MayaEpistemicGuardrail {
+  const mirror = buildMirror(userMessage);
+  const overclaimWarning = detectOverclaimWarning(userMessage, assistantMessage);
+  const freshnessWarning = detectFreshnessWarning(assistantMessage);
+
+  return {
+    mirror,
+    overclaimWarning,
+    freshnessWarning
+  };
+}
+
+function buildMirror(userMessage: string): string {
+  const normalized = normalizeForGuardrail(userMessage);
+  if (!normalized) {
+    return 'Kernanliegen erkannt: Kein belastbarer Nutzersatz für die Spiegelung vorhanden.';
+  }
+
+  const firstSegment = normalized
+    .split(/(?<=[.!?])\s+|\n+/)
+    .map((segment) => segment.trim())
+    .find((segment) => segment.length >= 12) || normalized;
+
+  return `Kernanliegen erkannt: ${truncateGuardrailText(firstSegment, 180)}`;
+}
+
+function detectOverclaimWarning(userMessage: string, assistantMessage: string): string | null {
+  const normalizedAssistant = normalizeForGuardrail(assistantMessage).toLowerCase();
+  const normalizedUser = normalizeForGuardrail(userMessage).toLowerCase();
+
+  if (!normalizedAssistant) {
+    return null;
+  }
+
+  const absoluteClaimPattern = /\b(sicher|garantiert|definitiv|eindeutig|zweifellos|immer|nie|vollständig|bewiesen|ohne zweifel)\b/i;
+  const hedgePattern = /\b(vielleicht|wahrscheinlich|vermutlich|kann|könnte|scheint|nach aktuellem stand|soweit sichtbar)\b/i;
+  const userAskedForCertainty = /\b(sicher|garantiert|eindeutig|definitiv|beweisen|beweis)\b/i.test(normalizedUser);
+
+  if (absoluteClaimPattern.test(normalizedAssistant) && !hedgePattern.test(normalizedAssistant) && !userAskedForCertainty) {
+    return 'Antwort klingt stellenweise zu sicher. Prüfe, ob die Behauptung wirklich durch Input, Repo-Stand oder Kontext gedeckt ist.';
+  }
+
+  return null;
+}
+
+function detectFreshnessWarning(assistantMessage: string): string | null {
+  const normalizedAssistant = normalizeForGuardrail(assistantMessage);
+  if (!normalizedAssistant) {
+    return null;
+  }
+
+  const timeSensitivePattern = /\b(aktuell|derzeit|momentan|heute|neueste|latest|kürzlich|zurzeit|gegenwärtig)\b/i;
+  const freshnessAnchorPattern = /\b(commit|hash|version|stand|timestamp|utc|20\d{2}-\d{2}-\d{2}|\d{1,2}\.\d{1,2}\.20\d{2})\b/i;
+
+  if (timeSensitivePattern.test(normalizedAssistant) && !freshnessAnchorPattern.test(normalizedAssistant)) {
+    return 'Antwort enthält zeitabhängige Aussagen ohne klaren Frischeanker. Prüfe, ob Stand, Commit oder Datum explizit benannt werden sollte.';
+  }
+
+  return null;
+}
+
+function normalizeForGuardrail(text: string): string {
+  return text.replace(/\s+/g, ' ').trim();
+}
+
+function truncateGuardrailText(text: string, maxLength: number): string {
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  return `${text.slice(0, maxLength - 1).trimEnd()}…`;
 }
 
 // Async extract - runs in background without blocking response
