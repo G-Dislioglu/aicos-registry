@@ -37,24 +37,27 @@ Für neue Arbeit an `maya-core` zuerst lesen:
 
 `/maya` ist die primäre Maya-Hauptfläche in `maya-core`.
 
-Die aktuell veröffentlichte UI-Linie ist die lokale Dreierstufe aus Primary-Surface-Compression, Secondary-Navigation-Rationalization und page-level Frame-Compression. Damit ist `/maya` sichtbar stärker um den aktiven Arbeitslauf als Primärfläche verdichtet.
+Die aktuell veröffentlichte UI-Linie ist die publizierte Verdichtungslinie aus Primary-Surface-Compression, Secondary-Navigation-Rationalization, page-level Frame-Compression und dem nachgezogenen Active-Workrun-Detail-Downshift in die Ops-Lens. Damit ist `/maya` sichtbar stärker um den aktiven Arbeitslauf als Primärfläche verdichtet, ohne Handoff-, Checkpoint- und manuelle Steuerungsdetails weiter auf der Primärfläche zu bündeln.
 
 Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State, ältere State-/Persistenzlinien und neuere `/api/maya/*`-Linien koexistieren weiter. Neue Arbeit darf diesen Hybridzustand nicht stillschweigend als bereits abgeschlossene Ein-Achsen-Architektur ausgeben.
 
 ## Current Published Truth
 
-- `origin/master` ist aktuell auf `ed10c06`
-- Die veröffentlichte Maya-UI-Dreierstufe ist enthalten:
+- `origin/master` ist aktuell auf `dcdc9b5`
+- Die veröffentlichte Maya-Linie ist jetzt in einem Satz: Primärfläche um den aktiven Arbeitslauf verdichtet, sekundäre Navigation rationalisiert, page-level Framing gestrafft und sekundäre Arbeitslaufdetails in die Ops-Lens verlagert.
+- Die veröffentlichte Verdichtungslinie ist enthalten:
   - `9a53ac8` — `refactor(maya): compress primary surface around workrun flow`
   - `a95068f` — `refactor(maya): rationalize secondary navigation surface`
   - `ed10c06` — `refactor(maya): compress page-level hero and context framing`
+  - `dcdc9b5` — `feat(maya): consolidate ops lens and workrun details`
 - `app/maya/page.tsx` rahmt den Einstieg jetzt knapper und überlässt die Hauptarbeit `MayaChatScreen`
 - `components/maya-chat-screen.tsx` bindet die extrahierten UI-Teile sichtbar ein
+- `components/maya/maya-workrun-details.tsx` hält manuelle Arbeitslaufsteuerung, Handoff-Details und Checkpoint-Pflege außerhalb der Primärkarte
 
 ## Current Local Working Truth
 
 - Der lokale Working Tree ist weiterhin breit dirty
-- Relevante lokale Maya-Themen außerhalb der veröffentlichten UI-Trilogie existieren weiterhin, u. a. in API-, Affect-, Persistenz-, Doku- und Infra-nahen Dateien
+- Relevante lokale Maya-Themen außerhalb der veröffentlichten Maya-Verdichtungslinie existieren weiterhin, u. a. in API-, Affect-, Persistenz-, Doku- und Infra-nahen Dateien
 - Diese lokale Restlage ist nicht automatisch Teil der publizierten Maya-UI-Wahrheit
 
 ## Current Architecture Reality
@@ -125,6 +128,12 @@ Handoff Prominence Tightening
 ### Ziel
 
 Die verbleibende Sichtbarkeit von Handoff-/Wiedereinstiegsdetails nur dort weiter zu reduzieren, wo sie nicht klar vom Primärfokus abweichen, ohne wichtige Park-/Resume-Signale zu verlieren.
+
+### Aufwand / Risikoprofil
+
+- klein bis mittel, grob `0.5-1` Tag als enger Nachschärfungsblock
+- primär UI-, Lens- und View-Logic-Scope
+- kein geplanter Runtime-, Provider-, API- oder Persistenzumbau
 
 ### Scope
 
