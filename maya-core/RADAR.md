@@ -306,7 +306,7 @@ Crossing-Guardrail:
   - `docs/spec-packs/products/maya/STATUS.md`
   - `docs/spec-packs/products/maya/BLUEPRINT.md`
 - `Unzerstörbarer Kern`:
-  - die Maya-Hauptfläche ist sichtseitig klarer, aber die Runtime bleibt an der Surface-State-Naht hybrid; genau dort liegt der nächste kleine Technikblock.
+  - Wenn die Surface-State-Naht hybrid bleibt, ruht die sichtbare Maya-Klarheit auf Übergangsadapter-Schuld; ohne kleinen Achse-B-Folgeschritt kippt die Produktordnung still zurück in Runtime-Unschärfe.
 - `Exponierte Annahmen`:
   - einzelne Verantwortungen lassen sich Richtung Achse B verschieben, ohne sofort Provider-, Persistenz- oder Sessionlogik breit mitzubewegen.
 - `Weggeworfen`:
@@ -342,7 +342,7 @@ Crossing-Guardrail:
   - `docs/spec-packs/products/maya/CANON.md`
   - `STATE.md`
 - `Unzerstörbarer Kern`:
-  - Wahrheitswechsel und Kontinuitätsübergaben brauchen explizitere Markierung, sonst kippen Digest-, Handoff- oder Kontextobjekte zu leicht in implizite Produktwahrheit.
+  - Wenn Wahrheitswechsel und Übergaben unmarkiert bleiben, rutschen Digest-, Handoff- und Kontextobjekte still von Arbeitshilfe zu scheinbarer Produktwahrheit.
 - `Exponierte Annahmen`:
   - die Doku-Regeln zu Wahrheit, Vertrag und Nicht-Kanon lassen sich später als enger Maya-naher Übergangsvertrag bündeln, ohne sofort ein großes Cross-App-System zu bauen.
 - `Weggeworfen`:
@@ -457,7 +457,7 @@ Crossing-Guardrail:
   - `lib/maya-provider-dispatch.ts`
   - `DESIGN.md`
 - `Unzerstörbarer Kern`:
-  - Bevor Maya antwortet, sollte ein minimaler Vorab-Schritt die Kernspannung des User-Problems freilegen; sonst optimiert der Rest nur auf die Beschreibung, nicht auf das eigentliche Problem.
+  - Wenn vor `dispatchChat()` kein enger Kernzugriff passiert, optimiert Maya weiter auf die Erzählung des Problems statt auf dessen Spannung; dann kommt jede spätere Guardrail-Schicht zu spät.
 - `Exponierte Annahmen`:
   - Ein einziger leichter Vorab-Call oder enges Prompt-Fragment kann genug Mehrwert liefern, ohne sofort neue Runtime-Achsen oder UI-Verträge zu erzeugen.
 - `Weggeworfen`:
