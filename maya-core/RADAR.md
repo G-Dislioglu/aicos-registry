@@ -20,7 +20,7 @@ Diese Datei sammelt relevante Maya-Ideen, Specs, Blueprints, frühere Chat-Ablei
 Wenn neue oder ältere Materialien eingebracht werden, läuft die Arbeit in dieser Reihenfolge:
 
 1. Scan der eingebrachten Quellen
-2. Destillation der Kerngedanken
+2. Kompression der Kerngedanken
 3. Cross-Combination kompatibler Ansätze
 4. Maya-Fit-Prüfung gegen Produktordnung, Architekturrealität und Guardrails
 5. Vorschlag eines begrenzten Adoptionspfads
@@ -34,7 +34,7 @@ Diese Datei muss aktualisiert werden, wenn:
 - ein Proposal geprüft, übernommen, geparkt oder verworfen wird
 - ein externer KI-Review neue relevante Ansatzlinien liefert
 - ein Ansatz aus dieser Datei in reale App-Arbeit überführt wird
-- ein Scan-Lauf neue destillierte oder kombinierte Kandidaten erzeugt
+- ein Scan-Lauf neue komprimierte oder kombinierte Kandidaten erzeugt
 
 ## Status-Taxonomie
 
@@ -59,6 +59,9 @@ Zusätzliche Prüfmarker:
 - `scan_pending`
 - `distilled`
 - `cross_combined`
+- `compression_tested`
+- `crossing_derived`
+- `gap_identified`
 - `maya_fit_high`
 - `maya_fit_medium`
 - `maya_fit_low`
@@ -89,17 +92,31 @@ Mögliche Quellen für einen Scan:
 
 Ziel dieser Phase ist nicht sofortige Übernahme, sondern geordnete Sichtbarkeit.
 
-### Phase 2: Destillation
+### Phase 2: Kompression (nicht Destillation)
 
-Für jede Quelle werden die wesentlichen Kernelemente herausgezogen:
+Für jede Quelle wird nicht zusammengefasst, sondern zerquetscht.
 
-- welches Problem benannt wird
-- welches Zielbild vorgeschlagen wird
-- welche konkreten Änderungen implizit oder explizit gemeint sind
-- welche Annahmen, Risiken und Scope-Grenzen enthalten sind
-- welche Teile nur Sprache sind und welche wirklich umsetzbare Struktur liefern
+Die Leitfrage ist NICHT "Was ist die Essenz?" sondern:
 
-Das Ergebnis ist kein Volltext-Archiv, sondern ein verdichteter Radar-Kandidat.
+**"Was an dieser Idee kannst du nicht wegstreichen, egal wie du es versuchst?"**
+
+Fünf Streichversuche pro Quelle:
+
+1. Varianten streichen: Was bleibt egal wie man die Idee formuliert?
+2. Harmonie streichen: Wo ist der Widerspruch der sich nicht auflösen lässt?
+3. Nebenschauplätze streichen: Was blockiert alles andere?
+4. Negation: Was ist diese Idee definitiv NICHT?
+5. Kategorie streichen: Ist die Schublade selbst fragwürdig?
+
+Das Ergebnis ist kein sauberes Summary, sondern ein komprimierter Kern mit Spannung.
+
+Wenn das Ergebnis sich elegant und rund anfühlt, wurde destilliert statt komprimiert. Nochmal.
+
+Kompressionsformat pro Kandidat:
+
+- `Unzerstörbarer Kern` (1-2 Sätze, muss Spannung enthalten)
+- `Exponierte Annahmen` (was wurde beim Komprimieren sichtbar?)
+- `Weggeworfen` (was konnte erfolgreich gestrichen werden?)
 
 ### Phase 3: Cross-Combination
 
@@ -113,6 +130,37 @@ Dabei wird unterschieden zwischen:
 - kombinierbaren Teilideen
 
 Wenn zwei oder mehr Quellen zusammen einen stärkeren Kandidaten ergeben, darf ein neuer kombinierter Radar-Eintrag entstehen. Dieser muss dann aber als kombinierter Kandidat markiert werden und seine Quellen offen nennen.
+
+### Crossing-Herkunft (aus AICOS übernommen)
+
+Jeder Kandidat, der aus einem Crossing entsteht, muss ein Feld tragen:
+
+- `crossing_origin`: Welche konkreten Kandidaten oder Quellen wurden gekreuzt?
+  Nicht lose Quellensammlung, sondern präzise Paare wie `A × E2` oder `DESIGN.md × meta-004`.
+
+### Theme-Cluster vor Crossing (aus AICOS übernommen)
+
+Bevor Kandidaten gekreuzt werden, zuerst nach Themen clustern:
+
+- UI / Surface
+- Execution / Runtime
+- Memory / Continuity
+- Governance / Epistemic
+- Planung / Doku
+
+Dann kreuzen:
+
+- innerhalb desselben Clusters
+- zwischen Clustern
+
+### Lücken-Erkennung (aus AICOS übernommen)
+
+Nach jedem Scan-Lauf explizit dokumentieren:
+
+**Was fehlt?** — Welche Bereiche haben keinen aktiven Kandidaten?
+**Was ist überrepräsentiert?** — Wo gibt es zu viele ähnliche Kandidaten?
+
+Lücken werden als eigener Abschnitt in `RADAR.md` geführt.
 
 ### Phase 4: Maya-Fit-Prüfung
 
@@ -173,7 +221,7 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
 - Kombination ist nur sinnvoll, wenn sie den Kandidaten klarer, testbarer oder Maya-tauglicher macht
 - reine Ideenakkumulation ohne klaren Blockzuschnitt ist zu vermeiden
 
-## Erster Scanlauf — Destillierte Kandidaten
+## Erster Scanlauf — Komprimierte Kandidaten
 
 ### Scan-Batch
 
@@ -298,7 +346,7 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
 ### Kandidat E1 — Post-Dispatch Epistemic Guardrail
 
 - `Status`: `adopted`
-- `Herkunft`: `web_ai_derived`, `cross_combined`, `distilled`, `maya_fit_high`, `adoption_candidate`
+- `Herkunft`: `web_ai_derived`, `cross_combined`, `distilled`, `compression_tested`, `maya_fit_high`, `adoption_candidate`
 - `Quellen`:
   - externe Inline-Spec `Maya Governed Compression Shell — Spezifikation V2 (26.03.2026)` aus Claude-/ChatGPT-Ausarbeitung
   - `app/api/maya/chat/route.ts`
@@ -306,6 +354,12 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
   - `DESIGN.md`
   - `cards/meta/meta-001.json`
   - `cards/meta/meta-004.json`
+- `Unzerstörbarer Kern`:
+  - Wenn Maya erst nach dem Dispatch kurz gegen Mirror, Overclaim und Freshness gespiegelt wird, entsteht sofort mehr epistemische Disziplin, ohne Prompt-, Memory- oder Surface-State-Verträge aufzureißen.
+- `Exponierte Annahmen`:
+  - Ein heuristischer Nachlauf reicht als erste Schutzschicht aus, solange er eng bleibt und keine implizite Governor-Plattform behauptet.
+- `Weggeworfen`:
+  - Deep-Mode, Vorab-Call, Memory-Lifecycle und breiter Review-/Provider-Umbau.
 - `Kernproblem`:
   - Maya-Antworten können epistemisch zu glatt wirken, obwohl Re-Entry-, STALE- und Warnlogik produktseitig schon relevant sind.
 - `Kernidee`:
@@ -324,10 +378,43 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
 - `Urteil`:
   - als enger Achse-B-Block übernommen; der API-Nachlauf ist repo-sichtbar implementiert und die sekundäre Lens-Anzeige blieb in einem separaten UI-Folgeblock
 
-### Kandidat E2 — Governed Compression Shell Deep
+### Kandidat E2 — Pre-Dispatch Crush Light
+
+- `Status`: `active`
+- `Herkunft`: `web_ai_derived`, `compression_tested`, `maya_fit_high`, `adoption_candidate`
+- `Quellen`:
+  - externe Inline-Spec `Maya Governed Compression Shell — Spezifikation V2 (26.03.2026)` aus Claude-/ChatGPT-Ausarbeitung
+  - `app/api/maya/chat/route.ts`
+  - `lib/maya-provider-dispatch.ts`
+  - `DESIGN.md`
+- `Unzerstörbarer Kern`:
+  - Bevor Maya antwortet, sollte ein minimaler Vorab-Schritt die Kernspannung des User-Problems freilegen; sonst optimiert der Rest nur auf die Beschreibung, nicht auf das eigentliche Problem.
+- `Exponierte Annahmen`:
+  - Ein einziger leichter Vorab-Call oder enges Prompt-Fragment kann genug Mehrwert liefern, ohne sofort neue Runtime-Achsen oder UI-Verträge zu erzeugen.
+- `Weggeworfen`:
+  - Voller Governor, zusätzliche Surface-State-Felder, Memory-Lifecycle und jede Form von Deep-Orchestrierung.
+- `Kernproblem`:
+  - Maya verarbeitet User-Input aktuell ohne vorgelagerte Prüfung, ob das beschriebene Problem bereits die eigentliche Kernspannung trifft.
+- `Kernidee`:
+  - ein einziger leichtgewichtiger Crush-Light-Schritt vor `dispatchChat()`, der die Frage beantwortet, was am Problem nicht wegstreichbar ist; das Ergebnis könnte als enger `core_tension`-Input in den bestehenden Kontextfluss eingehen.
+- `kombinierbare Teilideen`:
+  - Kompressionsfrage aus der Governed-Compression-Shell-Spec
+  - bestehender `enrichedContext`-/Dispatch-Einstieg
+  - Fokus- und Re-Entry-Linie aus `DESIGN.md`
+- `Widersprüche / Risiken`:
+  - zusätzlicher Vorab-Call wäre ein echter Runtime-Eingriff und muss strikt budgetiert und abschaltbar bleiben
+  - darf nicht stillschweigend einen neuen Schema-, Memory- oder Surface-State-Vertrag einschmuggeln
+- `Maya-Fit`:
+  - hoch, wenn als einzelner, abschaltbarer Vorab-Schritt ohne Nebenachsen gebaut
+- `empfohlener Blockzuschnitt`:
+  - kleine Hilfsdatei für Crush-Light-Logik und enge Einhängung unmittelbar vor `dispatchChat()` ohne UI-Patch
+- `Urteil`:
+  - jetzt prüfbar, aber nur als eigener Miniblock nach expliziter Scope-Entscheidung
+
+### Kandidat E3 — Governed Compression Shell Deep
 
 - `Status`: `parked`
-- `Herkunft`: `web_ai_derived`, `distilled`, `scan_pending`, `maya_fit_low`
+- `Herkunft`: `web_ai_derived`, `compression_tested`, `scan_pending`, `maya_fit_low`
 - `Quellen`:
   - externe Inline-Spec `Maya Governed Compression Shell — Spezifikation V2 (26.03.2026)` aus Claude-/ChatGPT-Ausarbeitung
   - `STATE.md`
@@ -335,6 +422,12 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
   - `docs/spec-packs/products/maya/K5_RUNTIME_AXIS_DECISION_NOTE.md`
   - `lib/maya-memory-store.ts`
   - `lib/maya-surface-state.ts`
+- `Unzerstörbarer Kern`:
+  - Die tiefe Shell-Idee will nicht nur bessere Antworten, sondern einen governeten Denk- und Review-Kreislauf; genau deshalb ist sie als Gesamtpaket für Maya im Moment zu breit.
+- `Exponierte Annahmen`:
+  - Sie setzt mehr Achse-B-Reife, mehr Budget- und Review-Steuerung sowie explizitere Memory-/Surface-State-Verträge voraus, als Maya aktuell belastbar hat.
+- `Weggeworfen`:
+  - Sofortige Vollintegration von Resonanz-Detektor, adversarial Recheck, Review-Queue und Memory-Lifecycle.
 - `Kernproblem`:
   - die tiefere Shell-Idee bündelt Deep-Mode, neue Surface-Felder, Review-/Memory-Lifecycle und breitere Governor-Mechanik in einem Zug, obwohl Maya runtime-seitig weiter hybrid ist.
 - `Kernidee`:
@@ -349,22 +442,61 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
 - `Maya-Fit`:
   - niedrig als nächster Block, mittel nur als später zerlegbarer Ideenvorrat
 - `empfohlener Blockzuschnitt`:
-  - nicht jetzt; frühestens nach Evidenz aus engeren Vorstufen wie E1 und nur als weitere Zerlegung in eigene Miniblöcke
+  - nicht jetzt; frühestens nach Evidenz aus engeren Vorstufen wie E1 und E2 und nur als weitere Zerlegung in eigene Miniblöcke
 - `Urteil`:
   - geparkt, bis Maya dafür mehr Runtime-Reife und einen expliziten Scope-Entscheid hat
 
-## Crossings aus dem aktuellen Scan
+## Dokumentierte Crossings
 
-- `A × E1`:
-  - wurde als sequenzielle Kombination teilweise realisiert: erst enger post-dispatch Guardrail auf Achse B, danach sekundäres Lens-Surfacing ohne die Primärfläche wieder aufzublähen.
-- `E1 × meta-001 × meta-004`:
-  - `Mirror Overlay` und `Freshness Sentinel` liefern die card-nahe Form für Mirror-, Warning- und Freshness-Hinweise; in Maya wurde dies bewusst nur als heuristischer, post-dispatch Nachlauf ohne Deep-Mode umgesetzt.
-- `STATE`/`AGENTS` × `sol-cross-058`:
-  - die Idee externer Checkpoints ist für Maya bereits materiell als `STATE.md`-/`AGENTS.md`-Anker übernommen; daraus folgt aktuell kein separater Produktblock.
+### Crossing 1: Kandidat A × Kandidat E2
+
+- `crossing_origin`: ["Kandidat A (Focus / Re-Entry / Ops-Lens Surface Consolidation)", "Kandidat E2 (Pre-Dispatch Crush Light)"]
+- `Hypothese`:
+  - Wenn der aktive Surface-Fokus nicht aus dem rohen User-Input, sondern aus einem komprimierten Kern abgeleitet wird, kann die Primärfläche schärfer bleiben, ohne einen separaten UI-Rebuild zu verlangen.
+- `Status`: `scan_pending`
+- `Maya-Fit`:
+  - potenziell hoch, weil E2 einen engeren Fokusinput liefern könnte, den die vorhandene Surface-Linie konsumiert
+
+### Crossing 2: Kandidat B × Kandidat E1
+
+- `crossing_origin`: ["Kandidat B (Surface-State Axis Shift Follow-Up)", "Kandidat E1 (Post-Dispatch Epistemic Guardrail)"]
+- `Hypothese`:
+  - Der post-dispatch Guardrail war ein natürlicher erster Achse-B-naher Ausführungsblock; daraus folgt, dass weitere kleine Achse-B-Schritte eher dort anschließen sollten als an breiten UI-Umbauten.
+- `Status`: `crossing_derived`
+- `Maya-Fit`:
+  - mittel bis hoch als Planungslogik; technisch sinnvoll, aber nur wenn bewusst Runtime- statt UI-Scope gewählt wird
+
+### Crossing 3: Kandidat E1 × `meta-001` × `meta-004`
+
+- `crossing_origin`: ["Kandidat E1 (Post-Dispatch Epistemic Guardrail)", "cards/meta/meta-001.json", "cards/meta/meta-004.json"]
+- `Hypothese`:
+  - `Mirror Overlay` und `Freshness Sentinel` liefern die card-nahe Form für Mirror-, Warning- und Freshness-Hinweise; Maya kann diese Struktur heuristisch übernehmen, ohne das volle AICOS-Governance-Paket zu importieren.
+- `Status`: `crossing_derived`
+- `Maya-Fit`:
+  - hoch für bounded Guardrail-Blöcke, niedrig für eine systemweite Governor-Promotion
+
+### Crossing 4: `STATE.md` / `AGENTS.md` × `sol-cross-058`
+
+- `crossing_origin`: ["STATE.md", "AGENTS.md", "cards/solutions/sol-cross-058.json"]
+- `Hypothese`:
+  - Die Idee externer Checkpoints ist für Maya bereits materiell über `STATE.md` und `AGENTS.md` aufgenommen; daraus folgt aktuell kein separater Produktblock, aber ein stabiles Review-Ankerprinzip.
+- `Status`: `crossing_derived`
+- `Maya-Fit`:
+  - hoch als Doku- und Review-Disziplin, niedrig als neuer Produktblock
+
+## Erkannte Lücken
+
+| Bereich | Lücke | Priorität |
+|---|---|---|
+| Execution / Epistemic | Kein adoptierter Pre-Flight-Kandidat für eingehende User-Probleme; E2 adressiert das, ist aber noch nicht gebaut | hoch |
+| Memory / Lifecycle | Kein enger Maya-Kandidat für Stale-/Archiv-Logik im Maya-eigenen Memory | mittel |
+| Governance / Freshness | Kein separater Kandidat prüft wiederverwendeten Kontext systematisch auf Aktualität außerhalb des post-dispatch Heuristikfensters | mittel |
+| Testing / Verification | Kein enger Kandidat für automatisierte Verifikation einer möglichen Governor-Einführung | niedrig |
 
 ## Karten-Scan-Triage
 
 - `cards/meta/meta-001.json` und `cards/meta/meta-004.json` sind aktuell die stärksten card-basierten Inputs für einen bounded Maya-Guardrail-Kandidaten.
+- `cards/solutions/sol-cross-013.json` ist das präziseste AICOS-Strukturvorbild für explizites Crossing zwischen Mirror, Freshness und Regime-Exit; für Maya ist davon aktuell nur der Mirror-/Freshness-Slice direkt anschlussfähig.
 - `cards/solutions/sol-cross-058.json` bestätigt die Checkpoint-/External-Anchoring-Disziplin, die in `STATE.md` und `AGENTS.md` bereits materiell verankert wurde.
 - `cards/meta/meta-005.json` und `cards/solutions/sol-cross-057.json` sind für Annahmen-Transparenz inhaltlich relevant, würden als direkter Maya-Block aktuell aber zu früh in Surface-State- oder Memory-Verträge drücken.
 - `cards/solutions/sol-cross-053.json`, `cards/solutions/sol-cross-054.json`, `cards/solutions/sol-cross-055.json` und `cards/meta/meta-007.json` bleiben wertvoll als cross-app Governance-Material, sind für direkte Maya-Adoption aktuell aber zu breit, zu mechanismisch oder zu systemweit.
@@ -385,6 +517,15 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
 | Titel | Status | Herkunft | Bereich | Kurzurteil | Quelle |
 |---|---|---|---|---|---|
 | Maya Companion Surface Refresh | `parked` | `spec_pack` | UI / Produktführung | Weiterhin wertvoll als größere UI-Zielrichtung, aber nicht automatische aktuelle Produktwahrheit | `docs/spec-packs/products/maya/proposals/2026-03-maya-companion-surface-refresh.md` |
+| Surface-State Axis Shift Follow-Up | `active` | `spec_pack` | Runtime / Surface-State | Weiterhin der naheliegende nächste Technikblock, aber bewusst adapter- und achsenah statt UI-zentriert | `docs/spec-packs/products/maya/K5_RUNTIME_AXIS_DECISION_NOTE.md`, `STATE.md` |
+| Truth-Marked Continuity Transfer Contract | `parked` | `spec_pack`, `cross_combined` | Continuity / Vertragsgrenzen | Wertvoll als spätere Klärungslinie, aktuell aber zu abstrakt für den engsten nächsten Block | `docs/spec-packs/products/maya/CONTINUITY.md`, `docs/spec-packs/products/maya/CONTRACT.md`, `STATE.md` |
+| Pre-Dispatch Crush Light | `active` | `web_ai_derived`, `compression_tested` | Execution / epistemic intake | Potenziell der nächste bounded Governor-Schritt, aber nur als explizit budgetierter Miniblock vor `dispatchChat()` | externe Spec `2026-03-26`, `app/api/maya/chat/route.ts` |
+| Governed Compression Shell Deep | `parked` | `web_ai_derived`, `compression_tested` | Execution / memory / surface-state | Als Gesamtpaket weiter zu breit; nur später nach enger Zerlegung und mehr Achse-B-Reife sinnvoll | Chat-Intake `2026-03-26` |
+
+## Abgeschlossene Radar-Einträge
+
+| Titel | Status | Herkunft | Bereich | Kurzurteil | Quelle |
+|---|---|---|---|---|---|
 | Maya UI Trilogy Release Closure | `adopted` | `chat_derived` | UI / Oberflächenhierarchie | Als reale veröffentlichte UI-Linie jetzt Teil der publizierten Maya-Wahrheit | Commits `9a53ac8`, `a95068f`, `ed10c06` |
 | Continuity Truth Audit | `adopted` | `chat_derived` | Continuity / Digest | Hat geklärt, dass `lib/maya-thread-digest.ts` der aktive Kern ist und lokale Residual-UI-Dateien nicht automatisch Produktwahrheit sind | lokaler Audit-Befund, anschließend in `STATE.md` verdichtet |
 | Maya Planning Entry Sync | `adopted` | `chat_derived` | Planung / Repo-Orientierung | `README.md` und `AGENTS.md` wurden auf `STATE.md` und `RADAR.md` als Einstiegsschicht ausgerichtet | `STATE.md`, `README.md`, `AGENTS.md` |
@@ -393,7 +534,6 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
 | Active Workrun Detail Downshift | `adopted` | `chat_derived` | UI / Arbeitslauf-Fokus | Manuelle Arbeitslauf-Steuerung, Handoff-Details und Checkpoint-Pflege wurden aus der Primärfläche in die Ops-Lens verlagert | `STATE.md`, `components/maya/maya-active-workrun-panel.tsx`, `components/maya/maya-workrun-details.tsx` |
 | Post-Dispatch Epistemic Guardrail | `adopted` | `web_ai_derived`, `cross_combined` | Execution / epistemic hardening | Mirror-/Warning-/Freshness-Nachlauf ist jetzt als enger post-dispatch Guardrail auf Achse B repo-sichtbar umgesetzt | `app/api/maya/chat/route.ts`, externe Spec `2026-03-26` |
 | Handoff Prominence Tightening + Secondary Guardrail Surfacing | `adopted` | `chat_derived`, `cross_combined` | UI / Ops Lens | Aktive Handoff-Prominenz wurde weiter reduziert und Guardrail-Signale bleiben als sekundäres Lens-Surface sichtbar statt die Primärfläche zu belasten | `components/maya-chat-screen.tsx`, `components/maya/maya-workrun-details.tsx` |
-| Governed Compression Shell Deep | `parked` | `web_ai_derived` | Execution / memory / surface-state | Als Gesamtpaket weiter zu breit; nur später nach enger Zerlegung und mehr Achse-B-Reife sinnvoll | Chat-Intake `2026-03-26` |
 
 ## Proposal- und Ideenquellen
 
@@ -445,12 +585,15 @@ Wenn ein Ansatz geprüft wird, zusätzlich festhalten:
 - ob er aus einer Einzelquelle oder einer Cross-Combination stammt
 - welche Guardrails besonders berührt werden
 
-## Destillationsformat für neue Scan-Kandidaten
+## Kompressionsformat für neue Scan-Kandidaten
 
 Wenn neue Materialien eingescannt werden, soll die Verdichtung bevorzugt in diesem Format in `RADAR.md` landen:
 
 - `Titel`
 - `Quellen`
+- `Unzerstörbarer Kern`
+- `Exponierte Annahmen`
+- `Weggeworfen`
 - `Kernproblem`
 - `Kernidee`
 - `kombinierbare Teilideen`
@@ -490,4 +633,4 @@ Zusätzlich gilt:
 - ältere relevante Maya-Diskussionen, Specs und externe KI-Ausarbeitungen schrittweise als Radar-Einträge nachziehen
 - für besonders wichtige Ideen später eigene Detaildateien oder einen Unterordner ergänzen, falls `RADAR.md` zu dicht wird
 - bei jeder größeren Maya-Entscheidung prüfen, ob ein Radar-Eintrag auf `active`, `parked`, `adopted` oder `rejected` umgestellt werden muss
-- für neue Quellen gezielt Scan-Läufe fahren, Kernelemente destillieren und nur Maya-taugliche Kandidaten als mögliche Blöcke vorschlagen
+- für neue Quellen gezielt Scan-Läufe fahren, Kernelemente komprimieren und nur Maya-taugliche Kandidaten als mögliche Blöcke vorschlagen

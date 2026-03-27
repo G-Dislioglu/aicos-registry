@@ -43,8 +43,8 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 
 ## Current Published Truth
 
-- `origin/master` ist aktuell auf `45a7b95`
-- Die veröffentlichte Maya-Linie ist jetzt in einem Satz: Primärfläche um den aktiven Arbeitslauf verdichtet, sekundäre Navigation rationalisiert, page-level Framing gestrafft, Arbeitslaufdetails in die Ops-Lens verlagert, post-dispatch Guardrail-Signale erzeugt und in der Lens sekundär gesurfacet.
+- `origin/master` ist aktuell auf `9bdaa3a`
+- Die veröffentlichte Maya-Linie ist jetzt in einem Satz: Primärfläche um den aktiven Arbeitslauf verdichtet, sekundäre Navigation rationalisiert, page-level Framing gestrafft, Arbeitslaufdetails in die Ops-Lens verlagert, post-dispatch Guardrail-Signale erzeugt, in der Lens sekundär gesurfacet und zuletzt noch auf ruhigere Warnsignale kalibriert.
 - Die veröffentlichte Verdichtungslinie ist enthalten:
   - `9a53ac8` — `refactor(maya): compress primary surface around workrun flow`
   - `a95068f` — `refactor(maya): rationalize secondary navigation surface`
@@ -52,6 +52,8 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
   - `dcdc9b5` — `feat(maya): consolidate ops lens and workrun details`
   - `094dd50` — `feat(maya): add post-dispatch epistemic guardrail`
   - `45a7b95` — `feat(maya): tighten handoff prominence in ops lens`
+  - `9bdaa3a` — `refactor(maya): calibrate guardrail signal surfacing`
+- Die veröffentlichte Maya-UI ist dreistufig verdichtet: Primärfläche um Arbeitslauf komprimiert, Sekundärnavigation rationalisiert, Page-Level-Framing gestrafft.
 - `app/maya/page.tsx` rahmt den Einstieg jetzt knapper und überlässt die Hauptarbeit `MayaChatScreen`
 - `components/maya-chat-screen.tsx` bindet die extrahierten UI-Teile sichtbar ein
 - `components/maya/maya-workrun-details.tsx` hält manuelle Arbeitslaufsteuerung, Handoff-Details und Checkpoint-Pflege außerhalb der Primärkarte
@@ -101,7 +103,7 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 - ausführlicher Repo-/Verifikationsstand: `docs/spec-packs/products/maya/STATUS.md`
 - Produktzielbild: `docs/spec-packs/products/maya/BLUEPRINT.md`
 - Ideen-, Proposal- und Spec-Radar: `RADAR.md`
-- `RADAR.md` steuert außerdem die kontrollierte Ideenaufnahme via Scan, Destillation, Cross-Combination und Maya-Fit-Prüfung
+- `RADAR.md` steuert außerdem die kontrollierte Ideenaufnahme via Scan, Kompression, Cross-Combination und Maya-Fit-Prüfung
 
 ## Last Completed Block
 
@@ -153,6 +155,8 @@ Den nächsten kleinen K5-Folgeschritt so zu schneiden, dass einzelne Surface-Sta
 ## Alternative Valid Next Blocks
 
 - enger Doku-/Review-Block zur Nachweisführung und Beobachtung der kalibrierten Guardrail-Signale
+- `Pre-Dispatch Crush Light` (siehe `RADAR.md`, Kandidat E2) als bewusster Miniblock vor `dispatchChat()`, falls statt Achse-B-Adapterarbeit ein enger epistemischer Intake-Block priorisiert werden soll
+- `Truth-Marked Continuity Transfer Contract` (siehe `RADAR.md`, Kandidat C) als späterer bounded Vertrags- und Kontinuitätsblock statt Runtime-Folgeschritt
 - gezielter Doku-/Triage-Block für lokale Maya-Residuallinien und Planungsartefakte
 - begrenzte lokale Hygiene für untracked Maya-Residualdateien, aber nicht als Hauptproduktblock
 

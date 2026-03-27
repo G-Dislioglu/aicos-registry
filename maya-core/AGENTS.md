@@ -29,6 +29,26 @@ Vor jedem Maya-Block explizit prüfen:
 - Ist klar getrennt, was aktueller Ist-Zustand und was proposal-only Material ist?
 - Berührt der Block Routing, `app-shell.tsx`, `primary-nav.tsx` oder die sichtbare Hauptführung?
 
+### Relevante Review-Dateien für externe KI-Arbeit
+
+- Immer relevant:
+  - `maya-core/STATE.md`
+  - `maya-core/RADAR.md`
+- Oft relevant bei Maya-Arbeit:
+  - `maya-core/AGENTS.md`
+  - `maya-core/DESIGN.md`
+  - `maya-core/docs/spec-packs/products/maya/STATUS.md`
+- Bei Wissensabgleich / Crossings:
+  - `index/INDEX.json`
+  - `human/REGISTRY.md`
+- Nur bei konkretem Bedarf einzeln nachziehen:
+  - `BLUEPRINT.md`
+  - `CONTRACT.md`
+  - `CANON.md`
+  - `CONTINUITY.md`
+  - K5-Notizen
+  - Handoffs
+
 ### Act
 
 Nur das ändern, was für den aktiven Block nötig ist.
@@ -49,6 +69,45 @@ Nach jedem relevanten Block:
 - `STATUS.md` auf sichtbare Änderungen oder neue Infra-Fakten prüfen und nachziehen
 - `AGENTS.md` auf neue Arbeitsregeln oder aktive Block-Kontexte prüfen und nachziehen
 - `BLUEPRINT.md` nur ändern, wenn der Block ausdrücklich Blueprint-Änderungen umfasst; sonst nur Änderungsvorschlag benennen
+
+### Post-Push-Protokoll für externe KI-Reviews
+
+Nach jedem erfolgreichen `git push` immer zusätzlich einen Raw-URL-Block ausgeben.
+
+Pflichtablauf:
+
+1. frischen Commit-Hash holen mit `git rev-parse HEAD`
+2. geänderte Dateien des letzten Push-Commits holen mit `git diff --name-only HEAD~1 HEAD`
+3. folgenden Block ausgeben:
+
+```md
+# URLs für externe KI-Reviews
+
+Aktueller Commit: {COMMIT_HASH}
+
+## Immer zuerst lesen (Maya-Kern)
+- https://raw.githubusercontent.com/G-Dislioglu/aicos-registry/{COMMIT_HASH}/maya-core/STATE.md
+- https://raw.githubusercontent.com/G-Dislioglu/aicos-registry/{COMMIT_HASH}/maya-core/RADAR.md
+
+## Bei Maya-Arbeit zusätzlich
+- https://raw.githubusercontent.com/G-Dislioglu/aicos-registry/{COMMIT_HASH}/maya-core/AGENTS.md
+- https://raw.githubusercontent.com/G-Dislioglu/aicos-registry/{COMMIT_HASH}/maya-core/DESIGN.md
+- https://raw.githubusercontent.com/G-Dislioglu/aicos-registry/{COMMIT_HASH}/maya-core/docs/spec-packs/products/maya/STATUS.md
+
+## Bei Wissensabgleich / Crossings (AICOS)
+- https://raw.githubusercontent.com/G-Dislioglu/aicos-registry/{COMMIT_HASH}/index/INDEX.json
+- https://raw.githubusercontent.com/G-Dislioglu/aicos-registry/{COMMIT_HASH}/human/REGISTRY.md
+
+## Geänderte Dateien in diesem Push
+{LISTE DER GEÄNDERTEN DATEIEN ALS RAW-URLs}
+```
+
+Regeln:
+
+- diesen Block immer nach einem Push ausgeben, ohne Aufforderung
+- Commit-Hash immer frisch holen, nie aus dem Gedächtnis einsetzen
+- keine nicht existierenden Dateien auflisten
+- wenn kein Push stattfindet, keinen URL-Block ausgeben
 
 ## Aktuelle Maya-Produktordnung
 
