@@ -11,10 +11,10 @@ Diese Datei ist kein Ersatz für die anderen Kern-Dokumente und kein Freibrief f
 1. `STATE.md`
 2. `RADAR.md`
 3. `README.md`
-4. `DESIGN.md`
+4. `AGENTS.md`
 5. `docs/spec-packs/products/maya/STATUS.md`
 6. `docs/spec-packs/products/maya/BLUEPRINT.md`
-7. `AGENTS.md`
+7. `DESIGN.md`
 8. aktives Proposal unter `docs/spec-packs/products/maya/proposals/`
 
 ## Read → Act → Sync-Protokoll

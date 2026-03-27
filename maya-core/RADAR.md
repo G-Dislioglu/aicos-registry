@@ -54,6 +54,21 @@ Zusätzliche Einordnung:
 - `local_note`
 - `spec_pack`
 
+Truth Classes:
+
+- `proposal_only`
+- `repo_visible`
+- `local_only`
+- `derived_from_external_review`
+
+Typische `next_gate`-Werte:
+
+- `scan`
+- `narrow_scope`
+- `proposal`
+- `user_approval`
+- `archive`
+
 Zusätzliche Prüfmarker:
 
 - `scan_pending`
@@ -221,6 +236,11 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
 - Kombination ist nur sinnvoll, wenn sie den Kandidaten klarer, testbarer oder Maya-tauglicher macht
 - reine Ideenakkumulation ohne klaren Blockzuschnitt ist zu vermeiden
 
+Crossing-Guardrail:
+
+- ein Crossing darf nur dann `maya_fit_high` tragen, wenn ein konkreter Blockname existiert, betroffene Dateien oder Bereiche benannt sind, Nicht-Scope klar ist und der Kandidat als nächster Block in einem Satz formulierbar bleibt
+- fehlt dieser Zuschnitt, bleibt der Crossing-Kandidat automatisch `maya_fit_medium`, `maya_fit_low` oder `scan_pending`
+
 ## Erster Scanlauf — Komprimierte Kandidaten
 
 ### Scan-Batch
@@ -240,6 +260,7 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
 ### Kandidat A — Focus / Re-Entry / Ops-Lens Surface Consolidation
 
 - `Status`: `adopted`
+- `truth_class`: `repo_visible`
 - `Herkunft`: `spec_pack`, `chat_derived`, `cross_combined`, `distilled`, `maya_fit_high`, `adoption_candidate`
 - `Quellen`:
   - `docs/spec-packs/products/maya/proposals/2026-03-maya-companion-surface-refresh.md`
@@ -261,12 +282,18 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
   - hoch, wenn als enger UI-Block geschnitten
 - `empfohlener Blockzuschnitt`:
   - zuerst nur Re-Entry-vs.-Tuning-Trennung und eine erste echte Ops-Lens für sekundäre Inhalte
+- `absorbed_into`:
+  - `block`: `Focus / Re-Entry / Ops-Lens Surface Consolidation`
+  - `files`: `components/maya-chat-screen.tsx`, `components/maya/maya-ops-lens.tsx`, `components/maya/maya-workrun-details.tsx`
+  - `commit`: siehe veröffentlichte UI-Verdichtungslinie in `STATE.md`
+- `next_gate`: `archive`
 - `Urteil`:
   - als enger UI-Pfad übernommen; Ops-Lens-Auslagerung, Workrun-Downshift und Handoff-Prominenz-Nachschärfung sind repo-sichtbar umgesetzt
 
 ### Kandidat B — Surface-State Axis Shift Follow-Up
 
 - `Status`: `active`
+- `truth_class`: `proposal_only`
 - `Herkunft`: `spec_pack`, `distilled`, `maya_fit_medium`, `adoption_candidate`
 - `Quellen`:
   - `docs/spec-packs/products/maya/K5_RUNTIME_AXIS_DECISION_NOTE.md`
@@ -287,12 +314,15 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
   - mittel, technisch sinnvoll, aber aktuell schwerer und riskanter als ein enger UI- oder Doku-Block
 - `empfohlener Blockzuschnitt`:
   - nur wenn wir bewusst einen K5-Folgeblock wählen; dann klein und adapternah
+- `absorbed_into`: `none`
+- `next_gate`: `narrow_scope`
 - `Urteil`:
   - später, nicht als nächster allgemeiner Planungsblock
 
 ### Kandidat C — Truth-Marked Continuity Transfer Contract
 
 - `Status`: `parked`
+- `truth_class`: `proposal_only`
 - `Herkunft`: `spec_pack`, `cross_combined`, `distilled`, `maya_fit_medium`
 - `Quellen`:
   - `docs/spec-packs/products/maya/CONTINUITY.md`
@@ -313,13 +343,16 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
 - `Maya-Fit`:
   - mittel, wertvoll als Guardrail- oder Vertragsidee, aber noch nicht automatisch der beste nächste App-Block
 - `empfohlener Blockzuschnitt`:
-  - zunächst nur als spätere bounded contract note oder kleiner Digest-/handoff-naher Klärungsblock
+  - zunächst nur als bounded contract note oder kleiner Digest-/handoff-naher Klärungsblock, falls wir die Wahrheitsübergänge zwischen `STATE.md`, `RADAR.md` und späteren Kontextobjekten expliziter markieren wollen
+- `absorbed_into`: `none`
+- `next_gate`: `narrow_scope`
 - `Urteil`:
-  - später
+  - geparkt, aber als reale Guardrail-/Vertragslinie unter Beobachtung; nicht bloß Theorie, dennoch bewusst nicht vor den engeren Runtime- oder Review-Blöcken priorisiert
 
 ### Kandidat D — Review / Verification Closure for Primary Maya Surfaces
 
 - `Status`: `adopted`
+- `truth_class`: `repo_visible`
 - `Herkunft`: `local_note`, `chat_derived`, `cross_combined`, `distilled`, `maya_fit_high`
 - `Quellen`:
   - `KERN_HANDOFF_2026-03-16.md`
@@ -340,12 +373,18 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
   - hoch, weil eng, risikoarm und unmittelbar repo-nah
 - `empfohlener Blockzuschnitt`:
   - Doku-/Planungs-Sync plus gezielter Nachweis der primären Oberflächenlinie
+- `absorbed_into`:
+  - `block`: `Review / Verification Closure for Primary Maya Surfaces`
+  - `files`: `README.md`, `AGENTS.md`, `docs/spec-packs/products/maya/STATUS.md`
+  - `commit`: repo-sichtbar über die nachgezogenen Doku-Syncs, nicht auf einen einzelnen UI-Commit reduziert
+- `next_gate`: `archive`
 - `Urteil`:
   - abgeschlossen; als enger Evidenz- und Sync-Block in die Root- und Statusdokumente übernommen
 
 ### Kandidat E1 — Post-Dispatch Epistemic Guardrail
 
 - `Status`: `adopted`
+- `truth_class`: `repo_visible`
 - `Herkunft`: `web_ai_derived`, `cross_combined`, `distilled`, `compression_tested`, `maya_fit_high`, `adoption_candidate`
 - `Quellen`:
   - externe Inline-Spec `Maya Governed Compression Shell — Spezifikation V2 (26.03.2026)` aus Claude-/ChatGPT-Ausarbeitung
@@ -359,7 +398,7 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
 - `Exponierte Annahmen`:
   - Ein heuristischer Nachlauf reicht als erste Schutzschicht aus, solange er eng bleibt und keine implizite Governor-Plattform behauptet.
 - `Weggeworfen`:
-  - Deep-Mode, Vorab-Call, Memory-Lifecycle und breiter Review-/Provider-Umbau.
+  - Deep-Mode, Vorab-Call, Memory-Lifecycle und jede Form von Deep-Orchestrierung.
 - `Kernproblem`:
   - Maya-Antworten können epistemisch zu glatt wirken, obwohl Re-Entry-, STALE- und Warnlogik produktseitig schon relevant sind.
 - `Kernidee`:
@@ -375,12 +414,18 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
   - hoch, wenn als enger Post-Dispatch-Block auf der bestehenden `/api/maya/chat`-Linie geschnitten
 - `empfohlener Blockzuschnitt`:
   - nur Mirror-/Overclaim-/Warning-Patch nach `dispatchChat()` ohne neue Surface-State-Felder und ohne Memory-Lifecycle-Expansion
+- `absorbed_into`:
+  - `block`: `Guardrail Signal Calibration`
+  - `files`: `app/api/maya/chat/route.ts`, `components/maya-chat-screen.tsx`, `components/maya/maya-workrun-details.tsx`
+  - `commit`: `9bdaa3a`
+- `next_gate`: `archive`
 - `Urteil`:
   - als enger Achse-B-Block übernommen; der API-Nachlauf ist repo-sichtbar implementiert und die sekundäre Lens-Anzeige blieb in einem separaten UI-Folgeblock
 
 ### Kandidat E2 — Pre-Dispatch Crush Light
 
 - `Status`: `active`
+- `truth_class`: `proposal_only`
 - `Herkunft`: `web_ai_derived`, `compression_tested`, `maya_fit_high`, `adoption_candidate`
 - `Quellen`:
   - externe Inline-Spec `Maya Governed Compression Shell — Spezifikation V2 (26.03.2026)` aus Claude-/ChatGPT-Ausarbeitung
@@ -408,12 +453,15 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
   - hoch, wenn als einzelner, abschaltbarer Vorab-Schritt ohne Nebenachsen gebaut
 - `empfohlener Blockzuschnitt`:
   - kleine Hilfsdatei für Crush-Light-Logik und enge Einhängung unmittelbar vor `dispatchChat()` ohne UI-Patch
+- `absorbed_into`: `none`
+- `next_gate`: `user_approval`
 - `Urteil`:
   - jetzt prüfbar, aber nur als eigener Miniblock nach expliziter Scope-Entscheidung
 
 ### Kandidat E3 — Governed Compression Shell Deep
 
 - `Status`: `parked`
+- `truth_class`: `derived_from_external_review`
 - `Herkunft`: `web_ai_derived`, `compression_tested`, `scan_pending`, `maya_fit_low`
 - `Quellen`:
   - externe Inline-Spec `Maya Governed Compression Shell — Spezifikation V2 (26.03.2026)` aus Claude-/ChatGPT-Ausarbeitung
@@ -443,6 +491,8 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
   - niedrig als nächster Block, mittel nur als später zerlegbarer Ideenvorrat
 - `empfohlener Blockzuschnitt`:
   - nicht jetzt; frühestens nach Evidenz aus engeren Vorstufen wie E1 und E2 und nur als weitere Zerlegung in eigene Miniblöcke
+- `absorbed_into`: `none`
+- `next_gate`: `archive`
 - `Urteil`:
   - geparkt, bis Maya dafür mehr Runtime-Reife und einen expliziten Scope-Entscheid hat
 
@@ -571,6 +621,7 @@ Ein neuer Eintrag soll mindestens enthalten:
 
 - Titel
 - Status
+- `truth_class`
 - Herkunft
 - betroffener Bereich
 - 1-Satz-Kurzurteil
@@ -584,6 +635,8 @@ Wenn ein Ansatz geprüft wird, zusätzlich festhalten:
 - ob er der nächste Block sein sollte oder bewusst nicht jetzt
 - ob er aus einer Einzelquelle oder einer Cross-Combination stammt
 - welche Guardrails besonders berührt werden
+- `absorbed_into`, wenn der Kandidat später repo-sichtbar übernommen wurde
+- `next_gate`, damit der Übergang aus Radar in reale Arbeit oder Archivierung nicht implizit bleibt
 
 ## Kompressionsformat für neue Scan-Kandidaten
 
@@ -609,6 +662,11 @@ Ein Radar-Eintrag darf nur dann auf `adopted` wechseln, wenn mindestens eines da
 - reale Repo-Änderung vorhanden
 - Commit-/Push-Linie vorhanden
 - oder `STATE.md` führt ihn explizit als Teil der aktuellen Wahrheit
+
+Bei `adopted` zusätzlich festhalten:
+
+- `truth_class` soll auf `repo_visible` wechseln
+- `absorbed_into` soll Block, Dateien oder Commit benennen
 
 Ein Eintrag darf nicht stillschweigend von `parked` oder `active` nach `adopted` wandern.
 

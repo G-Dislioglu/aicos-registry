@@ -7,6 +7,17 @@ Sie ist der schnellste Einstieg für neue Chats, für externe Web-KIs und für d
 
 Diese Datei ist kein Ersatz für `README.md`, `AGENTS.md` oder `docs/spec-packs/products/maya/STATUS.md`, sondern deren kompakte Arbeitsverdichtung.
 
+## STATE HEADER
+
+- `published_repo_commit`: `bb42875`
+- `published_maya_line_commit`: `9bdaa3a`
+- `truth_scope`: `public_plus_local`
+- `local_drift_present`: `yes`
+- `hybrid_architecture`: `yes`
+- `last_completed_block`: `Guardrail Signal Calibration`
+- `next_recommended_block`: `Surface-State Axis Shift Follow-Up`
+- `read_order_version`: `v2`
+
 ## Update-Vertrag
 
 Diese Datei muss nach jedem wichtigen Maya-Block geprüft und bei Bedarf aktualisiert werden.
@@ -26,12 +37,19 @@ Wenn diese Datei nicht mehr zum Code- oder Git-Stand passt, gilt sie als veralte
 Für neue Arbeit an `maya-core` zuerst lesen:
 
 1. `STATE.md`
-2. `AGENTS.md`
+2. `RADAR.md`
 3. `README.md`
-4. `docs/spec-packs/products/maya/STATUS.md`
-5. `docs/spec-packs/products/maya/BLUEPRINT.md`
-6. `RADAR.md`
+4. `AGENTS.md`
+5. `docs/spec-packs/products/maya/STATUS.md`
+6. `docs/spec-packs/products/maya/BLUEPRINT.md`
 7. danach erst relevante Handoffs oder Proposal-Dateien
+
+## Truth Classes
+
+- `Current Published Truth` = repo-sichtbare, veröffentlichte Maya-Linie
+- `Current Local Working Truth` = lokaler, noch nicht veröffentlichter Arbeitsstand
+- `Current Architecture Reality` = strukturelle Laufzeitlage auch dann, wenn sie technisch hybrid bleibt
+- proposal-only Material darf nicht stillschweigend als aktive Produktwahrheit gelesen werden
 
 ## Executive Summary
 
@@ -43,7 +61,8 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 
 ## Current Published Truth
 
-- `origin/master` ist aktuell auf `9bdaa3a`
+- `origin/master` ist aktuell auf `bb42875`
+- Die letzte user-sichtbare Maya-Produktlinie bleibt auf `9bdaa3a`; spätere Pushes waren bisher Doku-/Review-Syncs statt neuer sichtbarer Maya-Runtime-Blöcke.
 - Die veröffentlichte Maya-Linie ist jetzt in einem Satz: Primärfläche um den aktiven Arbeitslauf verdichtet, sekundäre Navigation rationalisiert, page-level Framing gestrafft, Arbeitslaufdetails in die Ops-Lens verlagert, post-dispatch Guardrail-Signale erzeugt, in der Lens sekundär gesurfacet und zuletzt noch auf ruhigere Warnsignale kalibriert.
 - Die veröffentlichte Verdichtungslinie ist enthalten:
   - `9a53ac8` — `refactor(maya): compress primary surface around workrun flow`
@@ -54,10 +73,6 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
   - `45a7b95` — `feat(maya): tighten handoff prominence in ops lens`
   - `9bdaa3a` — `refactor(maya): calibrate guardrail signal surfacing`
 - Die veröffentlichte Maya-UI ist dreistufig verdichtet: Primärfläche um Arbeitslauf komprimiert, Sekundärnavigation rationalisiert, Page-Level-Framing gestrafft.
-- `app/maya/page.tsx` rahmt den Einstieg jetzt knapper und überlässt die Hauptarbeit `MayaChatScreen`
-- `components/maya-chat-screen.tsx` bindet die extrahierten UI-Teile sichtbar ein
-- `components/maya/maya-workrun-details.tsx` hält manuelle Arbeitslaufsteuerung, Handoff-Details und Checkpoint-Pflege außerhalb der Primärkarte
-- `app/api/maya/chat/route.ts` ergänzt jetzt einen engen post-dispatch Guardrail-Nachlauf mit optionalem `epistemicGuardrail`
 
 ## Current Local Working Truth
 
@@ -180,10 +195,11 @@ Den nächsten kleinen K5-Folgeschritt so zu schneiden, dass einzelne Surface-Sta
 
 Externe Web-KIs sollen diese Datei zuerst lesen und danach:
 
-- `AGENTS.md`
-- `README.md`
-- `docs/spec-packs/products/maya/STATUS.md`
 - `RADAR.md`
+- `README.md`
+- `AGENTS.md`
+- `docs/spec-packs/products/maya/STATUS.md`
+- `docs/spec-packs/products/maya/BLUEPRINT.md`
 - danach erst relevante Detaildateien
 
 Externe Reviews sollen klar trennen zwischen:
@@ -198,7 +214,8 @@ Externe Reviews sollen klar trennen zwischen:
 Wenn ein neuer Chat startet oder Kontextverlust droht:
 
 1. `STATE.md` lesen
-2. `AGENTS.md` lesen
-3. `RADAR.md` lesen
-4. letzten publizierten und lokalen Block benennen
-5. erst dann den nächsten Maya-Block schneiden
+2. `RADAR.md` lesen
+3. `README.md` lesen
+4. `AGENTS.md` lesen
+5. letzten publizierten und lokalen Block benennen
+6. erst dann den nächsten Maya-Block schneiden

@@ -7,8 +7,18 @@ Maya-Begleiterin — Companion-App im Monorepo.
 Für neue Chats, externe Web-KIs und Blockplanung zuerst lesen:
 
 - `STATE.md` — operative Kurzwahrheit für aktuellen Stand, Guardrails und nächste Schritte
-- `RADAR.md` — Ideen-, Spec- und Proposal-Radar mit Scan-, Destillations- und Maya-Fit-Logik
+- `RADAR.md` — Ideen-, Spec- und Proposal-Radar mit Scan-, Kompressions- und Maya-Fit-Logik
 - `AGENTS.md` — Arbeitsregeln und Sync-Protokoll
+
+## Kanonische Lesereihenfolge für Maya-Arbeit
+
+1. `STATE.md`
+2. `RADAR.md`
+3. `README.md`
+4. `AGENTS.md`
+5. `docs/spec-packs/products/maya/STATUS.md`
+6. `docs/spec-packs/products/maya/BLUEPRINT.md`
+7. erst dann Proposal-, Handoff- oder Detaildateien
 
 ## Hauptoberfläche
 
@@ -32,7 +42,7 @@ Für Produktentscheidungen, offenen Stand und Umbauaufträge:
 Für den schnellsten operativen Einstieg auf Root-Ebene:
 
 - `STATE.md` — aktuelle veröffentlichte und lokale Arbeitswahrheit
-- `RADAR.md` — prüfbare Ideen, Destillationen und mögliche nächste Blöcke
+- `RADAR.md` — prüfbare Ideen, Kompressionen und mögliche nächste Blöcke
 - `AGENTS.md` — Lese-, Arbeits- und Sync-Regeln
 
 - `BLUEPRINT.md` — Produktentscheidung und Raumlogik für `maya-core`
