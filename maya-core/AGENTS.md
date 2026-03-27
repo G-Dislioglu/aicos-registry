@@ -19,6 +19,47 @@ Diese Datei ist kein Ersatz für die anderen Kern-Dokumente und kein Freibrief f
 
 ## Read → Act → Sync-Protokoll
 
+## Zerquetsch-Disziplin
+
+### Vor jeder Aufgabe — Zerquetsch-Check (Pflicht)
+
+Bevor du anfängst zu bauen, beantworte in EINEM Satz:
+
+**"Was an dieser Aufgabe kann ich NICHT wegstreichen?"**
+
+- Wenn du diesen Satz nicht formulieren kannst → frage zuerst nach.
+- Wenn du ihn formulieren kannst → baue NUR das. Alles andere ist Scope-Drift.
+- Schreibe den Satz sichtbar in deine erste Ausgabe, bevor du Code anfasst.
+
+### Nach jeder Aufgabe — Täuschungs-Check (Pflicht)
+
+Beantworte ehrlich:
+
+**"Hat sich durch meine Änderung etwas SICHTBAR für den User verändert?"**
+
+- Wenn ja → gut.
+- Wenn nein → war das die Aufgabe? Wenn die Aufgabe sichtbare Änderung verlangte und nichts Sichtbares passiert ist, stimmt etwas nicht. Benenne das explizit.
+- Internes Refactoring ohne sichtbare Änderung ist nur dann kein Fehler, wenn die Aufgabe explizit internes Refactoring war.
+
+### Bei Unklarheit — welcher Modus?
+
+Wenn das Problem unklar ist, wähle eine Prüfform:
+
+- `crush` — bei diffusen, hybriden oder semantisch überladenen Problemen: "Was kann ich nicht wegstreichen?"
+- `provoke` — bei UX-/Flow-/Friktionsproblemen: "Wenn das morgen 10x schlimmer wird, was geht kaputt?"
+- `relocate` — bei Verdacht auf falsche Systemstelle: "Ist das am falschen Ort gelöst?"
+- `remove` — bei Ballast-/Redundanzverdacht: "Wenn ich das komplett wegnehme, was verliere ich real?"
+
+Reaktionsklassen:
+- `kippt` = direkter Hebel gefunden → klein bauen, schnell prüfen
+- `biegt` = Tradeoff → neuen Widerstand separat zerquetschen
+- `bleibt` = kein Produkthebel oder falscher Ansatzpunkt → Kern oder Modus neu prüfen
+- `täuscht` = sieht nach Fortschritt aus, ändert aber nichts Sichtbares → stoppen, nicht ausbauen
+
+Kein Modus ist universell. `direction` ist nicht automatisch die Lösung.
+
+Vollständige Methodenerklärung: `docs/methods/compression-check.md`
+
 ### Read
 
 Vor jedem Maya-Block explizit prüfen:
@@ -235,3 +276,7 @@ Next.js 14 · TypeScript · App Router · Tailwind CSS · PostgreSQL via `pg`
 - Proposal-only Material nie als bereits umgesetzt ausgeben
 - Keine Änderungen außerhalb des aktiven Blocks
 - Bei Drift oder unklarer Kollision: stoppen und benennen statt stillschweigend weiterbauen
+- Vor jeder Aufgabe den Zerquetsch-Check durchführen und den Satz sichtbar ausgeben
+- Nach jeder Aufgabe den Täuschungs-Check ehrlich beantworten
+- Sichtbare Aktivität ohne Nutzereffekt zählt nicht als Fortschritt
+- Wenn der Täuschungs-Check "nichts Sichtbares" ergibt und die Aufgabe sichtbare Änderung verlangte: explizit benennen, nicht stillschweigend weitermachen

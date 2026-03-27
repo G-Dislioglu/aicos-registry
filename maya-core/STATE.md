@@ -122,6 +122,7 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 
 - schnelle operative Wahrheit: `STATE.md`
 - Arbeitsregeln und Guardrails: `AGENTS.md`
+- Kompressions-/Resonanz-Methode: `docs/methods/compression-check.md`
 - ausführlicher Repo-/Verifikationsstand: `docs/spec-packs/products/maya/STATUS.md`
 - Produktzielbild: `docs/spec-packs/products/maya/BLUEPRINT.md`
 - Ideen-, Proposal- und Spec-Radar: `RADAR.md`
