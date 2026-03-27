@@ -239,7 +239,7 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
 Crossing-Guardrail:
 
 - ein Crossing darf nur dann `maya_fit_high` tragen, wenn ein konkreter Blockname existiert, betroffene Dateien oder Bereiche benannt sind, Nicht-Scope klar ist und der Kandidat als nächster Block in einem Satz formulierbar bleibt
-- fehlt dieser Zuschnitt, bleibt der Crossing-Kandidat automatisch `maya_fit_medium`, `maya_fit_low` oder `scan_pending`
+- fehlt Blockzuschnitt oder betroffene Dateien/Bereiche, muss der Crossing-Kandidat automatisch `scan_pending` tragen und darf kein `maya_fit_high` beanspruchen
 
 ## Erster Scanlauf — Komprimierte Kandidaten
 
@@ -267,6 +267,12 @@ Crossing-Guardrail:
   - `DESIGN.md`
   - `docs/spec-packs/products/maya/BLUEPRINT.md`
   - `docs/spec-packs/products/maya/STATUS.md`
+- `Unzerstörbarer Kern`:
+  - `/maya` gewinnt nicht durch einen Totalumbau, sondern durch strikte Primärflächen-Fokussierung plus echte Auslagerung sekundärer Re-Entry- und Ops-Inhalte.
+- `Exponierte Annahmen`:
+  - ein enger UI-Zuschnitt reicht aus, um Fokusgewinn zu erzeugen, ohne `/chat` wieder aufzuwerten oder eine Vollneuarchitektur zu behaupten.
+- `Weggeworfen`:
+  - kompletter UI-Reboot, gleichrangige Hauptflächenordnung zwischen `/maya` und `/chat`, große Lens-/Review-Gesamterneuerung.
 - `Kernproblem`:
   - `/maya` soll Companion Surface sein, trägt aber weiter offene UX-Kanten bei Re-Entry-Trennung, sekundären Detailflächen und Lens-/Drawer-Logik.
 - `Kernidee`:
@@ -299,6 +305,12 @@ Crossing-Guardrail:
   - `docs/spec-packs/products/maya/K5_RUNTIME_AXIS_DECISION_NOTE.md`
   - `docs/spec-packs/products/maya/STATUS.md`
   - `docs/spec-packs/products/maya/BLUEPRINT.md`
+- `Unzerstörbarer Kern`:
+  - die Maya-Hauptfläche ist sichtseitig klarer, aber die Runtime bleibt an der Surface-State-Naht hybrid; genau dort liegt der nächste kleine Technikblock.
+- `Exponierte Annahmen`:
+  - einzelne Verantwortungen lassen sich Richtung Achse B verschieben, ohne sofort Provider-, Persistenz- oder Sessionlogik breit mitzubewegen.
+- `Weggeworfen`:
+  - Big-Bang-Runtime-Umbau, gleichzeitiger UI- und Adapter-Neuschnitt, implizite Behauptung einer schon abgeschlossenen Ein-Achsen-Architektur.
 - `Kernproblem`:
   - die sichtbare Maya-Fläche ist produktseitig klarer, aber die Runtime bleibt hybrid und der interne Leseweg hinter `/api/maya/surface-state` ist noch Übergangsadapter.
 - `Kernidee`:
@@ -329,6 +341,12 @@ Crossing-Guardrail:
   - `docs/spec-packs/products/maya/CONTRACT.md`
   - `docs/spec-packs/products/maya/CANON.md`
   - `STATE.md`
+- `Unzerstörbarer Kern`:
+  - Wahrheitswechsel und Kontinuitätsübergaben brauchen explizitere Markierung, sonst kippen Digest-, Handoff- oder Kontextobjekte zu leicht in implizite Produktwahrheit.
+- `Exponierte Annahmen`:
+  - die Doku-Regeln zu Wahrheit, Vertrag und Nicht-Kanon lassen sich später als enger Maya-naher Übergangsvertrag bündeln, ohne sofort ein großes Cross-App-System zu bauen.
+- `Weggeworfen`:
+  - sofortige Governor-/Contract-Plattform, systemweite Truth-Orchestrierung, abstrakte Volltheorie ohne bounded Maya-Block.
 - `Kernproblem`:
   - mehrere Dokumente verlangen strikte Trennung von Ist-Zustand, proposal-only und Raumwechseln, aber diese Logik ist vor allem als Doku- und Sprachregel sichtbar.
 - `Kernidee`:
@@ -358,6 +376,12 @@ Crossing-Guardrail:
   - `KERN_HANDOFF_2026-03-16.md`
   - `docs/spec-packs/products/maya/STATUS.md`
   - `STATE.md`
+- `Unzerstörbarer Kern`:
+  - die publizierte Maya-Linie braucht wiederkehrend kleine Evidenz- und Sync-Blöcke, damit veröffentlichte Wahrheit, Review-Lesepfad und Doku-Anker nicht auseinanderlaufen.
+- `Exponierte Annahmen`:
+  - ein enger Review-/Verification-Block kann Drift wirksam senken, ohne dadurch automatisch neue Runtime- oder Produktarbeit auszulösen.
+- `Weggeworfen`:
+  - breiter Cleanup, implizite UI-Neuplanung, Vermischung von Evidenzpflege mit größerer App-Refactor-Arbeit.
 - `Kernproblem`:
   - der Repo- und Push-Stand ist klarer als früher, aber visuelle und orientierende Nachweise über die primären Maya-Flächen bleiben ein wiederkehrender offener Punkt.
 - `Kernidee`:
@@ -503,6 +527,10 @@ Crossing-Guardrail:
 - `crossing_origin`: ["Kandidat A (Focus / Re-Entry / Ops-Lens Surface Consolidation)", "Kandidat E2 (Pre-Dispatch Crush Light)"]
 - `Hypothese`:
   - Wenn der aktive Surface-Fokus nicht aus dem rohen User-Input, sondern aus einem komprimierten Kern abgeleitet wird, kann die Primärfläche schärfer bleiben, ohne einen separaten UI-Rebuild zu verlangen.
+- `empfohlener Blockzuschnitt`:
+  - `Pre-Dispatch Crush Light` als enger Vorab-Block vor `dispatchChat()` mit konsumierbarem Fokusinput für die bestehende Maya-Oberfläche
+- `betroffene Dateien/Bereiche`:
+  - `app/api/maya/chat/route.ts`, `lib/maya-provider-dispatch.ts`, `components/maya-chat-screen.tsx`
 - `Status`: `scan_pending`
 - `Maya-Fit`:
   - potenziell hoch, weil E2 einen engeren Fokusinput liefern könnte, den die vorhandene Surface-Linie konsumiert
@@ -512,6 +540,10 @@ Crossing-Guardrail:
 - `crossing_origin`: ["Kandidat B (Surface-State Axis Shift Follow-Up)", "Kandidat E1 (Post-Dispatch Epistemic Guardrail)"]
 - `Hypothese`:
   - Der post-dispatch Guardrail war ein natürlicher erster Achse-B-naher Ausführungsblock; daraus folgt, dass weitere kleine Achse-B-Schritte eher dort anschließen sollten als an breiten UI-Umbauten.
+- `empfohlener Blockzuschnitt`:
+  - kleiner Surface-State-Achse-B-Folgeblock an der bestehenden `/api/maya/surface-state`-Linie statt neuer UI-Ausbauphase
+- `betroffene Dateien/Bereiche`:
+  - `app/maya/page.tsx`, `app/api/maya/surface-state`, Surface-State-Adapter-/Runtime-Linie
 - `Status`: `crossing_derived`
 - `Maya-Fit`:
   - mittel bis hoch als Planungslogik; technisch sinnvoll, aber nur wenn bewusst Runtime- statt UI-Scope gewählt wird
@@ -521,6 +553,10 @@ Crossing-Guardrail:
 - `crossing_origin`: ["Kandidat E1 (Post-Dispatch Epistemic Guardrail)", "cards/meta/meta-001.json", "cards/meta/meta-004.json"]
 - `Hypothese`:
   - `Mirror Overlay` und `Freshness Sentinel` liefern die card-nahe Form für Mirror-, Warning- und Freshness-Hinweise; Maya kann diese Struktur heuristisch übernehmen, ohne das volle AICOS-Governance-Paket zu importieren.
+- `empfohlener Blockzuschnitt`:
+  - enger heuristischer Nachlauf nur für Mirror-, Warning- und Freshness-Signale auf der bestehenden Maya-Chat-Linie
+- `betroffene Dateien/Bereiche`:
+  - `app/api/maya/chat/route.ts`, `components/maya-chat-screen.tsx`, `components/maya/maya-workrun-details.tsx`
 - `Status`: `crossing_derived`
 - `Maya-Fit`:
   - hoch für bounded Guardrail-Blöcke, niedrig für eine systemweite Governor-Promotion
@@ -530,6 +566,10 @@ Crossing-Guardrail:
 - `crossing_origin`: ["STATE.md", "AGENTS.md", "cards/solutions/sol-cross-058.json"]
 - `Hypothese`:
   - Die Idee externer Checkpoints ist für Maya bereits materiell über `STATE.md` und `AGENTS.md` aufgenommen; daraus folgt aktuell kein separater Produktblock, aber ein stabiles Review-Ankerprinzip.
+- `empfohlener Blockzuschnitt`:
+  - enger Doku-Sync für External-Review-Anker und Post-Push-Kontextdisziplin
+- `betroffene Dateien/Bereiche`:
+  - `STATE.md`, `AGENTS.md`
 - `Status`: `crossing_derived`
 - `Maya-Fit`:
   - hoch als Doku- und Review-Disziplin, niedrig als neuer Produktblock

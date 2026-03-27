@@ -9,11 +9,13 @@ Diese Datei ist kein Ersatz für `README.md`, `AGENTS.md` oder `docs/spec-packs/
 
 ## STATE HEADER
 
-- `published_repo_commit`: `bb42875`
-- `published_maya_line_commit`: `9bdaa3a`
+- `current_repo_head`: `91552c2`
+- `last_runtime_commit`: `9bdaa3a`
+- `last_verified_against_public`: `2026-03-27`
 - `truth_scope`: `public_plus_local`
 - `local_drift_present`: `yes`
 - `hybrid_architecture`: `yes`
+- `primary_runtime_seams`: `/api/maya/chat | /api/maya/surface-state | lib/maya-thread-digest.ts`
 - `last_completed_block`: `Guardrail Signal Calibration`
 - `next_recommended_block`: `Surface-State Axis Shift Follow-Up`
 - `read_order_version`: `v2`
@@ -61,8 +63,8 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 
 ## Current Published Truth
 
-- `origin/master` ist aktuell auf `bb42875`
-- Die letzte user-sichtbare Maya-Produktlinie bleibt auf `9bdaa3a`; spätere Pushes waren bisher Doku-/Review-Syncs statt neuer sichtbarer Maya-Runtime-Blöcke.
+- `origin/master` ist aktuell auf `91552c2`
+- Die letzte user-sichtbare Maya-Produktlinie bleibt auf `9bdaa3a`; spätere öffentliche Commits wie `bb42875` und `91552c2` waren Doku-/Review-Syncs statt neuer sichtbarer Maya-Runtime-Blöcke.
 - Die veröffentlichte Maya-Linie ist jetzt in einem Satz: Primärfläche um den aktiven Arbeitslauf verdichtet, sekundäre Navigation rationalisiert, page-level Framing gestrafft, Arbeitslaufdetails in die Ops-Lens verlagert, post-dispatch Guardrail-Signale erzeugt, in der Lens sekundär gesurfacet und zuletzt noch auf ruhigere Warnsignale kalibriert.
 - Die veröffentlichte Verdichtungslinie ist enthalten:
   - `9a53ac8` — `refactor(maya): compress primary surface around workrun flow`
@@ -72,7 +74,6 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
   - `094dd50` — `feat(maya): add post-dispatch epistemic guardrail`
   - `45a7b95` — `feat(maya): tighten handoff prominence in ops lens`
   - `9bdaa3a` — `refactor(maya): calibrate guardrail signal surfacing`
-- Die veröffentlichte Maya-UI ist dreistufig verdichtet: Primärfläche um Arbeitslauf komprimiert, Sekundärnavigation rationalisiert, Page-Level-Framing gestrafft.
 
 ## Current Local Working Truth
 
@@ -93,6 +94,12 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 - Die Maya-Runtime ist weiterhin hybrid
 - `app/maya/page.tsx` liest Surface-State über `/api/maya/surface-state`
 - Der zugrunde liegende Gesamtzustand bleibt jedoch nicht als vollständig auf eine neue Achse konsolidiert zu behandeln
+
+### Primäre Runtime-Seams
+
+- `/api/maya/chat` bleibt die zentrale Dispatch- und Guardrail-Naht für Maya-Antworten
+- `/api/maya/surface-state` bleibt die sichtbare Surface-State-Lesenaht der Hauptfläche
+- `lib/maya-thread-digest.ts` bleibt die aktive Continuity-/Digest-Naht
 
 ### Continuity / Digest
 
