@@ -73,15 +73,17 @@ Die folgenden Werte sind **Analysebefund aus Screenshot- und Oberflächenanalyse
 - Active-Workrun-Detail-Downshift ist repo-sichtbar in engem UI-Scope umgesetzt: `components/maya/maya-active-workrun-panel.tsx` hält auf der Hauptfläche jetzt nur noch Fokus, nächsten Schritt, offenen Kernpunkt, letzten Output und direkte Fortsetzungsaktionen; manuelle Steuerung, Handoff-/Wiedereinstiegsdetails und Checkpoint-Pflege liegen in `components/maya/maya-workrun-details.tsx` innerhalb der Ops-Lens
 - Post-Dispatch-Epistemic-Guardrail ist repo-sichtbar in engem Achse-B-Scope umgesetzt: `app/api/maya/chat/route.ts` ergänzt nach `dispatchChat()` einen heuristischen Nachlauf mit optionalem `epistemicGuardrail`, der `mirror`, `overclaimWarning` und `freshnessWarning` liefert, ohne Dispatch-, Persistenz-, Memory- oder Surface-State-Verträge umzubauen
 - Handoff-Prominence-Tightening mit sekundärem Guardrail-Surfacing ist repo-sichtbar in engem UI-Scope umgesetzt: `components/maya-chat-screen.tsx` hält Guardrail-Signale nur als sekundären Summary-Hinweis und Lens-State, während `components/maya/maya-workrun-details.tsx` aktive Handoff-Details enger an echte Abweichung bzw. Park-/Abschlusszustände bindet und Mirror-/Warning-Signale nur innerhalb der Ops-Lens zeigt
+- Guardrail-Signal-Calibration ist repo-sichtbar als enger Folgeblock umgesetzt: `app/api/maya/chat/route.ts` reduziert False Positives für repo-/code-geerdete Antworten durch engere Overclaim-/Freshness-Heuristiken, und `components/maya-chat-screen.tsx` sowie `components/maya/maya-workrun-details.tsx` surfacen den sekundären Guardrail nur noch bei echten Warnsignalen statt bereits bei bloßer Mirror-Spiegelung
 - `npm --prefix maya-core run typecheck` lief nach dem Downshift erfolgreich
 - `npx tsc --noEmit --skipLibCheck` lief lokal nach dem post-dispatch Guardrail und nach dem Lens-Follow-up jeweils ohne Fehloutput
-- nächster Umbauauftrag: ein enger Kalibrierungsblock für Mirror-/Overclaim-/Freshness-Signale oder alternativ ein kleiner K5-Folgeblock zur internen Surface-State-Verschiebung Richtung Achse B
+- `npx tsc --noEmit --skipLibCheck` lief lokal auch nach der Guardrail-Kalibrierung ohne Fehloutput
+- nächster Umbauauftrag: ein kleiner K5-Folgeblock zur internen Surface-State-Verschiebung Richtung Achse B oder alternativ ein enger Doku-/Review-Block zur Beobachtung der kalibrierten Guardrail-Signale
 
 ### Offene Kanten
 
-- Re-Entry ist von Arbeitsraum-, Thread- und Arbeitslauf-Detailsteuerung jetzt klarer getrennt; verbleibende offene Kante liegt eher in der Kalibrierung, wann Handoff-Signale oder Guardrail-Hinweise zu früh bzw. zu spät erscheinen
+- Re-Entry ist von Arbeitsraum-, Thread- und Arbeitslauf-Detailsteuerung jetzt klarer getrennt; verbleibende offene Kante liegt eher in der Beobachtung, ob die kalibrierten Guardrail-Signale in echten Läufen stabil genug bleiben
 - die erste Lens-/Drawer-Logik für sekundäre Inhalte ist umgesetzt, deckt aber noch nicht alle später denkbaren Nebenflächen ab
-- der neue post-dispatch Guardrail ist bewusst heuristisch; False Positives und False Negatives bei `overclaimWarning` und `freshnessWarning` sind noch nicht systematisch kalibriert
+- der post-dispatch Guardrail ist bewusst heuristisch; trotz engerer Kalibrierung bleiben False Positives und False Negatives bei `overclaimWarning` und `freshnessWarning` weiter möglich
 - Orb-Zustände und vergleichbare Präsenzsignale sind als Gestaltungsrichtung diskutiert, aber nicht als produktive Vollumsetzung verifiziert
 - Fadenkompass-Checkpoints sind noch nicht durchgängig trigger-basiert
 
@@ -198,6 +200,9 @@ Die folgenden Werte sind **Analysebefund aus Screenshot- und Oberflächenanalyse
 - Post-Dispatch-Epistemic-Guardrail und Handoff-Prominence-Tightening sind lokal per TypeScript-Prüfung verifiziert:
   - `app/api/maya/chat/route.ts`, `components/maya-chat-screen.tsx` und `components/maya/maya-workrun-details.tsx` wurden angepasst
   - `npx tsc --noEmit --skipLibCheck` lief nach beiden Blöcken ohne Fehloutput
+- Guardrail-Signal-Calibration ist lokal per TypeScript-Prüfung verifiziert:
+  - `app/api/maya/chat/route.ts`, `components/maya-chat-screen.tsx` und `components/maya/maya-workrun-details.tsx` wurden angepasst
+  - `npx tsc --noEmit --skipLibCheck` lief nach dem Kalibrierungsblock ohne Fehloutput
 - auf `127.0.0.1:3000` antwortete lokal eine `maya-core`-Instanz
 - lokaler Route-Smoketest auf `/`, `/maya`, `/chat`, `/context`, `/supervisor` ergab jeweils `307` auf `/login?next=...`
 - `/api/health` antwortete lokal mit `200` und einem leichten JSON-Body:

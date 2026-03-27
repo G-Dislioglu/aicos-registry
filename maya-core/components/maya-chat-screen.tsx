@@ -862,8 +862,8 @@ export function MayaChatScreen() {
       showActiveHandoffSection
     )
   );
-  const guardrailSummaryLabel = epistemicGuardrail
-    ? (epistemicGuardrail.overclaimWarning || epistemicGuardrail.freshnessWarning ? 'Guardrail-Hinweis' : 'Mirror bereit')
+  const guardrailSummaryLabel = epistemicGuardrail?.overclaimWarning || epistemicGuardrail?.freshnessWarning
+    ? 'Guardrail-Hinweis'
     : null;
 
   const persistCurrentSession = useCallback(async (

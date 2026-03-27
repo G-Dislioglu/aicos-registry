@@ -107,53 +107,52 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 
 ### Name
 
-Handoff Prominence Tightening + Secondary Guardrail Surfacing
+Guardrail Signal Calibration
 
 ### Ergebnis
 
-Die Ops-Lens wurde weiter nachgeschärft: aktive Handoff-/Wiedereinstiegsdetails erscheinen jetzt nur noch bei echter Abweichung oder bei Park-/Abschlusszuständen, und der neue post-dispatch Guardrail wird nur sekundär als Mirror-/Warning-Surface in der Lens sichtbar gemacht. Die Primärfläche bleibt beim aktiven Arbeitslauf, ohne neue Runtime- oder Persistenzpfade zu öffnen.
+Der enge post-dispatch Guardrail wurde nachkalibriert: repo- und code-geerdete Antworten erzeugen weniger unnötige Overclaim-/Freshness-Warnungen, und sekundäres Guardrail-Surfacing erscheint in Topbar und Ops-Lens nur noch bei echten Warnsignalen statt schon bei bloßer Mirror-Spiegelung. Die Guardrail-Linie bleibt damit bewusst heuristisch, aber ruhiger und Maya-näher im tatsächlichen Arbeitsfluss.
 
 ### Nicht Teil dieses Blocks
 
-- großer Mehrflächen-Rebuild der Maya-Hauptfläche
+- zusätzlicher Vorab-LLM-Call oder Deep-Mode
 - Runtime-Konsolidierung zwischen Achse A und Achse B
 - Affect-Expansion
-- API-Neuschnitt jenseits des engen Guardrail-Nachlaufs
-- Persistenz- oder Surface-State-Umbau
+- Memory-/Review-Queue-/Surface-State-Vertragserweiterung
+- Persistenz- oder Schema-Umbau
 
 ## Next Recommended Block
 
 ### Name
 
-Guardrail Signal Calibration
+Surface-State Axis Shift Follow-Up
 
 ### Ziel
 
-Die neuen Mirror-/Warning-/Freshness-Signale so nachzuschärfen, dass sie in echten Maya-Läufen nützlich bleiben, ohne Overclaim- oder Freshness-Hinweise zu nervös oder zu still zu machen.
+Den nächsten kleinen K5-Folgeschritt so zu schneiden, dass einzelne Surface-State-Verantwortungen weiter Richtung Achse B verschoben werden, ohne UI-, Provider- oder Persistenz-Scope gleichzeitig aufzureißen.
 
 ### Aufwand / Risikoprofil
 
-- klein, grob `0.5` Tag als enger Kalibrierungsblock
-- primär Route-Heuristik und sekundäres Lens-Surfacing
-- kein geplanter Provider-, Persistenz-, Memory- oder Surface-State-Umbau
+- klein bis mittel, als bewusster Technik-Folgeblock
+- primär interner Surface-State-/Adapter-Scope
+- höheres Risiko als UI-/Doku-Nachschärfung, deshalb bewusst getrennt halten
 
 ### Scope
 
-- heuristische Schwellen für `overclaimWarning` und `freshnessWarning` an realen False-Positive-/False-Negative-Fällen nachschärfen
-- sekundäres Guardrail-Surfacing in der Lens nur dort weiter verdichten, wo Hinweise wirklich nutzen
-- bestehende post-dispatch Guardrail-Linie dokumentarisch und UI-seitig konsistent halten
+- kleine, klar benennbare Verschiebung einzelner Surface-State-Verantwortungen Richtung Achse B
+- Adapter- oder Vertragsgrenzen explizit halten statt stillschweigend eine Ein-Achsen-Realität zu behaupten
+- UI- und Guardrail-Linie dabei unvermischt lassen
 
 ### Nicht-Scope
 
-- zusätzlicher Vorab-LLM-Call oder Deep-Mode
-- Memory-/Review-Queue-/Surface-State-Vertragserweiterung
 - großer UI-Rebuild über mehrere Screen-Modi gleichzeitig
+- Provider-/Affect-/Persistenz-Expansion
 - implizite Architektur-Neuentscheidung
+- breiter Misch-Commit aus dem lokalen Dirty Tree
 
 ## Alternative Valid Next Blocks
 
-- kleiner K5-Folgeblock zur internen Surface-State-Verschiebung Richtung Achse B
-- enger Doku-/Review-Block zur Kalibrierung und Nachweisführung der neuen Guardrail-Signale
+- enger Doku-/Review-Block zur Nachweisführung und Beobachtung der kalibrierten Guardrail-Signale
 - gezielter Doku-/Triage-Block für lokale Maya-Residuallinien und Planungsartefakte
 - begrenzte lokale Hygiene für untracked Maya-Residualdateien, aber nicht als Hauptproduktblock
 

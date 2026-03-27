@@ -133,11 +133,17 @@ function detectOverclaimWarning(userMessage: string, assistantMessage: string): 
     return null;
   }
 
-  const absoluteClaimPattern = /\b(sicher|garantiert|definitiv|eindeutig|zweifellos|immer|nie|vollständig|bewiesen|ohne zweifel)\b/i;
-  const hedgePattern = /\b(vielleicht|wahrscheinlich|vermutlich|kann|könnte|scheint|nach aktuellem stand|soweit sichtbar)\b/i;
+  const absoluteClaimPattern = /\b(garantiert|definitiv|zweifellos|ohne zweifel|zweifelsfrei|vollständig|bewiesen)\b/i;
+  const hedgePattern = /\b(vielleicht|wahrscheinlich|vermutlich|kann|könnte|scheint|nach aktuellem stand|soweit sichtbar|nach sichtbarem stand|ich vermute|ich nehme an)\b/i;
+  const repoGroundingPattern = /\b(repo|repository|code|commit|hash|diff|datei|pfad|route|komponente|funktion|zeile|typescript|tsx|ts|json|md)\b/i;
   const userAskedForCertainty = /\b(sicher|garantiert|eindeutig|definitiv|beweisen|beweis)\b/i.test(normalizedUser);
 
-  if (absoluteClaimPattern.test(normalizedAssistant) && !hedgePattern.test(normalizedAssistant) && !userAskedForCertainty) {
+  if (
+    absoluteClaimPattern.test(normalizedAssistant) &&
+    !hedgePattern.test(normalizedAssistant) &&
+    !repoGroundingPattern.test(normalizedAssistant) &&
+    !userAskedForCertainty
+  ) {
     return 'Antwort klingt stellenweise zu sicher. Prüfe, ob die Behauptung wirklich durch Input, Repo-Stand oder Kontext gedeckt ist.';
   }
 
@@ -152,8 +158,13 @@ function detectFreshnessWarning(assistantMessage: string): string | null {
 
   const timeSensitivePattern = /\b(aktuell|derzeit|momentan|heute|neueste|latest|kürzlich|zurzeit|gegenwärtig)\b/i;
   const freshnessAnchorPattern = /\b(commit|hash|version|stand|timestamp|utc|20\d{2}-\d{2}-\d{2}|\d{1,2}\.\d{1,2}\.20\d{2})\b/i;
+  const repoContextPattern = /\b(repo|repository|code|datei|pfad|route|komponente|api|ui|lokal|workspace|working tree)\b/i;
 
-  if (timeSensitivePattern.test(normalizedAssistant) && !freshnessAnchorPattern.test(normalizedAssistant)) {
+  if (
+    timeSensitivePattern.test(normalizedAssistant) &&
+    !freshnessAnchorPattern.test(normalizedAssistant) &&
+    !repoContextPattern.test(normalizedAssistant)
+  ) {
     return 'Antwort enthält zeitabhängige Aussagen ohne klaren Frischeanker. Prüfe, ob Stand, Commit oder Datum explizit benannt werden sollte.';
   }
 

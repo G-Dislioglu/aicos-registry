@@ -69,7 +69,7 @@ export function MayaWorkrunDetails({
     activeThreadHandoff && (activeThreadHandoff.status !== 'active' || handoffHasDistinctNextEntry)
   );
   const showEpistemicGuardrail = Boolean(
-    epistemicGuardrail && (epistemicGuardrail.overclaimWarning || epistemicGuardrail.freshnessWarning || epistemicGuardrail.mirror)
+    epistemicGuardrail && (epistemicGuardrail.overclaimWarning || epistemicGuardrail.freshnessWarning)
   );
 
   return (
