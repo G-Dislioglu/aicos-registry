@@ -128,10 +128,14 @@ Das Ergebnis ist kein sauberes Summary, sondern ein komprimierter Kern mit Spann
 Wenn das Ergebnis sich elegant und rund anfühlt, wurde destilliert statt komprimiert. Nochmal.
 
 Kompressionsformat pro Kandidat:
-
+ 
 - `Unzerstörbarer Kern` (1-2 Sätze, muss Spannung enthalten)
 - `Exponierte Annahmen` (was wurde beim Komprimieren sichtbar?)
 - `Weggeworfen` (was konnte erfolgreich gestrichen werden?)
+
+Optional bei verdächtig glatten, chat-abgeleiteten oder scope-unklaren Ansätzen:
+
+- kleiner `compression_check` nach `docs/methods/compression-check.md`, wenn er echte Schärfung bringt statt nur neue Ritualform
 
 ### Phase 3: Cross-Combination
 
@@ -298,8 +302,8 @@ Crossing-Guardrail:
 
 ### Kandidat B — Surface-State Axis Shift Follow-Up
 
-- `Status`: `active`
-- `truth_class`: `proposal_only`
+- `Status`: `adopted`
+- `truth_class`: `local_only`
 - `Herkunft`: `spec_pack`, `distilled`, `maya_fit_medium`, `adoption_candidate`
 - `Quellen`:
   - `docs/spec-packs/products/maya/K5_RUNTIME_AXIS_DECISION_NOTE.md`
@@ -326,16 +330,19 @@ Crossing-Guardrail:
   - mittel, technisch sinnvoll, aber aktuell schwerer und riskanter als ein enger UI- oder Doku-Block
 - `empfohlener Blockzuschnitt`:
   - nur wenn wir bewusst einen K5-Folgeblock wählen; dann klein und adapternah
-- `absorbed_into`: `none`
-- `next_gate`: `narrow_scope`
+- `absorbed_into`:
+  - `block`: `Surface-State Axis Shift Follow-Up`
+  - `files`: `lib/maya-surface-state.ts`, `components/maya-chat-screen.tsx`, `STATE.md`, `RADAR.md`, `docs/spec-packs/products/maya/STATUS.md`
+  - `commit`: `local_only`
+- `next_gate`: `archive`
 - `Urteil`:
-  - später, nicht als nächster allgemeiner Planungsblock
+  - lokal als enger K5-Vertragsblock übernommen; die Surface-State-Naht gibt jetzt nur noch schmale Session-/Workspace-Anker plus die abgeleitete Oberfläche zurück, ohne UI- oder Persistenz-Scope mitzubewegen
 
 ### Kandidat C — Truth-Marked Continuity Transfer Contract
 
-- `Status`: `parked`
-- `truth_class`: `proposal_only`
-- `Herkunft`: `spec_pack`, `cross_combined`, `distilled`, `maya_fit_medium`
+- `Status`: `adopted`
+- `truth_class`: `local_only`
+- `Herkunft`: `spec_pack`, `cross_combined`, `distilled`, `maya_fit_high`
 - `Quellen`:
   - `docs/spec-packs/products/maya/CONTINUITY.md`
   - `docs/spec-packs/products/maya/CONTRACT.md`
@@ -359,13 +366,16 @@ Crossing-Guardrail:
   - kann leicht zu abstrakt oder cross-app-nah werden
   - nicht als reine Theorie in aktive App-Arbeit kippen lassen
 - `Maya-Fit`:
-  - mittel, wertvoll als Guardrail- oder Vertragsidee, aber noch nicht automatisch der beste nächste App-Block
+  - hoch, wenn als einzelner Digest-/Kontinuitätsvertrag an der bestehenden `lib/maya-thread-digest.ts`-Naht umgesetzt
 - `empfohlener Blockzuschnitt`:
-  - zunächst nur als bounded contract note oder kleiner Digest-/handoff-naher Klärungsblock, falls wir die Wahrheitsübergänge zwischen `STATE.md`, `RADAR.md` und späteren Kontextobjekten expliziter markieren wollen
-- `absorbed_into`: `none`
-- `next_gate`: `narrow_scope`
+  - kleiner Digest-naher Vertragsblock, der stale `session.digest`-Zustände nicht mehr still als aktiven Kontinuitätsstand übernimmt
+- `absorbed_into`:
+  - `block`: `Truth-Marked Continuity Transfer Contract`
+  - `files`: `lib/maya-thread-digest.ts`, `__tests__/lib/maya-thread-digest.test.ts`, `STATE.md`, `RADAR.md`, `docs/spec-packs/products/maya/STATUS.md`
+  - `commit`: `local_only`
+- `next_gate`: `archive`
 - `Urteil`:
-  - geparkt, aber als reale Guardrail-/Vertragslinie unter Beobachtung; nicht bloß Theorie, dennoch bewusst nicht vor den engeren Runtime- oder Review-Blöcken priorisiert
+  - lokal als enger Vertragsblock übernommen; ein `session.digest` mit `needsRefresh` wird nicht mehr still als aktueller Kontinuitätsstand benutzt, sondern fällt auf laufzeitnahen Session-Kontext zurück, ohne UI-, Provider- oder Persistenzverträge zu erweitern
 
 ### Kandidat D — Review / Verification Closure for Primary Maya Surfaces
 
@@ -448,9 +458,9 @@ Crossing-Guardrail:
 
 ### Kandidat E2 — Pre-Dispatch Crush Light
 
-- `Status`: `active`
-- `truth_class`: `proposal_only`
-- `Herkunft`: `web_ai_derived`, `compression_tested`, `maya_fit_high`, `adoption_candidate`
+- `Status`: `adopted`
+- `truth_class`: `local_only`
+- `Herkunft`: `web_ai_derived`, `compression_tested`, `scan_pending`, `maya_fit_high`, `adoption_candidate`
 - `Quellen`:
   - externe Inline-Spec `Maya Governed Compression Shell — Spezifikation V2 (26.03.2026)` aus Claude-/ChatGPT-Ausarbeitung
   - `app/api/maya/chat/route.ts`
@@ -477,10 +487,13 @@ Crossing-Guardrail:
   - hoch, wenn als einzelner, abschaltbarer Vorab-Schritt ohne Nebenachsen gebaut
 - `empfohlener Blockzuschnitt`:
   - kleine Hilfsdatei für Crush-Light-Logik und enge Einhängung unmittelbar vor `dispatchChat()` ohne UI-Patch
-- `absorbed_into`: `none`
-- `next_gate`: `user_approval`
+- `absorbed_into`:
+  - `block`: `Pre-Dispatch Crush Light`
+  - `files`: `lib/maya-provider-dispatch.ts`, `__tests__/lib/maya-provider-dispatch.test.ts`, `STATE.md`, `RADAR.md`, `docs/spec-packs/products/maya/STATUS.md`
+  - `commit`: `local_only`
+- `next_gate`: `archive`
 - `Urteil`:
-  - jetzt prüfbar, aber nur als eigener Miniblock nach expliziter Scope-Entscheidung
+  - lokal als enger Achse-B-Miniblock übernommen; der Dispatch-Pfad markiert jetzt vor dem Provider-Call den nicht wegstreichbaren Kern der letzten User-Nachricht, ohne UI-, Memory- oder Surface-State-Verträge zu verbreitern
 
 ### Kandidat E3 — Governed Compression Shell Deep
 
@@ -578,7 +591,6 @@ Crossing-Guardrail:
 
 | Bereich | Lücke | Priorität |
 |---|---|---|
-| Execution / Epistemic | Kein adoptierter Pre-Flight-Kandidat für eingehende User-Probleme; E2 adressiert das, ist aber noch nicht gebaut | hoch |
 | Memory / Lifecycle | Kein enger Maya-Kandidat für Stale-/Archiv-Logik im Maya-eigenen Memory | mittel |
 | Governance / Freshness | Kein separater Kandidat prüft wiederverwendeten Kontext systematisch auf Aktualität außerhalb des post-dispatch Heuristikfensters | mittel |
 | Testing / Verification | Kein enger Kandidat für automatisierte Verifikation einer möglichen Governor-Einführung | niedrig |
@@ -607,9 +619,7 @@ Crossing-Guardrail:
 | Titel | Status | Herkunft | Bereich | Kurzurteil | Quelle |
 |---|---|---|---|---|---|
 | Maya Companion Surface Refresh | `parked` | `spec_pack` | UI / Produktführung | Weiterhin wertvoll als größere UI-Zielrichtung, aber nicht automatische aktuelle Produktwahrheit | `docs/spec-packs/products/maya/proposals/2026-03-maya-companion-surface-refresh.md` |
-| Surface-State Axis Shift Follow-Up | `active` | `spec_pack` | Runtime / Surface-State | Weiterhin der naheliegende nächste Technikblock, aber bewusst adapter- und achsenah statt UI-zentriert | `docs/spec-packs/products/maya/K5_RUNTIME_AXIS_DECISION_NOTE.md`, `STATE.md` |
 | Truth-Marked Continuity Transfer Contract | `parked` | `spec_pack`, `cross_combined` | Continuity / Vertragsgrenzen | Wertvoll als spätere Klärungslinie, aktuell aber zu abstrakt für den engsten nächsten Block | `docs/spec-packs/products/maya/CONTINUITY.md`, `docs/spec-packs/products/maya/CONTRACT.md`, `STATE.md` |
-| Pre-Dispatch Crush Light | `active` | `web_ai_derived`, `compression_tested` | Execution / epistemic intake | Potenziell der nächste bounded Governor-Schritt, aber nur als explizit budgetierter Miniblock vor `dispatchChat()` | externe Spec `2026-03-26`, `app/api/maya/chat/route.ts` |
 | Governed Compression Shell Deep | `parked` | `web_ai_derived`, `compression_tested` | Execution / memory / surface-state | Als Gesamtpaket weiter zu breit; nur später nach enger Zerlegung und mehr Achse-B-Reife sinnvoll | Chat-Intake `2026-03-26` |
 
 ## Abgeschlossene Radar-Einträge
@@ -620,14 +630,31 @@ Crossing-Guardrail:
 | Continuity Truth Audit | `adopted` | `chat_derived` | Continuity / Digest | Hat geklärt, dass `lib/maya-thread-digest.ts` der aktive Kern ist und lokale Residual-UI-Dateien nicht automatisch Produktwahrheit sind | lokaler Audit-Befund, anschließend in `STATE.md` verdichtet |
 | Maya Planning Entry Sync | `adopted` | `chat_derived` | Planung / Repo-Orientierung | `README.md` und `AGENTS.md` wurden auf `STATE.md` und `RADAR.md` als Einstiegsschicht ausgerichtet | `STATE.md`, `README.md`, `AGENTS.md` |
 | Primary Maya Surface Evidence Closure | `adopted` | `chat_derived` | Evidenz / Produktordnung | Die repo-sichtbare Rahmung von `/`, `/maya` und `/chat` wurde belegt und in den Zustandsdokumenten nachgezogen | `STATE.md`, `docs/spec-packs/products/maya/STATUS.md` |
+| Surface-State Axis Shift Follow-Up | `adopted` | `spec_pack` | Runtime / Surface-State | Lokal als enger Vertragsblock übernommen: `surface-state` liefert nur noch schmale Anker plus die abgeleitete Oberfläche und begrenzt damit die Hybrid-Leakage an der Naht | `docs/spec-packs/products/maya/K5_RUNTIME_AXIS_DECISION_NOTE.md`, `lib/maya-surface-state.ts`, `components/maya-chat-screen.tsx` |
+| Pre-Dispatch Crush Light | `adopted` | `web_ai_derived`, `compression_tested` | Execution / epistemic intake | Lokal als enger Dispatch-Miniblock übernommen: vor dem Provider-Call wird der nicht wegstreichbare Kern der letzten User-Nachricht intern markiert, ohne UI-, Memory- oder Surface-State-Verträge zu verbreitern | externe Spec `2026-03-26`, `lib/maya-provider-dispatch.ts`, `__tests__/lib/maya-provider-dispatch.test.ts` |
+| Truth-Marked Continuity Transfer Contract | `adopted` | `spec_pack`, `cross_combined` | Continuity / Vertragsgrenzen | Lokal als enger Digest-Vertragsblock übernommen: stale Digest-Zustände werden nicht mehr still als aktueller Kontinuitätsstand durchgereicht, sondern fallen auf Session-Wahrheit zurück | `docs/spec-packs/products/maya/CONTINUITY.md`, `docs/spec-packs/products/maya/CONTRACT.md`, `lib/maya-thread-digest.ts` |
+| Review / Observation Closure for Runtime Focus and Continuity Truth | `adopted` | `chat_derived` | Verification / Runtime-Seams | Lokal als enger Evidence-Block übernommen: gezielte Regressionstests sichern jetzt die reale Wirkung von `Pre-Dispatch Crush Light` und dem stale-Digest-Fallback an ihren Konsumkanten ab, ohne neue Runtime- oder UI-Mechanik zu öffnen | `__tests__/lib/maya-provider-dispatch.test.ts`, `__tests__/lib/maya-thread-digest.test.ts`, `STATE.md`, `docs/spec-packs/products/maya/STATUS.md` |
+| Guardrail Signal Observation Closure | `adopted` | `chat_derived`, `cross_combined` | Verification / Guardrail-Heuristik | Lokal als enger Evidence-Block übernommen: die bestehende `mirror`-/`overclaimWarning`-/`freshnessWarning`-Heuristik wurde in eine pure Lib-Datei überführt und mit gezielten Regressionstests gegen absolute Claims, repo-geerdete Entwarnung und Frischeanker abgesichert, ohne Runtime- oder UI-Mechanik zu erweitern | `lib/maya-epistemic-guardrail.ts`, `app/api/maya/chat/route.ts`, `__tests__/api/maya-chat-guardrail.test.ts` |
+| Real-Run Focus Observation Closure | `adopted` | `chat_derived`, `cross_combined` | Verification / Interplay | Lokal als enger Zusammenspiel-Evidence-Block übernommen: eine nah simulierte Laufspur prüft jetzt gemeinsam Fokuspriorisierung, stale-Digest-Fallback und Guardrail-Nachspur, sowohl im bounded Nullfall als auch im Driftfall mit Warnsignalen | `__tests__/lib/maya-real-run-focus-observation.test.ts`, `lib/maya-provider-dispatch.ts`, `lib/maya-thread-digest.ts`, `lib/maya-epistemic-guardrail.ts` |
+| Handoff / Resume Distinctness Observation Closure | `adopted` | `chat_derived`, `cross_combined` | Verification / Derived signal separation | Lokal als enger Distinctness-Evidence-Block übernommen: `resumeActions`, Checkpoint-Board und `handoff` werden jetzt gegen semantische Signal-Dopplung beobachtet, sowohl im differenzierten Fall als auch im bounded Kollaps bei wiederholter Thread-Wahrheit | `__tests__/lib/maya-handoff-resume-distinctness-observation.test.ts`, `lib/maya-thread-digest.ts`, `STATE.md`, `docs/spec-packs/products/maya/STATUS.md` |
+| Workspace Next-Milestone Distinctness Observation Closure | `adopted` | `chat_derived`, `cross_combined` | Verification / Workspace signal separation | Lokal als enger Distinctness-Evidence-Block übernommen: die workspace-nahe Ableitung wird jetzt gegen Überschneidung von `goal`, `currentState`, `nextMilestone` und `openItems` beobachtet, sowohl im differenzierten Fall als auch im bounded Kollaps bei wiederholter Thread-Wahrheit | `__tests__/lib/maya-workspace-next-milestone-distinctness-observation.test.ts`, `lib/maya-thread-digest.ts`, `STATE.md`, `docs/spec-packs/products/maya/STATUS.md` |
+| Primary Surface Prioritization Observation Closure | `adopted` | `chat_derived`, `cross_combined` | Verification / Primary signal prioritization | Lokal als enger Distinctness-Evidence-Block übernommen: die Hauptableitung wird jetzt gegen Überschneidung von `primaryFocus`, `primaryNextStep` und `primaryOpenPoint` beobachtet und zusätzlich darauf, dass Workrun-/Handoff-Signale konkurrierende Workspace-Fallbacks verdrängen | `__tests__/lib/maya-primary-surface-prioritization-observation.test.ts`, `lib/maya-thread-digest.ts`, `STATE.md`, `docs/spec-packs/products/maya/STATUS.md` |
+| Primary Surface Fallback Boundary Observation Closure | `adopted` | `chat_derived`, `cross_combined` | Verification / Primary fallback boundaries | Lokal als enger Boundary-Evidence-Block übernommen: die Hauptableitung wird jetzt gegen Leckage persistierter Workrun-, Handoff-, Digest- und Workspace-Signale im Early-Thread-Fall beobachtet und zusätzlich darauf, welche Defaults in ruhigen Threads tatsächlich sichtbar bleiben | `__tests__/lib/maya-primary-surface-fallback-boundary-observation.test.ts`, `lib/maya-thread-digest.ts`, `STATE.md`, `docs/spec-packs/products/maya/STATUS.md` |
+| Primary Surface Quiet-Thread Observation Closure | `adopted` | `chat_derived`, `cross_combined` | Verification / Quiet-thread minimal truth | Lokal als enger Quiet-Thread-Evidence-Block übernommen: die Hauptableitung wird jetzt gegen leere Threads, schwache Early-Threads und ruhige, aber bereits inhaltliche Threads beobachtet, damit Minimal-Defaults, Start-State-Leitplanken und konkrete Thread-Wahrheit sauber getrennt bleiben | `__tests__/lib/maya-primary-surface-quiet-thread-observation.test.ts`, `lib/maya-thread-digest.ts`, `STATE.md`, `docs/spec-packs/products/maya/STATUS.md` |
+| Primary Surface Low-Activity Repetition Observation Closure | `adopted` | `chat_derived`, `cross_combined` | Verification / Low-activity bounded repetition | Lokal als größerer Low-Activity-Evidence-Block übernommen: die Hauptableitung wird jetzt über mehrere signalarme, aber nicht leere Thread-Konstellationen darauf beobachtet, dass sie in einen kleinen bounded meaning set kollabiert statt zusätzliche Semantik zu vervielfachen, und dass konkurrierende Workspace-Fallbacks diese begrenzte Primärpaarung nicht aufblasen | `__tests__/lib/maya-primary-surface-low-activity-repetition-observation.test.ts`, `lib/maya-thread-digest.ts`, `STATE.md`, `docs/spec-packs/products/maya/STATUS.md` |
+| Primary Surface Low-Activity Source-Alignment Observation Closure | `adopted` | `chat_derived`, `cross_combined` | Verification / Low-activity source alignment | Lokal als größerer Low-Activity-Evidence-Block übernommen: die Hauptableitung wird jetzt darauf beobachtet, dass `briefing`, `workrun`, `handoff`, `workspace` und Primärsignale bei abgeleiteter Low-Activity denselben kleinen Bedeutungssatz konsistent tragen, während manuelle Workspace-Wahrheit als explizite Abweichung sichtbar bleibt | `__tests__/lib/maya-primary-surface-low-activity-source-alignment-observation.test.ts`, `lib/maya-thread-digest.ts`, `STATE.md`, `docs/spec-packs/products/maya/STATUS.md` |
+| Primary Surface Low-Activity Source-Boundary Observation Closure | `adopted` | `chat_derived`, `cross_combined` | Verification / Low-activity source boundaries | Lokal als größerer Low-Activity-Evidence-Block übernommen: die Hauptableitung wird jetzt darauf beobachtet, an welchen Stellen manuelle `workrun`-, `handoff`- und `workspace`-Wahrheit bewusst von der abgeleiteten Low-Activity-Spur abweichen darf, ohne dass die Primärfläche still zwischen Quellen ausfranst | `__tests__/lib/maya-primary-surface-low-activity-source-boundary-observation.test.ts`, `lib/maya-thread-digest.ts`, `STATE.md`, `docs/spec-packs/products/maya/STATUS.md` |
+| Primary Surface Low-Activity Manual-Truth Precedence Observation Closure | `adopted` | `chat_derived`, `cross_combined` | Verification / Low-activity manual truth precedence | Lokal als größerer Low-Activity-Evidence-Block übernommen: die Hauptableitung wird jetzt darauf beobachtet, dass manuelle `workrun`-, `handoff`- und `workspace`-Wahrheit in den tatsächlich beabsichtigten Primärbahnen Vorrang behält, ohne angrenzende Low-Activity-Signale unbeabsichtigt mitzuziehen | `__tests__/lib/maya-primary-surface-low-activity-manual-truth-precedence-observation.test.ts`, `lib/maya-thread-digest.ts`, `STATE.md`, `docs/spec-packs/products/maya/STATUS.md` |
+| Primary Surface Low-Activity Manual-Truth Collision Observation Closure | `adopted` | `chat_derived`, `cross_combined` | Verification / Low-activity manual truth collisions | Lokal als größerer Low-Activity-Evidence-Block übernommen: die Hauptableitung wird jetzt darauf beobachtet, wie gleichzeitige manuelle `workrun`-, `handoff`- und `workspace`-Wahrheiten gegeneinander kollidieren und welche Primärbahnen dabei tatsächlich stabil gewonnen oder verloren werden | `__tests__/lib/maya-primary-surface-low-activity-manual-truth-collision-observation.test.ts`, `lib/maya-thread-digest.ts`, `STATE.md`, `docs/spec-packs/products/maya/STATUS.md` |
+| Primary Surface Low-Activity Partial Manual-Truth Fallback Observation Closure | `adopted` | `chat_derived`, `cross_combined` | Verification / Low-activity partial manual truth fallback | Lokal als größerer Low-Activity-Evidence-Block übernommen: die Hauptableitung wird jetzt darauf beobachtet, wie partielle manuelle `workrun`-, `handoff`- und `workspace`-Wahrheit ihre leeren Felder intern mit abgeleiteten Low-Activity-Spuren auffüllt, ohne die Source-Ownership zu verlieren | `__tests__/lib/maya-primary-surface-low-activity-partial-manual-truth-fallback-observation.test.ts`, `lib/maya-thread-digest.ts`, `STATE.md`, `docs/spec-packs/products/maya/STATUS.md` |
+| Primary Surface Low-Activity Manual-Truth Convergence Observation Closure | `adopted` | `chat_derived`, `cross_combined` | Verification / Low-activity manual truth convergence | Lokal als größerer Low-Activity-Evidence-Block übernommen: die Hauptableitung wird jetzt darauf beobachtet, dass manuelle `workrun`-, `handoff`- und `workspace`-Source-Ownership stabil bleiben kann, auch wenn die sichtbaren Werte textlich mit briefing-, workrun-, handoff- oder primären Ableitungslinien zusammenfallen | `__tests__/lib/maya-primary-surface-low-activity-manual-truth-convergence-observation.test.ts`, `lib/maya-thread-digest.ts`, `STATE.md`, `docs/spec-packs/products/maya/STATUS.md` |
+| Primary Surface Low-Activity Source-Ownership Stability Observation Closure | `adopted` | `chat_derived`, `cross_combined` | Verification / Low-activity source ownership stability | Lokal als größerer Low-Activity-Evidence-Block übernommen: die Persist-Builder und die Hauptableitung werden jetzt darauf beobachtet, dass manuelle Source-Ownership für `workrun`, `handoff` und `workspace` auch nach semantisch unverändertem Persist-/Re-Derive-Zyklus stabil bleibt | `__tests__/lib/maya-primary-surface-low-activity-source-ownership-stability-observation.test.ts`, `lib/maya-thread-digest.ts`, `STATE.md`, `docs/spec-packs/products/maya/STATUS.md` |
+| Primary Surface Low-Activity Persisted Partial-Update Observation Closure | `adopted` | `chat_derived`, `cross_combined` | Verification / Low-activity persisted partial updates | Lokal als größerer Low-Activity-Evidence-Block übernommen: die Persist-Builder werden jetzt darauf beobachtet, wie partielle manuelle Updates in `workrun`, `handoff` und `workspace` fehlende Felder kontrolliert ergänzen oder erhalten, ohne semantische Drift oder Ownership-Verlust zu erzeugen | `__tests__/lib/maya-primary-surface-low-activity-persisted-partial-update-observation.test.ts`, `lib/maya-thread-digest.ts`, `STATE.md`, `docs/spec-packs/products/maya/STATUS.md` |
+| Primary Surface Low-Activity Persisted Partial-Update Boundary Observation Closure | `adopted` | `chat_derived`, `cross_combined` | Verification / Low-activity persisted partial update boundaries | Lokal als größerer Low-Activity-Evidence-Block übernommen: die Persist-Builder werden jetzt darauf beobachtet, dass partielle manuelle Updates in `workrun`, `handoff` und `workspace` sauber auf builder-eigene Bahnen begrenzt bleiben und nicht still angrenzende Persist- oder Primärbahnen mitziehen | `__tests__/lib/maya-primary-surface-low-activity-persisted-partial-update-boundary-observation.test.ts`, `lib/maya-thread-digest.ts`, `STATE.md`, `docs/spec-packs/products/maya/STATUS.md` |
 | Focus / Re-Entry / Ops-Lens Surface Consolidation | `adopted` | `chat_derived` | UI / Hauptflächenfokus | Arbeitsraum- und Thread-Steuerung wurden als sekundäre Lens aus dem Primärfluss der Maya-Hauptfläche herausgezogen | `STATE.md`, `components/maya-chat-screen.tsx`, `components/maya/maya-ops-lens.tsx` |
-| Active Workrun Detail Downshift | `adopted` | `chat_derived` | UI / Arbeitslauf-Fokus | Manuelle Arbeitslauf-Steuerung, Handoff-Details und Checkpoint-Pflege wurden aus der Primärfläche in die Ops-Lens verlagert | `STATE.md`, `components/maya/maya-active-workrun-panel.tsx`, `components/maya/maya-workrun-details.tsx` |
+| Active Workrun Detail Downshift | `adopted` | `chat_derived` | UI / Arbeitslauf-Fokus | Manuelle Arbeitslauf-Steuerung, Handoff-Details und Checkpoint-Pflege wurden aus der Primärfläche in die Ops-Lens verlagert | `STATE.md`, `components/maya-chat-screen.tsx`, `components/maya/maya-workrun-details.tsx` |
 | Post-Dispatch Epistemic Guardrail | `adopted` | `web_ai_derived`, `cross_combined` | Execution / epistemic hardening | Mirror-/Warning-/Freshness-Nachlauf ist jetzt als enger post-dispatch Guardrail auf Achse B repo-sichtbar umgesetzt | `app/api/maya/chat/route.ts`, externe Spec `2026-03-26` |
 | Handoff Prominence Tightening + Secondary Guardrail Surfacing | `adopted` | `chat_derived`, `cross_combined` | UI / Ops Lens | Aktive Handoff-Prominenz wurde weiter reduziert und Guardrail-Signale bleiben als sekundäres Lens-Surface sichtbar statt die Primärfläche zu belasten | `components/maya-chat-screen.tsx`, `components/maya/maya-workrun-details.tsx` |
-
-## Proposal- und Ideenquellen
-
-### Repo-nahe Maya-Quellen
 
 - `docs/spec-packs/products/maya/BLUEPRINT.md`
 - `docs/spec-packs/products/maya/STATUS.md`
@@ -694,6 +721,15 @@ Wenn neue Materialien eingescannt werden, soll die Verdichtung bevorzugt in dies
 - `Maya-Fit`
 - `empfohlener Blockzuschnitt`
 - `Urteil`: jetzt / später / nein
+
+Optional, wenn ein zusätzlicher Prüfdruck echten Erkenntnisgewinn bringt:
+
+- `compression_check:`
+  - `mode:`
+  - `core:`
+  - `reaction_class:`
+  - `direction:`
+  - `why_not_more:`
 
 ## Adoption-Regeln
 

@@ -16,8 +16,8 @@ Diese Datei ist kein Ersatz für `README.md`, `AGENTS.md` oder `docs/spec-packs/
 - `local_drift_present`: `yes`
 - `hybrid_architecture`: `yes`
 - `primary_runtime_seams`: `/api/maya/chat | /api/maya/surface-state | lib/maya-thread-digest.ts`
-- `last_completed_block`: `Guardrail Signal Calibration`
-- `next_recommended_block`: `Surface-State Axis Shift Follow-Up`
+- `last_completed_block`: `Primary Surface Low-Activity Persisted Partial-Update Boundary Observation Closure`
+- `next_recommended_block`: `Primary Surface Low-Activity Persisted Partial-Update Convergence Observation Closure`
 - `read_order_version`: `v2`
 
 ## Update-Vertrag
@@ -79,6 +79,10 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 
 - Der lokale Working Tree ist weiterhin breit dirty
 - Relevante lokale Maya-Themen außerhalb der veröffentlichten Maya-Verdichtungslinie existieren weiterhin, u. a. in API-, Affect-, Persistenz-, Doku- und Infra-nahen Dateien
+- Lokal ist jetzt ein enger K5-Folgeschritt umgesetzt: `lib/maya-surface-state.ts` gibt über die Surface-State-Naht nur noch schmale Session-/Workspace-Anker (`id`, `title`) plus die abgeleitete Oberfläche zurück, statt rohe Store-Objekte weiterzureichen
+- `components/maya-chat-screen.tsx` ist auf den verengten Surface-State-Vertrag nachgezogen; `npx tsc --noEmit --skipLibCheck` lief danach lokal ohne Fehloutput
+- Lokal ist jetzt auch `Pre-Dispatch Crush Light` als enger Achse-B-Mini-Block umgesetzt: `lib/maya-provider-dispatch.ts` ergänzt vor dem Provider-Call einen internen Prompt-Abschnitt, der aus der letzten User-Nachricht den nicht wegstreichbaren Kern ableitet, ohne Request-, UI-, Memory- oder Surface-State-Verträge zu verbreitern
+- `__tests__/lib/maya-provider-dispatch.test.ts` verifiziert den neuen Vorab-Schritt gezielt; `npx vitest run __tests__/lib/maya-provider-dispatch.test.ts` und `npx tsc --noEmit --skipLibCheck` liefen lokal ohne Fehloutput
 
 ## Current Architecture Reality
 
@@ -132,54 +136,70 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 
 ### Name
 
-Guardrail Signal Calibration
+Primary Surface Low-Activity Persisted Partial-Update Boundary Observation Closure
 
 ### Ergebnis
 
-Der enge post-dispatch Guardrail wurde nachkalibriert: repo- und code-geerdete Antworten erzeugen weniger unnötige Overclaim-/Freshness-Warnungen, und sekundäres Guardrail-Surfacing erscheint in Topbar und Ops-Lens nur noch bei echten Warnsignalen statt schon bei bloßer Mirror-Spiegelung. Die Guardrail-Linie bleibt damit bewusst heuristisch, aber ruhiger und Maya-näher im tatsächlichen Arbeitsfluss.
+Ein einzelner größerer Low-Activity-Evidence-Block ist jetzt lokal abgeschlossen: `__tests__/lib/maya-primary-surface-low-activity-persisted-partial-update-boundary-observation.test.ts` prüft über mehrere signalarme Thread-Konstellationen, dass partielle manuelle Persist-Updates in `workrun`, `handoff` und `workspace` sauber auf ihre builder-eigenen Bahnen begrenzt bleiben und nicht still angrenzende Persist- oder Primärbahnen mitziehen. Damit sind die Grenzbedingungen partieller Persist-Updates enger überprüfbar, ohne neue Runtime-, UI-, Persistenz- oder Surface-State-Mechanik zu öffnen.
 
 ### Nicht Teil dieses Blocks
 
-- zusätzlicher Vorab-LLM-Call oder Deep-Mode
-- Runtime-Konsolidierung zwischen Achse A und Achse B
-- Affect-Expansion
-- Memory-/Review-Queue-/Surface-State-Vertragserweiterung
-- Persistenz- oder Schema-Umbau
+- neue Resume-, Handoff-, Checkpoint-, Workspace-, Quiet-Thread-, Repetition-, Alignment-, Boundary-, Precedence-, Collision-, Partial-Fallback-, Convergence-, Stability-, Persisted-Partial-Update-, Persisted-Partial-Update-Boundary-, Persisted-Partial-Update-Convergence- oder Surface-Mechanik
+- neue Runtime-, Dispatch- oder Digest-Mechanik
+- neue UI- oder Lens-Surfacing-Felder
+- Provider-/Affect-/Persistenz-Expansion
+- implizite Behauptung einer bereits abgeschlossenen Ein-Achsen-Architektur
 
 ## Next Recommended Block
 
 ### Name
 
-Surface-State Axis Shift Follow-Up
+Primary Surface Low-Activity Persisted Partial-Update Convergence Observation Closure
 
 ### Ziel
 
-Den nächsten kleinen K5-Folgeschritt so zu schneiden, dass einzelne Surface-State-Verantwortungen weiter Richtung Achse B verschoben werden, ohne UI-, Provider- oder Persistenz-Scope gleichzeitig aufzureißen.
+Die vorhandenen Persist-Builder jetzt noch einmal als größeren Beobachtungsblock auf signalarme Threads prüfen: wie partielle manuelle Persist-Updates sich verhalten, wenn ihre sichtbaren Ergebnisse textlich mit bestehenden abgeleiteten oder primären Bahnen konvergieren, ohne dass daraus falsche Distinctness oder Ownership-Verlust entsteht.
 
 ### Aufwand / Risikoprofil
 
-- klein bis mittel, als bewusster Technik-Folgeblock
-- primär interner Surface-State-/Adapter-Scope
-- höheres Risiko als UI-/Doku-Nachschärfung, deshalb bewusst getrennt halten
+- klein, primär Review-/Evidenzblock
+- sehr geringer Runtime-Druck
+- riskant nur dann, wenn daraus doch still neue Produkt- oder Vertragsarbeit gemacht wird
 
 ### Scope
 
-- kleine, klar benennbare Verschiebung einzelner Surface-State-Verantwortungen Richtung Achse B
-- Adapter- oder Vertragsgrenzen explizit halten statt stillschweigend eine Ein-Achsen-Realität zu behaupten
-- UI- und Guardrail-Linie dabei unvermischt lassen
+- Nachweisführung über low-activity-thread-, persist-builder-, handoff-, workspace- und manual-update-nahe Konvergenzfälle
+- Beobachtung, ob partielle manuelle Persist-Updates textlich mit vorhandenen Bahnen konvergieren können, ohne Ownership-Verlust oder künstliche Differenzbildung
+- Doku-/Verifikationsnachweis enger halten als weitere Runtime-Expansion
 
 ### Nicht-Scope
 
-- großer UI-Rebuild über mehrere Screen-Modi gleichzeitig
-- Provider-/Affect-/Persistenz-Expansion
-- implizite Architektur-Neuentscheidung
+- neue Prompt-, Dispatch-, Guardrail-, Resume-, Workspace-, Surface- oder Digest-Mechanik
+- neue Surface-State- oder UI-Verträge
+- Persistenz-/Schema-/Provider-Expansion
 - breiter Misch-Commit aus dem lokalen Dirty Tree
 
 ## Alternative Valid Next Blocks
 
-- enger Doku-/Review-Block zur Nachweisführung und Beobachtung der kalibrierten Guardrail-Signale
-- `Pre-Dispatch Crush Light` (siehe `RADAR.md`, Kandidat E2) als bewusster Miniblock vor `dispatchChat()`, falls statt Achse-B-Adapterarbeit ein enger epistemischer Intake-Block priorisiert werden soll
-- `Truth-Marked Continuity Transfer Contract` (siehe `RADAR.md`, Kandidat C) als späterer bounded Vertrags- und Kontinuitätsblock statt Runtime-Folgeschritt
+- kleiner weiterer Digest-/handoff-naher Vertragsblock, aber nur falls ein konkreter unmarkierter Wahrheitswechsel im Runtime-Pfad sichtbar wird
+- gezielter Test-/Evidence-Block für weitere Guardrail-Randfälle statt neuer Runtime-Mechanik
+- enger Doku-/Review-Block zur Beobachtung, ob die Guardrail-Nachspur in echten Läufen zu oft stumm oder zu oft laut bleibt
+- enger Doku-/Review-Block zur Beobachtung, ob `Pre-Dispatch Crush Light` in echten Läufen die Antwortfokussierung verbessert, ohne Nebenpfade zu übersteuern
+- enger Doku-/Review-Block zur Beobachtung, ob Workspace-Ziel und nächster Meilenstein in echten Läufen zu oft dieselbe Aussage wiederholen
+- enger Doku-/Review-Block zur Beobachtung, ob die Hauptoberfläche zu oft denselben Signaltext in Fokus, nächstem Schritt und offenem Punkt wiederholt
+- enger Doku-/Review-Block zur Beobachtung, ob Primärsignale an Fallback-Grenzen zu früh von Workspace- oder Briefing-Werten übernommen werden
+- enger Doku-/Review-Block zur Beobachtung, ob ruhige Threads zu generisch oder zu implizit wirken, obwohl kein aktiver Arbeitslauf vorliegt
+- enger Doku-/Review-Block zur Beobachtung, ob signalarme, aber nicht leere Threads unnötig Re-Entry- oder Open-Point-Dopplung auf die Primärfläche ziehen
+- größerer Doku-/Review-Block zur Beobachtung, ob signalarme Threads über `workrun`, `handoff`, `workspace` und Primärfläche denselben kleinen Bedeutungssatz konsistent tragen
+- größerer Doku-/Review-Block zur Beobachtung, ob Low-Activity-Divergenzen zwischen `workspace`, `handoff` und Primärfläche klar begrenzt bleiben statt Zwischenrauschen zu erzeugen
+- größerer Doku-/Review-Block zur Beobachtung, ob manuelle Low-Activity-Wahrheit in `workrun`, `handoff` oder `workspace` nur die beabsichtigten Vorrangbahnen übernimmt
+- größerer Doku-/Review-Block zur Beobachtung, wie kollidierende manuelle Low-Activity-Wahrheiten über `workrun`, `handoff` und `workspace` gegeneinander priorisiert werden
+- größerer Doku-/Review-Block zur Beobachtung, wie partielle manuelle Low-Activity-Wahrheit laneweise auf `handoff`-, `briefing`- oder `workspace`-Fallbacks zurückfällt
+- größerer Doku-/Review-Block zur Beobachtung, wie manuelle Low-Activity-Source-Ownership stabil bleibt, wenn sichtbare Werte zwischen `workrun`, `handoff`, `workspace` und Primärfläche konvergieren
+- größerer Doku-/Review-Block zur Beobachtung, ob manuelle Source-Ownership in semantisch stabilen Low-Activity-Lagen über wiederholte Ableitungen hinweg konsistent bleibt
+- größerer Doku-/Review-Block zur Beobachtung, wie partielle Persist-Updates in `workrun`, `handoff` und `workspace` fehlende Felder ergänzen, ohne stille semantische Drift zu erzeugen
+- größerer Doku-/Review-Block zur Beobachtung, ob partielle Persist-Updates in `workrun`, `handoff` oder `workspace` sauber auf ihre builder-eigenen Bahnen begrenzt bleiben
+- größerer Doku-/Review-Block zur Beobachtung, wie partielle Persist-Updates textlich mit bestehenden Persist- oder Primärbahnen konvergieren, ohne Ownership-Verlust oder künstliche Differenzbildung
 - gezielter Doku-/Triage-Block für lokale Maya-Residuallinien und Planungsartefakte
 - begrenzte lokale Hygiene für untracked Maya-Residualdateien, aber nicht als Hauptproduktblock
 
