@@ -9,15 +9,15 @@ Diese Datei ist kein Ersatz für `README.md`, `AGENTS.md` oder `docs/spec-packs/
 
 ## STATE HEADER
 
-- `current_repo_head`: `37dd785`
+- `current_repo_head`: `c2fc42a`
 - `last_runtime_commit`: `9bdaa3a`
 - `last_verified_against_public`: `2026-03-27`
 - `truth_scope`: `public_plus_local`
 - `local_drift_present`: `yes`
 - `hybrid_architecture`: `yes`
 - `primary_runtime_seams`: `/api/maya/chat | /api/maya/surface-state | lib/maya-thread-digest.ts`
-- `last_completed_block`: `Primary Surface Low-Activity Persisted Partial-Update Boundary Observation Closure`
-- `next_recommended_block`: `Primary Surface Low-Activity Persisted Partial-Update Convergence Observation Closure`
+- `last_completed_block`: `Primary Surface Low-Activity Persisted Partial-Update Convergence Observation Closure`
+- `next_recommended_block`: `Guardrail Signal Stability Review Closure`
 - `read_order_version`: `v2`
 
 ## Update-Vertrag
@@ -63,8 +63,8 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 
 ## Current Published Truth
 
-- `origin/master` ist aktuell auf `37dd785`
-- Die letzte user-sichtbare Maya-Produktlinie bleibt auf `9bdaa3a`; spätere öffentliche Commits wie `bb42875`, `91552c2` und `37dd785` waren Doku-/Review-Syncs statt neuer sichtbarer Maya-Runtime-Blöcke.
+- `origin/master` ist aktuell auf `c2fc42a`
+- Die letzte user-sichtbare Maya-Produktlinie bleibt auf `9bdaa3a`; spätere öffentliche Commits wie `bb42875`, `91552c2`, `37dd785` und `c2fc42a` waren Doku-/Review-Syncs statt neuer sichtbarer Maya-Runtime-Blöcke.
 - Die veröffentlichte Maya-Linie ist jetzt in einem Satz: Primärfläche um den aktiven Arbeitslauf verdichtet, sekundäre Navigation rationalisiert, page-level Framing gestrafft, Arbeitslaufdetails in die Ops-Lens verlagert, post-dispatch Guardrail-Signale erzeugt, in der Lens sekundär gesurfacet und zuletzt noch auf ruhigere Warnsignale kalibriert.
 - Die veröffentlichte Verdichtungslinie ist enthalten:
   - `9a53ac8` — `refactor(maya): compress primary surface around workrun flow`
@@ -83,6 +83,8 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 - `components/maya-chat-screen.tsx` ist auf den verengten Surface-State-Vertrag nachgezogen; `npx tsc --noEmit --skipLibCheck` lief danach lokal ohne Fehloutput
 - Lokal ist jetzt auch `Pre-Dispatch Crush Light` als enger Achse-B-Mini-Block umgesetzt: `lib/maya-provider-dispatch.ts` ergänzt vor dem Provider-Call einen internen Prompt-Abschnitt, der aus der letzten User-Nachricht den nicht wegstreichbaren Kern ableitet, ohne Request-, UI-, Memory- oder Surface-State-Verträge zu verbreitern
 - `__tests__/lib/maya-provider-dispatch.test.ts` verifiziert den neuen Vorab-Schritt gezielt; `npx vitest run __tests__/lib/maya-provider-dispatch.test.ts` und `npx tsc --noEmit --skipLibCheck` liefen lokal ohne Fehloutput
+- Lokal ist jetzt auch `Primary Surface Low-Activity Persisted Partial-Update Convergence Observation Closure` als enger Evidence-Block umgesetzt: `__tests__/lib/maya-primary-surface-low-activity-persisted-partial-update-convergence-observation.test.ts` beobachtet, dass partielle manuelle Persist-Updates in `workrun`, `handoff` und `workspace` auch dann manuelle Ownership behalten können, wenn das einzige aktualisierte Feld textlich auf dieselbe Spur wie die bestehende abgeleitete Low-Activity- oder Primärbahn konvergiert
+- `npx vitest run __tests__/lib/maya-primary-surface-low-activity-persisted-partial-update-convergence-observation.test.ts` und `./node_modules/.bin/tsc.cmd --noEmit --skipLibCheck` liefen nach dem Block lokal ohne Fehloutput
 
 ## Current Architecture Reality
 
@@ -136,15 +138,15 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 
 ### Name
 
-Primary Surface Low-Activity Persisted Partial-Update Boundary Observation Closure
+Primary Surface Low-Activity Persisted Partial-Update Convergence Observation Closure
 
 ### Ergebnis
 
-Ein einzelner größerer Low-Activity-Evidence-Block ist jetzt lokal abgeschlossen: `__tests__/lib/maya-primary-surface-low-activity-persisted-partial-update-boundary-observation.test.ts` prüft über mehrere signalarme Thread-Konstellationen, dass partielle manuelle Persist-Updates in `workrun`, `handoff` und `workspace` sauber auf ihre builder-eigenen Bahnen begrenzt bleiben und nicht still angrenzende Persist- oder Primärbahnen mitziehen. Damit sind die Grenzbedingungen partieller Persist-Updates enger überprüfbar, ohne neue Runtime-, UI-, Persistenz- oder Surface-State-Mechanik zu öffnen.
+Ein einzelner größerer Low-Activity-Evidence-Block ist jetzt lokal abgeschlossen: `__tests__/lib/maya-primary-surface-low-activity-persisted-partial-update-convergence-observation.test.ts` prüft über mehrere signalarme Thread-Konstellationen, dass partielle manuelle Persist-Updates in `workrun`, `handoff` und `workspace` ihre manuelle Ownership auch dann behalten können, wenn das einzige aktualisierte Feld textlich mit bestehenden abgeleiteten oder primären Bahnen zusammenfällt. Damit ist die Persist-Partial-Update-Linie enger darauf überprüfbar, ob Konvergenz ohne Ownership-Verlust oder künstliche Distinctness möglich bleibt, ohne neue Runtime-, UI-, Persistenz- oder Surface-State-Mechanik zu öffnen.
 
 ### Nicht Teil dieses Blocks
 
-- neue Resume-, Handoff-, Checkpoint-, Workspace-, Quiet-Thread-, Repetition-, Alignment-, Boundary-, Precedence-, Collision-, Partial-Fallback-, Convergence-, Stability-, Persisted-Partial-Update-, Persisted-Partial-Update-Boundary-, Persisted-Partial-Update-Convergence- oder Surface-Mechanik
+- neue Resume-, Handoff-, Checkpoint-, Workspace-, Quiet-Thread-, Repetition-, Alignment-, Boundary-, Precedence-, Collision-, Partial-Fallback-, Stability-, Persisted-Partial-Update- oder Surface-Mechanik
 - neue Runtime-, Dispatch- oder Digest-Mechanik
 - neue UI- oder Lens-Surfacing-Felder
 - Provider-/Affect-/Persistenz-Expansion
@@ -154,23 +156,23 @@ Ein einzelner größerer Low-Activity-Evidence-Block ist jetzt lokal abgeschloss
 
 ### Name
 
-Primary Surface Low-Activity Persisted Partial-Update Convergence Observation Closure
+Guardrail Signal Stability Review Closure
 
 ### Ziel
 
-Die vorhandenen Persist-Builder jetzt noch einmal als größeren Beobachtungsblock auf signalarme Threads prüfen: wie partielle manuelle Persist-Updates sich verhalten, wenn ihre sichtbaren Ergebnisse textlich mit bestehenden abgeleiteten oder primären Bahnen konvergieren, ohne dass daraus falsche Distinctness oder Ownership-Verlust entsteht.
+Die bestehende Guardrail-Nachspur jetzt als kleinen Review- und Beobachtungsblock gegen echte oder nah-simulierte Läufe halten: ob `mirror`, `overclaimWarning` und `freshnessWarning` nach der bisherigen Kalibrierung zu oft stumm oder zu oft laut bleiben, ohne daraus sofort neue Guardrail-Mechanik abzuleiten.
 
 ### Aufwand / Risikoprofil
 
 - klein, primär Review-/Evidenzblock
 - sehr geringer Runtime-Druck
-- riskant nur dann, wenn daraus doch still neue Produkt- oder Vertragsarbeit gemacht wird
+- riskant nur dann, wenn daraus still doch neue Heuristik- oder Surface-Arbeit gemacht wird
 
 ### Scope
 
-- Nachweisführung über low-activity-thread-, persist-builder-, handoff-, workspace- und manual-update-nahe Konvergenzfälle
-- Beobachtung, ob partielle manuelle Persist-Updates textlich mit vorhandenen Bahnen konvergieren können, ohne Ownership-Verlust oder künstliche Differenzbildung
-- Doku-/Verifikationsnachweis enger halten als weitere Runtime-Expansion
+- Beobachtung über Guardrail-nahe Läufe und Randfälle nach der bisherigen Kalibrierung
+- Nachweis, ob Warnsignale in repo-geerdeten Antworten weiter zu früh erscheinen oder in driftigen Antworten zu leicht ausbleiben
+- Doku-/Verifikationsnachweis enger halten als neue Execution- oder UI-Expansion
 
 ### Nicht-Scope
 
