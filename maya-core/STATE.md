@@ -63,8 +63,8 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 
 ## Current Published Truth
 
-- `origin/master` ist aktuell auf `667ebc4`
-- Die letzte user-sichtbare Maya-Produktlinie bleibt auf `9bdaa3a`; spätere öffentliche Commits wie `bb42875`, `91552c2`, `37dd785`, `c2fc42a` und `667ebc4` waren Doku-/Review-Syncs statt neuer sichtbarer Maya-Runtime-Blöcke.
+- `origin/master` ist aktuell auf `d23d09c`
+- Die letzte user-sichtbare Maya-Produktlinie bleibt auf `9bdaa3a`; spätere öffentliche Commits wie `bb42875`, `91552c2`, `37dd785`, `c2fc42a`, `667ebc4` und `d23d09c` waren Doku-/Review-Syncs statt neuer sichtbarer Maya-Runtime-Blöcke.
 - Die veröffentlichte Maya-Linie ist jetzt in einem Satz: Primärfläche um den aktiven Arbeitslauf verdichtet, sekundäre Navigation rationalisiert, page-level Framing gestrafft, Arbeitslaufdetails in die Ops-Lens verlagert, post-dispatch Guardrail-Signale erzeugt, in der Lens sekundär gesurfacet und zuletzt noch auf ruhigere Warnsignale kalibriert.
 - Die veröffentlichte Verdichtungslinie ist enthalten:
   - `9a53ac8` — `refactor(maya): compress primary surface around workrun flow`
@@ -138,46 +138,46 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 
 ### Name
 
-Guardrail Signal Stability Review Closure
+Pre-Dispatch Crush Light Review Closure
 
 ### Ergebnis
 
-Ein einzelner enger Review- und Evidence-Block ist jetzt lokal abgeschlossen: `__tests__/lib/maya-guardrail-signal-stability-review.test.ts` beobachtet über vier guardrail-nahe Antwortlagen, ob `mirror`, `overclaimWarning` und `freshnessWarning` nach der bisherigen Kalibrierung stabil genug bleiben. Der Block hält repo-geerdete Antworten mit explizitem Frischeanker weiter ruhig, bestätigt die bounded Entwarnung bei explizit angeforderter Sicherheit und zeigt zugleich, dass driftige absolute Zeitbehauptungen weiterhin beide Warnsignale auslösen, während repo-kontextnahe Frischeformulierungen ohne expliziten Commit-Anker derzeit bewusst still bleiben. Damit ist die bestehende Guardrail-Nachspur enger auf Laut-/Stumm-Verhalten überprüfbar, ohne neue Runtime-, UI-, Prompt-, Dispatch- oder Surface-State-Mechanik zu öffnen.
+Ein einzelner enger Review- und Evidence-Block ist jetzt lokal abgeschlossen: `__tests__/lib/maya-pre-dispatch-crush-light-review.test.ts` beobachtet über vier fokusnahe Antwortlagen, ob `Pre-Dispatch Crush Light` die letzte User-Nachricht weiter sauber priorisiert, ohne ältere Breitenpfade, stale Digest-Reste oder die bestehende Guardrail-Nachspur unbeabsichtigt zu übersteuern. Der Block hält einen engen Nullfall ruhig, bestätigt die Segment-Priorisierung innerhalb der letzten User-Nachricht, beobachtet den Fallback auf den eigentlichen Druck auch ohne explizite Request-Phrase und zeigt zugleich, dass driftige absolute Zeitbehauptungen trotz enger Crush-Light-Fokussierung weiter von der Guardrail-Nachspur markiert werden. Damit ist die bestehende Pre-Dispatch-Fokusmarkierung enger auf Priorisierung statt Mechanikerweiterung überprüfbar, ohne neue Runtime-, UI-, Prompt-, Dispatch-, Guardrail- oder Surface-State-Mechanik zu öffnen.
 
 ### Nicht Teil dieses Blocks
 
-- neue Guardrail-, Prompt-, Dispatch-, Extract-, Resume-, Workspace- oder Digest-Mechanik
+- neue Prompt-, Dispatch-, Guardrail-, Extract-, Resume-, Workspace- oder Digest-Mechanik
 - neue UI- oder Lens-Surfacing-Felder
 - Provider-/Affect-/Persistenz-Expansion
-- implizite Promotion repo-kontextnaher Frischeformulierungen zu einem neuen Guardrail-Vertrag
+- implizite Promotion des bestehenden Crush-Light-Reviews zu einer breiteren Execution- oder Governor-Mechanik
 - implizite Behauptung einer bereits abgeschlossenen Ein-Achsen-Architektur
 
 ## Next Recommended Block
 
 ### Name
 
-Pre-Dispatch Crush Light Review Closure
+Affect Posture Audit / Proposal Closure
 
 ### Ziel
 
-Den bestehenden `Pre-Dispatch Crush Light` jetzt als kleinen Review- und Beobachtungsblock gegen echte oder nah-simulierte Läufe halten: ob die Fokusmarkierung der letzten User-Nachricht die Antwortausrichtung weiter verbessert, ohne breitere Nebenpfade, ältere Digest-Linien oder Guardrail-Nachspur unbeabsichtigt zu übersteuern.
+Die bereits sichtbare Affect-Naht jetzt bewusst nur als kleinen Audit-/Proposal-Block schneiden: klären, ob turn-lokale Affect-Posture-Hinweise überhaupt als eigener Maya-Pfad verfolgt werden sollen, welche repo-nahen Verträge dabei bereits materiell berührt würden und welche Teile ausdrücklich nicht in einen vorschnellen Runtime- oder Surface-Ausbau überführt werden dürfen.
 
 ### Aufwand / Risikoprofil
 
-- klein, primär Review-/Evidenzblock
-- sehr geringer Runtime-Druck
-- riskant nur dann, wenn daraus still doch neue Prompt- oder Dispatch-Arbeit gemacht wird
+- klein bis mittel, aber proposal-first statt Runtime-first
+- geringer unmittelbarer Runtime-Druck, höherer Architekturklärungsdruck
+- riskant nur dann, wenn daraus still neue Affect-, Prompt-, Dispatch- oder Surface-Mechanik gemacht wird
 
 ### Scope
 
-- Beobachtung über fokusnahe Läufe und Randfälle nach dem bisherigen `Pre-Dispatch Crush Light`
-- Nachweis, ob die letzte User-Nachricht in echten oder nah-simulierten Läufen weiter sauber priorisiert wird, ohne ältere Breitenpfade zurückzuziehen
-- Doku-/Verifikationsnachweis enger halten als neue Execution- oder UI-Expansion
+- Audit der bereits berührten Affect-Naht rund um turn-lokale Posture-Hinweise im Dispatch-Pfad
+- repo-nahe Klärung, ob daraus überhaupt ein Maya-tauglicher nächster Block entstehen sollte oder ob die Linie bewusst weiter geparkt bleibt
+- proposal-/review-first dokumentieren statt neue Execution-, UI- oder Surface-Expansion zu starten
 
 ### Nicht-Scope
 
-- neue Prompt-, Dispatch-, Guardrail-, Resume-, Workspace-, Surface- oder Digest-Mechanik
-- neue Surface-State- oder UI-Verträge
+- neue Affect-, Prompt-, Dispatch-, Guardrail-, Resume-, Workspace-, Surface- oder Digest-Mechanik
+- neue Surface-State-, Lens- oder UI-Verträge
 - Persistenz-/Schema-/Provider-Expansion
 - breiter Misch-Commit aus dem lokalen Dirty Tree
 
