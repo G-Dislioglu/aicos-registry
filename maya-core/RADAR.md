@@ -240,6 +240,12 @@ Crossing und Kombination sind ausdrücklich erlaubt, aber nur unter diesen Bedin
 - Kombination ist nur sinnvoll, wenn sie den Kandidaten klarer, testbarer oder Maya-tauglicher macht
 - reine Ideenakkumulation ohne klaren Blockzuschnitt ist zu vermeiden
 
+Optional bei nicht-trivialen Crossings mit spürbarer Affinität, aber unklarem Hebel:
+
+- kleiner relationaler Gegencheck nach `docs/methods/relational-selection-check.md`
+- dabei mindestens `affinity_reason`, `anti_affinity_reason`, `truth_mix_risk`, `fake_risk` und `why_not_more` knapp festhalten
+- der Check ergänzt Crossing und Maya-Fit, ersetzt sie aber nicht
+
 Crossing-Guardrail:
 
 - ein Crossing darf nur dann `maya_fit_high` tragen, wenn ein konkreter Blockname existiert, betroffene Dateien oder Bereiche benannt sind, Nicht-Scope klar ist und der Kandidat als nächster Block in einem Satz formulierbar bleibt
