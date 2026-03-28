@@ -9,15 +9,15 @@ Diese Datei ist kein Ersatz für `README.md`, `AGENTS.md` oder `docs/spec-packs/
 
 ## STATE HEADER
 
-- `current_repo_head`: `c2fc42a`
+- `current_repo_head`: `667ebc4`
 - `last_runtime_commit`: `9bdaa3a`
 - `last_verified_against_public`: `2026-03-27`
 - `truth_scope`: `public_plus_local`
 - `local_drift_present`: `yes`
 - `hybrid_architecture`: `yes`
 - `primary_runtime_seams`: `/api/maya/chat | /api/maya/surface-state | lib/maya-thread-digest.ts`
-- `last_completed_block`: `Primary Surface Low-Activity Persisted Partial-Update Convergence Observation Closure`
-- `next_recommended_block`: `Guardrail Signal Stability Review Closure`
+- `last_completed_block`: `Guardrail Signal Stability Review Closure`
+- `next_recommended_block`: `Pre-Dispatch Crush Light Review Closure`
 - `read_order_version`: `v2`
 
 ## Update-Vertrag
@@ -63,8 +63,8 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 
 ## Current Published Truth
 
-- `origin/master` ist aktuell auf `c2fc42a`
-- Die letzte user-sichtbare Maya-Produktlinie bleibt auf `9bdaa3a`; spätere öffentliche Commits wie `bb42875`, `91552c2`, `37dd785` und `c2fc42a` waren Doku-/Review-Syncs statt neuer sichtbarer Maya-Runtime-Blöcke.
+- `origin/master` ist aktuell auf `667ebc4`
+- Die letzte user-sichtbare Maya-Produktlinie bleibt auf `9bdaa3a`; spätere öffentliche Commits wie `bb42875`, `91552c2`, `37dd785`, `c2fc42a` und `667ebc4` waren Doku-/Review-Syncs statt neuer sichtbarer Maya-Runtime-Blöcke.
 - Die veröffentlichte Maya-Linie ist jetzt in einem Satz: Primärfläche um den aktiven Arbeitslauf verdichtet, sekundäre Navigation rationalisiert, page-level Framing gestrafft, Arbeitslaufdetails in die Ops-Lens verlagert, post-dispatch Guardrail-Signale erzeugt, in der Lens sekundär gesurfacet und zuletzt noch auf ruhigere Warnsignale kalibriert.
 - Die veröffentlichte Verdichtungslinie ist enthalten:
   - `9a53ac8` — `refactor(maya): compress primary surface around workrun flow`
@@ -138,40 +138,40 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 
 ### Name
 
-Primary Surface Low-Activity Persisted Partial-Update Convergence Observation Closure
+Guardrail Signal Stability Review Closure
 
 ### Ergebnis
 
-Ein einzelner größerer Low-Activity-Evidence-Block ist jetzt lokal abgeschlossen: `__tests__/lib/maya-primary-surface-low-activity-persisted-partial-update-convergence-observation.test.ts` prüft über mehrere signalarme Thread-Konstellationen, dass partielle manuelle Persist-Updates in `workrun`, `handoff` und `workspace` ihre manuelle Ownership auch dann behalten können, wenn das einzige aktualisierte Feld textlich mit bestehenden abgeleiteten oder primären Bahnen zusammenfällt. Damit ist die Persist-Partial-Update-Linie enger darauf überprüfbar, ob Konvergenz ohne Ownership-Verlust oder künstliche Distinctness möglich bleibt, ohne neue Runtime-, UI-, Persistenz- oder Surface-State-Mechanik zu öffnen.
+Ein einzelner enger Review- und Evidence-Block ist jetzt lokal abgeschlossen: `__tests__/lib/maya-guardrail-signal-stability-review.test.ts` beobachtet über vier guardrail-nahe Antwortlagen, ob `mirror`, `overclaimWarning` und `freshnessWarning` nach der bisherigen Kalibrierung stabil genug bleiben. Der Block hält repo-geerdete Antworten mit explizitem Frischeanker weiter ruhig, bestätigt die bounded Entwarnung bei explizit angeforderter Sicherheit und zeigt zugleich, dass driftige absolute Zeitbehauptungen weiterhin beide Warnsignale auslösen, während repo-kontextnahe Frischeformulierungen ohne expliziten Commit-Anker derzeit bewusst still bleiben. Damit ist die bestehende Guardrail-Nachspur enger auf Laut-/Stumm-Verhalten überprüfbar, ohne neue Runtime-, UI-, Prompt-, Dispatch- oder Surface-State-Mechanik zu öffnen.
 
 ### Nicht Teil dieses Blocks
 
-- neue Resume-, Handoff-, Checkpoint-, Workspace-, Quiet-Thread-, Repetition-, Alignment-, Boundary-, Precedence-, Collision-, Partial-Fallback-, Stability-, Persisted-Partial-Update- oder Surface-Mechanik
-- neue Runtime-, Dispatch- oder Digest-Mechanik
+- neue Guardrail-, Prompt-, Dispatch-, Extract-, Resume-, Workspace- oder Digest-Mechanik
 - neue UI- oder Lens-Surfacing-Felder
 - Provider-/Affect-/Persistenz-Expansion
+- implizite Promotion repo-kontextnaher Frischeformulierungen zu einem neuen Guardrail-Vertrag
 - implizite Behauptung einer bereits abgeschlossenen Ein-Achsen-Architektur
 
 ## Next Recommended Block
 
 ### Name
 
-Guardrail Signal Stability Review Closure
+Pre-Dispatch Crush Light Review Closure
 
 ### Ziel
 
-Die bestehende Guardrail-Nachspur jetzt als kleinen Review- und Beobachtungsblock gegen echte oder nah-simulierte Läufe halten: ob `mirror`, `overclaimWarning` und `freshnessWarning` nach der bisherigen Kalibrierung zu oft stumm oder zu oft laut bleiben, ohne daraus sofort neue Guardrail-Mechanik abzuleiten.
+Den bestehenden `Pre-Dispatch Crush Light` jetzt als kleinen Review- und Beobachtungsblock gegen echte oder nah-simulierte Läufe halten: ob die Fokusmarkierung der letzten User-Nachricht die Antwortausrichtung weiter verbessert, ohne breitere Nebenpfade, ältere Digest-Linien oder Guardrail-Nachspur unbeabsichtigt zu übersteuern.
 
 ### Aufwand / Risikoprofil
 
 - klein, primär Review-/Evidenzblock
 - sehr geringer Runtime-Druck
-- riskant nur dann, wenn daraus still doch neue Heuristik- oder Surface-Arbeit gemacht wird
+- riskant nur dann, wenn daraus still doch neue Prompt- oder Dispatch-Arbeit gemacht wird
 
 ### Scope
 
-- Beobachtung über Guardrail-nahe Läufe und Randfälle nach der bisherigen Kalibrierung
-- Nachweis, ob Warnsignale in repo-geerdeten Antworten weiter zu früh erscheinen oder in driftigen Antworten zu leicht ausbleiben
+- Beobachtung über fokusnahe Läufe und Randfälle nach dem bisherigen `Pre-Dispatch Crush Light`
+- Nachweis, ob die letzte User-Nachricht in echten oder nah-simulierten Läufen weiter sauber priorisiert wird, ohne ältere Breitenpfade zurückzuziehen
 - Doku-/Verifikationsnachweis enger halten als neue Execution- oder UI-Expansion
 
 ### Nicht-Scope
@@ -185,7 +185,13 @@ Die bestehende Guardrail-Nachspur jetzt als kleinen Review- und Beobachtungsbloc
 
 - kleiner weiterer Digest-/handoff-naher Vertragsblock, aber nur falls ein konkreter unmarkierter Wahrheitswechsel im Runtime-Pfad sichtbar wird
 - gezielter Test-/Evidence-Block für weitere Guardrail-Randfälle statt neuer Runtime-Mechanik
-- enger Doku-/Review-Block zur Beobachtung, ob die Guardrail-Nachspur in echten Läufen zu oft stumm oder zu oft laut bleibt
+- gezielter Doku-/Review-Block zur Beobachtung, ob die Guardrail-Nachspur in echten Läufen zu oft stumm oder zu oft laut bleibt
+- gezielter Doku-/Review-Block zur Beobachtung, ob `Pre-Dispatch Crush Light` in echten Läufen die Antwortfokussierung verbessert, ohne breitere Nebenpfade zu übersteuern
+- gezielter Doku-/Review-Block zur Beobachtung, ob Workspace-Ziel und nächster Meilenstein in echten Läufen zu oft dieselbe Aussage wiederholen
+- gezielter Doku-/Review-Block zur Beobachtung, ob die Hauptoberfläche zu oft denselben Signaltext in Fokus, nächstem Schritt und offenem Punkt wiederholt
+- gezielter Doku-/Review-Block zur Beobachtung, ob Primärsignale an Fallback-Grenzen zu früh von Workspace- oder Briefing-Werten übernommen werden
+- gezielter Doku-/Review-Block zur Beobachtung, ob ruhige Threads zu generisch oder zu implizit wirken, obwohl kein aktiver Arbeitslauf vorliegt
+- gezielter Doku-/Review-Block zur Beobachtung, ob signalarme, aber nicht leere Threads unnötig Re-Entry- oder Open-Point-Dopplung auf die Primärfläche ziehen
 - enger Doku-/Review-Block zur Beobachtung, ob `Pre-Dispatch Crush Light` in echten Läufen die Antwortfokussierung verbessert, ohne Nebenpfade zu übersteuern
 - enger Doku-/Review-Block zur Beobachtung, ob Workspace-Ziel und nächster Meilenstein in echten Läufen zu oft dieselbe Aussage wiederholen
 - enger Doku-/Review-Block zur Beobachtung, ob die Hauptoberfläche zu oft denselben Signaltext in Fokus, nächstem Schritt und offenem Punkt wiederholt
