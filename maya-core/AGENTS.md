@@ -94,6 +94,8 @@ Vor jedem Maya-Block explizit prüfen:
 
 Nur das ändern, was für den aktiven Block nötig ist.
 
+Bei nicht-trivialen Crossings oder größeren Synthesen vor `promote`, `merge` oder größerem Blockzuschnitt zusätzlich `docs/methods/relational-selection-check.md` heranziehen.
+
 Hard stop und nachfragen bei Widerspruch in:
 
 - Routing oder Primacy

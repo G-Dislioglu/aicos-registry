@@ -9,7 +9,7 @@ Diese Datei ist kein Ersatz für `README.md`, `AGENTS.md` oder `docs/spec-packs/
 
 ## STATE HEADER
 
-- `current_repo_head`: `91552c2`
+- `current_repo_head`: `37dd785`
 - `last_runtime_commit`: `9bdaa3a`
 - `last_verified_against_public`: `2026-03-27`
 - `truth_scope`: `public_plus_local`
@@ -63,8 +63,8 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 
 ## Current Published Truth
 
-- `origin/master` ist aktuell auf `91552c2`
-- Die letzte user-sichtbare Maya-Produktlinie bleibt auf `9bdaa3a`; spätere öffentliche Commits wie `bb42875` und `91552c2` waren Doku-/Review-Syncs statt neuer sichtbarer Maya-Runtime-Blöcke.
+- `origin/master` ist aktuell auf `37dd785`
+- Die letzte user-sichtbare Maya-Produktlinie bleibt auf `9bdaa3a`; spätere öffentliche Commits wie `bb42875`, `91552c2` und `37dd785` waren Doku-/Review-Syncs statt neuer sichtbarer Maya-Runtime-Blöcke.
 - Die veröffentlichte Maya-Linie ist jetzt in einem Satz: Primärfläche um den aktiven Arbeitslauf verdichtet, sekundäre Navigation rationalisiert, page-level Framing gestrafft, Arbeitslaufdetails in die Ops-Lens verlagert, post-dispatch Guardrail-Signale erzeugt, in der Lens sekundär gesurfacet und zuletzt noch auf ruhigere Warnsignale kalibriert.
 - Die veröffentlichte Verdichtungslinie ist enthalten:
   - `9a53ac8` — `refactor(maya): compress primary surface around workrun flow`
