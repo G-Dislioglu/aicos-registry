@@ -9,15 +9,15 @@ Diese Datei ist kein Ersatz für `README.md`, `AGENTS.md` oder `docs/spec-packs/
 
 ## STATE HEADER
 
-- `current_repo_head`: `667ebc4`
+- `current_repo_head`: `4989975`
 - `last_runtime_commit`: `9bdaa3a`
-- `last_verified_against_public`: `2026-03-27`
+- `last_verified_against_public`: `2026-03-28`
 - `truth_scope`: `public_plus_local`
 - `local_drift_present`: `yes`
 - `hybrid_architecture`: `yes`
 - `primary_runtime_seams`: `/api/maya/chat | /api/maya/surface-state | lib/maya-thread-digest.ts`
-- `last_completed_block`: `Guardrail Signal Stability Review Closure`
-- `next_recommended_block`: `Pre-Dispatch Crush Light Review Closure`
+- `last_completed_block`: `Pre-Dispatch Crush Light Review Closure`
+- `next_recommended_block`: `Affect Posture Audit / Proposal Closure`
 - `read_order_version`: `v2`
 
 ## Update-Vertrag
@@ -63,8 +63,8 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 
 ## Current Published Truth
 
-- `origin/master` ist aktuell auf `d23d09c`
-- Die letzte user-sichtbare Maya-Produktlinie bleibt auf `9bdaa3a`; spätere öffentliche Commits wie `bb42875`, `91552c2`, `37dd785`, `c2fc42a`, `667ebc4` und `d23d09c` waren Doku-/Review-Syncs statt neuer sichtbarer Maya-Runtime-Blöcke.
+- `origin/master` ist aktuell auf `4989975`
+- Die letzte user-sichtbare Maya-Produktlinie bleibt auf `9bdaa3a`; spätere öffentliche Commits wie `bb42875`, `91552c2`, `37dd785`, `c2fc42a`, `667ebc4`, `d23d09c` und `4989975` waren Doku-/Review-Syncs statt neuer sichtbarer Maya-Runtime-Blöcke.
 - Die veröffentlichte Maya-Linie ist jetzt in einem Satz: Primärfläche um den aktiven Arbeitslauf verdichtet, sekundäre Navigation rationalisiert, page-level Framing gestrafft, Arbeitslaufdetails in die Ops-Lens verlagert, post-dispatch Guardrail-Signale erzeugt, in der Lens sekundär gesurfacet und zuletzt noch auf ruhigere Warnsignale kalibriert.
 - Die veröffentlichte Verdichtungslinie ist enthalten:
   - `9a53ac8` — `refactor(maya): compress primary surface around workrun flow`
@@ -74,6 +74,7 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
   - `094dd50` — `feat(maya): add post-dispatch epistemic guardrail`
   - `45a7b95` — `feat(maya): tighten handoff prominence in ops lens`
   - `9bdaa3a` — `refactor(maya): calibrate guardrail signal surfacing`
+ - Die aktuell veröffentlichte Repo-Wahrheit enthält darüber hinaus die engen Review-/Evidence-Syncs bis `4989975`, darunter `d23d09c` für `Guardrail Signal Stability Review Closure` und `4989975` für `Pre-Dispatch Crush Light Review Closure`.
 
 ## Current Local Working Truth
 
