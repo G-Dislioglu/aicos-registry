@@ -16,12 +16,14 @@ import { MayaReviewSheet } from '@/components/maya/maya-review-sheet';
 import { FALLBACK_PROVIDERS } from '@/components/maya/fallback-providers';
 import { type WorkMode, detectWorkMode, generateLocalResponse } from '@/components/maya/maya-local-response';
 import { formatMayaTimestamp } from '@/lib/maya-date';
+import { type MayaSurfaceStateAnchor } from '@/lib/maya-surface-state';
 import { buildActiveCheckpointBoard, buildActiveThreadHandoff, buildActiveWorkrun, buildContinuityBriefing, buildDerivedWorkspaceContext, buildMayaMainSurfaceDerivation, buildPersistedCheckpointBoard, buildPersistedThreadHandoff, buildPersistedWorkrun, buildPersistedWorkspaceContext, buildResumeActions, buildThreadDigest, type MayaMainSurfaceDerivation } from '@/lib/maya-thread-digest';
 import { type ChatSession, type MayaCheckpoint, type MayaCheckpointBoard, type MayaStore, type MayaThreadHandoff, type MayaWorkspaceContext, type MayaWorkrun, type ThreadDigest } from '@/lib/types';
 
 type MayaPresenceState = 'idle' | 'thinking' | 'retrieving' | 'streaming';
 
 type StudioMode = 'personal';
+
 type ModelRole = 'scout' | 'worker' | 'reasoner' | 'vision_ocr' | 'tts';
 
 type Provider = {
@@ -208,8 +210,8 @@ type MayaSettings = {
 };
 
 type MayaSurfaceStateResponse = {
-  activeSession: ChatSession | null;
-  activeWorkspace: MayaWorkspaceContext | null;
+  activeSession: MayaSurfaceStateAnchor | null;
+  activeWorkspace: MayaSurfaceStateAnchor | null;
   surface: MayaMainSurfaceDerivation | null;
 };
 

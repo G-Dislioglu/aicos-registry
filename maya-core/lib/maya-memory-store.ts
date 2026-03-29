@@ -1,3 +1,5 @@
+// K5-CANONICAL: Diese Datei gehört zu Achse B (Execution/Zielpfad).
+// Neue Logik kommt hierher, nicht in Achse A.
 import { ensureMayaPostgresSchema, getMayaPostgresPool } from '@/lib/maya-db';
 import { getMayaRuntimeConfig } from '@/lib/maya-env';
 import {

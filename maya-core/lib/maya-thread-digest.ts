@@ -566,6 +566,29 @@ function isDistinctSignal(candidate: string, existing: string[]) {
   return !existing.some((entry) => normalizeSignal(entry) === normalizedCandidate);
 }
 
+type MayaContinuityTransferSource = 'digest' | 'session';
+
+type MayaContinuityTransferTruthStatus = 'local_verified' | 'runtime_local';
+
+type MayaContinuityTransfer = {
+  source: MayaContinuityTransferSource;
+  truthStatus: MayaContinuityTransferTruthStatus;
+};
+
+function resolveContinuityTransfer(session: ChatSession, earlyThreadState: boolean): MayaContinuityTransfer {
+  if (!session.digest || earlyThreadState || session.digest.needsRefresh) {
+    return {
+      source: 'session',
+      truthStatus: 'runtime_local'
+    };
+  }
+
+  return {
+    source: 'digest',
+    truthStatus: 'local_verified'
+  };
+}
+
 export function buildContinuityBriefing(session: ChatSession): MayaContinuityBriefing | undefined {
   if (session.messages.length === 0 && !session.digest) {
     return undefined;
@@ -576,8 +599,9 @@ export function buildContinuityBriefing(session: ChatSession): MayaContinuityBri
   const latestUserText = latestUserMessage?.content || '';
   const latestAssistantText = latestAssistantMessage?.content || '';
   const earlyThreadState = isEarlyThreadState(session, latestUserText, latestAssistantText);
+  const continuityTransfer = resolveContinuityTransfer(session, earlyThreadState);
 
-  if (session.digest && !earlyThreadState) {
+  if (session.digest && continuityTransfer.source === 'digest') {
     return {
       title: session.digest.title || toSentence(session.title || 'Kontinuitäts-Briefing'),
       focus: session.digest.summary || toSentence(session.intent || session.title || 'Noch kein klarer Arbeitsfokus.'),
@@ -586,7 +610,7 @@ export function buildContinuityBriefing(session: ChatSession): MayaContinuityBri
       nextStep: session.digest.nextEntry,
       lastUpdatedAt: session.digest.updatedAt,
       confidence: session.digest.confidence,
-      source: 'digest'
+      source: continuityTransfer.source
     };
   }
 

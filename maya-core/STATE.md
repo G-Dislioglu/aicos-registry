@@ -6,6 +6,7 @@ Diese Datei ist die kanonische operative Kurzwahrheit für `maya-core`.
 Sie ist der schnellste Einstieg für neue Chats, für externe Web-KIs und für die laufende Blockplanung.
 
 Diese Datei ist kein Ersatz für `README.md`, `AGENTS.md` oder `docs/spec-packs/products/maya/STATUS.md`, sondern deren kompakte Arbeitsverdichtung.
+Der kleine repo-nahe Lesbarkeits-Audit für die aktive Hybrid- und Truth-Grenze liegt in `MAYA_HYBRID_TRUTH_READABILITY_AUDIT.md`.
 
 ## STATE HEADER
 
@@ -16,8 +17,8 @@ Diese Datei ist kein Ersatz für `README.md`, `AGENTS.md` oder `docs/spec-packs/
 - `local_drift_present`: `yes`
 - `hybrid_architecture`: `yes`
 - `primary_runtime_seams`: `/api/maya/chat | /api/maya/surface-state | lib/maya-thread-digest.ts`
-- `last_completed_block`: `Pre-Dispatch Crush Light Review Closure`
-- `next_recommended_block`: `Affect Posture Audit / Proposal Closure`
+- `last_completed_block`: `Resume Start-State Boundary Observation Batch`
+- `next_recommended_block`: `nächsten größeren Review-Batch für resume-line abschließen oder Tests ausführen`
 - `read_order_version`: `v2`
 
 ## Update-Vertrag
@@ -39,12 +40,13 @@ Wenn diese Datei nicht mehr zum Code- oder Git-Stand passt, gilt sie als veralte
 Für neue Arbeit an `maya-core` zuerst lesen:
 
 1. `STATE.md`
-2. `RADAR.md`
-3. `README.md`
-4. `AGENTS.md`
-5. `docs/spec-packs/products/maya/STATUS.md`
-6. `docs/spec-packs/products/maya/BLUEPRINT.md`
-7. danach erst relevante Handoffs oder Proposal-Dateien
+2. `MAYA_HYBRID_TRUTH_READABILITY_AUDIT.md`
+3. `RADAR.md`
+4. `README.md`
+5. `AGENTS.md`
+6. `docs/spec-packs/products/maya/STATUS.md`
+7. `docs/spec-packs/products/maya/BLUEPRINT.md`
+8. danach erst relevante Handoffs oder Proposal-Dateien
 
 ## Truth Classes
 
@@ -128,6 +130,7 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 ## Active Sources Of Truth
 
 - schnelle operative Wahrheit: `STATE.md`
+- kleine repo-nahe Wahrheitstrennung für Hybrid- und Public-vs-Local-Lesbarkeit: `MAYA_HYBRID_TRUTH_READABILITY_AUDIT.md`
 - Arbeitsregeln und Guardrails: `AGENTS.md`
 - Kompressions-/Resonanz-Methode: `docs/methods/compression-check.md`
 - ausführlicher Repo-/Verifikationsstand: `docs/spec-packs/products/maya/STATUS.md`
@@ -139,47 +142,52 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 
 ### Name
 
-Pre-Dispatch Crush Light Review Closure
+Resume Start-State Boundary Observation Batch
 
 ### Ergebnis
 
-Ein einzelner enger Review- und Evidence-Block ist jetzt lokal abgeschlossen: `__tests__/lib/maya-pre-dispatch-crush-light-review.test.ts` beobachtet über vier fokusnahe Antwortlagen, ob `Pre-Dispatch Crush Light` die letzte User-Nachricht weiter sauber priorisiert, ohne ältere Breitenpfade, stale Digest-Reste oder die bestehende Guardrail-Nachspur unbeabsichtigt zu übersteuern. Der Block hält einen engen Nullfall ruhig, bestätigt die Segment-Priorisierung innerhalb der letzten User-Nachricht, beobachtet den Fallback auf den eigentlichen Druck auch ohne explizite Request-Phrase und zeigt zugleich, dass driftige absolute Zeitbehauptungen trotz enger Crush-Light-Fokussierung weiter von der Guardrail-Nachspur markiert werden. Damit ist die bestehende Pre-Dispatch-Fokusmarkierung enger auf Priorisierung statt Mechanikerweiterung überprüfbar, ohne neue Runtime-, UI-, Prompt-, Dispatch-, Guardrail- oder Surface-State-Mechanik zu öffnen.
+Ein einzelner weiterer, aber weiter enger Batch aus drei benachbarten Review- und Evidence-Blöcken ist jetzt lokal abgeschlossen: `__tests__/lib/maya-resume-start-state-hard-stop-observation.test.ts`, `__tests__/lib/maya-resume-start-state-boundary-observation.test.ts` und `__tests__/lib/maya-resume-start-state-focus-irrelevance-observation.test.ts` beobachten an der bestehenden Resume-Ableitung, dass `buildResumeActions()` an der Start-State-Grenze vollständig stumm bleibt, solange `briefing.nextStep` exakt dem Start-State-Text entspricht, selbst wenn `focus`, `currentState` oder `openLoops` bereits gefüllt sind, und dass Resume-Signale sofort wieder entstehen dürfen, sobald `nextStep` diese harte Grenze verlässt. Der Batch hält damit repo-nah fest, dass die Start-State-Sperre eine echte Hard-Stop-Kante ist und nicht still durch benachbarte Kontextfelder überstimmt wird. Damit ist eine weitere resume-nahe Boundary präziser beobachtbar, ohne neue Runtime-, Prompt-, Dispatch-, UI-, Guardrail-, Affect- oder Persistenz-Mechanik zu öffnen.
+
+Ein gezielter lokaler Vitest-Lauf über die elf neu angelegten resume-nahen Observation-Dateien ist inzwischen ebenfalls erfolgt und lief grün (`11/11` Testdateien, `11/11` Tests). Damit ist der zuletzt geschnittene Resume-/Signal-Evidence-Schnitt nicht mehr nur argumentativ dokumentiert, sondern lokal auch laufzeitnah verifiziert.
 
 ### Nicht Teil dieses Blocks
 
-- neue Prompt-, Dispatch-, Guardrail-, Extract-, Resume-, Workspace- oder Digest-Mechanik
+- neue Affect-, Prompt-, Dispatch-, Guardrail-, Resume-, Workspace-, Surface- oder Digest-Mechanik
 - neue UI- oder Lens-Surfacing-Felder
-- Provider-/Affect-/Persistenz-Expansion
-- implizite Promotion des bestehenden Crush-Light-Reviews zu einer breiteren Execution- oder Governor-Mechanik
+- Provider-/Persistenz-Expansion
+- implizite Promotion der beobachteten Resume-/Start-State-Kante zu neuer Ownership- oder Runtime-Mechanik
 - implizite Behauptung einer bereits abgeschlossenen Ein-Achsen-Architektur
 
 ## Next Recommended Block
 
 ### Name
 
-Affect Posture Audit / Proposal Closure
+nächsten größeren Review-Batch für resume-line abschließen oder Tests ausführen
 
 ### Ziel
 
-Die bereits sichtbare Affect-Naht jetzt bewusst nur als kleinen Audit-/Proposal-Block schneiden: klären, ob turn-lokale Affect-Posture-Hinweise überhaupt als eigener Maya-Pfad verfolgt werden sollen, welche repo-nahen Verträge dabei bereits materiell berührt würden und welche Teile ausdrücklich nicht in einen vorschnellen Runtime- oder Surface-Ausbau überführt werden dürfen.
+Nach mehreren zusammenhängenden Resume-/Signal-Batches ist der nächste sinnvolle Schritt jetzt entweder ein letzter gezielter Observation-Schnitt an einer klar identifizierten resume-nahen Restkante oder die Ausführung der bisher angelegten Tests, um den lokalen Evidence-Stand nicht nur argumentativ, sondern auch laufzeitnah zu verankern.
 
 ### Aufwand / Risikoprofil
 
-- klein bis mittel, aber proposal-first statt Runtime-first
-- geringer unmittelbarer Runtime-Druck, höherer Architekturklärungsdruck
-- riskant nur dann, wenn daraus still neue Affect-, Prompt-, Dispatch- oder Surface-Mechanik gemacht wird
+- klein bis mittel, je nach Wahl von weiterem Review-Batch oder Testausführung
+- geringer Runtime-Druck, aber steigender Wert eines echten Verifikationslaufs
+- riskant nur dann, wenn daraus still neue Primärsignal-, Surface- oder Digest-Mechanik gemacht wird
 
 ### Scope
 
-- Audit der bereits berührten Affect-Naht rund um turn-lokale Posture-Hinweise im Dispatch-Pfad
-- repo-nahe Klärung, ob daraus überhaupt ein Maya-tauglicher nächster Block entstehen sollte oder ob die Linie bewusst weiter geparkt bleibt
-- proposal-/review-first dokumentieren statt neue Execution-, UI- oder Surface-Expansion zu starten
+- entweder weiterer enger resume-naher Observation-Batch oder gezielte lokale Testverifikation der bisher geschnittenen Kanten
+- repo-nahe Konsolidierung statt neuer Semantik
+- Evidence-/review-first dokumentieren statt neue Execution- oder UI-Expansion zu starten
 
 ### Nicht-Scope
 
 - neue Affect-, Prompt-, Dispatch-, Guardrail-, Resume-, Workspace-, Surface- oder Digest-Mechanik
 - neue Surface-State-, Lens- oder UI-Verträge
-- Persistenz-/Schema-/Provider-Expansion
+- Provider-/Persistenz-Expansion
+- implizite Promotion der beobachteten Resume-/Start-State-Kante zu neuer Ownership- oder Runtime-Mechanik
+- implizite Promotion der beobachteten Resume-/Current-State-Kante zu neuer Ownership- oder Runtime-Mechanik
+- implizite Promotion von Wiederholungsbeobachtung zu neuer Produktsemantik
 - breiter Misch-Commit aus dem lokalen Dirty Tree
 
 ## Alternative Valid Next Blocks

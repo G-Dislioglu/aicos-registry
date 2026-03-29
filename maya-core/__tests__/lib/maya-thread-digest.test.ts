@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildActiveCheckpointBoard, buildActiveThreadHandoff, buildActiveWorkrun, buildContinuityBriefing, buildDerivedWorkspaceContext, buildMayaMainSurfaceDerivation, buildPersistedCheckpointBoard, buildPersistedThreadHandoff, buildResumeActions, buildThreadDigest, shouldRefreshThreadDigest } from '@/lib/maya-thread-digest';
-import { ChatSession } from '@/lib/types';
+import { buildActiveCheckpointBoard, buildActiveThreadHandoff, buildActiveWorkrun, buildContinuityBriefing, buildDerivedWorkspaceContext, buildMayaMainSurfaceDerivation, buildPersistedCheckpointBoard, buildPersistedThreadHandoff, buildResumeActions, buildThreadDigest, shouldRefreshThreadDigest } from '../../lib/maya-thread-digest';
+import { ChatSession, MayaCheckpoint } from '../../lib/types';
 
 function makeSession(): ChatSession {
   return {
@@ -69,6 +69,30 @@ describe('maya thread digest', () => {
     ];
 
     expect(shouldRefreshThreadDigest(session)).toBe(true);
+  });
+
+  it('does not treat a stale digest as the active continuity truth', () => {
+    const session = makeSession();
+    session.digest = {
+      threadId: session.id,
+      title: 'Onboarding Optionen',
+      summary: 'Alter Digest, der nicht mehr als aktueller Leitstand gelten darf.',
+      currentState: 'Alter Stand aus einem früheren Thread-Zeitpunkt.',
+      openLoops: ['Alte offene Schleife'],
+      nextEntry: 'Alten Digest fortsetzen.',
+      confidence: 'medium',
+      updatedAt: '2026-03-19T08:01:00.000Z',
+      sourceMessageCount: 1,
+      needsRefresh: true
+    };
+
+    const briefing = buildContinuityBriefing(session);
+
+    expect(briefing).toBeDefined();
+    expect(briefing?.source).toBe('session');
+    expect(briefing?.focus).not.toContain('Alter Digest');
+    expect(briefing?.currentState).toContain('priorisieren');
+    expect(briefing?.nextStep).not.toContain('Alten Digest fortsetzen');
   });
 
   it('builds a continuity briefing from an existing digest without creating a second truth', () => {
@@ -228,9 +252,9 @@ describe('maya thread digest', () => {
     const board = buildActiveCheckpointBoard(session, briefing, actions, workrun);
 
     expect(board).toBeDefined();
-    expect(board?.checkpoints.map((checkpoint) => checkpoint.label)).not.toContain('Nächsten Schritt übernehmen');
-    expect(board?.checkpoints.map((checkpoint) => checkpoint.label)).not.toContain('Offenen Punkt weiterführen');
-    expect(board?.checkpoints.map((checkpoint) => checkpoint.label)).not.toContain('Thread sinnvoll fortsetzen');
+    expect(board?.checkpoints.map((checkpoint: MayaCheckpoint) => checkpoint.label)).not.toContain('Nächsten Schritt übernehmen');
+    expect(board?.checkpoints.map((checkpoint: MayaCheckpoint) => checkpoint.label)).not.toContain('Offenen Punkt weiterführen');
+    expect(board?.checkpoints.map((checkpoint: MayaCheckpoint) => checkpoint.label)).not.toContain('Thread sinnvoll fortsetzen');
   });
 
   it('gives a weak early thread a differentiated start-state focus, next step, and open point without inflated guidance', () => {
@@ -272,7 +296,7 @@ describe('maya thread digest', () => {
     ]);
     expect(actions).toHaveLength(0);
     expect(board?.checkpoints.length).toBeLessThanOrEqual(2);
-    expect(board?.checkpoints.map((checkpoint) => checkpoint.label)).not.toContain('hallo Maya');
+    expect(board?.checkpoints.map((checkpoint: MayaCheckpoint) => checkpoint.label)).not.toContain('hallo Maya');
     expect(handoff?.openItems).toEqual([
       'Es fehlt noch das konkrete Ziel oder die Entscheidung, auf die Maya den Arbeitslauf ausrichten soll.'
     ]);
@@ -374,11 +398,34 @@ describe('maya thread digest', () => {
     expect(handoff?.openItems).toEqual([
       'Es fehlt noch das konkrete Ziel oder die Entscheidung, auf die Maya den Arbeitslauf ausrichten soll.'
     ]);
-    expect(board?.checkpoints.map((checkpoint) => checkpoint.label)).not.toContain('Ich bin Maya. Ich helfe dir dabei, laufende Arbeit klarer zu sehen, relevanten Kontext nach vorne zu holen und offenen Druck in einen nächsten Schritt zu verwandeln.');
+    expect(board?.checkpoints.map((checkpoint: MayaCheckpoint) => checkpoint.label)).not.toContain('Ich bin Maya. Ich helfe dir dabei, laufende Arbeit klarer zu sehen, relevanten Kontext nach vorne zu holen und offenen Druck in einen nächsten Schritt zu verwandeln.');
     expect(workspace?.title).toBe('Neuer Maya-Thread');
     expect(workspace?.focus).toBe('Anliegen für diesen Thread schärfen');
     expect(workspace?.goal).toBe('Arbeitsziel klären');
     expect(workspace?.nextMilestone).toContain('Beschreibe kurz Ziel, Kontext oder Entscheidung');
+  });
+
+  it('does not leak a stale digest back into the main surface derivation', () => {
+    const session = makeSession();
+    session.digest = {
+      threadId: session.id,
+      title: 'Alter Digest-Titel',
+      summary: 'Alter Digest-Fokus, der nicht als Primärfokus zurückkehren darf.',
+      currentState: 'Alter Digest-Zustand.',
+      openLoops: ['Alte Digest-Schleife'],
+      nextEntry: 'Alten Digest weiterführen.',
+      confidence: 'medium',
+      updatedAt: '2026-03-19T08:01:00.000Z',
+      sourceMessageCount: 1,
+      needsRefresh: true
+    };
+
+    const surface = buildMayaMainSurfaceDerivation(session, undefined);
+
+    expect(surface.briefing?.source).toBe('session');
+    expect(surface.primaryFocus).not.toContain('Alter Digest-Fokus');
+    expect(surface.primaryNextStep).not.toContain('Alten Digest weiterführen');
+    expect(surface.primaryFocus).toBe('Zwei Wege vergleichen und den nächsten Test festlegen.');
   });
 
   it('builds the maya main surface from one authoritative derivation path', () => {

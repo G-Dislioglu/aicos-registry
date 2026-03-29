@@ -1,3 +1,5 @@
+// K5-CANONICAL: Diese Datei gehört zu Achse B (Execution/Zielpfad).
+// Neue Logik kommt hierher, nicht in Achse A.
 // Maya Provider Dispatch - Phase 1C Ops
 // Multi-provider execution layer using the registry
 
@@ -16,6 +18,7 @@ import {
   PROVIDER_REGISTRY
 } from './maya-provider-registry';
 import { buildContext, markContextUsed } from '@/lib/maya-context-builder';
+import { buildTurnLocalAffectPosture } from '@/lib/maya-affect-adapter';
 import { buildFullSystemPrompt } from '@/lib/maya-prompt-contract';
 import { createMessage, recordCost } from '@/lib/maya-memory-store';
 import { getCostGuardState } from '@/lib/maya-memory-store';
@@ -46,6 +49,39 @@ export type DispatchResult = {
   contextUsed?: boolean;
   warnings: string[];
 };
+
+export function buildPreDispatchCrushLight(
+  messages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>
+): string | null {
+  const latestUserText = [...messages]
+    .reverse()
+    .find((message) => message.role === 'user' && message.content.trim().length > 0)?.content;
+
+  if (!latestUserText) {
+    return null;
+  }
+
+  const normalized = normalizePreDispatchText(latestUserText);
+  if (!normalized) {
+    return null;
+  }
+
+  const segments = normalized
+    .split(/(?<=[.!?])\s+|\n+/)
+    .map((segment) => segment.trim())
+    .filter((segment) => segment.length >= 18);
+  const requestPattern = /\b(kannst du|kannst du bitte|bitte|hilf|hilfe|ich will|ich möchte|ich moechte|ich brauche|prüf|pruef|analysier|implement|fix|beheb|zeige|erklär|erklaer|warum|wie|was)\b/i;
+  const coreSegment = segments.find((segment) => requestPattern.test(segment))
+    || [...segments].sort((left, right) => right.length - left.length)[0]
+    || normalized;
+
+  return [
+    '## Pre-Dispatch Crush Light',
+    '[CRUSH-LIGHT — intern, nicht ausgeben]',
+    `nicht_wegstreichbarer_kern=${truncatePreDispatchText(coreSegment, 220)}`,
+    'regel=Antworte zuerst auf diesen Kern; Nebenspuren nur unterstützen, nicht verdrängen.'
+  ].join('\n');
+}
 
 // === Provider Status ===
 
@@ -162,6 +198,14 @@ export async function dispatchChat(request: DispatchRequest): Promise<DispatchRe
   const latestUserText = [...request.messages]
     .reverse()
     .find(message => message.role === 'user')?.content || '';
+  const preDispatchCrushLight = buildPreDispatchCrushLight(request.messages);
+  const affectPosture = buildTurnLocalAffectPosture(request.messages);
+  if (preDispatchCrushLight) {
+    systemPrompt += `\n\n---\n\n${preDispatchCrushLight}`;
+  }
+  if (affectPosture.promptSection) {
+    systemPrompt += `\n\n---\n\n${affectPosture.promptSection}`;
+  }
   if (request.workMode) {
     systemPrompt += `\n\n---\n\n## Arbeitsmodus\n${getSystemInstruction(request.workMode, latestUserText)}`;
   }
@@ -637,6 +681,18 @@ function executeMock(
     tokenInput: Math.ceil(messages.reduce((sum, m) => sum + m.content.length, 0) / 4),
     tokenOutput: Math.ceil(response.length / 4)
   };
+}
+
+function normalizePreDispatchText(text: string): string {
+  return text.replace(/\s+/g, ' ').trim()
+}
+
+function truncatePreDispatchText(text: string, maxLength: number): string {
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  return `${text.slice(0, maxLength - 1).trimEnd()}…`;
 }
 
 // === Helper ===

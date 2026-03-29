@@ -11,9 +11,11 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:maya": "playwright test tests-e2e/maya-smoke.spec.ts",
+    "test:e2e:k7-prep": "playwright test tests-e2e/maya-k7-prep.spec.ts",
     "test:all": "vitest run && playwright test"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
     "next": "14.2.24",
     "pg": "8.13.1",
     "react": "18.3.1",
