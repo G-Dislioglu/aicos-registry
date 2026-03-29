@@ -17,8 +17,8 @@ Der kleine repo-nahe Lesbarkeits-Audit für die aktive Hybrid- und Truth-Grenze 
 - `local_drift_present`: `yes`
 - `hybrid_architecture`: `yes`
 - `primary_runtime_seams`: `/api/maya/chat | /api/maya/surface-state | lib/maya-thread-digest.ts`
-- `last_completed_block`: `Resume Start-State Boundary Observation Batch`
-- `next_recommended_block`: `nächsten größeren Review-Batch für resume-line abschließen oder Tests ausführen`
+- `last_completed_block`: `Bluepilot Review Secondary Ops-Lens Surfacing Block`
+- `next_recommended_block`: `kleinen bounded Bluepilot-Folgeschritt prüfen oder den verifizierten Stand stehen lassen`
 - `read_order_version`: `v2`
 
 ## Update-Vertrag
@@ -142,52 +142,50 @@ Die Architektur bleibt technisch hybrid: sichtbare Maya-Flächen, Surface-State,
 
 ### Name
 
-Resume Start-State Boundary Observation Batch
+Bluepilot Review Secondary Ops-Lens Surfacing Block
 
 ### Ergebnis
 
-Ein einzelner weiterer, aber weiter enger Batch aus drei benachbarten Review- und Evidence-Blöcken ist jetzt lokal abgeschlossen: `__tests__/lib/maya-resume-start-state-hard-stop-observation.test.ts`, `__tests__/lib/maya-resume-start-state-boundary-observation.test.ts` und `__tests__/lib/maya-resume-start-state-focus-irrelevance-observation.test.ts` beobachten an der bestehenden Resume-Ableitung, dass `buildResumeActions()` an der Start-State-Grenze vollständig stumm bleibt, solange `briefing.nextStep` exakt dem Start-State-Text entspricht, selbst wenn `focus`, `currentState` oder `openLoops` bereits gefüllt sind, und dass Resume-Signale sofort wieder entstehen dürfen, sobald `nextStep` diese harte Grenze verlässt. Der Batch hält damit repo-nah fest, dass die Start-State-Sperre eine echte Hard-Stop-Kante ist und nicht still durch benachbarte Kontextfelder überstimmt wird. Damit ist eine weitere resume-nahe Boundary präziser beobachtbar, ohne neue Runtime-, Prompt-, Dispatch-, UI-, Guardrail-, Affect- oder Persistenz-Mechanik zu öffnen.
+Ein kleiner, weiterhin bewusst bounded Folgeblock ist jetzt lokal umgesetzt: der bereits vorhandene read-only Bluepilot-Review-Helper wird in `components/maya-chat-screen.tsx` ausschließlich sekundär innerhalb der bestehenden `MayaOpsLens` gesurfaced. Der Hinweis bleibt damit explizit außerhalb der Primärfläche, erzeugt keinen Hero, keine neue Hauptsektion und keine neue Runtime-Steuerung, sondern zeigt nur `recommendedFocus`, `reviewRisk` und `suggestedNextReviewAngle` als nachgeordneten Review-Hinweis an.
 
-Ein gezielter lokaler Vitest-Lauf über die elf neu angelegten resume-nahen Observation-Dateien ist inzwischen ebenfalls erfolgt und lief grün (`11/11` Testdateien, `11/11` Tests). Damit ist der zuletzt geschnittene Resume-/Signal-Evidence-Schnitt nicht mehr nur argumentativ dokumentiert, sondern lokal auch laufzeitnah verifiziert.
+Der Block ist außerdem lokal verifiziert: `npx vitest run __tests__/lib/maya-bluepilot-review.test.ts` lief grün (`4/4` Tests), und `./node_modules/.bin/tsc --noEmit --skipLibCheck` lief ohne Fehloutput. Damit ist das kleine sekundäre Surfacing nicht nur gebaut, sondern auch als bounded UI-Folgeblock technisch abgesichert.
 
 ### Nicht Teil dieses Blocks
 
 - neue Affect-, Prompt-, Dispatch-, Guardrail-, Resume-, Workspace-, Surface- oder Digest-Mechanik
-- neue UI- oder Lens-Surfacing-Felder
+- neue primäre UI- oder Lens-Hauptsurfacing-Felder
 - Provider-/Persistenz-Expansion
-- implizite Promotion der beobachteten Resume-/Start-State-Kante zu neuer Ownership- oder Runtime-Mechanik
+- Bluepilot-Vollintegration oder implizite Promotion zur neuen Maya-Hauptachse
 - implizite Behauptung einer bereits abgeschlossenen Ein-Achsen-Architektur
 
 ## Next Recommended Block
 
 ### Name
 
-nächsten größeren Review-Batch für resume-line abschließen oder Tests ausführen
+kleinen bounded Bluepilot-Folgeschritt prüfen oder den verifizierten Stand stehen lassen
 
 ### Ziel
 
-Nach mehreren zusammenhängenden Resume-/Signal-Batches ist der nächste sinnvolle Schritt jetzt entweder ein letzter gezielter Observation-Schnitt an einer klar identifizierten resume-nahen Restkante oder die Ausführung der bisher angelegten Tests, um den lokalen Evidence-Stand nicht nur argumentativ, sondern auch laufzeitnah zu verankern.
+Nach dem verifizierten sekundären Ops-Lens-Surfacing ist der nächste sinnvolle Schritt jetzt nur dann ein weiterer enger Bluepilot-Folgeschritt, wenn zusätzlicher echter Planungswert sichtbar wird, ohne dass der Hinweis aus seiner sekundären Rolle kippt; sonst soll der kleine verifizierte Stand bewusst stehen bleiben.
 
 ### Aufwand / Risikoprofil
 
-- klein bis mittel, je nach Wahl von weiterem Review-Batch oder Testausführung
-- geringer Runtime-Druck, aber steigender Wert eines echten Verifikationslaufs
+- klein
+- sehr geringer Runtime-Druck, primär Konsolidierungs- und Abbruchwert
 - riskant nur dann, wenn daraus still neue Primärsignal-, Surface- oder Digest-Mechanik gemacht wird
 
 ### Scope
 
-- entweder weiterer enger resume-naher Observation-Batch oder gezielte lokale Testverifikation der bisher geschnittenen Kanten
-- repo-nahe Konsolidierung statt neuer Semantik
-- Evidence-/review-first dokumentieren statt neue Execution- oder UI-Expansion zu starten
+- kleiner bounded Bluepilot-Folgeschritt nur dann, wenn der Helper klar sekundär bleibt
+- sonst bewusste Konsolidierung ohne weitere Bluepilot-Expansion
+- keine implizite Promotion des Helpers zur aktiven Maya-Hauptlogik
 
 ### Nicht-Scope
 
 - neue Affect-, Prompt-, Dispatch-, Guardrail-, Resume-, Workspace-, Surface- oder Digest-Mechanik
 - neue Surface-State-, Lens- oder UI-Verträge
-- Provider-/Persistenz-Expansion
-- implizite Promotion der beobachteten Resume-/Start-State-Kante zu neuer Ownership- oder Runtime-Mechanik
-- implizite Promotion der beobachteten Resume-/Current-State-Kante zu neuer Ownership- oder Runtime-Mechanik
-- implizite Promotion von Wiederholungsbeobachtung zu neuer Produktsemantik
+- Bluepilot-Vollintegration oder implizite Promotion zur neuen Maya-Hauptachse
+- neue sichtbare Hauptflächen-Surfacing-Entscheidung für Bluepilot
 - breiter Misch-Commit aus dem lokalen Dirty Tree
 
 ## Alternative Valid Next Blocks

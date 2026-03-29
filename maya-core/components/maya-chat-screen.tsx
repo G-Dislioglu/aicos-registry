@@ -15,6 +15,7 @@ import { MayaWorkspaceContext as MayaWorkspaceContextPanel } from '@/components/
 import { MayaReviewSheet } from '@/components/maya/maya-review-sheet';
 import { FALLBACK_PROVIDERS } from '@/components/maya/fallback-providers';
 import { type WorkMode, detectWorkMode, generateLocalResponse } from '@/components/maya/maya-local-response';
+import { buildBluepilotPlanningReview } from '@/lib/maya-bluepilot-review';
 import { formatMayaTimestamp } from '@/lib/maya-date';
 import { type MayaSurfaceStateAnchor } from '@/lib/maya-surface-state';
 import { buildActiveCheckpointBoard, buildActiveThreadHandoff, buildActiveWorkrun, buildContinuityBriefing, buildDerivedWorkspaceContext, buildMayaMainSurfaceDerivation, buildPersistedCheckpointBoard, buildPersistedThreadHandoff, buildPersistedWorkrun, buildPersistedWorkspaceContext, buildResumeActions, buildThreadDigest, type MayaMainSurfaceDerivation } from '@/lib/maya-thread-digest';
@@ -864,6 +865,7 @@ export function MayaChatScreen() {
       showActiveHandoffSection
     )
   );
+  const bluepilotReview = buildBluepilotPlanningReview(activeSurface);
   const guardrailSummaryLabel = epistemicGuardrail?.overclaimWarning || epistemicGuardrail?.freshnessWarning
     ? 'Guardrail-Hinweis'
     : null;
@@ -1769,6 +1771,35 @@ export function MayaChatScreen() {
         subtitle="Sekundäre Arbeitsraum-, Thread- und Wiedereinstiegssteuerung außerhalb der Hauptfläche."
         onClose={() => setOpsLensOpen(false)}
       >
+        {bluepilotReview ? (
+          <section className="mb-4 rounded-[18px] border border-fuchsia-300/20 bg-fuchsia-400/10 p-3 text-sm text-slate-100 shadow-shell sm:p-4">
+            <div className="text-[11px] uppercase tracking-[0.22em] text-fuchsia-200">Bluepilot Review</div>
+            <p className="mt-2 text-sm leading-6 text-slate-300">
+              Sekundärer Planning-/Review-Hinweis auf Basis der aktuellen Maya-Signale. Keine aktive Runtime-Steuerung.
+            </p>
+            <div className="mt-3 space-y-3">
+              {bluepilotReview.recommendedFocus ? (
+                <div>
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-fuchsia-100/80">Empfohlener Fokus</div>
+                  <p className="mt-1 text-sm leading-6 text-slate-100">{bluepilotReview.recommendedFocus}</p>
+                </div>
+              ) : null}
+              {bluepilotReview.reviewRisk ? (
+                <div>
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-amber-200/90">Review-Risiko</div>
+                  <p className="mt-1 text-sm leading-6 text-slate-200">{bluepilotReview.reviewRisk}</p>
+                </div>
+              ) : null}
+              {bluepilotReview.suggestedNextReviewAngle ? (
+                <div>
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-cyan-200/90">Nächster Review-Winkel</div>
+                  <p className="mt-1 text-sm leading-6 text-slate-200">{bluepilotReview.suggestedNextReviewAngle}</p>
+                </div>
+              ) : null}
+            </div>
+          </section>
+        ) : null}
+
         {activeSession ? (
           <MayaWorkspaceContextPanel
             activeWorkspace={activeWorkspace}
